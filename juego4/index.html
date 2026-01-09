@@ -23,40 +23,53 @@ body{margin:0;overflow:hidden;font-family:Arial;}
   margin:10px;
 }
 .btn:hover{transform:scale(1.1);box-shadow:0 15px 40px rgba(255,107,107,0.7);}
+.difficulty-btn{padding:15px 30px;font-size:1.2em;margin:5px;}
 #game{display:none;}
+#score{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:white;font-size:2em;font-weight:bold;text-shadow:0 0 10px black;z-index:10;display:none;}
+#goalMsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:5em;font-weight:bold;text-shadow:0 0 30px black;z-index:20;display:none;animation:pulse 0.5s;}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.2);}}
 </style>
 </head>
 <body>
 <div id="menu">
   <h1>⚽ NOVA</h1>
   <h1>LEAGUE 3D</h1>
-  <h2>PARTIDO RÁPIDO</h2>
-  <button class="btn" onclick="startGame()">▶ JUGAR</button>
+  <h2>SELECCIONA DIFICULTAD</h2>
+  <button class="btn difficulty-btn" onclick="startGame(0.08)">FÁCIL</button>
+  <button class="btn difficulty-btn" onclick="startGame(0.15)">NORMAL</button>
+  <button class="btn difficulty-btn" onclick="startGame(0.22)">DIFÍCIL</button>
   <h3>WASD: Mover | E/Q: Disparar | F: Robar</h3>
 </div>
 <div id="game"></div>
+<div id="score">🔴 0 - 0 🔵</div>
+<div id="goalMsg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
 <script>
 let gameStarted = false;
 const menu = document.getElementById('menu');
 const gameDiv = document.getElementById('game');
+const scoreEl = document.getElementById('score');
+const goalMsg = document.getElementById('goalMsg');
 
-function startGame(){
+function startGame(difficulty){
   menu.style.opacity = '0';
   setTimeout(()=>{
     menu.style.display = 'none';
     gameDiv.style.display = 'block';
-    initGame();
+    scoreEl.style.display = 'block';
+    initGame(difficulty);
   },1000);
 }
 
-function initGame(){
+function initGame(difficulty){
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
   const renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   gameDiv.appendChild(renderer.domElement);
+
+  let redScore = 0, blueScore = 0;
 
   // LUCES
   scene.add(new THREE.AmbientLight(0xffffff,0.7));
@@ -116,19 +129,30 @@ function initGame(){
   // JUGADOR
   function createPlayer(color,x,z){
     const g=new THREE.Group();
-    const torso=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,0.8),new THREE.MeshLambertMaterial({color}));torso.position.y=1.5;
-    const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,10,8),new THREE.MeshLambertMaterial({color:0xffdbac}));head.position.y=2.4;
-    const hair=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.35,0.7),new THREE.MeshLambertMaterial({color:0x3a2410}));hair.position.y=2.6;
-    for(const s of [-0.7,0.7]){
-      const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,1.0,6),new THREE.MeshLambertMaterial({color}));
-      arm.rotation.z=Math.PI/2;arm.position.set(s,1.5,0);g.add(arm);
+    const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,1.5,8),new THREE.MeshLambertMaterial({color}));torso.position.y=1.6;
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.45,16,12),new THREE.MeshLambertMaterial({color:0xffdbac}));head.position.y=2.6;
+    const hair=new THREE.Mesh(new THREE.SphereGeometry(0.47,16,12),new THREE.MeshLambertMaterial({color:0x3a2410}));
+    hair.scale.set(1,0.4,1);hair.position.y=2.85;
+    const nose=new THREE.Mesh(new THREE.SphereGeometry(0.08,6,6),new THREE.MeshLambertMaterial({color:0xffb894}));
+    nose.position.set(0,2.55,0.42);
+    for(const s of [-0.55,0.55]){
+      const shoulder=new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),new THREE.MeshLambertMaterial({color}));
+      shoulder.position.set(s,2.1,0);g.add(shoulder);
+      const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.13,1.1,8),new THREE.MeshLambertMaterial({color}));
+      arm.position.set(s,1.4,0);g.add(arm);
+      const hand=new THREE.Mesh(new THREE.SphereGeometry(0.17,8,8),new THREE.MeshLambertMaterial({color:0xffdbac}));
+      hand.position.set(s,0.85,0);g.add(hand);
     }
-    for(const s of [-0.3,0.3]){
-      const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,1.1,6),new THREE.MeshLambertMaterial({color:0x222222}));leg.position.set(s,0.55,0);g.add(leg);
-      const boot=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.3,0.7),new THREE.MeshLambertMaterial({color:color===0xff4444?0x0000ff:0xff0000}));boot.position.set(s,0.15,0.4);g.add(boot);
+    for(const s of [-0.25,0.25]){
+      const thigh=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.18,1.0,8),new THREE.MeshLambertMaterial({color:0x222222}));
+      thigh.position.set(s,0.6,0);g.add(thigh);
+      const shin=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.14,0.9,8),new THREE.MeshLambertMaterial({color:color===0xff4444?0x8b0000:0x00008b}));
+      shin.position.set(s,0.15,0.05);g.add(shin);
+      const boot=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.22,0.65),new THREE.MeshLambertMaterial({color:color===0xff4444?0x0000cd:0xff4500}));
+      boot.position.set(s,-0.2,0.35);boot.rotation.x=0.1;g.add(boot);
     }
-    g.add(torso,head,hair);g.position.set(x,0,z);g.scale.set(1.2,1.2,1.2);scene.add(g);
-    g.userData={color,speed:0.1,homeX:x,homeZ:z,hasBall:false};
+    g.add(torso,head,hair,nose);g.position.set(x,0,z);g.scale.set(1.1,1.1,1.1);scene.add(g);
+    g.userData={color,speed:difficulty,homeX:x,homeZ:z,hasBall:false};
     return g;
   }
 
@@ -169,6 +193,56 @@ function initGame(){
         player.userData.hasBall = true;
       }
     }
+  }
+
+  function aiStealBall(){
+    if(ball.userData.holder && ball.userData.holder.userData.color === 0xff4444){
+      const allBlue = blueTeam.filter(p=>p!==ball.userData.holder);
+      allBlue.forEach(p=>{
+        const dx = ball.position.x - p.position.x;
+        const dz = ball.position.z - p.position.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        if(dist < 1.5 && Math.random() < difficulty * 2){
+          ball.userData.holder.userData.hasBall = false;
+          ball.userData.holder = p;
+          p.userData.hasBall = true;
+        }
+      });
+    }
+  }
+
+  function checkGoal(){
+    const bx = ball.position.x;
+    const bz = ball.position.z;
+    if(Math.abs(bz) < 7){
+      if(bx < -W/2 + 3){
+        blueScore++;
+        scoreEl.textContent = `🔴 ${redScore} - ${blueScore} 🔵`;
+        showGoalMessage("¡GOL AZUL! 🔵");
+        resetBall();
+      }else if(bx > W/2 - 3){
+        redScore++;
+        scoreEl.textContent = `🔴 ${redScore} - ${blueScore} 🔵`;
+        showGoalMessage("¡GOL ROJO! 🔴");
+        resetBall();
+      }
+    }
+  }
+
+  function showGoalMessage(msg){
+    goalMsg.textContent = msg;
+    goalMsg.style.display = 'block';
+    setTimeout(()=>{goalMsg.style.display = 'none';},2000);
+  }
+
+  function resetBall(){
+    ball.position.set(0,0.5,0);
+    ball.userData.vx = 0;
+    ball.userData.vz = 0;
+    ball.userData.holder = null;
+    player.userData.hasBall = false;
+    redTeam.forEach(p=>{p.userData.hasBall=false;p.position.x=p.userData.homeX;p.position.z=p.userData.homeZ;});
+    blueTeam.forEach(p=>{p.userData.hasBall=false;p.position.x=p.userData.homeX;p.position.z=p.userData.homeZ;});
   }
 
   function checkBallHolder(){
@@ -216,6 +290,8 @@ function initGame(){
     requestAnimationFrame(animate);
     
     if(keys['f']) stealBall();
+    aiStealBall();
+    checkGoal();
     
     // JUGADOR
     if(keys['a']) player.rotation.y += 0.05;
