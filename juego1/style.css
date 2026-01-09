@@ -1,16 +1,10 @@
-/* CSS de prueba para desbloquear scroll */
-* {
-    box-sizing: border-box;
-}
-
 html, body {
     margin: 0;
     padding: 0;
-    height: auto !important;
-    overflow: visible !important; /* fuerza que sea visible */
+    min-height: 100%;
+    overflow-y: auto; /* permite scroll */
 }
 
 section {
     min-height: 100vh; /* cada sección ocupa toda la pantalla */
-    border: 1px solid red; /* para ver dónde termina cada sección */
 }
