@@ -1,12 +1,10 @@
-/* CSS */
 html, body {
     margin: 0;
     padding: 0;
-    height: auto; /* importante: no limitarlo a 100vh */
-    overflow-y: auto; /* permite scroll vertical */
+    min-height: 100%;
+    overflow-y: auto;
 }
 
 section {
-    height: 100vh; /* cada sección ocupa toda la pantalla */
+    min-height: 100vh; /* cada sección ocupa toda la pantalla */
 }
-
