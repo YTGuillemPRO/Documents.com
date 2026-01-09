@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nova League 3D ⚽</title>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial;}
+#menu{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  color:white;text-align:center;transition:opacity 1s;
+}
+#menu h1{font-size:4em;margin:0;text-shadow:0 0 20px #00d4ff;font-weight:bold;}
+#menu h2{font-size:2em;margin:20px 0;color:#00d4ff;}
+.btn{
+  background:linear-gradient(45deg,#ff6b6b,#ffd93d);
+  border:none;padding:20px 40px;font-size:1.5em;border-radius:50px;
+  cursor:pointer;color:white;font-weight:bold;text-transform:uppercase;
+  box-shadow:0 10px 30px rgba(255,107,107,0.5);
+  transition:all 0.3s;
+  margin:10px;
+}
+.btn:hover{transform:scale(1.1);box-shadow:0 15px 40px rgba(255,107,107,0.7);}
+#game{display:none;}
+</style>
+</head>
+<body>
+<div id="menu">
+  <h1>⚽ NOVA</h1>
+  <h1>LEAGUE 3D</h1>
+  <h2>PARTIDO RÁPIDO</h2>
+  <button class="btn" onclick="startGame()">▶ JUGAR</button>
+  <h3>WASD: Mover | E/Q: Disparar | F: Robar</h3>
+</div>
+<div id="game"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+<script>
+let gameStarted = false;
+const menu = document.getElementById('menu');
+const gameDiv = document.getElementById('game');
+
+function startGame(){
+  menu.style.opacity = '0';
+  setTimeout(()=>{
+    menu.style.display = 'none';
+    gameDiv.style.display = 'block';
+    initGame();
+  },1000);
+}
+
+function initGame(){
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+  const renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  gameDiv.appendChild(renderer.domElement);
+
+  // LUCES
+  scene.add(new THREE.AmbientLight(0xffffff,0.7));
+  const dir = new THREE.DirectionalLight(0xffffff,0.9);
+  dir.position.set(40,60,30);
+  scene.add(dir);
+
+  // CAMPO
+  const W = 140, H = 80;
+  const fieldBase = new THREE.Mesh(
+    new THREE.PlaneGeometry(W,H),
+    new THREE.MeshLambertMaterial({ color:0x1a7f1a })
+  );
+  fieldBase.rotation.x = -Math.PI/2;
+  scene.add(fieldBase);
+
+  // CÉSPED
+  const grassGroup = new THREE.Group();
+  const grassGeo = new THREE.PlaneGeometry(0.15,0.9);
+  const grassMat = new THREE.MeshLambertMaterial({color:0x2d8a2d,side:THREE.DoubleSide});
+  for(let i=0;i<1500;i++){
+    const g = new THREE.Mesh(grassGeo,grassMat);
+    g.position.set((Math.random()-0.5)*W,0.45,(Math.random()-0.5)*H);
+    g.rotation.y = Math.random()*Math.PI*2;
+    grassGroup.add(g);
+  }
+  scene.add(grassGroup);
+
+  // LÍNEAS
+  const lineMat = new THREE.LineBasicMaterial({ color:0xffffff });
+  function drawLine(points){
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    scene.add(new THREE.Line(geo,lineMat));
+  }
+  drawLine([new THREE.Vector3(-W/2,0.02,-H/2),new THREE.Vector3(W/2,0.02,-H/2),new THREE.Vector3(W/2,0.02,H/2),new THREE.Vector3(-W/2,0.02,H/2),new THREE.Vector3(-W/2,0.02,-H/2)]);
+  drawLine([new THREE.Vector3(0,0.02,-H/2),new THREE.Vector3(0,0.02,H/2)]);
+
+  // PORTERÍAS
+  function createGoal(x){
+    const mat=new THREE.MeshLambertMaterial({color:0xffffff});
+    const lp=new THREE.Mesh(new THREE.BoxGeometry(0.3,5,0.3),mat);
+    const rp=lp.clone();
+    const cb=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,14),mat);
+    lp.position.set(x,2.5,-7);rp.position.set(x,2.5,7);cb.position.set(x,5,0);
+    scene.add(lp,rp,cb);
+  }
+  createGoal(-W/2+2);createGoal(W/2-2);
+
+  // BARRA
+  function createPowerMeter(){
+    const group=new THREE.Group();
+    const bg=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.2,0.1),new THREE.MeshBasicMaterial({color:0x333333}));
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(1.48,0.18,0.08),new THREE.MeshBasicMaterial({color:0x00ff00}));
+    group.add(bg,bar);group.userData={bar};group.position.y=3.2;return group;
+  }
+
+  // JUGADOR
+  function createPlayer(color,x,z){
+    const g=new THREE.Group();
+    const torso=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,0.8),new THREE.MeshLambertMaterial({color}));torso.position.y=1.5;
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,10,8),new THREE.MeshLambertMaterial({color:0xffdbac}));head.position.y=2.4;
+    const hair=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.35,0.7),new THREE.MeshLambertMaterial({color:0x3a2410}));hair.position.y=2.6;
+    for(const s of [-0.7,0.7]){
+      const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,1.0,6),new THREE.MeshLambertMaterial({color}));
+      arm.rotation.z=Math.PI/2;arm.position.set(s,1.5,0);g.add(arm);
+    }
+    for(const s of [-0.3,0.3]){
+      const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,1.1,6),new THREE.MeshLambertMaterial({color:0x222222}));leg.position.set(s,0.55,0);g.add(leg);
+      const boot=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.3,0.7),new THREE.MeshLambertMaterial({color:color===0xff4444?0x0000ff:0xff0000}));boot.position.set(s,0.15,0.4);g.add(boot);
+    }
+    g.add(torso,head,hair);g.position.set(x,0,z);g.scale.set(1.2,1.2,1.2);scene.add(g);
+    g.userData={color,speed:0.1,homeX:x,homeZ:z,hasBall:false};
+    return g;
+  }
+
+  // 11 JUGADORES
+  const redPositions = [[-60,0],[-55,12],[-55,-12],[-50,20],[-50,-20],[-30,15],[-30,-15],[-20,8],[-20,-8],[0,0],[10,0]];
+  const bluePositions = redPositions.map(([x,z])=>[-x,z]);
+  const redTeam = redPositions.map(([x,z])=>createPlayer(0xff4444,x,z));
+  const blueTeam = bluePositions.map(([x,z])=>createPlayer(0x4444ff,x,z));
+  const player = redTeam[9];
+  player.userData.powerMeter = createPowerMeter();
+  player.add(player.userData.powerMeter);
+
+  // BALÓN
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5,12,8),new THREE.MeshLambertMaterial({color:0xffffff}));
+  ball.position.set(0,0.5,0);ball.userData={vx:0,vz:0,holder:null};scene.add(ball);
+
+  // VARIABLES
+  const keys = {};
+  let powerCharge=0,charging=false;
+
+  document.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+  document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+  function limitToField(o){
+    o.position.x=Math.max(-W/2+2,Math.min(W/2-2,o.position.x));
+    o.position.z=Math.max(-H/2+2,Math.min(H/2-2,o.position.z));
+  }
+
+  // ROBAR BALÓN CON F
+  function stealBall(){
+    if(ball.userData.holder && ball.userData.holder !== player){
+      const dx = ball.position.x - player.position.x;
+      const dz = ball.position.z - player.position.z;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      if(dist < 2.5){
+        ball.userData.holder.userData.hasBall = false;
+        ball.userData.holder = player;
+        player.userData.hasBall = true;
+      }
+    }
+  }
+
+  function checkBallHolder(){
+    const allPlayers = [...redTeam,...blueTeam];
+    let closestPlayer = null;
+    let closestDist = 1.8;
+    allPlayers.forEach(p=>{
+      if(p===player) return;
+      const dx = ball.position.x - p.position.x;
+      const dz = ball.position.z - p.position.z;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      if(dist < closestDist){
+        closestDist = dist;
+        closestPlayer = p;
+      }
+    });
+    if(closestPlayer && !ball.userData.holder){
+      ball.userData.holder = closestPlayer;
+      closestPlayer.userData.hasBall = true;
+    }
+  }
+
+  function updatePlayers(){
+    const allPlayers = [...redTeam,...blueTeam];
+    allPlayers.forEach(p=>{
+      if(p===player || p.userData.hasBall) return;
+      const dx = ball.position.x - p.position.x;
+      const dz = ball.position.z - p.position.z;
+      const distBall = Math.sqrt(dx*dx + dz*dz);
+      if(distBall > 3){
+        p.position.x += (dx/distBall)*p.userData.speed;
+        p.position.z += (dz/distBall)*p.userData.speed;
+      }
+      p.position.x += (p.userData.homeX - p.position.x)*0.01;
+      p.position.z += (p.userData.homeZ - p.position.z)*0.01;
+      p.rotation.y = Math.atan2(dx,dz);
+      limitToField(p);
+    });
+    checkBallHolder();
+  }
+
+  camera.position.set(0,15,25);camera.lookAt(0,0,0);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    
+    if(keys['f']) stealBall();
+    
+    // JUGADOR
+    if(keys['a']) player.rotation.y += 0.05;
+    if(keys['d']) player.rotation.y -= 0.05;
+    const sp = keys['shift'] ? 0.4 : 0.2;
+    if(keys['w']){
+      player.position.x += Math.sin(player.rotation.y)*sp;
+      player.position.z += Math.cos(player.rotation.y)*sp;
+    }
+    if(keys['s']){
+      player.position.x -= Math.sin(player.rotation.y)*sp*0.6;
+      player.position.z -= Math.cos(player.rotation.y)*sp*0.6;
+    }
+    limitToField(player);
+
+    // POTENCIA
+    if((keys['e']||keys['q']) && !charging){
+      charging=true;player.userData.powerMeter.visible=true;
+    }
+    if(charging){
+      powerCharge = Math.min(1,powerCharge+0.02);
+      const bar = player.userData.powerMeter.userData.bar;
+      bar.scale.x = powerCharge;
+      bar.position.x = (powerCharge-1)*0.74;
+      bar.material.color.setHSL(0.33-powerCharge*0.33,1,0.5);
+    }
+    if(!keys['e'] && !keys['q'] && charging){
+      const pwr = powerCharge*0.7;
+      ball.userData.vx = Math.sin(player.rotation.y)*pwr;
+      ball.userData.vz = Math.cos(player.rotation.y)*pwr;
+      ball.userData.holder = null;
+      player.userData.hasBall = false;
+      charging=false;powerCharge=0;player.userData.powerMeter.visible=false;
+    }
+
+    // BALÓN
+    if(!ball.userData.holder){
+      ball.position.x += ball.userData.vx;
+      ball.position.z += ball.userData.vz;
+      ball.userData.vx *= 0.98;
+      ball.userData.vz *= 0.98;
+    }else{
+      const holder = ball.userData.holder;
+      ball.position.x = holder.position.x + Math.sin(holder.rotation.y)*0.8;
+      ball.position.z = holder.position.z + Math.cos(holder.rotation.y)*0.8;
+    }
+    limitToField(ball);
+
+    updatePlayers();
+
+    // CÁMARA
+    const dist=18,h=10;
+    camera.position.x = player.position.x-Math.sin(player.rotation.y)*dist;
+    camera.position.z = player.position.z-Math.cos(player.rotation.y)*dist;
+    camera.position.y = player.position.y+h;
+    camera.lookAt(player.position.x,player.position.y+1.5,player.position.z);
+
+    renderer.render(scene,camera);
+  }
+  animate();
+}
+</script>
+</body>
+</html>
