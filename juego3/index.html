@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Snow Rider 3D - HTML</title>
+  <style>
+    body {
+      margin: 0;
+      background: #87ceeb;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: linear-gradient(#ffffff, #e0f7ff);
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div id="score">Puntos: 0</div>
+<canvas id="game" width="400" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {
+  x: 200,
+  y: 500,
+  width: 30,
+  height: 40,
+  speed: 6
+};
+
+let obstacles = [];
+let score = 0;
+let gameOver = false;
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") player.x -= player.speed;
+  if (e.key === "ArrowRight") player.x += player.speed;
+});
+
+function createObstacle() {
+  obstacles.push({
+    x: Math.random() * (canvas.width - 30),
+    y: -40,
+    width: 30,
+    height: 40,
+    speed: 4
+  });
+}
+
+function drawPlayer() {
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function drawObstacles() {
+  ctx.fillStyle = "green";
+  obstacles.forEach(o => {
+    ctx.fillRect(o.x, o.y, o.width, o.height);
+  });
+}
+
+function updateObstacles() {
+  obstacles.forEach(o => {
+    o.y += o.speed;
+
+    // Colisión
+    if (
+      player.x < o.x + o.width &&
+      player.x + player.width > o.x &&
+      player.y < o.y + o.height &&
+      player.y + player.height > o.y
+    ) {
+      gameOver = true;
+    }
+
+    // Puntos
+    if (o.y > canvas.height) {
+      score++;
+      document.getElementById("score").innerText = "Puntos: " + score;
+    }
+  });
+
+  obstacles = obstacles.filter(o => o.y < canvas.height + 50);
+}
+
+function drawRoad() {
+  ctx.strokeStyle = "#ccc";
+  ctx.setLineDash([10, 15]);
+  ctx.beginPath();
+  ctx.moveTo(200, 0);
+  ctx.lineTo(200, 600);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function loop() {
+  if (gameOver) {
+    ctx.fillStyle = "black";
+    ctx.font = "30px Arial";
+    ctx.fillText("GAME OVER", 100, 300);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawRoad();
+  drawPlayer();
+  drawObstacles();
+  updateObstacles();
+
+  requestAnimationFrame(loop);
+}
+
+setInterval(createObstacle, 1000);
+loop();
+</script>
+
+</body>
+</html>
