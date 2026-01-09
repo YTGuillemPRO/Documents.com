@@ -268,17 +268,64 @@ function initGame(difficulty){
   function updatePlayers(){
     const allPlayers = [...redTeam,...blueTeam];
     allPlayers.forEach(p=>{
-      if(p===player || p.userData.hasBall) return;
-      const dx = ball.position.x - p.position.x;
-      const dz = ball.position.z - p.position.z;
-      const distBall = Math.sqrt(dx*dx + dz*dz);
-      if(distBall > 3){
-        p.position.x += (dx/distBall)*p.userData.speed;
-        p.position.z += (dz/distBall)*p.userData.speed;
+      if(p===player) return;
+      
+      // Si el jugador tiene el balón y es del equipo azul
+      if(p.userData.hasBall && p.userData.color === 0x4444ff){
+        // Intentar marcar gol en la portería roja
+        const goalX = -W/2 + 5;
+        const goalZ = 0;
+        const dx = goalX - p.position.x;
+        const dz = goalZ - p.position.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        
+        p.position.x += (dx/dist)*p.userData.speed*1.5;
+        p.position.z += (dz/dist)*p.userData.speed*1.5;
+        p.rotation.y = Math.atan2(dx,dz);
+        
+        // Disparar cuando está cerca de la portería
+        if(dist < 15 && Math.random() < 0.03){
+          ball.userData.vx = (dx/dist)*0.6;
+          ball.userData.vz = (dz/dist)*0.6;
+          ball.userData.holder = null;
+          p.userData.hasBall = false;
+        }
       }
-      p.position.x += (p.userData.homeX - p.position.x)*0.01;
-      p.position.z += (p.userData.homeZ - p.position.z)*0.01;
-      p.rotation.y = Math.atan2(dx,dz);
+      // Si el jugador tiene el balón y es del equipo rojo (compañeros)
+      else if(p.userData.hasBall && p.userData.color === 0xff4444){
+        // Intentar marcar gol en la portería azul
+        const goalX = W/2 - 5;
+        const goalZ = 0;
+        const dx = goalX - p.position.x;
+        const dz = goalZ - p.position.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        
+        p.position.x += (dx/dist)*p.userData.speed*1.5;
+        p.position.z += (dz/dist)*p.userData.speed*1.5;
+        p.rotation.y = Math.atan2(dx,dz);
+        
+        // Disparar cuando está cerca
+        if(dist < 15 && Math.random() < 0.03){
+          ball.userData.vx = (dx/dist)*0.6;
+          ball.userData.vz = (dz/dist)*0.6;
+          ball.userData.holder = null;
+          p.userData.hasBall = false;
+        }
+      }
+      // Si no tiene el balón
+      else{
+        const dx = ball.position.x - p.position.x;
+        const dz = ball.position.z - p.position.z;
+        const distBall = Math.sqrt(dx*dx + dz*dz);
+        if(distBall > 3){
+          p.position.x += (dx/distBall)*p.userData.speed;
+          p.position.z += (dz/distBall)*p.userData.speed;
+        }
+        p.position.x += (p.userData.homeX - p.position.x)*0.01;
+        p.position.z += (p.userData.homeZ - p.position.z)*0.01;
+        p.rotation.y = Math.atan2(dx,dz);
+      }
+      
       limitToField(p);
     });
     checkBallHolder();
