@@ -1,163 +1,624 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Roblox 3D Obby Chaos</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Huevos, Pets y Rebirth Mejorados + Index</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: #87ceeb;
-    font-family: Arial, sans-serif;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    font-family: Arial, sans-serif; 
+    height: 100vh; 
+    overflow: hidden; 
+    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
   }
-  #ui {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(255,255,255,0.85);
-    padding: 10px;
+  #game { 
+    width: 390px; 
+    background: rgba(255,255,255,0.95); 
+    border-radius: 20px; 
+    padding: 18px; 
+    text-align: center; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+  }
+  h1 { font-size: 22px; margin-bottom: 8px; color: #333; }
+  .top-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 6px;
+    font-size: 12px;
     border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: #e0e0e0;
+    font-weight: bold;
+  }
+  .tab-btn.active {
+    background: #4caf50;
+    color: #fff;
+  }
+  .stats { background: #f8f9fa; padding: 10px; border-radius: 15px; margin: 6px 0; }
+  .money { font-size: 22px; font-weight: bold; color: #4CAF50; }
+  .egg-price { font-size: 15px; color: #666; margin: 4px 0 6px; }
+  .egg-selector {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .egg-type-btn {
+    flex: 1;
+    padding: 6px 6px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background-color: #ddd;
+    user-select: none;
+    transition: 0.3s;
+    font-size: 11px;
+  }
+  .egg-type-btn.active {
+    background-color: #4caf50;
+    color: white;
+    border-color: #4caf50;
+  }
+  button { 
+    width: 100%; 
+    padding: 12px; 
+    font-size: 15px; 
+    border: none; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    margin: 5px 0; 
+    transition: all 0.3s; 
+  }
+  #buyEggBtn { 
+    background: linear-gradient(45deg, #ff6b6b, #feca57); 
+    color: white; 
+    font-weight: bold;
+  }
+  #buyEggBtn:hover { transform: scale(1.03); }
+  #rebirthBtn {
+    background: #2196F3;
+    color: white;
+    font-weight: bold;
+    font-size: 13px;
+  }
+  #rebirthBtn:disabled {
+    background: #90caf9;
+    cursor: not-allowed;
+  }
+  #rebirthInfo {
+    font-size: 11px;
+    color: #555;
+    margin-top: 2px;
+  }
+  #openResult { 
+    min-height: 32px; 
+    font-size: 13px; 
+    font-weight: bold; 
+    margin: 6px 0; 
+    padding: 6px; 
+    border-radius: 10px; 
+    background: #e3f2fd; 
+    border: 2px solid #2196F3;
+  }
+
+  /* Pestañas */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  #petList { 
+    max-height: 210px; 
+    overflow-y: auto; 
+    margin-top: 6px; 
+    text-align: left;
+  }
+  .pet { 
+    margin: 4px 0; 
+    padding: 7px; 
+    border-radius: 10px; 
+    font-weight: bold;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .common { background: #e0e0e0; color: #555; }
+  .uncommon { background: #c8e6c9; color: #2e7d32; }
+  .rare { background: #bbdefb; color: #1565c0; }
+  .god { background: #f3e5f5; color: #7b1fa2; }
+  .secret { background: #fff3e0; color: #ef6c00; }
+  .og { background: #ffe0f0; color: #c2185b; }
+
+  .sellBtn {
+    background: #ef5350;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 3px 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    transition: background 0.3s;
+  }
+  .sellBtn:hover {
+    background: #d32f2f;
+  }
+
+  /* INDEX */
+  #indexList {
+    max-height: 230px;
+    overflow-y: auto;
+    text-align: left;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+  .index-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 8px;
+    margin-bottom: 3px;
+    background: #f5f5f5;
+  }
+  .index-row.owned {
+    background: #dcedc8;
+  }
+  .index-name {
+    font-weight: bold;
+  }
+  .index-meta {
+    font-size: 11px;
+    color: #555;
+  }
+
+  /* Overlay apertura tipo Pet Simulator */
+  #hatchOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  #hatchBox {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 18px;
+    width: 260px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  #hatchEgg {
+    width: 110px;
+    height: 145px;
+    margin: 0 auto 8px;
+    background: radial-gradient(circle at 30% 30%, #fff, #ffd54f);
+    border-radius: 50% 50% 45% 45%;
+    border: 4px solid #ffb300;
+    position: relative;
+    animation: eggIdle 1.2s infinite ease-in-out;
+  }
+  #hatchEgg::before {
+    content: "";
+    position: absolute;
+    inset: 15% 10% 40% 10%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9), transparent);
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+  #hatchedPetIcon {
+    font-size: 42px;
+    display: none;
+    animation: petPop 0.5s ease-out forwards;
+  }
+  #hatchedPetName {
+    font-weight: bold;
+    margin-top: 6px;
     font-size: 15px;
+  }
+  #hatchedPetInfo {
+    font-size: 12px;
+    margin-top: 2px;
+    color: #555;
+  }
+  #closeHatchBtn {
+    margin-top: 10px;
+    padding: 7px 14px;
+    font-size: 13px;
+    border-radius: 10px;
+    border: none;
+    background: #4caf50;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  @keyframes eggIdle {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-4px) rotate(-3deg); }
+    50% { transform: translateY(0) rotate(3deg); }
+    75% { transform: translateY(-3px) rotate(-2deg); }
+  }
+  @keyframes eggShake {
+    0% { transform: translateX(0) rotate(0deg); }
+    20% { transform: translateX(-8px) rotate(-6deg); }
+    40% { transform: translateX(8px) rotate(6deg); }
+    60% { transform: translateX(-5px) rotate(-3deg); }
+    80% { transform: translateX(5px) rotate(3deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+  @keyframes eggBreak {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.25); }
+  }
+  @keyframes petPop {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
   }
 </style>
 </head>
 <body>
+  <!-- Overlay animación apertura -->
+  <div id="hatchOverlay">
+    <div id="hatchBox">
+      <div id="hatchEgg"></div>
+      <div id="hatchedPetIcon"></div>
+      <div id="hatchedPetName"></div>
+      <div id="hatchedPetInfo"></div>
+      <button id="closeHatchBtn">Cerrar</button>
+    </div>
+  </div>
 
-<div id="ui">
-  🚫 NO TOQUES EL BOTÓN<br>
-  ⏱️ Tiempo: <span id="time">0</span>s
-</div>
+  <div id="game">
+    <h1>🥚 HUEVOS & PETS 🐾</h1>
 
-<canvas id="game"></canvas>
+    <div class="top-buttons">
+      <button id="tabPetsBtn" class="tab-btn active">Juego</button>
+      <button id="tabIndexBtn" class="tab-btn">Index</button>
+    </div>
+
+    <div class="stats">
+      <div class="money">💰 $<span id="money">10</span></div>
+      <div class="egg-price">🥚 Precio: $<span id="eggPrice">10</span></div>
+      <div class="egg-selector">
+        <div id="normalEgg" class="egg-type-btn active">Normal</div>
+        <div id="specialEgg" class="egg-type-btn">Especial</div>
+      </div>
+      <div id="rebirthInfo">Rebirth 1: 1M • Rebirth 2: 5M • Rebirth 3: 15M</div>
+    </div>
+
+    <!-- TAB JUEGO -->
+    <div id="tabPets" class="tab-content active">
+      <button id="buyEggBtn">🛒 ABRIR HUEVO</button>
+      <button id="rebirthBtn" disabled>⚡ REBIRTH</button>
+      <div id="openResult"></div>
+      <div id="petList">
+        <div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>
+      </div>
+    </div>
+
+    <!-- TAB INDEX -->
+    <div id="tabIndex" class="tab-content">
+      <div style="font-size:12px; margin-top:4px; margin-bottom:4px;">
+        📖 Index de todos los pets (verde = ya lo tienes)
+      </div>
+      <div id="indexList"></div>
+    </div>
+  </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+  // MISMO pool que antes + T-REX OG
+  const normalPets = [
+    {index: 0,  icon:'🐭', name: 'Ratón',       rarity: 'common',   earnings: 5},
+    {index: 1,  icon:'🐶', name: 'Perro',       rarity: 'common',   earnings: 8},
+    {index: 2,  icon:'🐰', name: 'Conejo',      rarity: 'common',   earnings: 10},
+    {index: 3,  icon:'🐱', name: 'Gato',        rarity: 'uncommon', earnings: 18},
+    {index: 4,  icon:'🦊', name: 'Zorro',       rarity: 'uncommon', earnings: 25},
+    {index: 5,  icon:'🐼', name: 'Panda',       rarity: 'uncommon', earnings: 35},
+    {index: 6,  icon:'🦁', name: 'León',        rarity: 'rare',     earnings: 80},
+    {index: 7,  icon:'🦅', name: 'Águila',      rarity: 'rare',     earnings: 120},
+    {index: 8,  icon:'🐲', name: 'Dragón',      rarity: 'god',      earnings: 250},
+    {index: 9,  icon:'🕊️', name: 'Fénix',      rarity: 'god',      earnings: 350},
+    {index:10,  icon:'🦄', name: 'Unicornio',   rarity: 'secret',   earnings: 800}
+  ];
 
-let time = 0;
-let event = null;
+  const specialPets = [
+    {index: 0,  icon:'🐭', name: 'Ratón Dorado',     rarity: 'common',   earnings: 40},
+    {index: 1,  icon:'🐶', name: 'Perro Pro',        rarity: 'common',   earnings: 55},
+    {index: 2,  icon:'🐱', name: 'Gato Gamer',       rarity: 'common',   earnings: 70},
+    {index: 3,  icon:'🦊', name: 'Zorro Épico',      rarity: 'uncommon', earnings: 120},
+    {index: 4,  icon:'🐺', name: 'Lobo Alfa',        rarity: 'uncommon', earnings: 150},
+    {index: 5,  icon:'🐯', name: 'Tigre',            rarity: 'uncommon', earnings: 180},
+    {index: 6,  icon:'🦁', name: 'León Dorado',      rarity: 'rare',     earnings: 300},
+    {index: 7,  icon:'🐉', name: 'Dragón Élite',     rarity: 'rare',     earnings: 420},
+    {index: 8,  icon:'🦅', name: 'Fénix Real',       rarity: 'god',      earnings: 700},
+    {index: 9,  icon:'🐲', name: 'Dragón Ancestral', rarity: 'god',      earnings: 900},
+    {index:10, icon:'🦣', name: 'Mamut OG',         rarity: 'secret',   earnings: 2000},
+    {index:11, icon:'🐸', name: 'Coquis',           rarity: 'secret',   earnings: 1500},
+    {index:12, icon:'🦖', name: 'T‑Rex OG',         rarity: 'og',       earnings: 3000}
+  ];
 
-// Cámara
-const camera = { z: -500 };
+  const normalRarityChances  = {common: 55, uncommon: 25, rare: 12, god: 6,  secret: 2,  og: 0};
+  const specialRarityChances = {common: 35, uncommon: 30, rare: 18, god: 10, secret: 6,  og: 1};
 
-// Jugador (skin estilo Roblox rojo/negro)
-const player = {
-  x: 0, y: 50, z: 200,
-  size: 40
-};
+  // Rebirths encadenados
+  const rebirthThresholds = [1000000, 5000000, 15000000]; // 1M, 5M, 15M
+  let rebirthLevel = 0; // 0 = sin rebirth, 1,2,3
+  let money = 10;
+  let normalEggPrice = 10;
+  let specialEggPrice = 500;
+  let ownedPets = [];
+  let usingSpecialEgg = false;
+  let moneyMultiplier = 1;
 
-// Botón
-const button = {
-  x: 0, y: 40, z: 300,
-  size: 80, rot: 0
-};
+  function getRarityChances() {
+    const base = usingSpecialEgg ? {...specialRarityChances} : {...normalRarityChances};
+    // con cada rebirth se baja common y se suben raros
+    if (rebirthLevel >= 1) {
+      base.common  = Math.max(0, base.common  - 5);
+      base.rare    += 2;
+      base.god     += 2;
+      base.secret  += 1;
+      base.og      += 0; // OG muy raro
+    }
+    if (rebirthLevel >= 2) {
+      base.common  = Math.max(0, base.common  - 5);
+      base.uncommon+= 2;
+      base.rare    += 2;
+      base.god     += 1;
+      base.secret  += 1;
+    }
+    if (rebirthLevel >= 3) {
+      base.common  = Math.max(0, base.common  - 5);
+      base.rare    += 1;
+      base.god     += 1;
+      base.secret  += 1;
+      base.og      += 1;
+    }
+    return base;
+  }
 
-// Plataformas obby
-let platforms = [];
+  function getRandomRarity() {
+    const chances = getRarityChances();
+    let rand = Math.random() * 100;
+    let cumulative = 0;
+    for (let rarity in chances) {
+      cumulative += chances[rarity];
+      if (rand < cumulative) return rarity;
+    }
+    return 'common';
+  }
 
-// Proyección 3D
-function project(x,y,z){
-  const scale = 700 / (z - camera.z);
-  return {
-    x: x * scale + canvas.width / 2,
-    y: y * scale + canvas.height / 2
-  };
-}
+  function choosePet(pool, rarity) {
+    const candidates = pool.filter(p => p.rarity === rarity);
+    if (candidates.length === 0) return pool[0];
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
 
-// Dibujar cubo
-function drawCube(x,y,z,size,color){
-  const s = size/2;
-  const pts = [
-    [-s,-s,-s],[s,-s,-s],[s,s,-s],[-s,s,-s],
-    [-s,-s,s],[s,-s,s],[s,s,s],[-s,s,s]
-  ].map(p=>project(x+p[0],y+p[1],z+p[2]));
+  function openEgg() {
+    const price = usingSpecialEgg ? specialEggPrice : normalEggPrice;
+    if (money < price) {
+      document.getElementById('openResult').innerHTML =
+        '❌ <span style="color:red">¡No tienes suficiente dinero!</span>';
+      return;
+    }
 
-  const faces=[[0,1,2,3],[4,5,6,7],[0,1,5,4],[2,3,7,6]];
-  ctx.fillStyle = color;
-  ctx.strokeStyle = "black";
+    money -= price;
+    if (usingSpecialEgg) {
+      specialEggPrice = Math.floor(specialEggPrice * 1.2);
+    } else {
+      normalEggPrice  = Math.floor(normalEggPrice * 1.2);
+    }
 
-  faces.forEach(f=>{
-    ctx.beginPath();
-    ctx.moveTo(pts[f[0]].x,pts[f[0]].y);
-    f.forEach(i=>ctx.lineTo(pts[i].x,pts[i].y));
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    document.getElementById('money').textContent = Math.floor(money);
+    document.getElementById('eggPrice').textContent =
+      usingSpecialEgg ? specialEggPrice : normalEggPrice;
+
+    const pool = usingSpecialEgg ? specialPets : normalPets;
+    const rarity = getRandomRarity();
+    const pet = choosePet(pool, rarity);
+    ownedPets.push({...pet});
+
+    showHatchAnimation(pet, usingSpecialEgg);
+    updatePetList();
+    updateIndex();
+    checkRebirth();
+  }
+
+  function showHatchAnimation(pet, isSpecial) {
+    const overlay = document.getElementById('hatchOverlay');
+    const egg = document.getElementById('hatchEgg');
+    const petIcon = document.getElementById('hatchedPetIcon');
+    const petName = document.getElementById('hatchedPetName');
+    const petInfo = document.getElementById('hatchedPetInfo');
+
+    petIcon.style.display = 'none';
+    egg.style.opacity = '1';
+    egg.style.transform = 'scale(1)';
+    egg.style.animation = 'eggIdle 1.2s infinite ease-in-out';
+    overlay.style.display = 'flex';
+
+    setTimeout(() => { egg.style.animation = 'eggShake 0.6s ease-in-out'; }, 400);
+    setTimeout(() => { egg.style.animation = 'eggBreak 0.4s forwards'; }, 1100);
+
+    setTimeout(() => {
+      egg.style.opacity = '0';
+      petIcon.textContent = pet.icon;
+      petIcon.style.display = 'block';
+      petName.textContent =
+        `[#${pet.index}] ${pet.name} (${pet.rarity.toUpperCase()})`;
+      petInfo.textContent =
+        `+$${pet.earnings}/seg ${isSpecial ? '(Huevo especial)' : '(Huevo normal)'}`;
+    }, 1500);
+  }
+
+  document.getElementById('closeHatchBtn').addEventListener('click', () => {
+    document.getElementById('hatchOverlay').style.display = 'none';
   });
-}
 
-// Suelo
-function drawGround(){
-  drawCube(0,120,250,600,"#4caf50");
-}
+  function sellPet(index) {
+    const pet = ownedPets[index];
+    const sellPrice = pet.earnings * 6;
+    money += sellPrice;
+    ownedPets.splice(index, 1);
+    document.getElementById('money').textContent = Math.floor(money);
+    document.getElementById('openResult').innerHTML =
+      `💰 Vendiste ${pet.name} por $${sellPrice}`;
+    updatePetList();
+    updateIndex();
+    checkRebirth();
+    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 2500);
+  }
 
-// Skin del jugador (bloques)
-function drawPlayer(){
-  drawCube(player.x, player.y-30, player.z, player.size, "#111"); // cabeza
-  drawCube(player.x, player.y+10, player.z, player.size+10, "#b00000"); // cuerpo
-  drawCube(player.x-30, player.y+10, player.z, 20, "#b00000"); // brazo
-  drawCube(player.x+30, player.y+10, player.z, 20, "#b00000"); // brazo
-}
+  function updatePetList() {
+    const container = document.getElementById('petList');
+    if (ownedPets.length === 0) {
+      container.innerHTML =
+        '<div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>';
+      return;
+    }
+    const totalEarnings =
+      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
+    container.innerHTML =
+      `<div style="font-size:13px; margin-bottom:6px;">💎 Total: $${totalEarnings}/seg ` +
+      `${rebirthLevel > 0 ? '(x' + moneyMultiplier + ')' : ''}</div>`;
 
-// Botón 3D
-function drawButton(){
-  button.rot += 0.01;
-  drawCube(button.x, button.y, button.z, button.size, "red");
-}
+    ownedPets.forEach((pet, i) => {
+      const div = document.createElement('div');
+      div.className = `pet ${pet.rarity}`;
+      div.innerHTML = `
+        <span>${pet.icon} [#${pet.index}] ${pet.name}</span>
+        <span style="font-size:13px;">$${pet.earnings}/seg</span>
+        <button class="sellBtn" onclick="sellPet(${i})">Vender</button>`;
+      container.appendChild(div);
+    });
+  }
 
-// Eventos
-function triggerEvent(){
-  const events = ["meteor","obby"];
-  event = events[Math.floor(Math.random()*events.length)];
-
-  if(event==="obby"){
-    platforms = [];
-    for(let i=0;i<5;i++){
-      platforms.push({
-        x: -200 + i*100,
-        y: 40 - i*20,
-        z: 200 + i*60
-      });
+  function earnMoney() {
+    const total =
+      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
+    if (total > 0) {
+      money += total;
+      document.getElementById('money').textContent = Math.floor(money);
+      checkRebirth();
     }
   }
 
-  setTimeout(()=>{ event=null; platforms=[]; },4000);
-}
+  function checkRebirth() {
+    const btn = document.getElementById('rebirthBtn');
+    if (rebirthLevel >= rebirthThresholds.length) {
+      btn.disabled = true;
+      btn.textContent = '⚡ REBIRTH (MAX)';
+      return;
+    }
+    const needed = rebirthThresholds[rebirthLevel];
+    btn.textContent = `⚡ REBIRTH (${needed.toLocaleString()}$)`;
+    btn.disabled = money < needed;
+  }
 
-// Dibujar obby
-function drawObby(){
-  platforms.forEach(p=>{
-    drawCube(p.x,p.y,p.z,60,"#888");
+  function doRebirth() {
+    if (rebirthLevel >= rebirthThresholds.length) return;
+    const needed = rebirthThresholds[rebirthLevel];
+    if (money < needed) return;
+
+    rebirthLevel += 1;
+    moneyMultiplier *= 2; // por rebirth x2 (1->2->4->8)
+    money = 10;
+    normalEggPrice = 10;
+    specialEggPrice = 500;
+
+    document.getElementById('money').textContent = money;
+    document.getElementById('eggPrice').textContent =
+      usingSpecialEgg ? specialEggPrice : normalEggPrice;
+    document.getElementById('openResult').innerHTML =
+      `⚡ ¡REBIRTH ${rebirthLevel}! Más suerte & x${moneyMultiplier} DINERO`;
+    updatePetList();
+    checkRebirth();
+    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 3000);
+  }
+
+  // INDEX (Pokédex)
+  function getAllPets() {
+    // Se podría separar por huevos, pero aquí se juntan para un index global
+    return normalPets
+      .map(p => ({...p, egg: 'Normal'}))
+      .concat(specialPets.map(p => ({...p, egg: 'Especial'})));
+  }
+
+  function updateIndex() {
+    const list = document.getElementById('indexList');
+    list.innerHTML = '';
+    const all = getAllPets();
+    const ownedSet = new Set(ownedPets.map(p => p.icon + p.name + p.rarity));
+
+    all.forEach(pet => {
+      const key = pet.icon + pet.name + pet.rarity;
+      const owned = ownedSet.has(key);
+      const row = document.createElement('div');
+      row.className = 'index-row' + (owned ? ' owned' : '');
+      row.innerHTML = `
+        <div class="index-name">${pet.icon} [#${pet.index}] ${pet.name}</div>
+        <div class="index-meta">${pet.rarity.toUpperCase()} • ${pet.egg} • $${pet.earnings}/seg</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  // Tabs
+  const tabPetsBtn = document.getElementById('tabPetsBtn');
+  const tabIndexBtn = document.getElementById('tabIndexBtn');
+  const tabPets = document.getElementById('tabPets');
+  const tabIndex = document.getElementById('tabIndex');
+
+  tabPetsBtn.addEventListener('click', () => {
+    tabPetsBtn.classList.add('active');
+    tabIndexBtn.classList.remove('active');
+    tabPets.classList.add('active');
+    tabIndex.classList.remove('active');
   });
-}
 
-// Click = caos
-canvas.addEventListener("click",()=>{
-  triggerEvent();
-});
+  tabIndexBtn.addEventListener('click', () => {
+    tabIndexBtn.classList.add('active');
+    tabPetsBtn.classList.remove('active');
+    tabIndex.classList.add('active');
+    tabPets.classList.remove('active');
+    updateIndex();
+  });
 
-// Loop
-function loop(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById('normalEgg').addEventListener('click', function() {
+    usingSpecialEgg = false;
+    this.classList.add('active');
+    document.getElementById('specialEgg').classList.remove('active');
+    document.getElementById('eggPrice').textContent = normalEggPrice;
+  });
 
-  drawGround();
-  drawButton();
-  drawPlayer();
+  document.getElementById('specialEgg').addEventListener('click', function() {
+    usingSpecialEgg = true;
+    this.classList.add('active');
+    document.getElementById('normalEgg').classList.remove('active');
+    document.getElementById('eggPrice').textContent = specialEggPrice;
+  });
 
-  if(event==="obby") drawObby();
+  document.getElementById('buyEggBtn').addEventListener('click', openEgg);
+  document.getElementById('rebirthBtn').addEventListener('click', doRebirth);
 
-  requestAnimationFrame(loop);
-}
-loop();
-
-// Tiempo
-setInterval(()=>{
-  time++;
-  document.getElementById("time").textContent=time;
-},1000);
+  updatePetList();
+  updateIndex();
+  setInterval(earnMoney, 1000);
+  checkRebirth();
 </script>
-
 </body>
 </html>
