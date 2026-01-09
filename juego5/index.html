@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTak - Clone con Chats</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #000; color: #fff; overflow: hidden; }
+        .app { height: 100vh; display: flex; flex-direction: column; position: relative; }
+        .header { height: 60px; background: rgba(22,24,35,0.9); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .nav-icons { display: flex; gap: 20px; }
+        .nav-btn { width: 40px; height: 40px; background: rgba(22,24,35,0.7); border-radius: 50%; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+        .add-btn { width: 50px; height: 50px; background: #ff0050; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; }
+        .content { flex: 1; position: relative; }
+        .videos-container, .chats-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+        .videos-container.active, .chats-container.active { display: block; }
+        
+        /* Videos styles */
+        .videos-feed { height: 100%; }
+        .video-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
+        .video-player video { width: 100%; height: 100%; object-fit: cover; }
+        .video-overlay { position: absolute; bottom: 100px; left: 20px; right: 20px; }
+        .username { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        .description { font-size: 14px; margin-bottom: 20px; }
+        .actions { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 30px; }
+        .action-btn { width: 50px; height: 50px; background: rgba(22,24,35,0.7); border-radius: 50%; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .like-btn.liked { background: #ff0050; }
+
+        /* Chats styles IGUALES que antes */
+        .chats-list { height: 100%; overflow-y: auto; background: #000; }
+        .chat-item { padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; display: flex; align-items: center; gap: 15px; }
+        .chat-item.active { background: rgba(255,0,80,0.1); }
+        .chat-avatar { width: 50px; height: 50px; background: #ff0050; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .chat-info h3 { font-size: 16px; margin-bottom: 5px; }
+        .chat-preview { font-size: 14px; color: #ccc; }
+        .chat-window { height: 100%; display: flex; flex-direction: column; background: #111; background-size: cover; background-position: center; }
+        .chat-header { padding: 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 15px; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; }
+        .message { margin-bottom: 15px; display: flex; }
+        .message.sent { justify-content: flex-end; }
+        .message.received { justify-content: flex-start; }
+        .message-bubble { max-width: 70%; padding: 12px 16px; border-radius: 20px; }
+        .message.sent .message-bubble { background: #ff0050; color: #fff; }
+        .message.received .message-bubble { background: #333; color: #fff; }
+        .chat-input { padding: 20px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        .chat-input input { flex: 1; background: #333; border: none; border-radius: 25px; padding: 15px 20px; color: #fff; font-size: 16px; }
+        .chat-input button { width: 50px; height: 50px; background: #ff0050; border: none; border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; }
+
+        /* Fondo selector IGUAL que antes */
+        .background-selector {
+            padding: 10px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+            background: rgba(22,24,35,0.8);
+        }
+        .bg-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.3s;
+        }
+        .bg-color.selected {
+            border: 2px solid #ff0050;
+        }
+
+        /* Modal styles IGUALES que antes */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { width: 90%; max-width: 400px; background: #161823; border-radius: 20px; padding: 30px; text-align: center; }
+        input, textarea { width: 100%; background: #333; border: none; border-radius: 10px; padding: 15px; margin: 10px 0; color: #fff; font-size: 16px; }
+        .upload-btn { background: #ff0050; color: #fff; border: none; padding: 15px 30px; border-radius: 25px; font-size: 18px; cursor: pointer; width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="logo">TikTak</div>
+            <div class="nav-icons">
+                <button class="nav-btn" onclick="switchSection('videos')">🎥</button>
+                <button class="nav-btn" onclick="switchSection('chats')">💬</button>
+                <div class="add-btn" onclick="openUploadModal()">+</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="videos-container active" id="videosContainer">
+                <div class="videos-feed" id="videosFeed"></div>
+            </div>
+            <div class="chats-container" id="chatsContainer">
+                <div class="chats-list" id="chatsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Window EXACTAMENTE IGUAL que antes -->
+    <div class="chat-window" id="chatWindow" style="display: none;">
+        <div class="chat-header">
+            <button onclick="closeChat()" style="background:none; border:none; color:#fff; font-size:24px;">←</button>
+            <div class="chat-avatar" id="chatAvatar"></div>
+            <h2 id="chatTitle"></h2>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="background-selector" id="backgroundSelector">
+            <div class="bg-color" style="background: #111;" title="Negro" data-color="#111"></div>
+            <div class="bg-color" style="background: #ff0050;" title="Rojo" data-color="#ff0050"></div>
+            <div class="bg-color" style="background: #444;" title="Gris" data-color="#444"></div>
+            <div class="bg-color" style="background: linear-gradient(45deg, #ff0050, #ff4081);" title="Gradiente" data-color="linear-gradient(45deg, #ff0050, #ff4081)"></div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- Upload Modal EXACTAMENTE IGUAL que antes -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <h2>Crear Video</h2>
+            <input type="file" id="videoFile" accept="video/*" style="display:none" onchange="handleVideoUpload()">
+            <button onclick="document.getElementById('videoFile').click()" class="upload-btn">Grabar/Subir Video</button>
+            <input type="text" id="username" placeholder="Tu nombre" value="Usuario">
+            <textarea id="description" placeholder="Describe tu video..."></textarea>
+            <button class="upload-btn" onclick="uploadVideo()">Publicar</button>
+            <button onclick="closeUploadModal()" style="background:#333; margin-top:10px;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        const sampleVideos = [
+            { id: 1, src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4', user: '@usuario1', desc: 'Primer video #tiktak', likes: 23 },
+            { id: 2, src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4', user: '@usuario2', desc: '¡Bailando! 🔥 #dance', likes: 156 },
+            { id: 3, src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4', user: '@usuario3', desc: 'Tutorial rápido #tips', likes: 89 }
+        ];
+
+        const chats = [
+            { id: 1, user: '@usuario1', avatar: 'U1', lastMsg: '¡Gran video!', time: '14:30', unread: 2 },
+            { id: 2, user: '@usuario2', avatar: 'U2', lastMsg: '¿Cómo lo hiciste?', time: '14:20', unread: 0 },
+            { id: 3, user: '@usuario3', avatar: 'U3', lastMsg: 'Sigue así 🔥', time: '14:15', unread: 1 }
+        ];
+
+        let currentVideoIndex = 0;
+        let likes = {};
+        let currentChatId = null;
+        let messages = {
+            1: [{ user: 'usuario1', text: '¡Hola! Me encantó tu video 😍', time: '14:25', sent: false },
+                { user: 'tú', text: 'Gracias! 😊', time: '14:26', sent: true }],
+            2: [{ user: 'usuario2', text: '¿Qué cámara usas?', time: '14:18', sent: false },
+                { user: 'tú', text: 'Mi celular! 📱', time: '14:19', sent: true }],
+            3: [{ user: 'usuario3', text: 'Eres increíble', time: '14:10', sent: false }]
+        };
+
+        function initApp() {
+            loadVideos();
+            loadChats();
+            setupBackgroundSelector();
+            
+            // Touch/swipe support
+            let startY = 0;
+            document.addEventListener('touchstart', (e) => {
+                if (document.querySelector('.videos-container.active')) startY = e.touches[0].clientY;
+            });
+            document.addEventListener('touchend', (e) => {
+                if (document.querySelector('.videos-container.active')) {
+                    const endY = e.changedTouches[0].clientY;
+                    const diff = startY - endY;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) nextVideo();
+                        else prevVideo();
+                    }
+                }
+            });
+
+            // Mouse wheel support
+            document.addEventListener('wheel', (e) => {
+                if (document.querySelector('.videos-container.active')) {
+                    e.preventDefault();
+                    if (e.deltaY > 0) nextVideo();
+                    else prevVideo();
+                }
+            });
+        }
+
+        function loadVideos() {
+            const feed = document.getElementById('videosFeed');
+            sampleVideos.forEach((video, index) => {
+                const player = createVideoPlayer(video, index);
+                feed.appendChild(player);
+            });
+            showVideo(0);
+        }
+
+        function createVideoPlayer(video, index) {
+            const player = document.createElement('div');
+            player.className = 'video-player';
+            player.innerHTML = `
+                <video src="${video.src}" muted loop playsinline></video>
+                <div class="video-overlay">
+                    <div class="username">${video.user}</div>
+                    <div class="description">${video.desc}</div>
+                </div>
+                <div class="actions">
+                    <button class="action-btn like-btn ${likes[video.id] ? 'liked' : ''}" onclick="toggleLike(${video.id})">${likes[video.id] ? '❤️' : '🤍'}</button>
+                    <button class="action-btn" onclick="openChatFromVideo(${video.id})">💬</button>
+                    <button class="action-btn">🔗</button>
+                    <button class="action-btn">🎵</button>
+                </div>
+            `;
+            player.dataset.index = index;
+            return player;
+        }
+
+        function showVideo(index) {
+            const players = document.querySelectorAll('.video-player');
+            players.forEach((p, i) => {
+                p.style.transform = `translateY(${100 * (i - index)}%)`;
+                if (i === index) {
+                    const video = p.querySelector('video');
+                    video.play();
+                } else {
+                    p.querySelector('video').pause();
+                }
+            });
+            currentVideoIndex = index;
+        }
+
+        function nextVideo() {
+            const total = sampleVideos.length;
+            showVideo((currentVideoIndex + 1) % total);
+        }
+
+        function prevVideo() {
+            const total = sampleVideos.length;
+            showVideo((currentVideoIndex - 1 + total) % total);
+        }
+
+        function toggleLike(videoId) {
+            const btn = event.target;
+            likes[videoId] = !likes[videoId];
+            btn.classList.toggle('liked', likes[videoId]);
+            btn.textContent = likes[videoId] ? '❤️' : '🤍';
+        }
+
+        function loadChats() {
+            const list = document.getElementById('chatsList');
+            chats.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = 'chat-item';
+                item.onclick = () => openChat(chat.id);
+                item.innerHTML = `
+                    <div class="chat-avatar">${chat.avatar}</div>
+                    <div>
+                        <h3>${chat.user}</h3>
+                        <div class="chat-preview">${chat.lastMsg}</div>
+                    </div>
+                    <div style="margin-left:auto;">
+                        <div style="font-size:12px; color:#ccc;">${chat.time}</div>
+                        ${chat.unread > 0 ? `<div style="width:20px;height:20px;background:#ff0050;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">${chat.unread}</div>` : ''}
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.videos-container, .chats-container').forEach(c => c.classList.remove('active'));
+            document.getElementById(section === 'videos' ? 'videosContainer' : 'chatsContainer').classList.add('active');
+        }
+
+        function openChat(chatId) {
+            currentChatId = chatId;
+            const chat = chats.find(c => c.id === chatId);
+            document.getElementById('chatTitle').textContent = chat.user;
+            document.getElementById('chatAvatar').textContent = chat.avatar;
+            document.getElementById('chatWindow').style.display = 'flex';
+            loadMessages(chatId);
+            
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function openChatFromVideo(videoId) {
+            switchSection('chats');
+            setTimeout(() => openChat(videoId), 300);
+        }
+
+        function closeChat() {
+            document.getElementById('chatWindow').style.display = 'none';
+            currentChatId = null;
+        }
+
+        function loadMessages(chatId) {
+            const msgs = messages[chatId] || [];
+            const container = document.getElementById('messages');
+            container.innerHTML = '';
+            msgs.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.sent ? 'sent' : 'received'}`;
+                div.innerHTML = `<div class="message-bubble">${msg.text}<div style="font-size:12px;opacity:0.7;margin-top:5px;">${msg.time}</div></div>`;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+            
+            const msg = { user: 'tú', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), sent: true };
+            if (!messages[currentChatId]) messages[currentChatId] = [];
+            messages[currentChatId].push(msg);
+            
+            loadMessages(currentChatId);
+            input.value = '';
+            
+            setTimeout(() => {
+                const reply = { user: 'usuario' + currentChatId, text: '¡Gracias por el mensaje!', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), sent: false };
+                messages[currentChatId].push(reply);
+                loadMessages(currentChatId);
+            }, 1000);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function setupBackgroundSelector() {
+            const bgSelector = document.getElementById('backgroundSelector');
+            const chatWindow = document.getElementById('chatWindow');
+            bgSelector.querySelectorAll('.bg-color').forEach(elem => {
+                elem.onclick = () => {
+                    bgSelector.querySelectorAll('.bg-color').forEach(e => e.classList.remove('selected'));
+                    elem.classList.add('selected');
+                    const color = elem.getAttribute('data-color');
+                    chatWindow.style.background = color;
+                }
+            });
+            bgSelector.querySelector('.bg-color').click();
+        }
+
+        function openUploadModal() { document.getElementById('uploadModal').style.display = 'flex'; }
+        function closeUploadModal() { document.getElementById('uploadModal').style.display = 'none'; }
+        function handleVideoUpload() { console.log('Video seleccionado:', event.target.files[0]?.name); }
+        function uploadVideo() {
+            alert('¡Video publicado!');
+            closeUploadModal();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') nextVideo();
+            if (e.key === 'ArrowDown') prevVideo();
+        });
+
+        initApp();
+    </script>
+</body>
+</html>
