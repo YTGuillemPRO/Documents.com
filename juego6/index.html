@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Clash Royale Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial Black, sans-serif;
+    background:#0a0e27;
+    color:white;
+}
+.screen{
+    display:none;
+    width:100vw;
+    height:100vh;
+}
+.screen.active{
+    display:flex;
+}
+button{
+    cursor:pointer;
+}
+
+/* MENU */
+#menu-screen{
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+}
+.game-logo{
+    font-size:60px;
+    margin-bottom:30px;
+}
+.menu-buttons button{
+    display:block;
+    margin:15px;
+    padding:20px 40px;
+    font-size:30px;
+    border-radius:20px;
+    border:none;
+    background:linear-gradient(135deg,#f5576c,#f093fb);
+    color:white;
+}
+
+/* BATALLA */
+#battle-screen{
+    position:relative;
+    background:#1a1f3a;
+}
+.battle-arena{
+    width:600px;
+    height:800px;
+    background:linear-gradient(#ff6b6b,#87ceeb,#4ecdc4);
+    margin:auto;
+    position:relative;
+    border-radius:20px;
+    border:5px solid #2c3e50;
+}
+.battle-unit{
+    position:absolute;
+    font-size:40px;
+}
+.battle-hud{
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:black;
+    padding:15px 30px;
+    border-radius:15px;
+    display:flex;
+    gap:30px;
+    font-size:24px;
+}
+.battle-deck{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    background:rgba(0,0,0,0.85);
+    padding:15px;
+    text-align:center;
+}
+.card{
+    display:inline-block;
+    background:#3498db;
+    padding:10px;
+    margin:5px;
+    width:90px;
+    border-radius:10px;
+    cursor:pointer;
+}
+.card.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+.elixir{
+    margin-bottom:10px;
+    font-size:22px;
+}
+
+/* RESULTADO */
+#result{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+}
+#result button{
+    margin-top:20px;
+    padding:15px 30px;
+    font-size:24px;
+    border:none;
+    border-radius:15px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div id="menu-screen" class="screen active">
+    <div class="game-logo">⚔️ CLASH ROYALE ⚔️</div>
+    <div class="menu-buttons">
+        <button id="battleBtn">⚔️ ¡BATALLA!</button>
+    </div>
+</div>
+
+<!-- BATALLA -->
+<div id="battle-screen" class="screen">
+    <div class="battle-hud">
+        <div>⏱ <span id="timer">3:00</span></div>
+        <div>💜 <span id="elixirText">5</span>/10</div>
+    </div>
+
+    <div class="battle-arena" id="arena"></div>
+
+    <div class="battle-deck">
+        <div class="elixir">Elixir</div>
+        <div id="cards"></div>
+    </div>
+
+    <div id="result">
+        <h1 id="resultText"></h1>
+        <button onclick="goMenu()">Volver al menú</button>
+    </div>
+</div>
+
+<script>
+/* ESTADO */
+let elixir = 5;
+let time = 180;
+let selectedCard = null;
+let gameInterval, elixirInterval, timerInterval;
+
+const cards = [
+    {name:"Caballero", icon:"🛡️", cost:3},
+    {name:"Arqueras", icon:"🏹", cost:3},
+    {name:"Gigante", icon:"🧟", cost:5},
+    {name:"Goblins", icon:"👹", cost:2}
+];
+
+/* BOTÓN BATALLA */
+document.getElementById("battleBtn").onclick = startBattle;
+
+/* INICIAR BATALLA */
+function startBattle(){
+    document.getElementById("menu-screen").classList.remove("active");
+    document.getElementById("battle-screen").classList.add("active");
+
+    elixir = 5;
+    time = 180;
+    selectedCard = null;
+
+    renderCards();
+    startElixir();
+    startTimer();
+}
+
+/* CARTAS */
+function renderCards(){
+    const c = document.getElementById("cards");
+    c.innerHTML="";
+    cards.forEach((card,i)=>{
+        const d=document.createElement("div");
+        d.className="card"+(elixir<card.cost?" disabled":"");
+        d.innerHTML=`${card.icon}<br>${card.cost}`;
+        d.onclick=()=>selectCard(i);
+        c.appendChild(d);
+    });
+}
+
+function selectCard(i){
+    if(elixir < cards[i].cost) return;
+    selectedCard = i;
+}
+
+/* DESPLEGAR */
+document.getElementById("arena").onclick = e=>{
+    if(selectedCard===null) return;
+    const rect=e.target.getBoundingClientRect();
+    const x=e.clientX-rect.left;
+    const y=e.clientY-rect.top;
+    if(y<400) return;
+
+    spawnUnit(x,y,cards[selectedCard].icon);
+    elixir -= cards[selectedCard].cost;
+    selectedCard=null;
+    updateElixir();
+    renderCards();
+};
+
+function spawnUnit(x,y,icon){
+    const u=document.createElement("div");
+    u.className="battle-unit";
+    u.textContent=icon;
+    u.style.left=x+"px";
+    u.style.top=y+"px";
+    document.getElementById("arena").appendChild(u);
+
+    const move=setInterval(()=>{
+        y-=1;
+        u.style.top=y+"px";
+        if(y<50){
+            clearInterval(move);
+            u.remove();
+        }
+    },20);
+}
+
+/* ELIXIR */
+function startElixir(){
+    clearInterval(elixirInterval);
+    elixirInterval=setInterval(()=>{
+        if(elixir<10){
+            elixir++;
+            updateElixir();
+            renderCards();
+        }
+    },3000);
+}
+function updateElixir(){
+    document.getElementById("elixirText").textContent=elixir;
+}
+
+/* TIMER */
+function startTimer(){
+    clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+        time--;
+        const m=Math.floor(time/60);
+        const s=(time%60).toString().padStart(2,"0");
+        document.getElementById("timer").textContent=`${m}:${s}`;
+        if(time<=0){
+            endBattle();
+        }
+    },1000);
+}
+
+/* FIN */
+function endBattle(){
+    clearInterval(timerInterval);
+    clearInterval(elixirInterval);
+    document.getElementById("result").style.display="flex";
+    document.getElementById("resultText").textContent="🏆 ¡BATALLA TERMINADA!";
+}
+
+function goMenu(){
+    document.getElementById("result").style.display="none";
+    document.getElementById("battle-screen").classList.remove("active");
+    document.getElementById("menu-screen").classList.add("active");
+}
+</script>
+
+</body>
+</html>
