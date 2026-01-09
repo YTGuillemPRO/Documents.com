@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Roblox 3D Obby Chaos</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #87ceeb;
+    font-family: Arial, sans-serif;
+  }
+  #ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255,255,255,0.85);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div id="ui">
+  🚫 NO TOQUES EL BOTÓN<br>
+  ⏱️ Tiempo: <span id="time">0</span>s
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+let time = 0;
+let event = null;
+
+// Cámara
+const camera = { z: -500 };
+
+// Jugador (skin estilo Roblox rojo/negro)
+const player = {
+  x: 0, y: 50, z: 200,
+  size: 40
+};
+
+// Botón
+const button = {
+  x: 0, y: 40, z: 300,
+  size: 80, rot: 0
+};
+
+// Plataformas obby
+let platforms = [];
+
+// Proyección 3D
+function project(x,y,z){
+  const scale = 700 / (z - camera.z);
+  return {
+    x: x * scale + canvas.width / 2,
+    y: y * scale + canvas.height / 2
+  };
+}
+
+// Dibujar cubo
+function drawCube(x,y,z,size,color){
+  const s = size/2;
+  const pts = [
+    [-s,-s,-s],[s,-s,-s],[s,s,-s],[-s,s,-s],
+    [-s,-s,s],[s,-s,s],[s,s,s],[-s,s,s]
+  ].map(p=>project(x+p[0],y+p[1],z+p[2]));
+
+  const faces=[[0,1,2,3],[4,5,6,7],[0,1,5,4],[2,3,7,6]];
+  ctx.fillStyle = color;
+  ctx.strokeStyle = "black";
+
+  faces.forEach(f=>{
+    ctx.beginPath();
+    ctx.moveTo(pts[f[0]].x,pts[f[0]].y);
+    f.forEach(i=>ctx.lineTo(pts[i].x,pts[i].y));
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+// Suelo
+function drawGround(){
+  drawCube(0,120,250,600,"#4caf50");
+}
+
+// Skin del jugador (bloques)
+function drawPlayer(){
+  drawCube(player.x, player.y-30, player.z, player.size, "#111"); // cabeza
+  drawCube(player.x, player.y+10, player.z, player.size+10, "#b00000"); // cuerpo
+  drawCube(player.x-30, player.y+10, player.z, 20, "#b00000"); // brazo
+  drawCube(player.x+30, player.y+10, player.z, 20, "#b00000"); // brazo
+}
+
+// Botón 3D
+function drawButton(){
+  button.rot += 0.01;
+  drawCube(button.x, button.y, button.z, button.size, "red");
+}
+
+// Eventos
+function triggerEvent(){
+  const events = ["meteor","obby"];
+  event = events[Math.floor(Math.random()*events.length)];
+
+  if(event==="obby"){
+    platforms = [];
+    for(let i=0;i<5;i++){
+      platforms.push({
+        x: -200 + i*100,
+        y: 40 - i*20,
+        z: 200 + i*60
+      });
+    }
+  }
+
+  setTimeout(()=>{ event=null; platforms=[]; },4000);
+}
+
+// Dibujar obby
+function drawObby(){
+  platforms.forEach(p=>{
+    drawCube(p.x,p.y,p.z,60,"#888");
+  });
+}
+
+// Click = caos
+canvas.addEventListener("click",()=>{
+  triggerEvent();
+});
+
+// Loop
+function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawGround();
+  drawButton();
+  drawPlayer();
+
+  if(event==="obby") drawObby();
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+// Tiempo
+setInterval(()=>{
+  time++;
+  document.getElementById("time").textContent=time;
+},1000);
+</script>
+
+</body>
+</html>
