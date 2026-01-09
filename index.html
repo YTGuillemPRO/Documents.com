@@ -1,28 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juegos</title>
+</head>
+
 <body>
-  <section id="Pets and Money">
+
+  <section id="Pets-and-Money">
     <a href="juego1/index.html">Pets and Money</a>
   </section>
 
-  <section id="No cliques el Boton">
-    <a href="juego2/index.html">No cliques el Boton</a>
+  <section id="No-cliques-el-Boton">
+    <a href="juego2/index.html">No cliques el Botón</a>
   </section>
 
-  <!-- aquí añadirás más secciones -->
-</body>
-<section id="Steal a Brainrot">
-  <a href="juego3/index.html">Steal a Brainrot</a>
-</section>
-</body>
+  <section id="Steal-a-Brainrot">
+    <a href="juego3/index.html">Steal a Brainrot</a>
+  </section>
 
-<section id="FiFa">
-  <a href="juego4/index.html">FiFa</a>
-</section>
+  <section id="FiFa">
+    <a href="juego4/index.html">FiFa</a>
+  </section>
 
-<section id="TikTok">
-  <a href="juego5/index.html">TikTok</a>
-</section>
+  <section id="TikTok">
+    <a href="juego5/index.html">TikTok</a>
+  </section>
 
-<section id="Clash Royale">
-  <a href="juego6/index.html">Clash Royale</a>
-</section>
+  <section id="Clash-Royale">
+    <a href="juego6/index.html">Clash Royale</a>
+  </section>
+
+  <!-- POP UP -->
+  <script>
+    window.onload = function () {
+      const entendido = confirm(
+        "⚠️ AVISO ⚠️\n\n" +
+        "Esta página es para jugar en casa." +
+        "Si estás en una escuela, entras asumiendo tu responsabilidad." +
+      );
+
+      if (!entendido) {
+        // Lo saca de la web
+        window.location.href = "https://www.google.com";
+      }
+      // Si pulsa aceptar → todo normal (no hace nada)
+    };
+  </script>
+
 </body>
+</html>
