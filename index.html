@@ -1,20 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Mi juego</title>
-    <link rel="stylesheet" href="style.css"> <!-- ruta correcta dentro de juego1 -->
+  <meta charset="UTF-8">
+  <title>Mis Juegos</title>
+  <style>
+    /* Solo para que se vea el scroll, sin tocar los estilos de los juegos */
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+    section {
+      min-height: 100vh;  /* cada sección ocupa toda la pantalla */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #ccc;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <section id="inicio">
-        <h1>Juego 1</h1>
-    </section>
+  <section id="juego1">
+    <a href="juego1/index.html">Jugar Juego 1</a>
+  </section>
 
-    <section id="nivel2">
-        <h1>Siguiente sección</h1>
-    </section>
+  <section id="juego2">
+    <a href="juego2/index.html">Jugar Juego 2</a>
+  </section>
 
-    <script src="main.js"></script>
+  <section id="juego3">
+    <a href="juego3/index.html">Jugar Juego 3</a>
+  </section>
+
 </body>
 </html>
