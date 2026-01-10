@@ -1,131 +1,226 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Snow Rider 3D - HTML</title>
-  <style>
-    body {
-      margin: 0;
-      background: #87ceeb;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-    canvas {
-      display: block;
-      margin: auto;
-      background: linear-gradient(#ffffff, #e0f7ff);
-    }
-    #score {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainrot Clicker Replica</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            font-family: 'Arial Black', sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Estilo del "ScreenGui" */
+        #ScreenGui {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Deja que el fondo sea interactivo si fuera necesario */
+        }
+
+        /* Estilo del "Frame" */
+        #MainFrame {
+            width: 350px;
+            padding: 20px;
+            background: linear-gradient(145deg, #2c2c2c, #1e1e1e);
+            border: 4px solid #00ff00;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            pointer-events: auto; /* Activa la interacción dentro del frame */
+        }
+
+        .display-score {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #00ff00;
+            text-shadow: 2px 2px #000;
+        }
+
+        .stats {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        /* Estilo de los Botones */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        #btnClick {
+            background-color: #00ff00;
+            color: #000;
+            height: 80px;
+        }
+
+        #btnAuto {
+            background-color: #0077ff;
+            color: white;
+        }
+
+        #btnMulti {
+            background-color: #ff00ff;
+            color: white;
+        }
+
+        .btn:disabled {
+            filter: grayscale(1) brightness(0.5);
+            cursor: not-allowed;
+        }
+
+        .cost-text {
+            font-size: 0.8rem;
+            display: block;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
 
-<div id="score">Puntos: 0</div>
-<canvas id="game" width="400" height="600"></canvas>
+    <script>
+        // --- GAME STATE (Game Handler) ---
+        const gameState = {
+            score: 0,
+            multiplier: 1,
+            autoClickers: 0,
+            costs: {
+                auto: 15,
+                multi: 50
+            }
+        };
 
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+        // --- UI GENERATOR (ScreenGui & Frame) ---
+        function initUI() {
+            const screenGui = document.createElement('div');
+            screenGui.id = 'ScreenGui';
 
-let player = {
-  x: 200,
-  y: 500,
-  width: 30,
-  height: 40,
-  speed: 6
-};
+            const frame = document.createElement('div');
+            frame.id = 'MainFrame';
 
-let obstacles = [];
-let score = 0;
-let gameOver = false;
+            // Marcador
+            const scoreDisplay = document.createElement('div');
+            scoreDisplay.id = 'scoreDisplay';
+            scoreDisplay.className = 'display-score';
+            scoreDisplay.innerText = '0';
 
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") player.x -= player.speed;
-  if (e.key === "ArrowRight") player.x += player.speed;
-});
+            // Estadísticas
+            const stats = document.createElement('div');
+            stats.className = 'stats';
+            stats.id = 'statsDisplay';
+            stats.innerText = 'Multiplicador: x1 | Autos: 0';
 
-function createObstacle() {
-  obstacles.push({
-    x: Math.random() * (canvas.width - 30),
-    y: -40,
-    width: 30,
-    height: 40,
-    speed: 4
-  });
-}
+            // Botón Click
+            const btnClick = document.createElement('button');
+            btnClick.id = 'btnClick';
+            btnClick.className = 'btn';
+            btnClick.innerText = '¡CLICK!';
 
-function drawPlayer() {
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-}
+            // Botón Buy Auto
+            const btnAuto = document.createElement('button');
+            btnAuto.id = 'btnAuto';
+            btnAuto.className = 'btn';
+            btnAuto.innerHTML = `Buy Auto <span class="cost-text" id="costAuto">Cost: 15</span>`;
 
-function drawObstacles() {
-  ctx.fillStyle = "green";
-  obstacles.forEach(o => {
-    ctx.fillRect(o.x, o.y, o.width, o.height);
-  });
-}
+            // Botón Buy Multi
+            const btnMulti = document.createElement('button');
+            btnMulti.id = 'btnMulti';
+            btnMulti.className = 'btn';
+            btnMulti.innerHTML = `Buy Multi <span class="cost-text" id="costMulti">Cost: 50</span>`;
 
-function updateObstacles() {
-  obstacles.forEach(o => {
-    o.y += o.speed;
+            // Construir jerarquía
+            frame.appendChild(scoreDisplay);
+            frame.appendChild(stats);
+            frame.appendChild(btnClick);
+            frame.appendChild(btnAuto);
+            frame.appendChild(btnMulti);
+            screenGui.appendChild(frame);
+            document.body.appendChild(screenGui);
 
-    // Colisión
-    if (
-      player.x < o.x + o.width &&
-      player.x + player.width > o.x &&
-      player.y < o.y + o.height &&
-      player.y + player.height > o.y
-    ) {
-      gameOver = true;
-    }
+            setupEventListeners(btnClick, btnAuto, btnMulti);
+        }
 
-    // Puntos
-    if (o.y > canvas.height) {
-      score++;
-      document.getElementById("score").innerText = "Puntos: " + score;
-    }
-  });
+        // --- LOGIC HANDLER ---
+        function setupEventListeners(click, auto, multi) {
+            
+            // Acción Click
+            click.onclick = () => {
+                gameState.score += (1 * gameState.multiplier);
+                updateDisplay();
+            };
 
-  obstacles = obstacles.filter(o => o.y < canvas.height + 50);
-}
+            // Comprar AutoClicker
+            auto.onclick = () => {
+                if (gameState.score >= gameState.costs.auto) {
+                    gameState.score -= gameState.costs.auto;
+                    gameState.autoClickers++;
+                    gameState.costs.auto = Math.floor(gameState.costs.auto * 1.5);
+                    updateDisplay();
+                }
+            };
 
-function drawRoad() {
-  ctx.strokeStyle = "#ccc";
-  ctx.setLineDash([10, 15]);
-  ctx.beginPath();
-  ctx.moveTo(200, 0);
-  ctx.lineTo(200, 600);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
+            // Comprar Multiplicador
+            multi.onclick = () => {
+                if (gameState.score >= gameState.costs.multi) {
+                    gameState.score -= gameState.costs.multi;
+                    gameState.multiplier++;
+                    gameState.costs.multi = Math.floor(gameState.costs.multi * 2.5);
+                    updateDisplay();
+                }
+            };
 
-function loop() {
-  if (gameOver) {
-    ctx.fillStyle = "black";
-    ctx.font = "30px Arial";
-    ctx.fillText("GAME OVER", 100, 300);
-    return;
-  }
+            // Bucle del AutoClicker (cada segundo)
+            setInterval(() => {
+                if (gameState.autoClickers > 0) {
+                    gameState.score += (gameState.autoClickers * gameState.multiplier);
+                    updateDisplay();
+                }
+            }, 1000);
+        }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawRoad();
-  drawPlayer();
-  drawObstacles();
-  updateObstacles();
+        function updateDisplay() {
+            document.getElementById('scoreDisplay').innerText = Math.floor(gameState.score).toLocaleString();
+            document.getElementById('statsDisplay').innerText = `Multiplicador: x${gameState.multiplier} | Autos: ${gameState.autoClickers}`;
+            
+            const btnAuto = document.getElementById('btnAuto');
+            const btnMulti = document.getElementById('btnMulti');
+            
+            document.getElementById('costAuto').innerText = `Cost: ${gameState.costs.auto}`;
+            document.getElementById('costMulti').innerText = `Cost: ${gameState.costs.multi}`;
 
-  requestAnimationFrame(loop);
-}
+            // Deshabilitar si no alcanza el dinero
+            btnAuto.disabled = gameState.score < gameState.costs.auto;
+            btnMulti.disabled = gameState.score < gameState.costs.multi;
+        }
 
-setInterval(createObstacle, 1000);
-loop();
-</script>
-
+        // Ejecutar al cargar
+        window.onload = () => {
+            initUI();
+            updateDisplay();
+        };
+    </script>
 </body>
 </html>
