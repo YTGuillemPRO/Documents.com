@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Nova League 3D - Pro Edition ⚽</title>
+<title>Nova League 3D - Humanoid Edition ⚽</title>
 <style>
 body{margin:0;overflow:hidden;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:#000;}
 #menu, #overlay{
@@ -42,10 +42,10 @@ h1{font-size:4em;margin:0;text-shadow:0 0 20px #00d4ff;}
   <h1>⚽ NOVA LEAGUE</h1>
   <p>2 PARTES DE 3 MINUTOS</p>
   <h2>SELECCIONA DIFICULTAD</h2>
-  <button class="btn" onclick="startGame(0.08)">FÁCIL</button>
-  <button class="btn" onclick="startGame(0.14)">NORMAL</button>
-  <button class="btn" onclick="startGame(0.20)">DIFÍCIL</button>
-  <p>WASD: Mover | E: Disparar | Q: Pase Largo | F: Robar</p>
+  <button class="btn" onclick="startGame(0.10)">FÁCIL</button>
+  <button class="btn" onclick="startGame(0.16)">NORMAL</button>
+  <button class="btn" onclick="startGame(0.22)">DIFÍCIL</button>
+  <p>WASD: Mover | E: Chutar Fuerte | Q: Pase | F: Robar</p>
 </div>
 
 <div id="overlay" style="display:none;">
@@ -128,10 +128,14 @@ function initGame(){
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.getElementById('game').appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff,0.8));
-  const light = new THREE.DirectionalLight(0xffffff,1);
-  light.position.set(10,50,10);
+  // ILUMINACIÓN MEJORADA PARA NOTAR VOLUMEN
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  const light = new THREE.DirectionalLight(0xffffff,0.8);
+  light.position.set(20,50,30);
   scene.add(light);
+  const fillLight = new THREE.DirectionalLight(0xffffff,0.4);
+  fillLight.position.set(-20,30,-30);
+  scene.add(fillLight);
 
   // CAMPO
   const W = 140, H = 80;
@@ -139,51 +143,96 @@ function initGame(){
   field.rotation.x = -Math.PI/2;
   scene.add(field);
 
+  // LÍNEAS DEL CAMPO (Simple)
+  const lineMat = new THREE.LineBasicMaterial({ color:0xffffff, opacity: 0.5, transparent:true });
+  const fieldShape = new THREE.Shape();
+  fieldShape.moveTo(-W/2, -H/2); fieldShape.lineTo(W/2, -H/2); fieldShape.lineTo(W/2, H/2); fieldShape.lineTo(-W/2, H/2); fieldShape.lineTo(-W/2, -H/2);
+  const fieldPoints = fieldShape.getPoints();
+  const fieldGeo = new THREE.BufferGeometry().setFromPoints(fieldPoints);
+  const fieldLines = new THREE.Line(fieldGeo, lineMat);
+  fieldLines.rotation.x = -Math.PI/2; fieldLines.position.y = 0.05;
+  scene.add(fieldLines);
+  
+  const centerLineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0.05,-H/2), new THREE.Vector3(0,0.05,H/2)]);
+  scene.add(new THREE.Line(centerLineGeo, lineMat));
+
   // PORTERÍAS
   function createGoal(x, color) {
     const g = new THREE.Group();
     const mat = new THREE.MeshLambertMaterial({color: 0xffffff});
+    const netMat = new THREE.MeshBasicMaterial({color: color, opacity:0.2, transparent:true, side:THREE.DoubleSide});
     const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 0.5), mat);
     const p2 = p1.clone();
     const top = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 16), mat);
-    p1.position.set(x, 3, -8); p2.position.set(x, 3, 8); top.position.set(x, 6, 0);
-    g.add(p1, p2, top); scene.add(g);
+    const net = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 16), netMat); net.position.set(x>0?2:-2, 3, 0);
+    p1.position.set(0, 3, -8); p2.position.set(0, 3, 8); top.position.set(0, 6, 0);
+    g.add(p1, p2, top, net); g.position.x = x; scene.add(g);
   }
   createGoal(-W/2, 0xff0000); createGoal(W/2, 0x0000ff);
 
-  // JUGADORES CON PELO COMPLETO
+  // NUEVO MODELO DE JUGADOR HUMANOIDE
   function createPlayer(color, x, z) {
     const g = new THREE.Group();
-    // Cuerpo
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.6,1.8,8), new THREE.MeshLambertMaterial({color}));
-    body.position.y = 1.6;
-    // Cabeza
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.45,16,16), new THREE.MeshLambertMaterial({color:0xffdbac}));
-    head.position.y = 2.7;
-    // PELO (Ahora cubre toda la cabeza)
-    const hairGeo = new THREE.SphereGeometry(0.48, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.6); 
-    const hair = new THREE.Mesh(hairGeo, new THREE.MeshLambertMaterial({color:0x221100}));
-    hair.position.y = 2.8;
-    hair.rotation.x = Math.PI; // Invertir para que cubra arriba y laterales
-    
-    g.add(body, head, hair);
+    const kitMat = new THREE.MeshLambertMaterial({color});
+    const skinMat = new THREE.MeshLambertMaterial({color:0xffdbac});
+    const hairMat = new THREE.MeshLambertMaterial({color:0x331a00}); // Pelo castaño oscuro
+
+    // 1. Piernas (Separadas)
+    const legGeo = new THREE.CylinderGeometry(0.22, 0.18, 1.2, 8);
+    const leftLeg = new THREE.Mesh(legGeo, kitMat); leftLeg.position.set(-0.25, 0.6, 0);
+    const rightLeg = new THREE.Mesh(legGeo, kitMat); rightLeg.position.set(0.25, 0.6, 0);
+    g.add(leftLeg, rightLeg);
+
+    // 2. Torso (Más ancho que alto)
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.5), kitMat);
+    torso.position.y = 1.75;
+    g.add(torso);
+
+    // 3. Brazos
+    const armGeo = new THREE.CylinderGeometry(0.18, 0.15, 1.0, 8);
+    const leftArm = new THREE.Mesh(armGeo, kitMat); leftArm.position.set(-0.65, 1.8, 0); leftArm.rotation.z = 0.2;
+    const rightArm = new THREE.Mesh(armGeo, kitMat); rightArm.position.set(0.65, 1.8, 0); rightArm.rotation.z = -0.2;
+    g.add(leftArm, rightArm);
+
+    // 4. Cuello y Cabeza
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 8), skinMat); neck.position.y = 2.35;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 16), skinMat); head.position.y = 2.75;
+    g.add(neck, head);
+
+    // 5. PELO COMPLETO (Sin calvicie)
+    // Volumen principal (atrás y arriba)
+    const hairBase = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 16), hairMat);
+    hairBase.scale.set(1.05, 0.9, 1.1); 
+    hairBase.position.set(0, 2.85, 0.05);
+    // Flequillo (para tapar la frente)
+    const hairFront = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.3), hairMat);
+    hairFront.position.set(0, 2.95, -0.3);
+
+    g.add(hairBase, hairFront);
+
     g.position.set(x, 0, z);
+    // Sombra simple
+    const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.8,16), new THREE.MeshBasicMaterial({color:0x000000, opacity:0.3, transparent:true}));
+    shadow.rotation.x = -Math.PI/2; shadow.position.y=0.02;
+    g.add(shadow);
+
     scene.add(g);
     g.userData = { color, homeX:x, homeZ:z, hasBall:false, speed: difficultyLevel };
     return g;
   }
 
   const redTeam = [], blueTeam = [];
-  const positions = [[-60,0],[-45,15],[-45,-15],[-30,25],[-30,-25],[-15,10],[-15,-10],[5,20],[5,-20],[20,0],[0,0]];
+  // Formación 1-3-2 (Portero, 3 defensas, 2 delanteros)
+  const positions = [[-65,0], [-50,15],[-50,0],[-50,-15], [-25,10],[-25,-10]];
   
-  positions.forEach(pos => redTeam.push(createPlayer(0xff4444, pos[0], pos[1])));
-  positions.forEach(pos => blueTeam.push(createPlayer(0x4444ff, -pos[0], pos[1])));
+  positions.forEach(pos => redTeam.push(createPlayer(0xff2222, pos[0], pos[1])));
+  positions.forEach(pos => blueTeam.push(createPlayer(0x2222ff, -pos[0], pos[1])));
 
-  const player = redTeam[10]; // El usuario controla este
+  const player = redTeam[positions.length-1]; // Controlas al último delantero rojo
 
   // BALÓN
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.6,16,16), new THREE.MeshLambertMaterial({color:0xffffff}));
-  ball.position.y = 0.6;
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16), new THREE.MeshLambertMaterial({color:0xffffff}));
+  ball.position.y = 0.5;
   ball.userData = { vx:0, vz:0, holder:null };
   scene.add(ball);
 
@@ -192,7 +241,7 @@ function initGame(){
   window.onkeyup = e => keys[e.key.toLowerCase()] = false;
 
   function resetPositions(){
-    ball.position.set(0,0.6,0);
+    ball.position.set(0,0.5,0);
     ball.userData.vx = 0; ball.userData.vz = 0; ball.userData.holder = null;
     redTeam.forEach(p => { p.position.set(p.userData.homeX, 0, p.userData.homeZ); p.userData.hasBall = false; });
     blueTeam.forEach(p => { p.position.set(p.userData.homeX, 0, p.userData.homeZ); p.userData.hasBall = false; });
@@ -207,55 +256,71 @@ function initGame(){
     setTimeout(() => { goalMsg.style.display = 'none'; resetPositions(); gameActive = true; }, 2000);
   }
 
-  function handleAI(p, team, teammates, rivals, targetGoalX){
+  // IA MEJORADA: Pases y Tiros
+  function handleAI(p, team, teammates, targetGoalX){
     if(!gameActive) return;
 
     if(p.userData.hasBall){
         const distToGoal = Math.abs(targetGoalX - p.position.x);
         
-        // IA DECIDE: ¿CHUTAR O PASAR?
-        if(distToGoal < 25){ // Cerca de portería -> CHUTA
-            const dx = targetGoalX - p.position.x;
-            const dz = 0 - p.position.z;
-            const angle = Math.atan2(dx, dz);
-            ball.userData.vx = Math.sin(angle) * 0.8;
-            ball.userData.vz = Math.cos(angle) * 0.8;
+        // DECISIÓN 1: CHUTAR SI ESTÁ CERCA
+        if(distToGoal < 30){
+            const angle = Math.atan2(targetGoalX - p.position.x, 0 - p.position.z);
+            ball.userData.vx = Math.sin(angle) * 0.9; // Tiro fuerte
+            ball.userData.vz = Math.cos(angle) * 0.9;
             ball.userData.holder = null;
             p.userData.hasBall = false;
-        } else {
-            // Buscar pase a compañero adelantado
-            let bestPassTarget = null;
+        } 
+        // DECISIÓN 2: PASAR O AVANZAR
+        else {
+            // Buscar compañero más adelantado
+            let bestMate = null;
+            let maxAdvancement = team === 'red' ? p.position.x : -p.position.x;
+
             teammates.forEach(mate => {
-                if(mate !== p && ((team === 'red' && mate.position.x > p.position.x) || (team === 'blue' && mate.position.x < p.position.x))){
-                    bestPassTarget = mate;
+                if(mate !== p){
+                    const advancement = team === 'red' ? mate.position.x : -mate.position.x;
+                    if(advancement > maxAdvancement + 5){ // Debe estar significativamente más adelante
+                         bestMate = mate;
+                         maxAdvancement = advancement;
+                    }
                 }
             });
 
-            if(bestPassTarget && Math.random() < 0.02){ // Probabilidad de pase
-                const dx = bestPassTarget.position.x - p.position.x;
-                const dz = bestPassTarget.position.z - p.position.z;
+            // Probabilidad de pasar si hay buen compañero, si no, avanza
+            if(bestMate && Math.random() < 0.05){ // 5% prob de pase por frame
+                const dx = bestMate.position.x - p.position.x;
+                const dz = bestMate.position.z - p.position.z;
                 const dist = Math.sqrt(dx*dx+dz*dz);
-                ball.userData.vx = (dx/dist) * 0.6;
-                ball.userData.vz = (dz/dist) * 0.6;
+                ball.userData.vx = (dx/dist) * 0.7; // Pase medio
+                ball.userData.vz = (dz/dist) * 0.7;
                 ball.userData.holder = null;
                 p.userData.hasBall = false;
             } else {
-                // Avanzar con balón
-                p.position.x += (targetGoalX > p.position.x ? 1 : -1) * p.userData.speed * 1.2;
-                p.rotation.y = targetGoalX > p.position.x ? Math.PI/2 : -Math.PI/2;
+                // Avanzar hacia portería
+                const dirX = targetGoalX > p.position.x ? 1 : -1;
+                p.position.x += dirX * p.userData.speed * 1.1;
+                // Moverse un poco lateralmente para evitar ser predecible
+                p.position.z += (Math.random()-0.5) * p.userData.speed; 
+                p.rotation.y = Math.atan2(dirX, 0);
             }
         }
     } else {
-        // Si no tiene el balón, ir hacia él si está cerca o volver a posición
+        // SIN BALÓN: Ir a por él o volver a posición
         const distBall = p.position.distanceTo(ball.position);
-        if(distBall < 30 && !ball.userData.holder){
+        // Si el balón está cerca y nadie lo tiene, o lo tiene el rival
+        const ballOwner = ball.userData.holder;
+        const rivalHasIt = ballOwner && ballOwner.userData.color !== p.userData.color;
+
+        if((distBall < 40 && !ballOwner) || (distBall < 25 && rivalHasIt)){
             const angle = Math.atan2(ball.position.x - p.position.x, ball.position.z - p.position.z);
             p.position.x += Math.sin(angle) * p.userData.speed;
             p.position.z += Math.cos(angle) * p.userData.speed;
             p.rotation.y = angle;
         } else {
-            p.position.x += (p.userData.homeX - p.position.x) * 0.01;
-            p.position.z += (p.userData.homeZ - p.position.z) * 0.01;
+            // Volver a posición base lentamente
+            p.position.x += (p.userData.homeX - p.position.x) * 0.02;
+            p.position.z += (p.userData.homeZ - p.position.z) * 0.02;
         }
     }
   }
@@ -265,23 +330,24 @@ function initGame(){
     if(!gameActive) { renderer.render(scene, camera); return; }
 
     // Control Jugador
-    if(keys['w']) { player.position.x += Math.sin(player.rotation.y)*0.3; player.position.z += Math.cos(player.rotation.y)*0.3; }
-    if(keys['s']) { player.position.x -= Math.sin(player.rotation.y)*0.2; player.position.z -= Math.cos(player.rotation.y)*0.2; }
-    if(keys['a']) player.rotation.y += 0.05;
-    if(keys['d']) player.rotation.y -= 0.05;
+    let moveSpeed = player.userData.speed * 1.5;
+    if(keys['w']) { player.position.x += Math.sin(player.rotation.y)*moveSpeed; player.position.z += Math.cos(player.rotation.y)*moveSpeed; }
+    if(keys['s']) { player.position.x -= Math.sin(player.rotation.y)*moveSpeed*0.7; player.position.z -= Math.cos(player.rotation.y)*moveSpeed*0.7; }
+    if(keys['a']) player.rotation.y += 0.07;
+    if(keys['d']) player.rotation.y -= 0.07;
 
-    // Acción de disparo/pase
+    // Disparo (E) y Pase (Q)
     if((keys['e'] || keys['q']) && player.userData.hasBall){
-        const force = keys['e'] ? 0.9 : 0.5;
+        const force = keys['e'] ? 1.0 : 0.6; // E=Fuerte, Q=Pase
         ball.userData.vx = Math.sin(player.rotation.y) * force;
         ball.userData.vz = Math.cos(player.rotation.y) * force;
         ball.userData.holder = null;
         player.userData.hasBall = false;
     }
 
-    // Robar balón (F)
+    // Robar (F)
     if(keys['f'] && ball.userData.holder && ball.userData.holder !== player){
-        if(player.position.distanceTo(ball.position) < 3){
+        if(player.position.distanceTo(ball.position) < 4){
             ball.userData.holder.userData.hasBall = false;
             ball.userData.holder = player;
             player.userData.hasBall = true;
@@ -289,22 +355,24 @@ function initGame(){
     }
 
     // Actualizar IA
-    redTeam.forEach(p => { if(p !== player) handleAI(p, 'red', redTeam, blueTeam, W/2); });
-    blueTeam.forEach(p => handleAI(p, 'blue', blueTeam, redTeam, -W/2));
+    redTeam.forEach(p => { if(p !== player) handleAI(p, 'red', redTeam, W/2); });
+    blueTeam.forEach(p => handleAI(p, 'blue', blueTeam, -W/2));
 
-    // Lógica del Balón
+    // Física del Balón
     if(ball.userData.holder){
         const h = ball.userData.holder;
-        ball.position.set(h.position.x + Math.sin(h.rotation.y)*1.2, 0.6, h.position.z + Math.cos(h.rotation.y)*1.2);
+        // Colocar balón frente a los pies del humanoide
+        ball.position.set(h.position.x + Math.sin(h.rotation.y)*0.8, 0.5, h.position.z + Math.cos(h.rotation.y)*0.8);
     } else {
         ball.position.x += ball.userData.vx;
         ball.position.z += ball.userData.vz;
-        ball.userData.vx *= 0.98;
-        ball.userData.vz *= 0.98;
+        ball.userData.vx *= 0.985; // Fricción
+        ball.userData.vz *= 0.985;
 
-        // Recogida de balón
+        // Recogida automática si está muy cerca
         [...redTeam, ...blueTeam].forEach(p => {
-            if(p.position.distanceTo(ball.position) < 1.5 && !ball.userData.holder){
+            // Distancia ajustada para el nuevo cuerpo
+            if(p.position.distanceTo(ball.position) < 1.8 && !ball.userData.holder){
                 ball.userData.holder = p;
                 p.userData.hasBall = true;
                 ball.userData.vx = 0; ball.userData.vz = 0;
@@ -313,13 +381,14 @@ function initGame(){
     }
 
     // Límites y Goles
-    if(ball.position.x > W/2) { if(Math.abs(ball.position.z) < 8) goal('red'); else ball.userData.vx *= -1; }
-    if(ball.position.x < -W/2) { if(Math.abs(ball.position.z) < 8) goal('blue'); else ball.userData.vx *= -1; }
-    if(Math.abs(ball.position.z) > H/2) ball.userData.vz *= -1;
+    if(ball.position.x > W/2) { if(Math.abs(ball.position.z) < 8) goal('red'); else { ball.position.x=W/2; ball.userData.vx *= -0.8; }}
+    if(ball.position.x < -W/2) { if(Math.abs(ball.position.z) < 8) goal('blue'); else { ball.position.x=-W/2; ball.userData.vx *= -0.8; }}
+    if(Math.abs(ball.position.z) > H/2) { ball.position.z = Math.sign(ball.position.z)*H/2; ball.userData.vz *= -0.8; }
 
-    // Cámara dinámica
-    camera.position.lerp(new THREE.Vector3(player.position.x - Math.sin(player.rotation.y)*15, 12, player.position.z - Math.cos(player.rotation.y)*15), 0.1);
-    camera.lookAt(player.position.x, 2, player.position.z);
+    // Cámara
+    const targetCamPos = new THREE.Vector3(player.position.x - Math.sin(player.rotation.y)*20, 15, player.position.z - Math.cos(player.rotation.y)*20);
+    camera.position.lerp(targetCamPos, 0.08);
+    camera.lookAt(player.position.x, 1, player.position.z);
 
     renderer.render(scene, camera);
   }
