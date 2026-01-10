@@ -1,153 +1,197 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
+
   <title>Juegos - Home</title>
+
   <style>
+
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; position: relative; }
+
+    #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; }
+
     #btn-login { background-color: #4caf50; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; }
-    
+
+    #btn-logout { background-color: #f44336; color: white; margin-left: 10px; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+
     .hidden { display: none; }
+
     section { padding: 20px; border-bottom: 1px solid #eee; }
+
     a { text-decoration: none; color: #0366d6; font-size: 1.2rem; }
 
-    /* Estilo de los tres puntos */
-    .menu-dots {
-      cursor: pointer;
-      font-size: 20px;
-      margin-left: 15px;
-      display: inline-block;
-      vertical-align: middle;
-    }
+    a:hover { text-decoration: underline; }
 
-    /* Menú flotante */
-    .dropdown {
-      display: none;
-      position: absolute;
-      right: 20px;
-      top: 50px;
-      background: white;
-      color: black;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      border-radius: 5px;
-      z-index: 100;
-    }
-    .dropdown button {
-      display: block;
-      width: 100%;
-      padding: 10px 20px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      text-align: left;
-    }
-    .dropdown button:hover { background: #f0f0f0; }
-    .show { display: block; }
   </style>
+
 </head>
+
 <body>
 
+
+
   <div id="auth-container">
+
     <div id="user-logged-out">
+
       <button id="btn-login">Inicia sesión con GitHub</button>
-      <p style="font-size: 0.8rem; margin-top: 10px; color: #ccc;">O usa el menú para cambiar a cuenta de correo</p>
+
     </div>
 
     <div id="user-logged-in" class="hidden">
+
       <span id="welcome-msg"></span>
-      <span class="menu-dots" id="dots">⋮</span>
-      <div id="menu-dropdown" class="dropdown">
-        <button id="btn-change-email">🔄 Cambiar de cuenta (Email)</button>
-        <button id="btn-logout" style="color: red;">Cerrar Sesión</button>
-      </div>
+
+      <button id="btn-logout">Cerrar Sesión</button>
+
     </div>
+
   </div>
 
+
+
   <section><a href="juego1/index.html">Pets and Money</a></section>
+
   <section><a href="juego2/index.html">No cliques el Botón</a></section>
+
   <section><a href="juego3/index.html">Steal a Brainrot</a></section>
+
   <section><a href="juego4/index.html">FiFa</a></section>
+
   <section><a href="juego5/index.html">TikTok</a></section>
+
   <section><a href="juego6/index.html">Clash Royale</a></section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-      getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
-      authDomain: "inici-de-sessio.firebaseapp.com",
-      projectId: "inici-de-sessio",
-      storageBucket: "inici-de-sessio.firebasestorage.app",
-      messagingSenderId: "106046428749",
-      appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
-    };
+
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+    import { getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+
+  authDomain: "inici-de-sessio.firebaseapp.com",
+
+  projectId: "inici-de-sessio",
+
+  storageBucket: "inici-de-sessio.firebasestorage.app",
+
+  messagingSenderId: "106046428749",
+
+  appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+
+  measurementId: "G-CQRFD5Q0JT"
+
+};
 
     const app = initializeApp(firebaseConfig);
+
     const auth = getAuth(app);
+
     const provider = new GithubAuthProvider();
 
+
+
+    // Elementos de la interfaz
+
     const loggedOutDiv = document.getElementById('user-logged-out');
+
     const loggedInDiv = document.getElementById('user-logged-in');
+
     const welcomeMsg = document.getElementById('welcome-msg');
-    const dots = document.getElementById('dots');
-    const menu = document.getElementById('menu-dropdown');
 
-    // Toggle del menú de puntos
-    dots.onclick = (e) => {
-      e.stopPropagation();
-      menu.classList.toggle('show');
-    };
 
-    window.onclick = () => menu.classList.remove('show');
 
-    // Iniciar Sesión GitHub
+    // Iniciar Sesión
+
     document.getElementById('btn-login').onclick = () => {
-      signInWithPopup(auth, provider).catch(() => alert("Error en GitHub"));
+
+      signInWithPopup(auth, provider)
+
+        .then((result) => {
+
+          console.log("Usuario entró:", result.user);
+
+        })
+
+        .catch((error) => {
+
+          console.error("Error en login:", error.message);
+
+          alert("No se pudo iniciar sesión con GitHub.");
+
+        });
+
     };
 
-    // Función: Pop-up para cambiar de cuenta con Email/Pass
-    document.getElementById('btn-change-email').onclick = async () => {
-      const email = prompt("Introduce el correo de la nueva cuenta:");
-      if (!email) return;
-      const password = prompt("Introduce la contraseña:");
-      if (!password) return;
 
-      try {
-        await signOut(auth); // Cerramos la actual
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Cambio de cuenta exitoso");
-      } catch (error) {
-        alert("Error: No se pudo cambiar de cuenta. Verifica los datos.");
-      }
-    };
 
     // Cerrar Sesión
+
     document.getElementById('btn-logout').onclick = () => {
-      signOut(auth);
+
+      signOut(auth).then(() => {
+
+        console.log("Sesión cerrada");
+
+      });
+
     };
 
-    // Observador
+
+
+    // Observador de estado (Se ejecuta solo cuando alguien entra o sale)
+
     onAuthStateChanged(auth, (user) => {
+
       if (user) {
+
         loggedOutDiv.classList.add('hidden');
+
         loggedInDiv.classList.remove('hidden');
+
         welcomeMsg.innerText = "Bienvenido, " + (user.displayName || user.email || "Jugador");
+
       } else {
+
         loggedOutDiv.classList.remove('hidden');
+
         loggedInDiv.classList.add('hidden');
+
       }
+
     });
 
+
+
+    // Tu aviso de entrada
+
     window.onload = function () {
+
+      // Usamos un pequeño delay para que no bloquee la carga de Firebase
+
       setTimeout(() => {
-        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa...");
+
+        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa si estas en una escuela entras asumiendo tus propios riesgos");
+
         if (!entendido) window.location.href = "https://www.google.com";
+
       }, 500);
+
     };
+
   </script>
+
 </body>
+
 </html>
