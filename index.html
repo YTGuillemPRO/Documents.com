@@ -4,93 +4,127 @@
   <meta charset="UTF-8">
   <title>Juegos - Home</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; }
-    #btn-login { background-color: #4caf50; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; }
-    #btn-logout { background-color: #f44336; color: white; margin-left: 10px; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f6f8fa; }
+    #auth-container { background: #24292e; color: white; padding: 20px; text-align: center; }
+    
+    /* Estilos del formulario */
+    .auth-box { max-width: 300px; margin: 10px auto; display: flex; flex-direction: column; gap: 10px; }
+    input { padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    
+    .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    #btn-login-github { background-color: #444; color: white; margin-top: 10px; }
+    #btn-login-email { background-color: #4caf50; color: white; }
+    #btn-register { background-color: #0366d6; color: white; }
+    #btn-logout { background-color: #f44336; color: white; }
+    
     .hidden { display: none; }
-    section { padding: 20px; border-bottom: 1px solid #eee; }
-    a { text-decoration: none; color: #0366d6; font-size: 1.2rem; }
-    a:hover { text-decoration: underline; }
+    section { padding: 20px; border-bottom: 1px solid #eee; background: white; }
+    a { text-decoration: none; color: #0366d6; font-size: 1.2rem; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div id="auth-container">
     <div id="user-logged-out">
-      <button id="btn-login">Inicia sesión con GitHub</button>
+      <h3>Iniciar Sesión</h3>
+      <div class="auth-box">
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button id="btn-login-email" class="btn">Entrar con Correo</button>
+        <button id="btn-register" class="btn">Crear Cuenta Nueva</button>
+        <hr style="width:100%">
+        <button id="btn-login-github" class="btn">Inicia sesión con GitHub</button>
+      </div>
     </div>
+
     <div id="user-logged-in" class="hidden">
       <span id="welcome-msg"></span>
-      <button id="btn-logout">Cerrar Sesión</button>
+      <button id="btn-logout" class="btn">Cerrar Sesión</button>
     </div>
   </div>
 
-  <section><a href="juego1/index.html">Pets and Money</a></section>
-  <section><a href="juego2/index.html">No cliques el Botón</a></section>
-  <section><a href="juego3/index.html">Steal a Brainrot</a></section>
-  <section><a href="juego4/index.html">FiFa</a></section>
-  <section><a href="juego5/index.html">TikTok</a></section>
-  <section><a href="juego6/index.html">Clash Royale</a></section>
+  <div id="game-list">
+    <section><a href="juego1/index.html">Pets and Money</a></section>
+    <section><a href="juego2/index.html">No cliques el Botón</a></section>
+    <section><a href="juego3/index.html">Steal a Brainrot</a></section>
+    <section><a href="juego4/index.html">FiFa</a></section>
+    <section><a href="juego5/index.html">TikTok</a></section>
+    <section><a href="juego6/index.html">Clash Royale</a></section>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GithubAuthProvider, 
+      onAuthStateChanged, 
+      signOut,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
-  authDomain: "inici-de-sessio.firebaseapp.com",
-  projectId: "inici-de-sessio",
-  storageBucket: "inici-de-sessio.firebasestorage.app",
-  messagingSenderId: "106046428749",
-  appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
-  measurementId: "G-CQRFD5Q0JT"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+      authDomain: "inici-de-sessio.firebaseapp.com",
+      projectId: "inici-de-sessio",
+      storageBucket: "inici-de-sessio.firebasestorage.app",
+      messagingSenderId: "106046428749",
+      appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+      measurementId: "G-CQRFD5Q0JT"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GithubAuthProvider();
 
-    // Elementos de la interfaz
+    // Referencias UI
     const loggedOutDiv = document.getElementById('user-logged-out');
     const loggedInDiv = document.getElementById('user-logged-in');
     const welcomeMsg = document.getElementById('welcome-msg');
+    const emailInput = document.getElementById('email');
+    const passInput = document.getElementById('password');
 
-    // Iniciar Sesión
-    document.getElementById('btn-login').onclick = () => {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          console.log("Usuario entró:", result.user);
-        })
-        .catch((error) => {
-          console.error("Error en login:", error.message);
-          alert("No se pudo iniciar sesión con GitHub.");
-        });
+    // --- LÓGICA DE AUTENTICACIÓN ---
+
+    // 1. Login con Correo/Password
+    document.getElementById('btn-login-email').onclick = () => {
+      signInWithEmailAndPassword(auth, emailInput.value, passInput.value)
+        .catch(err => alert("Error: " + err.message));
     };
 
-    // Cerrar Sesión
+    // 2. Registro de cuenta nueva
+    document.getElementById('btn-register').onclick = () => {
+      createUserWithEmailAndPassword(auth, emailInput.value, passInput.value)
+        .then(() => alert("¡Cuenta creada correctamente!"))
+        .catch(err => alert("Error al registrar: " + err.message));
+    };
+
+    // 3. Login con GitHub
+    document.getElementById('btn-login-github').onclick = () => {
+      signInWithPopup(auth, provider).catch(err => alert("Error GitHub: " + err.message));
+    };
+
+    // 4. Cerrar Sesión
     document.getElementById('btn-logout').onclick = () => {
-      signOut(auth).then(() => {
-        console.log("Sesión cerrada");
-      });
+      signOut(auth);
     };
 
-    // Observador de estado (Se ejecuta solo cuando alguien entra o sale)
+    // Observador de estado
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loggedOutDiv.classList.add('hidden');
         loggedInDiv.classList.remove('hidden');
-        welcomeMsg.innerText = "Bienvenido, " + (user.displayName || user.email || "Jugador");
+        welcomeMsg.innerText = "Bienvenido, " + (user.displayName || user.email);
       } else {
         loggedOutDiv.classList.remove('hidden');
         loggedInDiv.classList.add('hidden');
       }
     });
 
-    // Tu aviso de entrada
     window.onload = function () {
-      // Usamos un pequeño delay para que no bloquee la carga de Firebase
       setTimeout(() => {
-        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa si estas en una escuela entras asumiendo tus propios riesgos");
+        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa...");
         if (!entendido) window.location.href = "https://www.google.com";
       }, 500);
     };
