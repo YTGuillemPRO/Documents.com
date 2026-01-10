@@ -2,102 +2,98 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Juegos</title>
+  <title>Juegos - Home</title>
   <style>
-    /* Estilo rápido para el botón de GitHub */
-    #auth-container { background: #f0f0f0; padding: 15px; text-align: center; border-bottom: 2px solid #ccc; }
-    #btn-login { background-color: #24292e; color: white; padding: 10px; border-radius: 5px; cursor: pointer; border: none; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; }
+    #btn-login { background-color: #4caf50; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; }
+    #btn-logout { background-color: #f44336; color: white; margin-left: 10px; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
     .hidden { display: none; }
+    section { padding: 20px; border-bottom: 1px solid #eee; }
+    a { text-decoration: none; color: #0366d6; font-size: 1.2rem; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
-
 <body>
 
   <div id="auth-container">
     <div id="user-logged-out">
-      <button id="btn-login">Inicia sesión con GitHub para guardar tu progreso</button>
+      <button id="btn-login">Inicia sesión con GitHub</button>
     </div>
     <div id="user-logged-in" class="hidden">
-      <p id="welcome-msg"></p>
+      <span id="welcome-msg"></span>
       <button id="btn-logout">Cerrar Sesión</button>
     </div>
   </div>
 
-  <section id="Pets-and-Money">
-    <a href="juego1/index.html">Pets and Money</a>
-  </section>
-
-  <section id="No-cliques-el-Boton">
-    <a href="juego2/index.html">No cliques el Botón</a>
-  </section>
-
-  <section id="Steal-a-Brainrot">
-    <a href="juego3/index.html">Steal a Brainrot</a>
-  </section>
-
-  <section id="FiFa">
-    <a href="juego4/index.html">FiFa</a>
-  </section>
-
-  <section id="TikTok">
-    <a href="juego5/index.html">TikTok</a>
-  </section>
-
-  <section id="Clash-Royale">
-    <a href="juego6/index.html">Clash Royale</a>
-  </section>
+  <section><a href="juego1/index.html">Pets and Money</a></section>
+  <section><a href="juego2/index.html">No cliques el Botón</a></section>
+  <section><a href="juego3/index.html">Steal a Brainrot</a></section>
+  <section><a href="juego4/index.html">FiFa</a></section>
+  <section><a href="juego5/index.html">TikTok</a></section>
+  <section><a href="juego6/index.html">Clash Royale</a></section>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAsx2kPeIGGdgWB7NNTNsDdMKhD946R71A",
-  authDomain: "inicio-sessio.firebaseapp.com",
-  projectId: "inicio-sessio",
-  storageBucket: "inicio-sessio.firebasestorage.app",
-  messagingSenderId: "317240360522",
-  appId: "1:317240360522:web:7308be4afe4b5d81d6b0b3",
-  measurementId: "G-3YNVH5N03F"
+  apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+  authDomain: "inici-de-sessio.firebaseapp.com",
+  projectId: "inici-de-sessio",
+  storageBucket: "inici-de-sessio.firebasestorage.app",
+  messagingSenderId: "106046428749",
+  appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+  measurementId: "G-CQRFD5Q0JT"
 };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GithubAuthProvider();
 
-    // Referencias UI
+    // Elementos de la interfaz
     const loggedOutDiv = document.getElementById('user-logged-out');
     const loggedInDiv = document.getElementById('user-logged-in');
     const welcomeMsg = document.getElementById('welcome-msg');
 
-    // Botón Login
+    // Iniciar Sesión
     document.getElementById('btn-login').onclick = () => {
-      signInWithPopup(auth, provider).catch(err => console.error(err));
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          console.log("Usuario entró:", result.user);
+        })
+        .catch((error) => {
+          console.error("Error en login:", error.message);
+          alert("No se pudo iniciar sesión con GitHub.");
+        });
     };
 
-    // Botón Logout
+    // Cerrar Sesión
     document.getElementById('btn-logout').onclick = () => {
-      signOut(auth);
+      signOut(auth).then(() => {
+        console.log("Sesión cerrada");
+      });
     };
 
-    // Detectar Usuario
+    // Observador de estado (Se ejecuta solo cuando alguien entra o sale)
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loggedOutDiv.classList.add('hidden');
         loggedInDiv.classList.remove('hidden');
-        welcomeMsg.innerText = "Hola, " + user.displayName;
+        welcomeMsg.innerText = "Bienvenido, " + (user.displayName || user.email || "Jugador");
       } else {
         loggedOutDiv.classList.remove('hidden');
         loggedInDiv.classList.add('hidden');
       }
     });
 
-    // TU AVISO ORIGINAL
+    // Tu aviso de entrada
     window.onload = function () {
-      const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa si estas en una escuela  entras assumiendo tus propios riesgos");
-      if (!entendido) window.location.href = "https://www.google.com";
+      // Usamos un pequeño delay para que no bloquee la carga de Firebase
+      setTimeout(() => {
+        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa si estas en una escuela entras asumiendo tus propios riesgos");
+        if (!entendido) window.location.href = "https://www.google.com";
+      }, 500);
     };
   </script>
-
 </body>
 </html>
