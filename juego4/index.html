@@ -3,407 +3,325 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Nova League 3D ⚽</title>
+<title>Nova League 3D - Pro Edition ⚽</title>
 <style>
-body{margin:0;overflow:hidden;font-family:Arial;}
-#menu{
+body{margin:0;overflow:hidden;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:#000;}
+#menu, #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
   background:linear-gradient(180deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
   display:flex;flex-direction:column;justify-content:center;align-items:center;
-  color:white;text-align:center;transition:opacity 1s;
+  color:white;text-align:center;transition:opacity 0.5s;z-index:100;
 }
-#menu h1{font-size:4em;margin:0;text-shadow:0 0 20px #00d4ff;font-weight:bold;}
-#menu h2{font-size:2em;margin:20px 0;color:#00d4ff;}
+#ui-container{
+    position:absolute;top:20px;width:100%;display:flex;justify-content:center;
+    gap:50px;pointer-events:none;z-index:10;
+}
+.hud-box{
+    background:rgba(0,0,0,0.6);padding:10px 25px;border-radius:15px;
+    border:2px solid #00d4ff;color:white;font-size:1.8em;font-weight:bold;
+}
+#goalMsg{
+    position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);
+    color:#fff;font-size:6em;font-weight:bold;text-shadow:0 0 30px #000;
+    z-index:20;display:none;pointer-events:none;
+}
 .btn{
   background:linear-gradient(45deg,#ff6b6b,#ffd93d);
-  border:none;padding:20px 40px;font-size:1.5em;border-radius:50px;
+  border:none;padding:15px 40px;font-size:1.2em;border-radius:50px;
   cursor:pointer;color:white;font-weight:bold;text-transform:uppercase;
-  box-shadow:0 10px 30px rgba(255,107,107,0.5);
-  transition:all 0.3s;
-  margin:10px;
+  transition:all 0.3s;margin:10px;
 }
-.btn:hover{transform:scale(1.1);box-shadow:0 15px 40px rgba(255,107,107,0.7);}
-.difficulty-btn{padding:15px 30px;font-size:1.2em;margin:5px;}
+.btn:hover{transform:scale(1.1);box-shadow:0 0 20px rgba(255,217,61,0.6);}
+h1{font-size:4em;margin:0;text-shadow:0 0 20px #00d4ff;}
 #game{display:none;}
-#score{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:white;font-size:2em;font-weight:bold;text-shadow:0 0 10px black;z-index:10;display:none;}
-#goalMsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:5em;font-weight:bold;text-shadow:0 0 30px black;z-index:20;display:none;animation:pulse 0.5s;}
-@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.2);}}
 </style>
 </head>
 <body>
+
 <div id="menu">
-  <h1>⚽ NOVA</h1>
-  <h1>LEAGUE 3D</h1>
+  <h1>⚽ NOVA LEAGUE</h1>
+  <p>2 PARTES DE 3 MINUTOS</p>
   <h2>SELECCIONA DIFICULTAD</h2>
-  <button class="btn difficulty-btn" onclick="startGame(0.08)">FÁCIL</button>
-  <button class="btn difficulty-btn" onclick="startGame(0.15)">NORMAL</button>
-  <button class="btn difficulty-btn" onclick="startGame(0.22)">DIFÍCIL</button>
-  <h3>WASD: Mover | E/Q: Disparar | F: Robar</h3>
+  <button class="btn" onclick="startGame(0.08)">FÁCIL</button>
+  <button class="btn" onclick="startGame(0.14)">NORMAL</button>
+  <button class="btn" onclick="startGame(0.20)">DIFÍCIL</button>
+  <p>WASD: Mover | E: Disparar | Q: Pase Largo | F: Robar</p>
 </div>
+
+<div id="overlay" style="display:none;">
+    <h1 id="overlayTitle">FIN DE LA PARTE</h1>
+    <button class="btn" id="overlayBtn" onclick="nextHalf()">CONTINUAR</button>
+</div>
+
+<div id="ui-container">
+    <div class="hud-box" id="score">🔴 0 - 0 🔵</div>
+    <div class="hud-box" id="timer">03:00</div>
+</div>
+<div id="goalMsg">¡GOL!</div>
 <div id="game"></div>
-<div id="score">🔴 0 - 0 🔵</div>
-<div id="goalMsg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
 <script>
-let gameStarted = false;
-const menu = document.getElementById('menu');
-const gameDiv = document.getElementById('game');
+let gameActive = false;
+let timeLeft = 180; // 3 minutos
+let currentHalf = 1;
+let redScore = 0, blueScore = 0;
+let clockInterval;
+let difficultyLevel = 0.1;
+
 const scoreEl = document.getElementById('score');
+const timerEl = document.getElementById('timer');
 const goalMsg = document.getElementById('goalMsg');
 
-function startGame(difficulty){
-  menu.style.opacity = '0';
-  setTimeout(()=>{
-    menu.style.display = 'none';
-    gameDiv.style.display = 'block';
-    scoreEl.style.display = 'block';
-    initGame(difficulty);
-  },1000);
+function startGame(diff){
+    difficultyLevel = diff;
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    initGame();
+    startClock();
 }
 
-function initGame(difficulty){
+function startClock(){
+    gameActive = true;
+    clockInterval = setInterval(() => {
+        if(!gameActive) return;
+        timeLeft--;
+        let mins = Math.floor(timeLeft/60);
+        let secs = timeLeft % 60;
+        timerEl.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        
+        if(timeLeft <= 0) endHalf();
+    }, 1000);
+}
+
+function endHalf(){
+    gameActive = false;
+    clearInterval(clockInterval);
+    const overlay = document.getElementById('overlay');
+    const title = document.getElementById('overlayTitle');
+    const btn = document.getElementById('overlayBtn');
+    
+    overlay.style.display = 'flex';
+    if(currentHalf === 1){
+        title.textContent = "DESCANSO";
+        btn.textContent = "EMPEZAR 2ª PARTE";
+    } else {
+        title.textContent = redScore > blueScore ? "¡VICTORIA ROJA! 🔴" : (blueScore > redScore ? "¡VICTORIA AZUL! 🔵" : "EMPATE");
+        btn.textContent = "REINICIAR";
+        btn.onclick = () => location.reload();
+    }
+}
+
+function nextHalf(){
+    currentHalf = 2;
+    timeLeft = 180;
+    document.getElementById('overlay').style.display = 'none';
+    resetPositions();
+    startClock();
+}
+
+function initGame(){
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+  scene.background = new THREE.Color(0x1a1a2e);
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  gameDiv.appendChild(renderer.domElement);
+  document.getElementById('game').appendChild(renderer.domElement);
 
-  let redScore = 0, blueScore = 0;
-
-  // LUCES
-  scene.add(new THREE.AmbientLight(0xffffff,0.7));
-  const dir = new THREE.DirectionalLight(0xffffff,0.9);
-  dir.position.set(40,60,30);
-  scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff,0.8));
+  const light = new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(10,50,10);
+  scene.add(light);
 
   // CAMPO
   const W = 140, H = 80;
-  const fieldBase = new THREE.Mesh(
-    new THREE.PlaneGeometry(W,H),
-    new THREE.MeshLambertMaterial({ color:0x1a7f1a })
-  );
-  fieldBase.rotation.x = -Math.PI/2;
-  scene.add(fieldBase);
-
-  // CÉSPED
-  const grassGroup = new THREE.Group();
-  const grassGeo = new THREE.PlaneGeometry(0.15,0.9);
-  const grassMat = new THREE.MeshLambertMaterial({color:0x2d8a2d,side:THREE.DoubleSide});
-  for(let i=0;i<1500;i++){
-    const g = new THREE.Mesh(grassGeo,grassMat);
-    g.position.set((Math.random()-0.5)*W,0.45,(Math.random()-0.5)*H);
-    g.rotation.y = Math.random()*Math.PI*2;
-    grassGroup.add(g);
-  }
-  scene.add(grassGroup);
-
-  // LÍNEAS
-  const lineMat = new THREE.LineBasicMaterial({ color:0xffffff });
-  function drawLine(points){
-    const geo = new THREE.BufferGeometry().setFromPoints(points);
-    scene.add(new THREE.Line(geo,lineMat));
-  }
-  drawLine([new THREE.Vector3(-W/2,0.02,-H/2),new THREE.Vector3(W/2,0.02,-H/2),new THREE.Vector3(W/2,0.02,H/2),new THREE.Vector3(-W/2,0.02,H/2),new THREE.Vector3(-W/2,0.02,-H/2)]);
-  drawLine([new THREE.Vector3(0,0.02,-H/2),new THREE.Vector3(0,0.02,H/2)]);
+  const field = new THREE.Mesh(new THREE.PlaneGeometry(W,H), new THREE.MeshLambertMaterial({color:0x2d8a2d}));
+  field.rotation.x = -Math.PI/2;
+  scene.add(field);
 
   // PORTERÍAS
-  function createGoal(x){
-    const mat=new THREE.MeshLambertMaterial({color:0xffffff});
-    const lp=new THREE.Mesh(new THREE.BoxGeometry(0.3,5,0.3),mat);
-    const rp=lp.clone();
-    const cb=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,14),mat);
-    lp.position.set(x,2.5,-7);rp.position.set(x,2.5,7);cb.position.set(x,5,0);
-    scene.add(lp,rp,cb);
+  function createGoal(x, color) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshLambertMaterial({color: 0xffffff});
+    const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 0.5), mat);
+    const p2 = p1.clone();
+    const top = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 16), mat);
+    p1.position.set(x, 3, -8); p2.position.set(x, 3, 8); top.position.set(x, 6, 0);
+    g.add(p1, p2, top); scene.add(g);
   }
-  createGoal(-W/2+2);createGoal(W/2-2);
+  createGoal(-W/2, 0xff0000); createGoal(W/2, 0x0000ff);
 
-  // BARRA
-  function createPowerMeter(){
-    const group=new THREE.Group();
-    const bg=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.2,0.1),new THREE.MeshBasicMaterial({color:0x333333}));
-    const bar=new THREE.Mesh(new THREE.BoxGeometry(1.48,0.18,0.08),new THREE.MeshBasicMaterial({color:0x00ff00}));
-    group.add(bg,bar);group.userData={bar};group.position.y=3.2;return group;
-  }
-
-  // JUGADOR
-  function createPlayer(color,x,z){
-    const g=new THREE.Group();
-    const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,1.5,8),new THREE.MeshLambertMaterial({color}));torso.position.y=1.6;
-    const head=new THREE.Mesh(new THREE.SphereGeometry(0.45,16,12),new THREE.MeshLambertMaterial({color:0xffdbac}));head.position.y=2.6;
-    const hair=new THREE.Mesh(new THREE.SphereGeometry(0.47,16,12),new THREE.MeshLambertMaterial({color:0x3a2410}));
-    hair.scale.set(1,0.4,1);hair.position.y=2.85;
-    const nose=new THREE.Mesh(new THREE.SphereGeometry(0.08,6,6),new THREE.MeshLambertMaterial({color:0xffb894}));
-    nose.position.set(0,2.55,0.42);
-    for(const s of [-0.55,0.55]){
-      const shoulder=new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),new THREE.MeshLambertMaterial({color}));
-      shoulder.position.set(s,2.1,0);g.add(shoulder);
-      const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.13,1.1,8),new THREE.MeshLambertMaterial({color}));
-      arm.position.set(s,1.4,0);g.add(arm);
-      const hand=new THREE.Mesh(new THREE.SphereGeometry(0.17,8,8),new THREE.MeshLambertMaterial({color:0xffdbac}));
-      hand.position.set(s,0.85,0);g.add(hand);
-    }
-    for(const s of [-0.25,0.25]){
-      const thigh=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.18,1.0,8),new THREE.MeshLambertMaterial({color:0x222222}));
-      thigh.position.set(s,0.6,0);g.add(thigh);
-      const shin=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.14,0.9,8),new THREE.MeshLambertMaterial({color:color===0xff4444?0x8b0000:0x00008b}));
-      shin.position.set(s,0.15,0.05);g.add(shin);
-      const boot=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.22,0.65),new THREE.MeshLambertMaterial({color:color===0xff4444?0x0000cd:0xff4500}));
-      boot.position.set(s,-0.2,0.35);boot.rotation.x=0.1;g.add(boot);
-    }
-    g.add(torso,head,hair,nose);g.position.set(x,0,z);g.scale.set(1.1,1.1,1.1);scene.add(g);
-    g.userData={color,speed:difficulty,homeX:x,homeZ:z,hasBall:false};
+  // JUGADORES CON PELO COMPLETO
+  function createPlayer(color, x, z) {
+    const g = new THREE.Group();
+    // Cuerpo
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.6,1.8,8), new THREE.MeshLambertMaterial({color}));
+    body.position.y = 1.6;
+    // Cabeza
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.45,16,16), new THREE.MeshLambertMaterial({color:0xffdbac}));
+    head.position.y = 2.7;
+    // PELO (Ahora cubre toda la cabeza)
+    const hairGeo = new THREE.SphereGeometry(0.48, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.6); 
+    const hair = new THREE.Mesh(hairGeo, new THREE.MeshLambertMaterial({color:0x221100}));
+    hair.position.y = 2.8;
+    hair.rotation.x = Math.PI; // Invertir para que cubra arriba y laterales
+    
+    g.add(body, head, hair);
+    g.position.set(x, 0, z);
+    scene.add(g);
+    g.userData = { color, homeX:x, homeZ:z, hasBall:false, speed: difficultyLevel };
     return g;
   }
 
-  // 11 JUGADORES
-  const redPositions = [[-60,0],[-55,12],[-55,-12],[-50,20],[-50,-20],[-30,15],[-30,-15],[-20,8],[-20,-8],[0,0],[10,0]];
-  const bluePositions = redPositions.map(([x,z])=>[-x,z]);
-  const redTeam = redPositions.map(([x,z])=>createPlayer(0xff4444,x,z));
-  const blueTeam = bluePositions.map(([x,z])=>createPlayer(0x4444ff,x,z));
-  const player = redTeam[9];
-  player.userData.powerMeter = createPowerMeter();
-  player.add(player.userData.powerMeter);
+  const redTeam = [], blueTeam = [];
+  const positions = [[-60,0],[-45,15],[-45,-15],[-30,25],[-30,-25],[-15,10],[-15,-10],[5,20],[5,-20],[20,0],[0,0]];
+  
+  positions.forEach(pos => redTeam.push(createPlayer(0xff4444, pos[0], pos[1])));
+  positions.forEach(pos => blueTeam.push(createPlayer(0x4444ff, -pos[0], pos[1])));
+
+  const player = redTeam[10]; // El usuario controla este
 
   // BALÓN
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5,12,8),new THREE.MeshLambertMaterial({color:0xffffff}));
-  ball.position.set(0,0.5,0);ball.userData={vx:0,vz:0,holder:null};scene.add(ball);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.6,16,16), new THREE.MeshLambertMaterial({color:0xffffff}));
+  ball.position.y = 0.6;
+  ball.userData = { vx:0, vz:0, holder:null };
+  scene.add(ball);
 
-  // VARIABLES
   const keys = {};
-  let powerCharge=0,charging=false;
+  window.onkeydown = e => keys[e.key.toLowerCase()] = true;
+  window.onkeyup = e => keys[e.key.toLowerCase()] = false;
 
-  document.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
-  document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-  function limitToField(o){
-    o.position.x=Math.max(-W/2+2,Math.min(W/2-2,o.position.x));
-    o.position.z=Math.max(-H/2+2,Math.min(H/2-2,o.position.z));
+  function resetPositions(){
+    ball.position.set(0,0.6,0);
+    ball.userData.vx = 0; ball.userData.vz = 0; ball.userData.holder = null;
+    redTeam.forEach(p => { p.position.set(p.userData.homeX, 0, p.userData.homeZ); p.userData.hasBall = false; });
+    blueTeam.forEach(p => { p.position.set(p.userData.homeX, 0, p.userData.homeZ); p.userData.hasBall = false; });
   }
 
-  // ROBAR BALÓN CON F
-  function stealBall(){
-    if(ball.userData.holder && ball.userData.holder !== player){
-      const dx = ball.position.x - player.position.x;
-      const dz = ball.position.z - player.position.z;
-      const dist = Math.sqrt(dx*dx + dz*dz);
-      if(dist < 2.5){
-        ball.userData.holder.userData.hasBall = false;
-        ball.userData.holder = player;
-        player.userData.hasBall = true;
-      }
-    }
-  }
-
-  function aiStealBall(){
-    if(ball.userData.holder && ball.userData.holder.userData.color === 0xff4444){
-      const allBlue = blueTeam.filter(p=>p!==ball.userData.holder);
-      allBlue.forEach(p=>{
-        const dx = ball.position.x - p.position.x;
-        const dz = ball.position.z - p.position.z;
-        const dist = Math.sqrt(dx*dx + dz*dz);
-        if(dist < 1.5 && Math.random() < difficulty * 2){
-          ball.userData.holder.userData.hasBall = false;
-          ball.userData.holder = p;
-          p.userData.hasBall = true;
-        }
-      });
-    }
-  }
-
-  function checkGoal(){
-    const bx = ball.position.x;
-    const bz = ball.position.z;
-    if(Math.abs(bz) < 7){
-      if(bx < -W/2 + 3){
-        blueScore++;
-        scoreEl.textContent = `🔴 ${redScore} - ${blueScore} 🔵`;
-        showGoalMessage("¡GOL AZUL! 🔵");
-        resetBall();
-      }else if(bx > W/2 - 3){
-        redScore++;
-        scoreEl.textContent = `🔴 ${redScore} - ${blueScore} 🔵`;
-        showGoalMessage("¡GOL ROJO! 🔴");
-        resetBall();
-      }
-    }
-  }
-
-  function showGoalMessage(msg){
-    goalMsg.textContent = msg;
+  function goal(team){
+    if(team === 'red') redScore++; else blueScore++;
+    scoreEl.textContent = `🔴 ${redScore} - ${blueScore} 🔵`;
     goalMsg.style.display = 'block';
-    setTimeout(()=>{goalMsg.style.display = 'none';},2000);
+    goalMsg.textContent = team === 'red' ? "¡GOL ROJO!" : "¡GOL AZUL!";
+    gameActive = false;
+    setTimeout(() => { goalMsg.style.display = 'none'; resetPositions(); gameActive = true; }, 2000);
   }
 
-  function resetBall(){
-    ball.position.set(0,0.5,0);
-    ball.userData.vx = 0;
-    ball.userData.vz = 0;
-    ball.userData.holder = null;
-    player.userData.hasBall = false;
-    redTeam.forEach(p=>{p.userData.hasBall=false;p.position.x=p.userData.homeX;p.position.z=p.userData.homeZ;});
-    blueTeam.forEach(p=>{p.userData.hasBall=false;p.position.x=p.userData.homeX;p.position.z=p.userData.homeZ;});
-  }
+  function handleAI(p, team, teammates, rivals, targetGoalX){
+    if(!gameActive) return;
 
-  function checkBallHolder(){
-    const allPlayers = [...redTeam,...blueTeam];
-    let closestPlayer = null;
-    let closestDist = 1.8;
-    allPlayers.forEach(p=>{
-      if(p===player) return;
-      const dx = ball.position.x - p.position.x;
-      const dz = ball.position.z - p.position.z;
-      const dist = Math.sqrt(dx*dx + dz*dz);
-      if(dist < closestDist){
-        closestDist = dist;
-        closestPlayer = p;
-      }
-    });
-    if(closestPlayer && !ball.userData.holder){
-      ball.userData.holder = closestPlayer;
-      closestPlayer.userData.hasBall = true;
+    if(p.userData.hasBall){
+        const distToGoal = Math.abs(targetGoalX - p.position.x);
+        
+        // IA DECIDE: ¿CHUTAR O PASAR?
+        if(distToGoal < 25){ // Cerca de portería -> CHUTA
+            const dx = targetGoalX - p.position.x;
+            const dz = 0 - p.position.z;
+            const angle = Math.atan2(dx, dz);
+            ball.userData.vx = Math.sin(angle) * 0.8;
+            ball.userData.vz = Math.cos(angle) * 0.8;
+            ball.userData.holder = null;
+            p.userData.hasBall = false;
+        } else {
+            // Buscar pase a compañero adelantado
+            let bestPassTarget = null;
+            teammates.forEach(mate => {
+                if(mate !== p && ((team === 'red' && mate.position.x > p.position.x) || (team === 'blue' && mate.position.x < p.position.x))){
+                    bestPassTarget = mate;
+                }
+            });
+
+            if(bestPassTarget && Math.random() < 0.02){ // Probabilidad de pase
+                const dx = bestPassTarget.position.x - p.position.x;
+                const dz = bestPassTarget.position.z - p.position.z;
+                const dist = Math.sqrt(dx*dx+dz*dz);
+                ball.userData.vx = (dx/dist) * 0.6;
+                ball.userData.vz = (dz/dist) * 0.6;
+                ball.userData.holder = null;
+                p.userData.hasBall = false;
+            } else {
+                // Avanzar con balón
+                p.position.x += (targetGoalX > p.position.x ? 1 : -1) * p.userData.speed * 1.2;
+                p.rotation.y = targetGoalX > p.position.x ? Math.PI/2 : -Math.PI/2;
+            }
+        }
+    } else {
+        // Si no tiene el balón, ir hacia él si está cerca o volver a posición
+        const distBall = p.position.distanceTo(ball.position);
+        if(distBall < 30 && !ball.userData.holder){
+            const angle = Math.atan2(ball.position.x - p.position.x, ball.position.z - p.position.z);
+            p.position.x += Math.sin(angle) * p.userData.speed;
+            p.position.z += Math.cos(angle) * p.userData.speed;
+            p.rotation.y = angle;
+        } else {
+            p.position.x += (p.userData.homeX - p.position.x) * 0.01;
+            p.position.z += (p.userData.homeZ - p.position.z) * 0.01;
+        }
     }
   }
 
-  function updatePlayers(){
-    const allPlayers = [...redTeam,...blueTeam];
-    allPlayers.forEach(p=>{
-      if(p===player) return;
-      
-      // Si el jugador tiene el balón y es del equipo azul
-      if(p.userData.hasBall && p.userData.color === 0x4444ff){
-        // Intentar marcar gol en la portería roja
-        const goalX = -W/2 + 5;
-        const goalZ = 0;
-        const dx = goalX - p.position.x;
-        const dz = goalZ - p.position.z;
-        const dist = Math.sqrt(dx*dx + dz*dz);
-        
-        p.position.x += (dx/dist)*p.userData.speed*1.5;
-        p.position.z += (dz/dist)*p.userData.speed*1.5;
-        p.rotation.y = Math.atan2(dx,dz);
-        
-        // Disparar cuando está cerca de la portería
-        if(dist < 15 && Math.random() < 0.03){
-          ball.userData.vx = (dx/dist)*0.6;
-          ball.userData.vz = (dz/dist)*0.6;
-          ball.userData.holder = null;
-          p.userData.hasBall = false;
-        }
-      }
-      // Si el jugador tiene el balón y es del equipo rojo (compañeros)
-      else if(p.userData.hasBall && p.userData.color === 0xff4444){
-        // Intentar marcar gol en la portería azul
-        const goalX = W/2 - 5;
-        const goalZ = 0;
-        const dx = goalX - p.position.x;
-        const dz = goalZ - p.position.z;
-        const dist = Math.sqrt(dx*dx + dz*dz);
-        
-        p.position.x += (dx/dist)*p.userData.speed*1.5;
-        p.position.z += (dz/dist)*p.userData.speed*1.5;
-        p.rotation.y = Math.atan2(dx,dz);
-        
-        // Disparar cuando está cerca
-        if(dist < 15 && Math.random() < 0.03){
-          ball.userData.vx = (dx/dist)*0.6;
-          ball.userData.vz = (dz/dist)*0.6;
-          ball.userData.holder = null;
-          p.userData.hasBall = false;
-        }
-      }
-      // Si no tiene el balón
-      else{
-        const dx = ball.position.x - p.position.x;
-        const dz = ball.position.z - p.position.z;
-        const distBall = Math.sqrt(dx*dx + dz*dz);
-        if(distBall > 3){
-          p.position.x += (dx/distBall)*p.userData.speed;
-          p.position.z += (dz/distBall)*p.userData.speed;
-        }
-        p.position.x += (p.userData.homeX - p.position.x)*0.01;
-        p.position.z += (p.userData.homeZ - p.position.z)*0.01;
-        p.rotation.y = Math.atan2(dx,dz);
-      }
-      
-      limitToField(p);
-    });
-    checkBallHolder();
-  }
-
-  camera.position.set(0,15,25);camera.lookAt(0,0,0);
-
-  function animate(){
+  function animate() {
     requestAnimationFrame(animate);
-    
-    if(keys['f']) stealBall();
-    aiStealBall();
-    checkGoal();
-    
-    // JUGADOR
+    if(!gameActive) { renderer.render(scene, camera); return; }
+
+    // Control Jugador
+    if(keys['w']) { player.position.x += Math.sin(player.rotation.y)*0.3; player.position.z += Math.cos(player.rotation.y)*0.3; }
+    if(keys['s']) { player.position.x -= Math.sin(player.rotation.y)*0.2; player.position.z -= Math.cos(player.rotation.y)*0.2; }
     if(keys['a']) player.rotation.y += 0.05;
     if(keys['d']) player.rotation.y -= 0.05;
-    const sp = keys['shift'] ? 0.4 : 0.2;
-    if(keys['w']){
-      player.position.x += Math.sin(player.rotation.y)*sp;
-      player.position.z += Math.cos(player.rotation.y)*sp;
-    }
-    if(keys['s']){
-      player.position.x -= Math.sin(player.rotation.y)*sp*0.6;
-      player.position.z -= Math.cos(player.rotation.y)*sp*0.6;
-    }
-    limitToField(player);
 
-    // POTENCIA
-    if((keys['e']||keys['q']) && !charging){
-      charging=true;player.userData.powerMeter.visible=true;
-    }
-    if(charging){
-      powerCharge = Math.min(1,powerCharge+0.02);
-      const bar = player.userData.powerMeter.userData.bar;
-      bar.scale.x = powerCharge;
-      bar.position.x = (powerCharge-1)*0.74;
-      bar.material.color.setHSL(0.33-powerCharge*0.33,1,0.5);
-    }
-    if(!keys['e'] && !keys['q'] && charging){
-      const pwr = powerCharge*0.7;
-      ball.userData.vx = Math.sin(player.rotation.y)*pwr;
-      ball.userData.vz = Math.cos(player.rotation.y)*pwr;
-      ball.userData.holder = null;
-      player.userData.hasBall = false;
-      charging=false;powerCharge=0;player.userData.powerMeter.visible=false;
+    // Acción de disparo/pase
+    if((keys['e'] || keys['q']) && player.userData.hasBall){
+        const force = keys['e'] ? 0.9 : 0.5;
+        ball.userData.vx = Math.sin(player.rotation.y) * force;
+        ball.userData.vz = Math.cos(player.rotation.y) * force;
+        ball.userData.holder = null;
+        player.userData.hasBall = false;
     }
 
-    // BALÓN
-    if(!ball.userData.holder){
-      ball.position.x += ball.userData.vx;
-      ball.position.z += ball.userData.vz;
-      ball.userData.vx *= 0.98;
-      ball.userData.vz *= 0.98;
-    }else{
-      const holder = ball.userData.holder;
-      ball.position.x = holder.position.x + Math.sin(holder.rotation.y)*0.8;
-      ball.position.z = holder.position.z + Math.cos(holder.rotation.y)*0.8;
+    // Robar balón (F)
+    if(keys['f'] && ball.userData.holder && ball.userData.holder !== player){
+        if(player.position.distanceTo(ball.position) < 3){
+            ball.userData.holder.userData.hasBall = false;
+            ball.userData.holder = player;
+            player.userData.hasBall = true;
+        }
     }
-    limitToField(ball);
 
-    updatePlayers();
+    // Actualizar IA
+    redTeam.forEach(p => { if(p !== player) handleAI(p, 'red', redTeam, blueTeam, W/2); });
+    blueTeam.forEach(p => handleAI(p, 'blue', blueTeam, redTeam, -W/2));
 
-    // CÁMARA
-    const dist=18,h=10;
-    camera.position.x = player.position.x-Math.sin(player.rotation.y)*dist;
-    camera.position.z = player.position.z-Math.cos(player.rotation.y)*dist;
-    camera.position.y = player.position.y+h;
-    camera.lookAt(player.position.x,player.position.y+1.5,player.position.z);
+    // Lógica del Balón
+    if(ball.userData.holder){
+        const h = ball.userData.holder;
+        ball.position.set(h.position.x + Math.sin(h.rotation.y)*1.2, 0.6, h.position.z + Math.cos(h.rotation.y)*1.2);
+    } else {
+        ball.position.x += ball.userData.vx;
+        ball.position.z += ball.userData.vz;
+        ball.userData.vx *= 0.98;
+        ball.userData.vz *= 0.98;
 
-    renderer.render(scene,camera);
-  }
-  animate();
-}
-</script>
-</body>
-</html>
-    renderer.render(scene,camera);
+        // Recogida de balón
+        [...redTeam, ...blueTeam].forEach(p => {
+            if(p.position.distanceTo(ball.position) < 1.5 && !ball.userData.holder){
+                ball.userData.holder = p;
+                p.userData.hasBall = true;
+                ball.userData.vx = 0; ball.userData.vz = 0;
+            }
+        });
+    }
+
+    // Límites y Goles
+    if(ball.position.x > W/2) { if(Math.abs(ball.position.z) < 8) goal('red'); else ball.userData.vx *= -1; }
+    if(ball.position.x < -W/2) { if(Math.abs(ball.position.z) < 8) goal('blue'); else ball.userData.vx *= -1; }
+    if(Math.abs(ball.position.z) > H/2) ball.userData.vz *= -1;
+
+    // Cámara dinámica
+    camera.position.lerp(new THREE.Vector3(player.position.x - Math.sin(player.rotation.y)*15, 12, player.position.z - Math.cos(player.rotation.y)*15), 0.1);
+    camera.lookAt(player.position.x, 2, player.position.z);
+
+    renderer.render(scene, camera);
   }
   animate();
 }
