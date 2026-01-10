@@ -3,153 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pet Simulator Cloud Pro</title>
+    <title>Pet Simulator CLOUD V3 - Anti-Overwrite</title>
     <style>
         :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --primary: #4caf50;
-            --rare: #2196f3;
-            --god: #9c27b0;
-            --secret: #ff9800;
+            --rarity-common: #b2bec3; --rarity-uncommon: #55efc4;
+            --rarity-rare: #74b9ff; --rarity-god: #a29bfe;
+            --rarity-secret: #fdcb6e; --rarity-og: #ff7675;
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0f0c29; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text);
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        /* Pantalla de Carga */
+        #loading-screen {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-left-color: #4caf50; width: 40px; height: 40px; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* BARRA DE ESTADO CLOUD */
-        #cloud-status {
-            width: 100%; max-width: 450px; background: #222; padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid var(--primary); font-size: 14px;
-        }
-        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .online { background-color: var(--primary); box-shadow: 0 0 8px var(--primary); }
-        .offline { background-color: #f44336; }
+        #auth-status { width: 400px; background: #1a1a2e; padding: 15px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        #game { width: 400px; background: #16213e; border-radius: 0 0 20px 20px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        #game-container {
-            width: 95%; max-width: 450px; background: var(--card);
-            margin: 20px 0; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .header { padding: 20px; text-align: center; background: rgba(255,255,255,0.05); }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .stat-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; text-align: center; }
-        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
-
-        .tabs { display: flex; background: #000; }
-        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; opacity: 0.6; transition: 0.3s; font-weight: bold; }
-        .tab.active { opacity: 1; border-bottom: 3px solid var(--primary); background: rgba(76, 175, 80, 0.1); }
-
-        .content { padding: 20px; height: 400px; overflow-y: auto; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-
-        /* BOTONES */
-        .btn { 
-            width: 100%; padding: 15px; border: none; border-radius: 12px; 
-            font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: 0.2s;
-            font-size: 16px;
-        }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-special { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); color: white; }
-        .btn-rebirth { background: var(--rare); color: white; }
-        .btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
-        .btn:active { transform: scale(0.98); }
-
-        /* LISTA DE MASCOTAS */
-        .pet-item {
-            background: rgba(255,255,255,0.05); margin-bottom: 10px; padding: 12px;
-            border-radius: 10px; display: flex; justify-content: space-between; align-items: center;
-            border-left: 4px solid #ccc;
-        }
-        .pet-info { display: flex; align-items: center; gap: 10px; }
-        .pet-icon { font-size: 24px; }
-        .sell-btn { background: #f44336; padding: 5px 10px; border-radius: 5px; font-size: 12px; border: none; color: white; cursor: pointer; }
-
-        /* RAREZAS */
-        .common { border-color: #9e9e9e; }
-        .uncommon { border-color: #4caf50; }
-        .rare { border-color: #2196f3; }
-        .god { border-color: #9c27b0; }
-        .secret { border-color: #ff9800; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-
-        /* MODALES */
-        #hatch-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; justify-content: center;
-            align-items: center; z-index: 1000;
-        }
-        .egg-anim { width: 150px; height: 200px; background: #fff; border-radius: 50% 50% 45% 45%; animation: shake 0.5s infinite; }
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
+        .stats { background: #0f3460; padding: 15px; border-radius: 15px; margin-bottom: 15px; text-align: center; }
+        .money-val { font-size: 32px; font-weight: bold; color: #4caf50; }
         
-        .result-card { text-align: center; display: none; }
-        .result-card h2 { font-size: 32px; margin: 10px 0; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer; background: #1a1a2e; color: #fff; font-weight: bold; }
+        .tab-btn.active { background: #e94560; }
+
+        .view { height: 350px; overflow-y: auto; display: none; }
+        .view.active { display: block; }
+
+        .egg-card { background: #1a1a2e; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #333; text-align: center; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-buy { background: #4caf50; color: white; }
+        .btn-special { background: #e94560; color: white; }
+        .btn:disabled { background: #444; opacity: 0.5; }
+
+        .pet-card { background: #1a1a2e; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; }
+        .pet-card.common { border-color: var(--rarity-common); }
+        .pet-card.uncommon { border-color: var(--rarity-uncommon); }
+        .pet-card.rare { border-color: var(--rarity-rare); }
+        .pet-card.god { border-color: var(--rarity-god); }
+        .pet-card.secret { border-color: var(--rarity-secret); }
+
+        .sell-btn { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; }
+
+        #hatch-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="cloud-status">
-        <div><span id="dot" class="status-dot offline"></span> <span id="user-name">Inicia sesión para guardar</span></div>
-        <button id="auth-btn" style="background:none; border:1px solid #fff; color:#fff; padding:2px 10px; cursor:pointer; border-radius:5px;">Login</button>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px;">Sincronizando con la nube...</p>
     </div>
 
-    <div id="game-container">
-        <div class="header">
-            <h1>PET SIMULATOR PRO</h1>
-            <p>Versión Cloud 2.0</p>
-        </div>
+    <div id="auth-status">
+        <span id="user-info">Cargando...</span>
+        <button id="auth-action" style="background:#e94560; color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Login</button>
+    </div>
 
-        <div class="stats-grid">
-            <div class="stat-card"><div>DINERO</div><div class="stat-val" id="money">0</div></div>
-            <div class="stat-card"><div>MULTIPLIER</div><div class="stat-val" id="multi">x1</div></div>
+    <div id="game">
+        <div class="stats">
+            <div style="font-size: 12px; opacity: 0.6;">BALANCE TOTAL</div>
+            <div class="money-val">💰 $<span id="money-txt">0</span></div>
+            <div id="income-txt" style="font-size: 12px; color: #4caf50;">+0/s</div>
         </div>
 
         <div class="tabs">
-            <div class="tab active" data-target="shop">TIENDA</div>
-            <div class="tab" data-target="pets">MIS PETS</div>
-            <div class="tab" data-target="index">INDEX</div>
+            <button class="tab-btn active" data-tab="shop">TIENDA</button>
+            <button class="tab-btn" data-tab="inventory">MASCOTAS</button>
+            <button class="tab-btn" data-tab="collection">INDEX</button>
         </div>
 
-        <div class="content">
-            <div id="shop" class="content-section active">
-                <div style="margin-bottom: 20px;">
-                    <p>Huevo Normal ($<span id="price-n">10</span>)</p>
-                    <button class="btn btn-main" id="buy-n">ABRIR NORMAL</button>
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <p>Huevo Especial ($<span id="price-s">500</span>)</p>
-                    <button class="btn btn-special" id="buy-s">ABRIR ESPECIAL</button>
-                </div>
-                <hr style="opacity: 0.1; margin: 20px 0;">
-                <button class="btn btn-rebirth" id="rebirth-btn">HACER REBIRTH (1M)</button>
+        <div id="shop" class="view active">
+            <div class="egg-card">
+                <h3>🥚 HUEVO NORMAL</h3>
+                <p>Precio: $<span id="price-n">10</span></p>
+                <button class="btn btn-buy" id="buy-n">COMPRAR</button>
             </div>
+            <div class="egg-card">
+                <h3>🔥 HUEVO ESPECIAL</h3>
+                <p>Precio: $<span id="price-s">500</span></p>
+                <button class="btn btn-special" id="buy-s">COMPRAR</button>
+            </div>
+            <button class="btn" id="rebirth-btn" style="background:#2196f3; color:#white;">⚡ REBIRTH (1M)</button>
+        </div>
 
-            <div id="pets" class="content-section">
-                <div id="pet-list-container"></div>
-            </div>
+        <div id="inventory" class="view">
+            <div id="pet-list"></div>
+        </div>
 
-            <div id="index" class="content-section">
-                <div id="index-container"></div>
-            </div>
+        <div id="collection" class="view">
+            <div id="index-list"></div>
         </div>
     </div>
 
-    <div id="hatch-overlay">
-        <div id="egg" class="egg-anim"></div>
-        <div id="result" class="result-card">
-            <div id="res-icon" style="font-size: 80px;"></div>
-            <h2 id="res-name">Mascota</h2>
-            <p id="res-rarity" style="font-weight: bold;"></p>
-            <button class="btn btn-main" style="margin-top: 20px;" id="close-hatch">¡GENIAL!</button>
+    <div id="hatch-popup">
+        <div>
+            <div id="h-icon" style="font-size: 100px;">🥚</div>
+            <h1 id="h-name">???</h1>
+            <p id="h-rarity" style="font-weight: bold; margin: 10px 0;"></p>
+            <button class="btn btn-buy" id="h-close" style="width: 200px;">CONTINUAR</button>
         </div>
     </div>
 
@@ -172,160 +128,139 @@
     const db = getFirestore(app);
     const provider = new GithubAuthProvider();
 
-    // POOLS DE MASCOTAS (600 líneas aproximadas con lógica extendida)
-    const NORMAL_POOL = [
-        { id: 1, name: "Perro", icon: "🐶", rarity: "common", power: 2 },
-        { id: 2, name: "Gato", icon: "🐱", rarity: "common", power: 3 },
-        { id: 3, name: "Conejo", icon: "🐰", rarity: "uncommon", power: 8 },
-        { id: 4, name: "Zorro", icon: "🦊", rarity: "uncommon", power: 12 },
-        { id: 5, name: "Oso", icon: "🐻", rarity: "rare", power: 30 },
-        { id: 6, name: "León", icon: "🦁", rarity: "rare", power: 50 },
-        { id: 7, name: "Dragón", icon: "🐲", rarity: "god", power: 200 }
-    ];
+    // MASCOTAS (POOLS EXTENDIDOS)
+    const PETS_DATA = {
+        normal: [
+            { id: 1, n: "Pollito", i: "🐥", r: "common", e: 5 },
+            { id: 2, n: "Perro", i: "🐶", r: "common", e: 8 },
+            { id: 3, n: "Gato", i: "🐱", r: "uncommon", e: 15 },
+            { id: 4, n: "Zorro", i: "🦊", r: "rare", e: 45 },
+            { id: 5, n: "Dragón", i: "🐲", r: "god", e: 200 }
+        ],
+        special: [
+            { id: 10, n: "Tigre", i: "🐯", r: "rare", e: 120 },
+            { id: 11, n: "Unicornio", i: "🦄", r: "god", e: 600 },
+            { id: 12, n: "T-Rex", i: "🦖", r: "secret", e: 2500 }
+        ]
+    };
 
-    const SPECIAL_POOL = [
-        { id: 100, name: "Tigre", icon: "🐯", rarity: "rare", power: 150 },
-        { id: 101, name: "Unicornio", icon: "🦄", rarity: "god", power: 800 },
-        { id: 102, name: "Pegaso", icon: "🐴", rarity: "god", power: 1200 },
-        { id: 103, name: "Kraken", icon: "🦑", rarity: "secret", power: 5000 },
-        { id: 104, name: "T-Rex", icon: "🦖", rarity: "secret", power: 10000 }
-    ];
-
-    // ESTADO DEL JUEGO
-    let game = {
+    // ESTADO INICIAL
+    let state = {
         money: 10,
         nPrice: 10,
         sPrice: 500,
         rebirths: 0,
         multiplier: 1,
         myPets: [],
-        discovered: []
+        index: []
     };
 
     let currentUser = null;
-    let isDataLoaded = false; // FLAG CRÍTICO
+    let isLocked = true; // LA LLAVE DE SEGURIDAD
 
-    // --- LÓGICA DE FIREBASE ---
+    // --- LOGICA DE CLOUD ---
 
-    async function save() {
-        if (!currentUser || !isDataLoaded) return; // NO GUARDAR SI NO SE HA CARGADO
+    async function syncSave() {
+        if (!currentUser || isLocked) return; // BLOQUEO: No guarda si no ha cargado
         try {
-            await setDoc(doc(db, "users", currentUser.uid), game);
-            console.log("Cloud Saved");
-        } catch (e) { console.error("Save error", e); }
+            await setDoc(doc(db, "users", currentUser.uid), state);
+            console.log("☁️ Sincronizado");
+        } catch (e) { console.error("Error Sync", e); }
     }
 
-    async function load(user) {
+    async function syncLoad(user) {
+        isLocked = true; // Cerramos llave mientras descarga
         const snap = await getDoc(doc(db, "users", user.uid));
+        
         if (snap.exists()) {
-            game = snap.data();
-            console.log("Cloud Data Loaded");
+            state = snap.data();
+            console.log("✅ Datos recuperados de la nube");
         } else {
-            console.log("New User Created");
+            console.log("🆕 Usuario nuevo detectado");
+            state.money = 10; // Valores iniciales reales
+            await setDoc(doc(db, "users", user.uid), state);
         }
-        isDataLoaded = true; // YA PODEMOS JUGAR Y GUARDAR
+        
+        isLocked = false; // ¡LLAVE ABIERTA! Ya se puede jugar
+        document.getElementById('loading-screen').style.display = 'none';
         updateUI();
     }
 
     // --- SISTEMA DEL JUEGO ---
 
     function updateUI() {
-        document.getElementById('money').innerText = Math.floor(game.money);
-        document.getElementById('multi').innerText = `x${game.multiplier}`;
-        document.getElementById('price-n').innerText = game.nPrice;
-        document.getElementById('price-s').innerText = game.sPrice;
+        if (isLocked) return;
+        document.getElementById('money-txt').innerText = Math.floor(state.money);
+        document.getElementById('price-n').innerText = state.nPrice;
+        document.getElementById('price-s').innerText = state.sPrice;
         
-        const rebNeeded = 1000000 * Math.pow(10, game.rebirths);
-        document.getElementById('rebirth-btn').innerText = `REBIRTH ($${rebNeeded/1000000}M)`;
-        document.getElementById('rebirth-btn').disabled = game.money < rebNeeded;
+        const income = state.myPets.reduce((acc, p) => acc + p.e, 0) * state.multiplier;
+        document.getElementById('income-txt').innerText = `+$${income}/s`;
 
         renderPets();
         renderIndex();
     }
 
     function renderPets() {
-        const container = document.getElementById('pet-list-container');
-        container.innerHTML = "";
-        game.myPets.forEach((p, i) => {
+        const list = document.getElementById('pet-list');
+        list.innerHTML = "";
+        state.myPets.forEach((p, i) => {
             const div = document.createElement('div');
-            div.className = `pet-item ${p.rarity}`;
-            div.innerHTML = `
-                <div class="pet-info">
-                    <span class="pet-icon">${p.icon}</span>
-                    <div>
-                        <strong>${p.name}</strong><br>
-                        <small>+$${p.power}/s</small>
-                    </div>
-                </div>
-                <button class="sell-btn" onclick="sellPet(${i})">Vender</button>
-            `;
-            container.appendChild(div);
+            div.className = `pet-card ${p.r}`;
+            div.innerHTML = `<div>${p.i} <b>${p.n}</b> (+$${p.e})</div> 
+                             <button class="sell-btn" data-idx="${i}">VENDER</button>`;
+            list.appendChild(div);
         });
     }
-
-    window.sellPet = (i) => {
-        game.money += game.myPets[i].power * 10;
-        game.myPets.splice(i, 1);
-        updateUI();
-        save();
-    };
 
     function renderIndex() {
-        const container = document.getElementById('index-container');
-        container.innerHTML = "";
-        [...NORMAL_POOL, ...SPECIAL_POOL].forEach(p => {
-            const isDiscovered = game.discovered.includes(p.id);
+        const list = document.getElementById('index-list');
+        list.innerHTML = "";
+        [...PETS_DATA.normal, ...PETS_DATA.special].forEach(p => {
+            const owned = state.index.includes(p.id);
             const div = document.createElement('div');
-            div.className = "pet-item";
-            div.style.opacity = isDiscovered ? "1" : "0.2";
-            div.innerHTML = `<span>${isDiscovered ? p.icon : '?'}</span> <span>${isDiscovered ? p.name : '???'}</span>`;
-            container.appendChild(div);
+            div.className = "pet-card";
+            div.style.opacity = owned ? "1" : "0.2";
+            div.innerHTML = `${owned ? p.i : '❓'} ${owned ? p.n : '???'} <small>${p.r}</small>`;
+            list.appendChild(div);
         });
     }
 
-    function hatch(poolType) {
-        if (!isDataLoaded) return;
-        const pool = poolType === 'n' ? NORMAL_POOL : SPECIAL_POOL;
-        const price = poolType === 'n' ? game.nPrice : game.sPrice;
+    function buyEgg(type) {
+        if (isLocked) return;
+        const price = type === 'n' ? state.nPrice : state.sPrice;
+        if (state.money < price) return;
 
-        if (game.money >= price) {
-            game.money -= price;
-            if (poolType === 'n') game.nPrice = Math.floor(game.nPrice * 1.2);
-            else game.sPrice = Math.floor(game.sPrice * 1.25);
+        state.money -= price;
+        if (type === 'n') state.nPrice = Math.floor(state.nPrice * 1.2);
+        else state.sPrice = Math.floor(state.sPrice * 1.3);
 
-            const pet = pool[Math.floor(Math.random() * pool.length)];
-            game.myPets.push(pet);
-            if (!game.discovered.includes(pet.id)) game.discovered.push(pet.id);
+        const pool = type === 'n' ? PETS_DATA.normal : PETS_DATA.special;
+        const pet = pool[Math.floor(Math.random() * pool.length)];
+        
+        state.myPets.push(pet);
+        if (!state.index.includes(pet.id)) state.index.push(pet.id);
 
-            showAnim(pet);
-            updateUI();
-            save();
-        }
+        showHatch(pet);
+        updateUI();
+        syncSave();
     }
 
-    function showAnim(pet) {
-        const overlay = document.getElementById('hatch-overlay');
-        const egg = document.getElementById('egg');
-        const res = document.getElementById('result');
-        overlay.style.display = 'flex';
-        egg.style.display = 'block';
-        res.style.display = 'none';
-
-        setTimeout(() => {
-            egg.style.display = 'none';
-            res.style.display = 'block';
-            document.getElementById('res-icon').innerText = pet.icon;
-            document.getElementById('res-name').innerText = pet.name;
-            document.getElementById('res-rarity').innerText = pet.rarity.toUpperCase();
-        }, 1500);
+    function showHatch(pet) {
+        const pop = document.getElementById('hatch-popup');
+        pop.style.display = 'flex';
+        document.getElementById('h-icon').innerText = pet.i;
+        document.getElementById('h-name').innerText = pet.n;
+        document.getElementById('h-rarity').innerText = pet.r.toUpperCase();
     }
 
     // --- EVENTOS ---
-    document.getElementById('buy-n').onclick = () => hatch('n');
-    document.getElementById('buy-s').onclick = () => hatch('s');
-    document.getElementById('close-hatch').onclick = () => document.getElementById('hatch-overlay').style.display = 'none';
+
+    document.getElementById('buy-n').onclick = () => buyEgg('n');
+    document.getElementById('buy-s').onclick = () => buyEgg('s');
+    document.getElementById('h-close').onclick = () => document.getElementById('hatch-popup').style.display = 'none';
     
-    document.getElementById('auth-btn').onclick = () => {
+    document.getElementById('auth-action').onclick = () => {
         if (currentUser) signOut(auth).then(() => location.reload());
         else signInWithPopup(auth, provider);
     };
@@ -333,38 +268,49 @@
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
-            document.getElementById('dot').className = "status-dot online";
-            document.getElementById('user-name').innerText = user.displayName;
-            document.getElementById('auth-btn').innerText = "Salir";
-            load(user);
+            document.getElementById('user-info').innerText = user.displayName;
+            document.getElementById('auth-action').innerText = "Salir";
+            syncLoad(user);
         } else {
-            isDataLoaded = true; // Permitir jugar local si no hay login
+            document.getElementById('user-info').innerText = "Modo Invitado";
+            document.getElementById('loading-screen').style.display = 'none';
+            isLocked = false; // Permitir jugar localmente
             updateUI();
         }
     });
 
-    // Bucle de dinero (Cada segundo)
+    // Delegación de eventos para vender (necesario por ser dinámico)
+    document.getElementById('pet-list').onclick = (e) => {
+        if (e.target.classList.contains('sell-btn')) {
+            const idx = e.target.dataset.idx;
+            state.money += state.myPets[idx].e * 10;
+            state.myPets.splice(idx, 1);
+            updateUI();
+            syncSave();
+        }
+    };
+
+    // Pestañas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn, .view').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        };
+    });
+
+    // Bucle de dinero
     setInterval(() => {
-        if (!isDataLoaded) return;
-        let income = 0;
-        game.myPets.forEach(p => income += p.power);
+        if (isLocked) return;
+        const income = state.myPets.reduce((acc, p) => acc + p.e, 0) * state.multiplier;
         if (income > 0) {
-            game.money += income * game.multiplier;
-            document.getElementById('money').innerText = Math.floor(game.money);
+            state.money += income;
+            document.getElementById('money-txt').innerText = Math.floor(state.money);
         }
     }, 1000);
 
-    // Bucle de Auto-Save (Cada 30 segundos)
-    setInterval(save, 30000);
-
-    // Navegación de pestañas
-    document.querySelectorAll('.tab').forEach(t => {
-        t.onclick = () => {
-            document.querySelectorAll('.tab, .content-section').forEach(el => el.classList.remove('active'));
-            t.classList.add('active');
-            document.getElementById(t.dataset.target).classList.add('active');
-        };
-    });
+    // Auto-guardado cada 15 segundos solo si hay cambios
+    setInterval(syncSave, 15000);
 
 </script>
 </body>
