@@ -4,42 +4,91 @@
   <meta charset="UTF-8">
   <title>Juegos - Home</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f6f8fa; }
-    #auth-container { background: #24292e; color: white; padding: 20px; text-align: center; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f6f8fa; }
     
-    /* Estilos del formulario */
-    .auth-box { max-width: 300px; margin: 10px auto; display: flex; flex-direction: column; gap: 10px; }
-    input { padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    /* Barra de Navegación / Auth */
+    #auth-container { 
+      background: #24292e; 
+      color: white; 
+      padding: 10px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      min-height: 50px;
+    }
+
+    /* Formulario de login cuando no está conectado */
+    .login-form { display: flex; gap: 10px; align-items: center; }
+    .login-form input { padding: 5px; border-radius: 4px; border: none; }
     
-    .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    #btn-login-github { background-color: #444; color: white; margin-top: 10px; }
-    #btn-login-email { background-color: #4caf50; color: white; }
-    #btn-register { background-color: #0366d6; color: white; }
-    #btn-logout { background-color: #f44336; color: white; }
-    
-    .hidden { display: none; }
-    section { padding: 20px; border-bottom: 1px solid #eee; background: white; }
+    /* Botones */
+    .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-green { background-color: #2ea44f; color: white; }
+    .btn-green:hover { background-color: #2c974b; }
+    .btn-github { background-color: #444; color: white; }
+
+    /* Menú de los tres puntos */
+    .menu-container { position: relative; display: inline-block; }
+    .dots-btn { 
+      background: none; 
+      border: none; 
+      color: white; 
+      font-size: 24px; 
+      cursor: pointer; 
+      padding: 0 10px; 
+      line-height: 1;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .dropdown-content button {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+    .dropdown-content button:hover { background-color: #f1f1f1; }
+    .show { display: block !important; }
+
+    .hidden { display: none !important; }
+    section { padding: 20px; border-bottom: 1px solid #ddd; background: white; margin: 10px 20px; border-radius: 8px; }
     a { text-decoration: none; color: #0366d6; font-size: 1.2rem; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div id="auth-container">
-    <div id="user-logged-out">
-      <h3>Iniciar Sesión</h3>
-      <div class="auth-box">
-        <input type="email" id="email" placeholder="Correo electrónico">
-        <input type="password" id="password" placeholder="Contraseña">
-        <button id="btn-login-email" class="btn">Entrar con Correo</button>
-        <button id="btn-register" class="btn">Crear Cuenta Nueva</button>
-        <hr style="width:100%">
-        <button id="btn-login-github" class="btn">Inicia sesión con GitHub</button>
-      </div>
+    <div id="brand"><strong>Mis Juegos 2026</strong></div>
+
+    <div id="user-logged-out" class="login-form">
+      <input type="email" id="email" placeholder="Correo">
+      <input type="password" id="password" placeholder="Contraseña">
+      <button id="btn-login-email" class="btn btn-green">Entrar</button>
+      <button id="btn-login-github" class="btn btn-github">GitHub</button>
     </div>
 
     <div id="user-logged-in" class="hidden">
       <span id="welcome-msg"></span>
-      <button id="btn-logout" class="btn">Cerrar Sesión</button>
+      <div class="menu-container">
+        <button id="dots-menu" class="dots-btn">⋮</button>
+        <div id="myDropdown" class="dropdown-content">
+          <button id="btn-change-account">🔄 Cambiar de cuenta</button>
+          <button id="btn-logout" style="color: red;">❌ Cerrar Sesión</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -55,13 +104,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
-      getAuth, 
-      signInWithPopup, 
-      GithubAuthProvider, 
-      onAuthStateChanged, 
-      signOut,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword 
+      getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut, 
+      signInWithEmailAndPassword 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -70,62 +114,62 @@
       projectId: "inici-de-sessio",
       storageBucket: "inici-de-sessio.firebasestorage.app",
       messagingSenderId: "106046428749",
-      appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
-      measurementId: "G-CQRFD5Q0JT"
+      appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GithubAuthProvider();
 
-    // Referencias UI
-    const loggedOutDiv = document.getElementById('user-logged-out');
-    const loggedInDiv = document.getElementById('user-logged-in');
-    const welcomeMsg = document.getElementById('welcome-msg');
+    // Elementos UI
+    const dotsBtn = document.getElementById('dots-menu');
+    const dropdown = document.getElementById('myDropdown');
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('password');
 
-    // --- LÓGICA DE AUTENTICACIÓN ---
+    // --- MANEJO DEL MENÚ ---
+    dotsBtn.onclick = (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("show");
+    };
 
-    // 1. Login con Correo/Password
+    // Cerrar menú si se hace clic fuera
+    window.onclick = () => {
+      if (dropdown.classList.contains('show')) dropdown.classList.remove('show');
+    };
+
+    // --- ACCIONES DE CUENTA ---
     document.getElementById('btn-login-email').onclick = () => {
       signInWithEmailAndPassword(auth, emailInput.value, passInput.value)
-        .catch(err => alert("Error: " + err.message));
+        .catch(err => alert("Error: Datos incorrectos"));
     };
 
-    // 2. Registro de cuenta nueva
-    document.getElementById('btn-register').onclick = () => {
-      createUserWithEmailAndPassword(auth, emailInput.value, passInput.value)
-        .then(() => alert("¡Cuenta creada correctamente!"))
-        .catch(err => alert("Error al registrar: " + err.message));
-    };
-
-    // 3. Login con GitHub
     document.getElementById('btn-login-github').onclick = () => {
-      signInWithPopup(auth, provider).catch(err => alert("Error GitHub: " + err.message));
+      signInWithPopup(auth, provider);
     };
 
-    // 4. Cerrar Sesión
-    document.getElementById('btn-logout').onclick = () => {
-      signOut(auth);
-    };
+    // Tanto "Cerrar sesión" como "Cambiar cuenta" hacen signOut
+    const closeSession = () => signOut(auth);
+    document.getElementById('btn-logout').onclick = closeSession;
+    document.getElementById('btn-change-account').onclick = closeSession;
 
-    // Observador de estado
+    // --- OBSERVADOR ---
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loggedOutDiv.classList.add('hidden');
-        loggedInDiv.classList.remove('hidden');
-        welcomeMsg.innerText = "Bienvenido, " + (user.displayName || user.email);
+        document.getElementById('user-logged-out').classList.add('hidden');
+        document.getElementById('user-logged-in').classList.remove('hidden');
+        document.getElementById('welcome-msg').innerText = user.displayName || user.email;
       } else {
-        loggedOutDiv.classList.remove('hidden');
-        loggedInDiv.classList.add('hidden');
+        document.getElementById('user-logged-out').classList.remove('hidden');
+        document.getElementById('user-logged-in').classList.add('hidden');
       }
     });
 
-    window.onload = function () {
+    // Aviso legal
+    window.onload = () => {
       setTimeout(() => {
-        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa...");
-        if (!entendido) window.location.href = "https://www.google.com";
+        if (!confirm("⚠️ AVISO ⚠️\n\n¿Aceptas los riesgos de jugar en este entorno?")) 
+          window.location.href = "https://www.google.com";
       }, 500);
     };
   </script>
