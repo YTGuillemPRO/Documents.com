@@ -3,9 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>Juegos</title>
+  <style>
+    /* Estilo rápido para el botón de GitHub */
+    #auth-container { background: #f0f0f0; padding: 15px; text-align: center; border-bottom: 2px solid #ccc; }
+    #btn-login { background-color: #24292e; color: white; padding: 10px; border-radius: 5px; cursor: pointer; border: none; }
+    .hidden { display: none; }
+  </style>
 </head>
 
 <body>
+
+  <div id="auth-container">
+    <div id="user-logged-out">
+      <button id="btn-login">Inicia sesión con GitHub para guardar tu progreso</button>
+    </div>
+    <div id="user-logged-in" class="hidden">
+      <p id="welcome-msg"></p>
+      <button id="btn-logout">Cerrar Sesión</button>
+    </div>
+  </div>
 
   <section id="Pets-and-Money">
     <a href="juego1/index.html">Pets and Money</a>
@@ -31,20 +47,55 @@
     <a href="juego6/index.html">Clash Royale</a>
   </section>
 
-  <!-- POP UP -->
-  <script>
-    window.onload = function () {
-      const entendido = confirm(
-        "⚠️ AVISO ⚠️\n\n" +
-        "Esta página es para jugar en casa.\n\n" +
-        "Si estás en una escuela, entras asumiendo tu responsabilidad."
-      );
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GithubAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-      if (!entendido) {
-        // Lo saca de la web
-        window.location.href = "https://www.google.com";
+const firebaseConfig = {
+  apiKey: "AIzaSyAsx2kPeIGGdgWB7NNTNsDdMKhD946R71A",
+  authDomain: "inicio-sessio.firebaseapp.com",
+  projectId: "inicio-sessio",
+  storageBucket: "inicio-sessio.firebasestorage.app",
+  messagingSenderId: "317240360522",
+  appId: "1:317240360522:web:7308be4afe4b5d81d6b0b3",
+  measurementId: "G-3YNVH5N03F"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GithubAuthProvider();
+
+    // Referencias UI
+    const loggedOutDiv = document.getElementById('user-logged-out');
+    const loggedInDiv = document.getElementById('user-logged-in');
+    const welcomeMsg = document.getElementById('welcome-msg');
+
+    // Botón Login
+    document.getElementById('btn-login').onclick = () => {
+      signInWithPopup(auth, provider).catch(err => console.error(err));
+    };
+
+    // Botón Logout
+    document.getElementById('btn-logout').onclick = () => {
+      signOut(auth);
+    };
+
+    // Detectar Usuario
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loggedOutDiv.classList.add('hidden');
+        loggedInDiv.classList.remove('hidden');
+        welcomeMsg.innerText = "Hola, " + user.displayName;
+      } else {
+        loggedOutDiv.classList.remove('hidden');
+        loggedInDiv.classList.add('hidden');
       }
-      // Si pulsa aceptar → todo normal
+    });
+
+    // TU AVISO ORIGINAL
+    window.onload = function () {
+      const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa...");
+      if (!entendido) window.location.href = "https://www.google.com";
     };
   </script>
 
