@@ -1,0 +1,208 @@
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// ======================
+// CONFIGURACIÓN GENERAL
+// ======================
+const FIELD = {
+  width: canvas.width,
+  height: canvas.height,
+  goalWidth: 140
+};
+
+let score = { left: 0, right: 0 };
+
+// ======================
+// COCHE
+// ======================
+const car = {
+  x: FIELD.width / 2,
+  y: FIELD.height - 80,
+  z: 0,              // altura (pseudo-3D)
+  vz: 0,
+  angle: 0,
+  speed: 0,
+  radius: 18
+};
+
+// ======================
+// PELOTA
+// ======================
+const ball = {
+  x: FIELD.width / 2,
+  y: FIELD.height / 2,
+  z: 0,
+  vx: 3,
+  vy: 2,
+  vz: 0,
+  radius: 14
+};
+
+const GRAVITY = 0.6;
+const FRICTION = 0.98;
+
+// ======================
+// GAME LOOP
+// ======================
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ======================
+// ACTUALIZACIÓN
+// ======================
+function update() {
+  // --- Controles ---
+  if (keys["w"] || keys["ArrowUp"]) car.speed += 0.2;
+  if (keys["s"] || keys["ArrowDown"]) car.speed *= 0.95;
+  if (keys["a"] || keys["ArrowLeft"]) car.angle -= 0.05;
+  if (keys["d"] || keys["ArrowRight"]) car.angle += 0.05;
+
+  if ((keys[" "] || keys["Space"]) && car.z === 0) {
+    car.vz = 10;
+  }
+
+  car.speed *= FRICTION;
+
+  // Movimiento coche
+  car.x += Math.cos(car.angle) * car.speed;
+  car.y += Math.sin(car.angle) * car.speed;
+
+  // Salto
+  car.vz -= GRAVITY;
+  car.z += car.vz;
+  if (car.z < 0) {
+    car.z = 0;
+    car.vz = 0;
+  }
+
+  keepInside(car);
+
+  // --- Pelota ---
+  ball.vy += 0.1;
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Colisiones paredes
+  if (ball.x < ball.radius || ball.x > FIELD.width - ball.radius) ball.vx *= -1;
+  if (ball.y < ball.radius) ball.vy *= -1;
+
+  // Gol
+  checkGoal();
+
+  // Colisión coche - pelota
+  collide(car, ball);
+}
+
+// ======================
+// COLISIONES
+// ======================
+function collide(c, b) {
+  const dx = b.x - c.x;
+  const dy = b.y - c.y;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist < c.radius + b.radius) {
+    const angle = Math.atan2(dy, dx);
+    const force = c.speed * 2;
+
+    b.vx = Math.cos(angle) * force;
+    b.vy = Math.sin(angle) * force;
+  }
+}
+
+// ======================
+// LÍMITES
+// ======================
+function keepInside(obj) {
+  obj.x = Math.max(obj.radius, Math.min(FIELD.width - obj.radius, obj.x));
+  obj.y = Math.max(obj.radius, Math.min(FIELD.height - obj.radius, obj.y));
+}
+
+// ======================
+// GOLES
+// ======================
+function checkGoal() {
+  if (ball.y > FIELD.height - 10) {
+    score.left++;
+    reset();
+  }
+  if (ball.y < 10) {
+    score.right++;
+    reset();
+  }
+}
+
+function reset() {
+  ball.x = FIELD.width / 2;
+  ball.y = FIELD.height / 2;
+  ball.vx = (Math.random() > 0.5 ? 3 : -3);
+  ball.vy = 2;
+}
+
+// ======================
+// DIBUJO
+// ======================
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Campo
+  ctx.strokeStyle = "#fff";
+  ctx.strokeRect(0, 0, FIELD.width, FIELD.height);
+
+  // Porterías
+  ctx.fillStyle = "#ccc";
+  ctx.fillRect(
+    FIELD.width / 2 - FIELD.goalWidth / 2,
+    0,
+    FIELD.goalWidth,
+    10
+  );
+  ctx.fillRect(
+    FIELD.width / 2 - FIELD.goalWidth / 2,
+    FIELD.height - 10,
+    FIELD.goalWidth,
+    10
+  );
+
+  // Marcador
+  ctx.fillStyle = "#fff";
+  ctx.font = "24px Arial";
+  ctx.fillText(`${score.left} : ${score.right}`, FIELD.width / 2 - 20, 30);
+
+  // Pelota (pseudo-3D)
+  drawShadow(ball);
+  drawCircle(ball.x, ball.y - ball.z, ball.radius, "#fff");
+
+  // Coche
+  drawShadow(car);
+  drawCar();
+}
+
+function drawShadow(obj) {
+  ctx.fillStyle = "rgba(0,0,0,0.3)";
+  drawCircle(obj.x, obj.y, obj.radius, ctx.fillStyle);
+}
+
+function drawCircle(x, y, r, color) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function drawCar() {
+  ctx.save();
+  ctx.translate(car.x, car.y - car.z);
+  ctx.rotate(car.angle);
+  ctx.fillStyle = "#ff3b3b";
+  ctx.fillRect(-20, -12, 40, 24);
+  ctx.restore();
+}
