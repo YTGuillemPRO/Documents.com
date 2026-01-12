@@ -2,121 +2,208 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Snake estilo Slither</title>
+  <title>Slither.io Clone</title>
   <style>
     body {
       margin: 0;
-      background: #111;
+      background: #0a0a1a;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       color: #fff;
-      font-family: sans-serif;
-      flex-direction: column;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
     }
     canvas {
-      background: #000;
-      border: 2px solid #444;
+      background: radial-gradient(circle at center, #1a1a3a 0%, #000 70%);
+      border: 3px solid #444;
+      box-shadow: 0 0 30px rgba(0,255,100,0.4);
+    }
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <canvas id="game" width="800" height="600"></canvas>
-  <div>W/S = velocidad | A/D = girar | R = reiniciar</div>
+  <div id="ui">
+    <div>Puntuación: <span id="score">0</span></div>
+    <div>Tamaño: <span id="size">100</span></div>
+  </div>
+  <canvas id="game" width="1200" height="800"></canvas>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const sizeEl = document.getElementById("size");
+
+    // Cámara que sigue al jugador
+    const camera = { x: 0, y: 0, zoom: 1 };
 
     class Snake {
-      constructor(x, y, color, isPlayer = false) {
+      constructor(x, y, color, isPlayer = false, name = "") {
         this.x = x;
         this.y = y;
-        this.angle = Math.random() * Math.PI * 2;
-        this.speed = 2;
-        this.turnSpeed = 0.06;
-        this.length = 120; // cantidad de puntos del cuerpo
+        this.angle = 0;
+        this.speed = 2.5;
+        this.maxSpeed = 6;
+        this.minSpeed = 0.5;
+        this.turnSpeed = 0.09;
+        this.length = 120;
         this.trail = [];
-        this.radius = 6;
+        this.radius = 8;
         this.color = color;
         this.isPlayer = isPlayer;
         this.alive = true;
+        this.name = name;
+        this.targetFood = null;
       }
 
-      update(input, foods) {
+      update(input, foods, playerX, playerY) {
         if (!this.alive) return;
 
+        // CONTROLES CONTINUOS (teclas aplastadas)
         if (this.isPlayer) {
           if (input.left)  this.angle -= this.turnSpeed;
           if (input.right) this.angle += this.turnSpeed;
-          if (input.up)    this.speed = Math.min(this.speed + 0.05, 5);
-          if (input.down)  this.speed = Math.max(this.speed - 0.05, 0.5);
+          if (input.up)    this.speed = Math.min(this.speed + 0.08, this.maxSpeed);
+          if (input.down)  this.speed = Math.max(this.speed - 0.08, this.minSpeed);
         } else {
-          // IA muy simple: gira un poco aleatorio
-          if (Math.random() < 0.03) {
-            this.angle += (Math.random() - 0.5) * 0.5;
+          // IA mejorada
+          let nearestFood = null;
+          let minDist = Infinity;
+          for (const food of foods) {
+            const dx = food.x - this.x;
+            const dy = food.y - this.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < minDist) {
+              minDist = dist;
+              nearestFood = food;
+            }
           }
+          
+          if (nearestFood) {
+            const targetAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+            let angleDiff = targetAngle - this.angle;
+            angleDiff = (angleDiff + Math.PI) % (Math.PI*2) - Math.PI;
+            this.angle += Math.max(-this.turnSpeed, Math.min(this.turnSpeed, angleDiff * 0.1));
+          }
+          
+          // IA evita otras serpientes
+          this.angle += (Math.random() - 0.5) * 0.02;
         }
 
+        // Movimiento suave
         this.x += Math.cos(this.angle) * this.speed;
         this.y += Math.sin(this.angle) * this.speed;
 
-        // wrap en bordes
-        if (this.x < 0) this.x = canvas.width;
-        if (this.x > canvas.width) this.x = 0;
-        if (this.y < 0) this.y = canvas.height;
-        if (this.y > canvas.height) this.y = 0;
-
+        // trail
         this.trail.unshift({ x: this.x, y: this.y });
-        if (this.trail.length > this.length) {
-          this.trail.pop();
-        }
+        if (this.trail.length > this.length) this.trail.pop();
       }
 
-      draw() {
+      eat(food) {
+        const dx = food.x - this.x;
+        const dy = food.y - this.y;
+        return Math.sqrt(dx*dx + dy*dy) < this.radius + food.radius;
+      }
+
+      draw(camera) {
         if (!this.alive) return;
-        ctx.fillStyle = this.color;
+
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-camera.x, -camera.y);
+
+        // Cuerpo con gradiente
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.trail[0]?.x || this.x, this.trail[0]?.y || this.y);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, this.color + '80');
+
         for (let i = 0; i < this.trail.length; i++) {
-          const p = this.trail[i];
-          const r = this.radius * (1 - i / this.trail.length);
-          if (r <= 0) continue;
+          const point = this.trail[i];
+          const size = this.radius * (i / this.trail.length) * 0.8 + 2;
+          
+          if (size < 1) continue;
+
+          ctx.fillStyle = gradient;
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = this.color;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        // Cabeza especial para jugador
+        if (this.isPlayer) {
+          ctx.shadowBlur = 25;
+          ctx.shadowColor = '#00ff88';
+          ctx.fillStyle = '#00ff88';
+        } else {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = this.color;
+          ctx.fillStyle = this.color;
+        }
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 1.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nombre
+        if (this.name) {
+          ctx.fillStyle = 'white';
+          ctx.font = `${12/camera.zoom}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.shadowBlur = 0;
+          ctx.fillText(this.name, this.x, this.y - this.radius - 10);
+        }
+
+        ctx.restore();
       }
     }
 
     class Food {
       constructor() {
-        this.radius = 4;
         this.respawn();
       }
       respawn() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.color = "yellow";
+        this.x = (Math.random() - 0.5) * 4000; // mapa gigante
+        this.y = (Math.random() - 0.5) * 4000;
+        this.radius = 2.5 + Math.random() * 3;
+        this.hue = 20 + Math.random() * 40;
       }
-      draw() {
-        ctx.fillStyle = this.color;
+      draw(camera) {
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-camera.x, -camera.y);
+        
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = `hsl(${this.hue}, 100%, 60%)`;
+        ctx.fillStyle = `hsl(${this.hue}, 100%, 60%)`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       }
     }
 
+    // Input continuo
     const keys = { up: false, down: false, left: false, right: false };
-
     document.addEventListener("keydown", (e) => {
       const k = e.key.toLowerCase();
       if (k === "w") keys.up = true;
       if (k === "s") keys.down = true;
       if (k === "a") keys.left = true;
       if (k === "d") keys.right = true;
-      if (k === "r") reset();
+      if (k === "r") resetGame();
     });
-
     document.addEventListener("keyup", (e) => {
       const k = e.key.toLowerCase();
       if (k === "w") keys.up = false;
@@ -127,81 +214,127 @@
 
     let snakes = [];
     let foods = [];
+    let score = 0;
 
-    function reset() {
+    function resetGame() {
       snakes = [];
       foods = [];
-      const player = new Snake(canvas.width / 2, canvas.height / 2, "lime", true);
-      snakes.push(player);
-
-      for (let i = 0; i < 4; i++) {
-        snakes.push(
-          new Snake(
-            Math.random() * canvas.width,
-            Math.random() * canvas.height,
-            `hsl(${Math.random() * 360},80%,50%)`,
-            false
-          )
-        );
+      score = 0;
+      
+      // Jugador
+      snakes.push(new Snake(0, 0, '#00ff88', true, 'TÚ'));
+      
+      // 25 bots
+      const names = ['Bot1','Bot2','Bot3','Bot4','Bot5','Bot6','Bot7','Bot8','Bot9','Bot10',
+                    'Bot11','Bot12','Bot13','Bot14','Bot15','Bot16','Bot17','Bot18','Bot19','Bot20',
+                    'Alpha','Beta','Gamma','Delta','Omega'];
+      
+      for (let i = 0; i < 25; i++) {
+        snakes.push(new Snake(
+          (Math.random() - 0.5) * 2000,
+          (Math.random() - 0.5) * 2000,
+          `hsl(${Math.random()*360}, 70%, 55%)`,
+          false,
+          names[i % names.length]
+        ));
       }
-
-      for (let i = 0; i < 20; i++) {
+      
+      // 150 bolas de comida!!!
+      for (let i = 0; i < 150; i++) {
         foods.push(new Food());
       }
     }
 
-    function distance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.sqrt(dx * dx + dy * dy);
+    function updateCamera(player) {
+      camera.x = player.x;
+      camera.y = player.y;
+      camera.zoom = Math.max(0.3, 1 / (1 + player.length * 0.002));
     }
 
     function update() {
-      snakes.forEach(s => s.update(keys, foods));
+      const player = snakes.find(s => s.isPlayer);
+      if (!player) return;
 
-      // comer comida
-      snakes.forEach(snake => {
-        if (!snake.alive) return;
-        foods.forEach(food => {
-          if (distance(snake, food) < snake.radius + food.radius) {
-            snake.length += 8; // crece
-            food.respawn();
-          }
-        });
-      });
+      // Actualizar cámara
+      updateCamera(player);
 
-      // colisión entre serpientes (cabeza vs cuerpo)
-      snakes.forEach(snake => {
-        if (!snake.alive) return;
-        snakes.forEach(other => {
-          if (!other.alive) return;
-          for (let i = 5; i < other.trail.length; i++) {
-            const p = other.trail[i];
-            if (distance({ x: snake.x, y: snake.y }, p) < snake.radius) {
-              snake.alive = false;
-              return;
+      // Mover serpientes
+      snakes.forEach(snake => snake.update(keys, foods, player.x, player.y));
+
+      // Comer comida
+      for (let i = foods.length - 1; i >= 0; i--) {
+        const food = foods[i];
+        for (const snake of snakes) {
+          if (snake.eat(food)) {
+            snake.length += 3;
+            if (snake.isPlayer) {
+              score += 10;
+              scoreEl.textContent = score;
+              sizeEl.textContent = snake.length;
             }
+            foods.splice(i, 1);
+            foods.push(new Food()); // comida infinita
+            break;
           }
-        });
-      });
+        }
+      }
+
+      // Respawnear bots
+      while (snakes.length < 26) {
+        snakes.push(new Snake(
+          player.x + (Math.random() - 0.5) * 1000,
+          player.y + (Math.random() - 0.5) * 1000,
+          `hsl(${Math.random()*360}, 70%, 55%)`,
+          false,
+          `Bot${Math.floor(Math.random()*100)}`
+        ));
+      }
     }
 
     function draw() {
-      ctx.fillStyle = "#000";
+      // Fondo estrellado
+      ctx.fillStyle = 'rgba(0, 5, 15, 0.3)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      foods.forEach(f => f.draw());
-      snakes.forEach(s => s.draw());
+      // Desenfocar estrellas lejanas
+      ctx.save();
+      ctx.filter = 'blur(1px)';
+      
+      // Comida
+      foods.forEach(food => food.draw(camera));
+      
+      // Serpientes
+      snakes.forEach(snake => snake.draw(camera));
+      
+      ctx.restore();
+
+      // Nombres y efectos jugador
+      snakes.forEach(snake => {
+        if (snake.isPlayer) {
+          ctx.save();
+          ctx.translate(canvas.width/2, canvas.height/2);
+          ctx.scale(camera.zoom, camera.zoom);
+          ctx.translate(-camera.x, -camera.y);
+          
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = '#00ff88';
+          ctx.fillStyle = '#00ff88';
+          ctx.font = 'bold 20px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('★ TÚ ★', snake.x, snake.y - snake.radius - 25);
+          ctx.restore();
+        }
+      });
     }
 
-    function loop() {
+    function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
 
-    reset();
-    loop();
+    resetGame();
+    gameLoop();
   </script>
 </body>
 </html>
