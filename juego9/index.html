@@ -2,125 +2,168 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Speed Per Click Obby</title>
+<title>Speed Click Obby 3D</title>
 <style>
-    body {
-        font-family: Arial;
-        background: #1e1e2f;
-        color: white;
-        text-align: center;
-    }
-    button {
-        padding: 10px 20px;
-        margin: 5px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    .box {
-        border: 2px solid white;
-        padding: 10px;
-        margin: 10px;
-    }
+body { margin: 0; overflow: hidden; background: black; }
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: Arial;
+    z-index: 1;
+}
+button {
+    padding: 5px 10px;
+    margin-top: 5px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>⚡ Speed Per Click Obby ⚡</h1>
-
-<div class="box">
-    <p>🖱️ Clicks: <span id="clicks">0</span></p>
-    <p>🏃 Speed: <span id="speed">1</span></p>
-    <button onclick="clickSpeed()">CLICK PARA SPEED</button>
-</div>
-
-<div class="box">
-    <p>📏 Progreso Obby: <span id="progress">0</span>%</p>
-    <button onclick="run()">CORRER</button>
-</div>
-
-<div class="box">
+<div id="ui">
+    <p>⚡ Speed: <span id="speed">1</span></p>
     <p>🏆 Victorias: <span id="wins">0</span></p>
-    <p>🌍 Mundo: <span id="world">1</span></p>
+    <button onclick="addSpeed()">CLICK SPEED</button>
 </div>
 
-<div class="box">
-    <p>🔁 Rebirths: <span id="rebirths">0</span></p>
-    <button onclick="rebirth()">REBIRTH (10 Victorias)</button>
-</div>
-
-<div class="box">
-    <h3>🐾 Mascotas</h3>
-    <p>Mascota equipada: <span id="pet">Ninguna</span></p>
-    <button onclick="buyPet()">Comprar Mascota (5 Victorias)</button>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
 <script>
-let clicks = 0;
-let speed = 1;
-let progress = 0;
+// ESCENA
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+
+// CÁMARA
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 6, 10);
+
+// RENDER
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// LUZ
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
+
+// SUELO
+const floor = new THREE.Mesh(
+    new THREE.BoxGeometry(50, 1, 50),
+    new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+);
+floor.position.y = -1;
+scene.add(floor);
+
+// PERSONAJE (ESTILO ROBLOX)
+const player = new THREE.Group();
+
+// CUERPO (SKIN)
+const skinColor = 0xffcc99;
+const bodyMat = new THREE.MeshStandardMaterial({ color: skinColor });
+
+const torso = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 1), bodyMat);
+torso.position.y = 2;
+player.add(torso);
+
+const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), bodyMat);
+head.position.y = 3.6;
+player.add(head);
+
+scene.add(player);
+
+// OBBY
+const platforms = [];
+for (let i = 0; i < 10; i++) {
+    const plat = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 0.5, 3),
+        new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    );
+    plat.position.set(0, i * 2, -i * 6);
+    scene.add(plat);
+    platforms.push(plat);
+}
+
+// META
+const goal = new THREE.Mesh(
+    new THREE.BoxGeometry(4, 1, 4),
+    new THREE.MeshStandardMaterial({ color: 0xffff00 })
+);
+goal.position.set(0, 20, -60);
+scene.add(goal);
+
+// VARIABLES
+let speed = 0.1;
 let wins = 0;
-let rebirths = 0;
-let world = 1;
-let petMultiplier = 1;
-let hasPet = false;
+let velocityY = 0;
+let onGround = false;
 
-function clickSpeed() {
-    clicks++;
-    speed += 1 * petMultiplier;
-    update();
+// CONTROLES
+document.addEventListener("keydown", e => {
+    if (e.code === "Space" && onGround) {
+        velocityY = 0.35;
+        onGround = false;
+    }
+});
+
+// SPEED PER CLICK
+function addSpeed() {
+    speed += 0.05;
+    document.getElementById("speed").innerText = speed.toFixed(2);
 }
 
-function run() {
-    progress += speed;
-    if (progress >= 100) {
-        progress = 0;
-        wins++;
-        if (wins % 5 === 0) {
-            world++;
+// COLISIONES
+function checkCollision(obj) {
+    const box1 = new THREE.Box3().setFromObject(player);
+    const box2 = new THREE.Box3().setFromObject(obj);
+    return box1.intersectsBox(box2);
+}
+
+// LOOP
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Movimiento adelante
+    player.position.z -= speed;
+
+    // Gravedad
+    velocityY -= 0.02;
+    player.position.y += velocityY;
+
+    onGround = false;
+
+    platforms.forEach(p => {
+        if (checkCollision(p) && velocityY <= 0) {
+            player.position.y = p.position.y + 1.2;
+            velocityY = 0;
+            onGround = true;
         }
-        alert("¡🏆 Victoria conseguida!");
+    });
+
+    // Suelo
+    if (player.position.y < 0) {
+        player.position.y = 0;
+        velocityY = 0;
+        onGround = true;
     }
-    update();
+
+    // Victoria
+    if (checkCollision(goal)) {
+        wins++;
+        document.getElementById("wins").innerText = wins;
+        alert("🏆 ¡Victoria!");
+        player.position.set(0, 0, 0);
+        speed = 0.1;
+    }
+
+    camera.position.z = player.position.z + 10;
+    camera.position.y = player.position.y + 6;
+    camera.lookAt(player.position);
+
+    renderer.render(scene, camera);
 }
 
-function rebirth() {
-    if (wins >= 10) {
-        wins = 0;
-        speed = 1;
-        clicks = 0;
-        progress = 0;
-        rebirths++;
-        petMultiplier += 0.5;
-        alert("🔁 ¡Rebirth hecho! Más poder!");
-    } else {
-        alert("Necesitas 10 victorias");
-    }
-    update();
-}
-
-function buyPet() {
-    if (wins >= 5 && !hasPet) {
-        wins -= 5;
-        petMultiplier = 2;
-        hasPet = true;
-        document.getElementById("pet").innerText = "🐶 Perrito (+2x Speed)";
-    } else if (hasPet) {
-        alert("Ya tienes una mascota");
-    } else {
-        alert("Necesitas 5 victorias");
-    }
-    update();
-}
-
-function update() {
-    document.getElementById("clicks").innerText = clicks;
-    document.getElementById("speed").innerText = speed.toFixed(1);
-    document.getElementById("progress").innerText = progress.toFixed(0);
-    document.getElementById("wins").innerText = wins;
-    document.getElementById("rebirths").innerText = rebirths;
-    document.getElementById("world").innerText = world;
-}
+animate();
 </script>
 
 </body>
