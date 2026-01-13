@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Speed Per Click Obby</title>
+<style>
+    body {
+        font-family: Arial;
+        background: #1e1e2f;
+        color: white;
+        text-align: center;
+    }
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .box {
+        border: 2px solid white;
+        padding: 10px;
+        margin: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>⚡ Speed Per Click Obby ⚡</h1>
+
+<div class="box">
+    <p>🖱️ Clicks: <span id="clicks">0</span></p>
+    <p>🏃 Speed: <span id="speed">1</span></p>
+    <button onclick="clickSpeed()">CLICK PARA SPEED</button>
+</div>
+
+<div class="box">
+    <p>📏 Progreso Obby: <span id="progress">0</span>%</p>
+    <button onclick="run()">CORRER</button>
+</div>
+
+<div class="box">
+    <p>🏆 Victorias: <span id="wins">0</span></p>
+    <p>🌍 Mundo: <span id="world">1</span></p>
+</div>
+
+<div class="box">
+    <p>🔁 Rebirths: <span id="rebirths">0</span></p>
+    <button onclick="rebirth()">REBIRTH (10 Victorias)</button>
+</div>
+
+<div class="box">
+    <h3>🐾 Mascotas</h3>
+    <p>Mascota equipada: <span id="pet">Ninguna</span></p>
+    <button onclick="buyPet()">Comprar Mascota (5 Victorias)</button>
+</div>
+
+<script>
+let clicks = 0;
+let speed = 1;
+let progress = 0;
+let wins = 0;
+let rebirths = 0;
+let world = 1;
+let petMultiplier = 1;
+let hasPet = false;
+
+function clickSpeed() {
+    clicks++;
+    speed += 1 * petMultiplier;
+    update();
+}
+
+function run() {
+    progress += speed;
+    if (progress >= 100) {
+        progress = 0;
+        wins++;
+        if (wins % 5 === 0) {
+            world++;
+        }
+        alert("¡🏆 Victoria conseguida!");
+    }
+    update();
+}
+
+function rebirth() {
+    if (wins >= 10) {
+        wins = 0;
+        speed = 1;
+        clicks = 0;
+        progress = 0;
+        rebirths++;
+        petMultiplier += 0.5;
+        alert("🔁 ¡Rebirth hecho! Más poder!");
+    } else {
+        alert("Necesitas 10 victorias");
+    }
+    update();
+}
+
+function buyPet() {
+    if (wins >= 5 && !hasPet) {
+        wins -= 5;
+        petMultiplier = 2;
+        hasPet = true;
+        document.getElementById("pet").innerText = "🐶 Perrito (+2x Speed)";
+    } else if (hasPet) {
+        alert("Ya tienes una mascota");
+    } else {
+        alert("Necesitas 5 victorias");
+    }
+    update();
+}
+
+function update() {
+    document.getElementById("clicks").innerText = clicks;
+    document.getElementById("speed").innerText = speed.toFixed(1);
+    document.getElementById("progress").innerText = progress.toFixed(0);
+    document.getElementById("wins").innerText = wins;
+    document.getElementById("rebirths").innerText = rebirths;
+    document.getElementById("world").innerText = world;
+}
+</script>
+
+</body>
+</html>
