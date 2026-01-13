@@ -1,69 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Car Soccer</title>
-  <style>
-    body {
-      margin: 0;
-      background: #0b6623;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-    }
-    canvas {
-      background: #1e8f4d;
-      border: 3px solid #fff;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Car Soccer 3D</title>
+<style>
+body {
+  margin: 0;
+  background: #062;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+canvas {
+  background: linear-gradient(#1e8f4d, #0b6623);
+  border: 3px solid white;
+}
+</style>
 </head>
 <body>
 
-<canvas id="game" width="800" height="500"></canvas>
+<canvas id="game" width="900" height="500"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const keys = {};
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+addEventListener("keydown", e => keys[e.key] = true);
+addEventListener("keyup", e => keys[e.key] = false);
 
-// ======================
-// CONFIGURACIÓN GENERAL
-// ======================
-const FIELD = {
-  width: canvas.width,
-  height: canvas.height,
-  goalWidth: 140
-};
+const FIELD = { width: canvas.width, height: 200, depth: 800 };
+const FOV = 400;
 
-let score = { left: 0, right: 0 };
-
-// ======================
-// COCHE
-// ======================
 const car = {
   x: FIELD.width / 2,
-  y: FIELD.height - 80,
+  y: 600,
   z: 0,
-  vz: 0,
   angle: 0,
   speed: 0,
+  vz: 0,
   radius: 18
 };
 
-// ======================
-// PELOTA
-// ======================
 const ball = {
   x: FIELD.width / 2,
-  y: FIELD.height / 2,
+  y: 400,
   z: 0,
   vx: 3,
-  vy: 2,
+  vy: -2,
   vz: 0,
   radius: 14
 };
@@ -71,9 +56,17 @@ const ball = {
 const GRAVITY = 0.6;
 const FRICTION = 0.98;
 
-// ======================
-// GAME LOOP
-// ======================
+// ================= PROYECCIÓN 3D =================
+function project(x, y, z) {
+  const scale = FOV / (FOV + y);
+  return {
+    x: (x - FIELD.width / 2) * scale + FIELD.width / 2,
+    y: canvas.height - (y - z) * scale,
+    scale
+  };
+}
+
+// ================= LOOP =================
 function loop() {
   update();
   draw();
@@ -81,129 +74,71 @@ function loop() {
 }
 loop();
 
-// ======================
-// ACTUALIZACIÓN
-// ======================
+// ================= UPDATE =================
 function update() {
-  if (keys["w"] || keys["ArrowUp"]) car.speed += 0.2;
-  if (keys["s"] || keys["ArrowDown"]) car.speed *= 0.95;
-  if (keys["a"] || keys["ArrowLeft"]) car.angle -= 0.05;
-  if (keys["d"] || keys["ArrowRight"]) car.angle += 0.05;
-
-  if ((keys[" "] || keys["Space"]) && car.z === 0) {
-    car.vz = 10;
-  }
+  if (keys["w"]) car.speed += 0.3;
+  if (keys["s"]) car.speed *= 0.9;
+  if (keys["a"]) car.angle -= 0.05;
+  if (keys["d"]) car.angle += 0.05;
+  if (keys[" "] && car.z === 0) car.vz = 12;
 
   car.speed *= FRICTION;
-
   car.x += Math.cos(car.angle) * car.speed;
   car.y += Math.sin(car.angle) * car.speed;
 
   car.vz -= GRAVITY;
   car.z += car.vz;
-  if (car.z < 0) {
-    car.z = 0;
-    car.vz = 0;
-  }
+  if (car.z < 0) { car.z = 0; car.vz = 0; }
 
-  keepInside(car);
-
-  ball.vy += 0.1;
+  ball.vz -= GRAVITY * 0.5;
   ball.x += ball.vx;
   ball.y += ball.vy;
+  ball.z += ball.vz;
 
-  if (ball.x < ball.radius || ball.x > FIELD.width - ball.radius) ball.vx *= -1;
-  if (ball.y < ball.radius) ball.vy *= -1;
+  if (ball.z < 0) { ball.z = 0; ball.vz *= -0.6; }
 
-  checkGoal();
   collide(car, ball);
 }
 
-// ======================
-// COLISIONES
-// ======================
+// ================= COLISIÓN =================
 function collide(c, b) {
   const dx = b.x - c.x;
   const dy = b.y - c.y;
   const dist = Math.hypot(dx, dy);
-
   if (dist < c.radius + b.radius) {
-    const angle = Math.atan2(dy, dx);
-    const force = c.speed * 2;
-    b.vx = Math.cos(angle) * force;
-    b.vy = Math.sin(angle) * force;
+    const a = Math.atan2(dy, dx);
+    b.vx = Math.cos(a) * c.speed * 2;
+    b.vy = Math.sin(a) * c.speed * 2;
+    b.vz = 6;
   }
 }
 
-// ======================
-// LÍMITES
-// ======================
-function keepInside(obj) {
-  obj.x = Math.max(obj.radius, Math.min(FIELD.width - obj.radius, obj.x));
-  obj.y = Math.max(obj.radius, Math.min(FIELD.height - obj.radius, obj.y));
-}
-
-// ======================
-// GOLES
-// ======================
-function checkGoal() {
-  if (ball.y > FIELD.height - 10) {
-    score.left++;
-    reset();
-  }
-  if (ball.y < 10) {
-    score.right++;
-    reset();
-  }
-}
-
-function reset() {
-  ball.x = FIELD.width / 2;
-  ball.y = FIELD.height / 2;
-  ball.vx = (Math.random() > 0.5 ? 3 : -3);
-  ball.vy = 2;
-}
-
-// ======================
-// DIBUJO
-// ======================
+// ================= DRAW =================
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  ctx.strokeStyle = "#fff";
-  ctx.strokeRect(0, 0, FIELD.width, FIELD.height);
+  // suelo
+  ctx.fillStyle = "#1e8f4d";
+  ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#ccc";
-  ctx.fillRect(FIELD.width / 2 - FIELD.goalWidth / 2, 0, FIELD.goalWidth, 10);
-  ctx.fillRect(FIELD.width / 2 - FIELD.goalWidth / 2, FIELD.height - 10, FIELD.goalWidth, 10);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = "24px Arial";
-  ctx.fillText(`${score.left} : ${score.right}`, FIELD.width / 2 - 20, 30);
-
-  drawShadow(ball);
-  drawCircle(ball.x, ball.y - ball.z, ball.radius, "#fff");
-
-  drawShadow(car);
+  drawObject(ball, "#fff");
   drawCar();
 }
 
-function drawShadow(obj) {
-  ctx.fillStyle = "rgba(0,0,0,0.3)";
-  drawCircle(obj.x, obj.y, obj.radius, ctx.fillStyle);
-}
-
-function drawCircle(x, y, r, color) {
+function drawObject(obj, color) {
+  const p = project(obj.x, obj.y, obj.z);
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.arc(p.x, p.y, obj.radius * p.scale, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
 }
 
 function drawCar() {
+  const p = project(car.x, car.y, car.z);
   ctx.save();
-  ctx.translate(car.x, car.y - car.z);
+  ctx.translate(p.x, p.y);
   ctx.rotate(car.angle);
+  ctx.scale(p.scale, p.scale);
   ctx.fillStyle = "#ff3b3b";
   ctx.fillRect(-20, -12, 40, 24);
   ctx.restore();
