@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini Minecraft</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #87ceeb; }
+  #info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: monospace;
+    background: rgba(0,0,0,0.5);
+    padding: 8px;
+  }
+</style>
+</head>
+<body>
+<div id="info">
+  Click to play<br>
+  WASD = move | Mouse = look<br>
+  Space = up | Shift = down
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+<script>
+/* ===== BASIC SETUP ===== */
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x87ceeb, 20, 120);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+/* ===== LIGHTING ===== */
+const sun = new THREE.DirectionalLight(0xffffff, 1);
+sun.position.set(50, 100, 50);
+scene.add(sun);
+
+scene.add(new THREE.AmbientLight(0xcccccc, 0.4));
+
+/* ===== PLAYER CONTROLS ===== */
+let velocity = new THREE.Vector3();
+let direction = new THREE.Vector3();
+let move = { f:0, b:0, l:0, r:0, u:0, d:0 };
+
+document.addEventListener("keydown", e => {
+  if (e.code === "KeyW") move.f = 1;
+  if (e.code === "KeyS") move.b = 1;
+  if (e.code === "KeyA") move.l = 1;
+  if (e.code === "KeyD") move.r = 1;
+  if (e.code === "Space") move.u = 1;
+  if (e.code === "ShiftLeft") move.d = 1;
+});
+
+document.addEventListener("keyup", e => {
+  if (e.code === "KeyW") move.f = 0;
+  if (e.code === "KeyS") move.b = 0;
+  if (e.code === "KeyA") move.l = 0;
+  if (e.code === "KeyD") move.r = 0;
+  if (e.code === "Space") move.u = 0;
+  if (e.code === "ShiftLeft") move.d = 0;
+});
+
+/* Mouse look */
+document.body.addEventListener("click", () => {
+  document.body.requestPointerLock();
+});
+
+document.addEventListener("mousemove", e => {
+  if (document.pointerLockElement === document.body) {
+    camera.rotation.y -= e.movementX * 0.002;
+    camera.rotation.x -= e.movementY * 0.002;
+    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+  }
+});
+
+/* ===== BLOCK SETUP ===== */
+const blockSize = 1;
+const geometry = new THREE.BoxGeometry(1,1,1);
+
+const materials = {
+  grass: new THREE.MeshLambertMaterial({ color: 0x3cb043 }),
+  dirt:  new THREE.MeshLambertMaterial({ color: 0x8b4513 }),
+  wood:  new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
+  leaf:  new THREE.MeshLambertMaterial({ color: 0x2e8b57 })
+};
+
+function block(x,y,z,mat) {
+  const b = new THREE.Mesh(geometry, mat);
+  b.position.set(x,y,z);
+  scene.add(b);
+}
+
+/* ===== WORLD GENERATION ===== */
+const WORLD_SIZE = 32;
+
+function height(x,z) {
+  return Math.floor(
+    5 +
+    Math.sin(x * 0.3) * 2 +
+    Math.cos(z * 0.3) * 2 +
+    Math.random() * 2
+  );
+}
+
+for (let x = -WORLD_SIZE; x < WORLD_SIZE; x++) {
+  for (let z = -WORLD_SIZE; z < WORLD_SIZE; z++) {
+    const h = height(x,z);
+
+    for (let y = 0; y < h; y++) {
+      block(x,y,z, y === h-1 ? materials.grass : materials.dirt);
+    }
+
+    /* ===== TREES ===== */
+    if (Math.random() < 0.03 && h > 4) {
+      const th = 3 + Math.floor(Math.random()*3);
+
+      for (let t = 0; t < th; t++) {
+        block(x, h+t, z, materials.wood);
+      }
+
+      for (let lx = -2; lx <= 2; lx++) {
+        for (let lz = -2; lz <= 2; lz++) {
+          for (let ly = 0; ly <= 2; ly++) {
+            if (Math.random() > 0.2) {
+              block(x+lx, h+th-1+ly, z+lz, materials.leaf);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+camera.position.set(0, 10, 20);
+
+/* ===== GAME LOOP ===== */
+function animate() {
+  requestAnimationFrame(animate);
+
+  direction.set(
+    move.r - move.l,
+    move.u - move.d,
+    move.b - move.f
+  ).normalize();
+
+  velocity.x = direction.x * 0.15;
+  velocity.y = direction.y * 0.15;
+  velocity.z = direction.z * 0.15;
+
+  camera.translateX(velocity.x);
+  camera.translateY(velocity.y);
+  camera.translateZ(velocity.z);
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
