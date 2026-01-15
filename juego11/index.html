@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Zap, Star, ShoppingBag, Home, Play, Crown, Rabbit, Cat, Dog, Bird } from 'lucide-react';
+import * as THREE from 'three';
 
 const RobloxObbyGame = () => {
   const [screen, setScreen] = useState('menu');
@@ -9,16 +10,21 @@ const RobloxObbyGame = () => {
   const [selectedObby, setSelectedObby] = useState(null);
   const [pets, setPets] = useState([]);
   const [equippedPet, setEquippedPet] = useState(null);
-  
-  // Game state
-  const [playerPos, setPlayerPos] = useState({ x: 50, y: 450 });
+  const [playerPos, setPlayerPos] = useState({ x: 0, y: 2, z: 0 });
+  const [playerVel, setPlayerVel] = useState({ x: 0, y: 0, z: 0 });
+  const [rotation, setRotation] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
-  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [currentStage, setCurrentStage] = useState(0);
   const [gameActive, setGameActive] = useState(false);
   const [gameTime, setGameTime] = useState(0);
   
-  const canvasRef = useRef(null);
+  const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const playerRef = useRef(null);
+  const petRef = useRef(null);
+  const animationRef = useRef(null);
   const keysPressed = useRef({});
 
   const OBBYS = [
@@ -27,13 +33,13 @@ const RobloxObbyGame = () => {
       name: "Obby Clásico",
       difficulty: "Fácil",
       reward: 50,
-      color: "#4CAF50",
+      color: 0x4CAF50,
       stages: [
-        { x: 0, y: 450, width: 100, height: 50, color: "#8BC34A" },
-        { x: 150, y: 400, width: 100, height: 50, color: "#8BC34A" },
-        { x: 300, y: 350, width: 100, height: 50, color: "#8BC34A" },
-        { x: 450, y: 300, width: 100, height: 50, color: "#8BC34A" },
-        { x: 600, y: 250, width: 100, height: 50, color: "#FFD700" }
+        { x: 0, y: 0, z: 0, w: 4, d: 4, c: 0x8BC34A },
+        { x: 6, y: 0, z: 0, w: 4, d: 4, c: 0x8BC34A },
+        { x: 12, y: 1, z: 0, w: 4, d: 4, c: 0x8BC34A },
+        { x: 18, y: 2, z: 0, w: 4, d: 4, c: 0x8BC34A },
+        { x: 24, y: 3, z: 0, w: 4, d: 4, c: 0xFFD700 }
       ]
     },
     {
@@ -41,14 +47,14 @@ const RobloxObbyGame = () => {
       name: "Obby de Lava",
       difficulty: "Medio",
       reward: 100,
-      color: "#FF5722",
+      color: 0xFF5722,
       stages: [
-        { x: 0, y: 450, width: 80, height: 50, color: "#FF7043" },
-        { x: 120, y: 450, width: 80, height: 50, color: "#FF7043" },
-        { x: 240, y: 400, width: 80, height: 50, color: "#FF7043" },
-        { x: 360, y: 350, width: 80, height: 50, color: "#FF7043" },
-        { x: 480, y: 300, width: 80, height: 50, color: "#FF7043" },
-        { x: 600, y: 250, width: 80, height: 50, color: "#FFD700" }
+        { x: 0, y: 0, z: 0, w: 3, d: 3, c: 0xFF7043 },
+        { x: 5, y: 0, z: 0, w: 3, d: 3, c: 0xFF7043 },
+        { x: 10, y: 1, z: 0, w: 3, d: 3, c: 0xFF7043 },
+        { x: 15, y: 2, z: 0, w: 3, d: 3, c: 0xFF7043 },
+        { x: 20, y: 3, z: 2, w: 3, d: 3, c: 0xFF7043 },
+        { x: 25, y: 4, z: 0, w: 3, d: 3, c: 0xFFD700 }
       ]
     },
     {
@@ -56,15 +62,15 @@ const RobloxObbyGame = () => {
       name: "Obby Espacial",
       difficulty: "Difícil",
       reward: 200,
-      color: "#9C27B0",
+      color: 0x9C27B0,
       stages: [
-        { x: 0, y: 450, width: 70, height: 40, color: "#BA68C8" },
-        { x: 110, y: 400, width: 70, height: 40, color: "#BA68C8" },
-        { x: 220, y: 350, width: 70, height: 40, color: "#BA68C8" },
-        { x: 330, y: 300, width: 70, height: 40, color: "#BA68C8" },
-        { x: 440, y: 250, width: 70, height: 40, color: "#BA68C8" },
-        { x: 550, y: 200, width: 70, height: 40, color: "#BA68C8" },
-        { x: 660, y: 150, width: 70, height: 40, color: "#FFD700" }
+        { x: 0, y: 0, z: 0, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 4, y: 0.5, z: 0, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 8, y: 1, z: 2, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 12, y: 2, z: 0, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 16, y: 3, z: -2, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 20, y: 4, z: 0, w: 2.5, d: 2.5, c: 0xBA68C8 },
+        { x: 24, y: 5, z: 0, w: 2.5, d: 2.5, c: 0xFFD700 }
       ]
     },
     {
@@ -72,25 +78,25 @@ const RobloxObbyGame = () => {
       name: "Obby Extremo",
       difficulty: "Experto",
       reward: 500,
-      color: "#F44336",
+      color: 0xF44336,
       stages: [
-        { x: 0, y: 450, width: 60, height: 35, color: "#EF5350" },
-        { x: 100, y: 420, width: 60, height: 35, color: "#EF5350" },
-        { x: 200, y: 380, width: 60, height: 35, color: "#EF5350" },
-        { x: 300, y: 340, width: 60, height: 35, color: "#EF5350" },
-        { x: 400, y: 300, width: 60, height: 35, color: "#EF5350" },
-        { x: 500, y: 250, width: 60, height: 35, color: "#EF5350" },
-        { x: 600, y: 200, width: 60, height: 35, color: "#EF5350" },
-        { x: 680, y: 150, width: 60, height: 35, color: "#FFD700" }
+        { x: 0, y: 0, z: 0, w: 2, d: 2, c: 0xEF5350 },
+        { x: 3, y: 0.5, z: 1, w: 2, d: 2, c: 0xEF5350 },
+        { x: 6, y: 1, z: -1, w: 2, d: 2, c: 0xEF5350 },
+        { x: 9, y: 2, z: 0, w: 2, d: 2, c: 0xEF5350 },
+        { x: 12, y: 3, z: 2, w: 2, d: 2, c: 0xEF5350 },
+        { x: 15, y: 4, z: -2, w: 2, d: 2, c: 0xEF5350 },
+        { x: 18, y: 5, z: 0, w: 2, d: 2, c: 0xEF5350 },
+        { x: 21, y: 6, z: 0, w: 2, d: 2, c: 0xFFD700 }
       ]
     }
   ];
 
   const PETS = [
-    { id: 1, name: "Conejo", icon: Rabbit, cost: 100, speedBoost: 0.2 },
-    { id: 2, name: "Gato", icon: Cat, cost: 250, speedBoost: 0.5 },
-    { id: 3, name: "Perro", icon: Dog, cost: 500, speedBoost: 0.8 },
-    { id: 4, name: "Pájaro", icon: Bird, cost: 1000, speedBoost: 1.2 }
+    { id: 1, name: "Conejo", icon: Rabbit, cost: 100, speedBoost: 0.2, color: 0xFFB6C1 },
+    { id: 2, name: "Gato", icon: Cat, cost: 250, speedBoost: 0.5, color: 0xFFA500 },
+    { id: 3, name: "Perro", icon: Dog, cost: 500, speedBoost: 0.8, color: 0x8B4513 },
+    { id: 4, name: "Pájaro", icon: Bird, cost: 1000, speedBoost: 1.2, color: 0x00CED1 }
   ];
 
   const SPEED_UPGRADES = [
@@ -102,137 +108,184 @@ const RobloxObbyGame = () => {
   ];
 
   useEffect(() => {
+    if (screen !== 'game' || !selectedObby || !mountRef.current) return;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    sceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
+    camera.position.set(5, 10, 15);
+    camera.lookAt(0, 2, 0);
+    cameraRef.current = camera;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(800, 600);
+    renderer.shadowMap.enabled = true;
+    rendererRef.current = renderer;
+
+    mountRef.current.innerHTML = '';
+    mountRef.current.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(10, 20, 10);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const playerMaterial = new THREE.MeshStandardMaterial({ color: 0x2196F3 });
+    const player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.castShadow = true;
+    player.position.set(0, 2, 0);
+    scene.add(player);
+    playerRef.current = player;
+
+    const obby = OBBYS.find(o => o.id === selectedObby);
+    obby.stages.forEach((s, idx) => {
+      const geo = new THREE.BoxGeometry(s.w, 0.5, s.d);
+      const mat = new THREE.MeshStandardMaterial({ color: s.c });
+      const plat = new THREE.Mesh(geo, mat);
+      plat.position.set(s.x, s.y, s.z);
+      plat.receiveShadow = true;
+      plat.castShadow = true;
+      scene.add(plat);
+
+      const edges = new THREE.EdgesGeometry(geo);
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+      line.position.copy(plat.position);
+      scene.add(line);
+    });
+
+    if (equippedPet) {
+      const petData = PETS.find(p => p.id === equippedPet);
+      const petGeo = new THREE.SphereGeometry(0.4, 16, 16);
+      const petMat = new THREE.MeshStandardMaterial({ color: petData.color });
+      const pet = new THREE.Mesh(petGeo, petMat);
+      pet.castShadow = true;
+      scene.add(pet);
+      petRef.current = pet;
+    }
+
+    const lavaGeo = new THREE.PlaneGeometry(100, 100);
+    const lavaMat = new THREE.MeshStandardMaterial({ color: 0xFF4500, emissive: 0xFF0000, emissiveIntensity: 0.5 });
+    const lava = new THREE.Mesh(lavaGeo, lavaMat);
+    lava.rotation.x = -Math.PI / 2;
+    lava.position.y = -5;
+    scene.add(lava);
+
+    const animate = () => {
+      animationRef.current = requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (mountRef.current && renderer.domElement) mountRef.current.removeChild(renderer.domElement);
+      renderer.dispose();
+    };
+  }, [screen, selectedObby, equippedPet]);
+
+  useEffect(() => {
     if (!gameActive) return;
-
-    const timer = setInterval(() => {
-      setGameTime(t => t + 0.016);
-    }, 16);
-
+    const timer = setInterval(() => setGameTime(t => t + 0.016), 16);
     return () => clearInterval(timer);
   }, [gameActive]);
 
   useEffect(() => {
     if (!gameActive || !selectedObby) return;
-
-    const handleKeyDown = (e) => {
-      keysPressed.current[e.key] = true;
-    };
-
-    const handleKeyUp = (e) => {
-      keysPressed.current[e.key] = false;
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
+    const down = (e) => keysPressed.current[e.key.toLowerCase()] = true;
+    const up = (e) => keysPressed.current[e.key.toLowerCase()] = false;
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
     };
   }, [gameActive, selectedObby]);
 
   useEffect(() => {
-    if (!gameActive || !selectedObby) return;
+    if (!gameActive || !selectedObby || !playerRef.current) return;
 
     const gameLoop = setInterval(() => {
-      setPlayerPos(prev => {
-        let newX = prev.x;
-        let newY = prev.y;
-        let newVelY = velocity.y;
+      const totalSpeed = speed * (equippedPet ? 1 + PETS.find(p => p.id === equippedPet)?.speedBoost : 1);
+      const moveSpeed = 0.15 * totalSpeed;
+      let newVel = { ...playerVel };
+      let newPos = { ...playerPos };
+      let newRot = rotation;
 
-        const totalSpeed = speed * (equippedPet ? 1 + PETS.find(p => p.id === equippedPet)?.speedBoost : 1);
-        const moveSpeed = 3 * totalSpeed;
+      if (keysPressed.current['arrowleft'] || keysPressed.current['a']) {
+        newPos.x -= moveSpeed;
+        newRot = Math.PI / 2;
+      }
+      if (keysPressed.current['arrowright'] || keysPressed.current['d']) {
+        newPos.x += moveSpeed;
+        newRot = -Math.PI / 2;
+      }
+      if (keysPressed.current['arrowup'] || keysPressed.current['w']) {
+        newPos.z -= moveSpeed;
+        newRot = 0;
+      }
+      if (keysPressed.current['arrowdown'] || keysPressed.current['s']) {
+        newPos.z += moveSpeed;
+        newRot = Math.PI;
+      }
+      if (keysPressed.current[' '] && !isJumping) {
+        newVel.y = 0.25;
+        setIsJumping(true);
+      }
 
-        if (keysPressed.current['ArrowLeft'] || keysPressed.current['a']) {
-          newX -= moveSpeed;
+      newVel.y -= 0.015;
+      newPos.y += newVel.y;
+
+      const obby = OBBYS.find(o => o.id === selectedObby);
+      obby.stages.forEach((s, idx) => {
+        if (Math.abs(newPos.x - s.x) < s.w / 2 && Math.abs(newPos.z - s.z) < s.d / 2 &&
+            newPos.y <= s.y + 0.75 && newPos.y >= s.y - 0.5 && newVel.y <= 0) {
+          newPos.y = s.y + 0.75;
+          newVel.y = 0;
+          setIsJumping(false);
+          if (idx > currentStage) setCurrentStage(idx);
+          if (idx === obby.stages.length - 1) setTimeout(() => completeObby(), 100);
         }
-        if (keysPressed.current['ArrowRight'] || keysPressed.current['d']) {
-          newX += moveSpeed;
-        }
-        if ((keysPressed.current['ArrowUp'] || keysPressed.current['w'] || keysPressed.current[' ']) && !isJumping) {
-          newVelY = -12;
-          setIsJumping(true);
-        }
-
-        newY += newVelY;
-        newVelY += 0.5; // Gravedad
-
-        const obby = OBBYS.find(o => o.id === selectedObby);
-        let onPlatform = false;
-
-        obby.stages.forEach((stage, idx) => {
-          if (newX + 20 > stage.x && newX < stage.x + stage.width &&
-              newY + 20 >= stage.y && newY + 20 <= stage.y + stage.height &&
-              newVelY >= 0) {
-            newY = stage.y - 20;
-            newVelY = 0;
-            onPlatform = true;
-            setIsJumping(false);
-            
-            if (idx > currentStage) {
-              setCurrentStage(idx);
-            }
-
-            if (idx === obby.stages.length - 1) {
-              setTimeout(() => {
-                completeObby();
-              }, 100);
-            }
-          }
-        });
-
-        if (newY > 500) {
-          return { x: 50, y: 450 };
-        }
-
-        newX = Math.max(0, Math.min(750, newX));
-
-        setVelocity({ x: 0, y: newVelY });
-        return { x: newX, y: newY };
       });
+
+      if (newPos.y < -5) {
+        newPos = { x: 0, y: 2, z: 0 };
+        newVel = { x: 0, y: 0, z: 0 };
+        setCurrentStage(0);
+      }
+
+      setPlayerPos(newPos);
+      setPlayerVel(newVel);
+      setRotation(newRot);
+
+      if (playerRef.current) {
+        playerRef.current.position.set(newPos.x, newPos.y, newPos.z);
+        playerRef.current.rotation.y = newRot;
+      }
+
+      if (petRef.current) {
+        const t = Date.now() * 0.001;
+        petRef.current.position.set(newPos.x + Math.sin(t * 3) * 1.5, newPos.y + Math.sin(t * 5) * 0.3 + 0.5, newPos.z + Math.cos(t * 3) * 1.5);
+      }
+
+      if (cameraRef.current) {
+        cameraRef.current.position.set(newPos.x + 5, newPos.y + 8, newPos.z + 12);
+        cameraRef.current.lookAt(newPos.x, newPos.y, newPos.z);
+      }
     }, 16);
 
     return () => clearInterval(gameLoop);
-  }, [gameActive, selectedObby, velocity, isJumping, currentStage, speed, equippedPet]);
+  }, [gameActive, selectedObby, playerPos, playerVel, rotation, isJumping, currentStage, speed, equippedPet]);
 
-  useEffect(() => {
-    if (!canvasRef.current || !selectedObby) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    ctx.clearRect(0, 0, 800, 500);
-
-    const obby = OBBYS.find(o => o.id === selectedObby);
-    
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(0, 0, 800, 500);
-
-    obby.stages.forEach((stage, idx) => {
-      ctx.fillStyle = stage.color;
-      ctx.fillRect(stage.x, stage.y, stage.width, stage.height);
-      
-      ctx.fillStyle = '#000';
-      ctx.font = '12px Arial';
-      ctx.fillText(`${idx + 1}`, stage.x + stage.width/2 - 5, stage.y + stage.height/2 + 5);
-    });
-
-    ctx.fillStyle = '#2196F3';
-    ctx.fillRect(playerPos.x, playerPos.y, 20, 20);
-
-    if (equippedPet) {
-      ctx.fillStyle = '#FFB6C1';
-      ctx.beginPath();
-      ctx.arc(playerPos.x + 30, playerPos.y + 10, 8, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-  }, [playerPos, selectedObby, equippedPet]);
-
-  const startObby = (obbyId) => {
-    setSelectedObby(obbyId);
-    setPlayerPos({ x: 50, y: 450 });
-    setVelocity({ x: 0, y: 0 });
+  const startObby = (id) => {
+    setSelectedObby(id);
+    setPlayerPos({ x: 0, y: 2, z: 0 });
+    setPlayerVel({ x: 0, y: 0, z: 0 });
     setCurrentStage(0);
     setGameActive(true);
     setGameTime(0);
@@ -242,38 +295,36 @@ const RobloxObbyGame = () => {
   const completeObby = () => {
     const obby = OBBYS.find(o => o.id === selectedObby);
     const reward = Math.floor(obby.reward * (1 + (equippedPet ? PETS.find(p => p.id === equippedPet)?.speedBoost * 0.5 : 0)));
-    
     setCoins(c => c + reward);
     setWins(w => w + 1);
     setGameActive(false);
-    
-    alert(`¡Obby completado! +${reward} monedas`);
-    setScreen('menu');
+    setTimeout(() => {
+      alert(`¡Obby completado! +${reward} monedas`);
+      setScreen('menu');
+    }, 100);
   };
 
-  const buySpeedUpgrade = () => {
-    const nextLevel = speed + 1;
-    const upgrade = SPEED_UPGRADES.find(u => u.level === nextLevel);
-    
+  const buySpeed = () => {
+    const upgrade = SPEED_UPGRADES.find(u => u.level === speed + 1);
     if (upgrade && coins >= upgrade.cost) {
       setCoins(c => c - upgrade.cost);
       setSpeed(upgrade.level);
     }
   };
 
-  const buyPet = (petId) => {
-    const pet = PETS.find(p => p.id === petId);
-    if (coins >= pet.cost && !pets.includes(petId)) {
+  const buyPet = (id) => {
+    const pet = PETS.find(p => p.id === id);
+    if (coins >= pet.cost && !pets.includes(id)) {
       setCoins(c => c - pet.cost);
-      setPets(p => [...p, petId]);
+      setPets(p => [...p, id]);
     }
   };
 
-  const renderMenu = () => (
+  if (screen === 'menu') return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">OBBY GAME</h1>
+          <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">OBBY GAME 3D</h1>
           <div className="flex justify-center gap-8 text-white text-xl">
             <div className="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full">
               <Star className="text-yellow-300" />
@@ -289,39 +340,26 @@ const RobloxObbyGame = () => {
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-2 gap-4 mb-6">
-          {OBBYS.map(obby => (
-            <div key={obby.id} className="bg-white/90 rounded-xl p-6 shadow-xl">
+          {OBBYS.map(o => (
+            <div key={o.id} className="bg-white/90 rounded-xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold" style={{ color: obby.color }}>{obby.name}</h3>
-                <span className="px-3 py-1 bg-gray-200 rounded-full text-sm">{obby.difficulty}</span>
+                <h3 className="text-2xl font-bold" style={{color:`#${o.color.toString(16)}`}}>{o.name}</h3>
+                <span className="px-3 py-1 bg-gray-200 rounded-full text-sm">{o.difficulty}</span>
               </div>
-              <p className="text-gray-700 mb-4">Recompensa: {obby.reward} monedas</p>
-              <button
-                onClick={() => startObby(obby.id)}
-                className="w-full py-3 rounded-lg font-bold text-white transition hover:scale-105"
-                style={{ backgroundColor: obby.color }}
-              >
-                <Play className="inline mr-2" size={20} />
-                Jugar
+              <p className="text-gray-700 mb-4">Recompensa: {o.reward} monedas</p>
+              <button onClick={() => startObby(o.id)} className="w-full py-3 rounded-lg font-bold text-white hover:scale-105" style={{backgroundColor:`#${o.color.toString(16)}`}}>
+                <Play className="inline mr-2" size={20} />Jugar
               </button>
             </div>
           ))}
         </div>
-
         <div className="flex gap-4">
-          <button
-            onClick={() => setScreen('shop')}
-            className="flex-1 bg-white/90 rounded-xl p-6 shadow-xl hover:scale-105 transition"
-          >
+          <button onClick={() => setScreen('shop')} className="flex-1 bg-white/90 rounded-xl p-6 shadow-xl hover:scale-105">
             <ShoppingBag className="mx-auto mb-2 text-green-500" size={40} />
             <h3 className="text-xl font-bold text-center">Tienda</h3>
           </button>
-          <button
-            onClick={() => setScreen('pets')}
-            className="flex-1 bg-white/90 rounded-xl p-6 shadow-xl hover:scale-105 transition"
-          >
+          <button onClick={() => setScreen('pets')} className="flex-1 bg-white/90 rounded-xl p-6 shadow-xl hover:scale-105">
             <Crown className="mx-auto mb-2 text-purple-500" size={40} />
             <h3 className="text-xl font-bold text-center">Mascotas</h3>
           </button>
@@ -330,7 +368,7 @@ const RobloxObbyGame = () => {
     </div>
   );
 
-  const renderGame = () => (
+  if (screen === 'game') return (
     <div className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white/90 rounded-xl p-4 mb-4">
@@ -340,78 +378,45 @@ const RobloxObbyGame = () => {
               <span>Etapa: {currentStage + 1}/{OBBYS.find(o => o.id === selectedObby)?.stages.length}</span>
               <span>Tiempo: {gameTime.toFixed(1)}s</span>
             </div>
-            <button
-              onClick={() => {
-                setGameActive(false);
-                setScreen('menu');
-              }}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              Salir
-            </button>
+            <button onClick={() => { setGameActive(false); setScreen('menu'); }} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Salir</button>
           </div>
         </div>
-        
         <div className="bg-white rounded-xl p-4 shadow-xl">
-          <canvas
-            ref={canvasRef}
-            width={800}
-            height={500}
-            className="w-full border-4 border-gray-300 rounded-lg"
-          />
+          <div ref={mountRef} className="bg-gray-900 rounded-lg mx-auto" style={{width:'800px',height:'600px'}} />
           <div className="mt-4 text-center text-gray-700">
-            <p className="font-bold">Controles: ← → o A D para mover | ↑ W o ESPACIO para saltar</p>
+            <p className="font-bold">Controles: W A S D o Flechas | ESPACIO para saltar</p>
           </div>
         </div>
       </div>
     </div>
   );
 
-  const renderShop = () => (
+  if (screen === 'shop') return (
     <div className="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 p-8">
       <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => setScreen('menu')}
-          className="mb-6 px-4 py-2 bg-white rounded-lg shadow-lg hover:scale-105 transition"
-        >
-          <Home className="inline mr-2" />
-          Volver
+        <button onClick={() => setScreen('menu')} className="mb-6 px-4 py-2 bg-white rounded-lg shadow-lg hover:scale-105">
+          <Home className="inline mr-2" />Volver
         </button>
-
         <div className="bg-white/90 rounded-xl p-8 shadow-xl">
           <h2 className="text-4xl font-bold mb-6 text-center">Tienda de Velocidad</h2>
-          <div className="flex justify-center mb-8">
-            <div className="text-2xl font-bold">
-              <Star className="inline text-yellow-500 mr-2" />
-              {coins} Monedas
-            </div>
+          <div className="flex justify-center mb-8 text-2xl font-bold">
+            <Star className="inline text-yellow-500 mr-2" />{coins} Monedas
           </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {SPEED_UPGRADES.slice(1).map(upgrade => (
-              <div key={upgrade.level} className={`p-6 rounded-xl border-4 ${speed >= upgrade.level ? 'bg-green-100 border-green-500' : 'bg-white border-gray-300'}`}>
+          <div className="grid gap-4">
+            {SPEED_UPGRADES.slice(1).map(u => (
+              <div key={u.level} className={`p-6 rounded-xl border-4 ${speed >= u.level ? 'bg-green-100 border-green-500' : 'bg-white border-gray-300'}`}>
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-2xl font-bold">Velocidad Nivel {upgrade.level}</h3>
-                    <p className="text-gray-600">Velocidad: {upgrade.speed}x</p>
+                    <h3 className="text-2xl font-bold">Velocidad Nivel {u.level}</h3>
+                    <p className="text-gray-600">Velocidad: {u.speed}x</p>
                   </div>
-                  <div>
-                    {speed >= upgrade.level ? (
-                      <span className="text-green-600 font-bold text-xl">✓ Comprado</span>
-                    ) : (
-                      <button
-                        onClick={() => buySpeedUpgrade()}
-                        disabled={coins < upgrade.cost || speed !== upgrade.level - 1}
-                        className={`px-6 py-3 rounded-lg font-bold text-white ${
-                          coins >= upgrade.cost && speed === upgrade.level - 1
-                            ? 'bg-green-500 hover:bg-green-600'
-                            : 'bg-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        {upgrade.cost} monedas
-                      </button>
-                    )}
-                  </div>
+                  {speed >= u.level ? (
+                    <span className="text-green-600 font-bold text-xl">✓ Comprado</span>
+                  ) : (
+                    <button onClick={buySpeed} disabled={coins < u.cost || speed !== u.level - 1} className={`px-6 py-3 rounded-lg font-bold text-white ${coins >= u.cost && speed === u.level - 1 ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+                      {u.cost} monedas
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -421,57 +426,35 @@ const RobloxObbyGame = () => {
     </div>
   );
 
-  const renderPets = () => (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 to-pink-500 p-8">
       <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => setScreen('menu')}
-          className="mb-6 px-4 py-2 bg-white rounded-lg shadow-lg hover:scale-105 transition"
-        >
-          <Home className="inline mr-2" />
-          Volver
+        <button onClick={() => setScreen('menu')} className="mb-6 px-4 py-2 bg-white rounded-lg shadow-lg hover:scale-105">
+          <Home className="inline mr-2" />Volver
         </button>
-
         <div className="bg-white/90 rounded-xl p-8 shadow-xl">
           <h2 className="text-4xl font-bold mb-6 text-center">Mascotas</h2>
-          <div className="flex justify-center mb-8">
-            <div className="text-2xl font-bold">
-              <Star className="inline text-yellow-500 mr-2" />
-              {coins} Monedas
-            </div>
+          <div className="flex justify-center mb-8 text-2xl font-bold">
+            <Star className="inline text-yellow-500 mr-2" />{coins} Monedas
           </div>
-
           <div className="grid grid-cols-2 gap-6">
-            {PETS.map(pet => {
-              const Icon = pet.icon;
-              const owned = pets.includes(pet.id);
-              const equipped = equippedPet === pet.id;
-
+            {PETS.map(p => {
+              const Icon = p.icon;
+              const owned = pets.includes(p.id);
+              const equipped = equippedPet === p.id;
               return (
-                <div key={pet.id} className={`p-6 rounded-xl border-4 ${equipped ? 'bg-yellow-100 border-yellow-500' : owned ? 'bg-green-100 border-green-500' : 'bg-white border-gray-300'}`}>
+                <div key={p.id} className={`p-6 rounded-xl border-4 ${equipped ? 'bg-yellow-100 border-yellow-500' : owned ? 'bg-green-100 border-green-500' : 'bg-white border-gray-300'}`}>
                   <div className="text-center">
                     <Icon size={64} className="mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold mb-2">{pet.name}</h3>
-                    <p className="text-gray-600 mb-4">+{(pet.speedBoost * 100).toFixed(0)}% velocidad</p>
-                    
+                    <h3 className="text-2xl font-bold mb-2">{p.name}</h3>
+                    <p className="text-gray-600 mb-4">+{(p.speedBoost * 100).toFixed(0)}% velocidad</p>
                     {owned ? (
-                      <button
-                        onClick={() => setEquippedPet(equipped ? null : pet.id)}
-                        className={`w-full py-3 rounded-lg font-bold text-white ${
-                          equipped ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                      >
+                      <button onClick={() => setEquippedPet(equipped ? null : p.id)} className={`w-full py-3 rounded-lg font-bold text-white ${equipped ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
                         {equipped ? 'Desequipar' : 'Equipar'}
                       </button>
                     ) : (
-                      <button
-                        onClick={() => buyPet(pet.id)}
-                        disabled={coins < pet.cost}
-                        className={`w-full py-3 rounded-lg font-bold text-white ${
-                          coins >= pet.cost ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        Comprar: {pet.cost} monedas
+                      <button onClick={() => buyPet(p.id)} disabled={coins < p.cost} className={`w-full py-3 rounded-lg font-bold text-white ${coins >= p.cost ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+                        Comprar: {p.cost} monedas
                       </button>
                     )}
                   </div>
@@ -482,15 +465,6 @@ const RobloxObbyGame = () => {
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <>
-      {screen === 'menu' && renderMenu()}
-      {screen === 'game' && renderGame()}
-      {screen === 'shop' && renderShop()}
-      {screen === 'pets' && renderPets()}
-    </>
   );
 };
 
