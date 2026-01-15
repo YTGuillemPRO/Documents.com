@@ -1,7 +1,53 @@
-/* ================= COCHE MEJORADO ================= */
+/* ================= IMPROVED CAR ================= */
+import * as THREE from 'three';
+
+// Create scene, camera, and renderer
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 10, 15);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(10, 20, 10);
+directionalLight.castShadow = true;
+directionalLight.shadow.camera.left = -50;
+directionalLight.shadow.camera.right = 50;
+directionalLight.shadow.camera.top = 50;
+directionalLight.shadow.camera.bottom = -50;
+scene.add(directionalLight);
+
+// Ground
+const groundGeometry = new THREE.PlaneGeometry(100, 100);
+const groundMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0x228b22,
+  roughness: 0.8
+});
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Car group
 const car = new THREE.Group();
 
-// chasis inferior
+// Lower chassis
 const chassis = new THREE.Mesh(
   new THREE.BoxGeometry(4, 0.6, 6),
   new THREE.MeshStandardMaterial({ 
@@ -14,7 +60,7 @@ chassis.position.y = 0.3;
 chassis.castShadow = true;
 car.add(chassis);
 
-// cabina
+// Cabin
 const cabin = new THREE.Mesh(
   new THREE.BoxGeometry(3, 1.2, 3),
   new THREE.MeshStandardMaterial({ 
@@ -27,7 +73,7 @@ cabin.position.set(0, 1.2, -0.5);
 cabin.castShadow = true;
 car.add(cabin);
 
-// capó
+// Hood
 const hood = new THREE.Mesh(
   new THREE.BoxGeometry(3.5, 0.4, 2),
   new THREE.MeshStandardMaterial({ 
@@ -40,7 +86,7 @@ hood.position.set(0, 0.8, 2);
 hood.castShadow = true;
 car.add(hood);
 
-// alerón trasero
+// Rear spoiler
 const spoiler = new THREE.Mesh(
   new THREE.BoxGeometry(3.5, 0.3, 0.5),
   new THREE.MeshStandardMaterial({ 
@@ -53,7 +99,7 @@ spoiler.position.set(0, 1.5, -3.2);
 spoiler.castShadow = true;
 car.add(spoiler);
 
-// ruedas
+// Wheels
 const wheelGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.6, 16);
 const wheelMaterial = new THREE.MeshStandardMaterial({ 
   color: 0x1a1a1a,
@@ -77,5 +123,80 @@ addWheel(2, -2);
 car.position.y = 0.8;
 scene.add(car);
 
+// Movement variables
 let speed = 0;
 let angle = 0;
+
+// Keyboard controls
+const keys = {};
+window.addEventListener('keydown', (e) => {
+  keys[e.key] = true;
+});
+window.addEventListener('keyup', (e) => {
+  keys[e.key] = false;
+});
+
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Handle controls
+  if (keys['ArrowUp'] || keys['w']) {
+    speed = Math.min(speed + 0.01, 0.5);
+  }
+  if (keys['ArrowDown'] || keys['s']) {
+    speed = Math.max(speed - 0.01, -0.3);
+  }
+  if (keys['ArrowLeft'] || keys['a']) {
+    angle += 0.03;
+  }
+  if (keys['ArrowRight'] || keys['d']) {
+    angle -= 0.03;
+  }
+
+  // Apply friction
+  speed *= 0.98;
+
+  // Update car position and rotation
+  car.rotation.y = angle;
+  car.position.x += Math.sin(angle) * speed;
+  car.position.z += Math.cos(angle) * speed;
+
+  // Update camera to follow car
+  camera.position.x = car.position.x - Math.sin(angle) * 15;
+  camera.position.z = car.position.z - Math.cos(angle) * 15;
+  camera.position.y = 10;
+  camera.lookAt(car.position);
+
+  renderer.render(scene, camera);
+}
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Start animation
+animate();
+
+// Instructions
+const instructions = document.createElement('div');
+instructions.style.position = 'absolute';
+instructions.style.top = '20px';
+instructions.style.left = '20px';
+instructions.style.color = 'white';
+instructions.style.fontFamily = 'Arial, sans-serif';
+instructions.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+instructions.style.padding = '15px';
+instructions.style.borderRadius = '8px';
+instructions.innerHTML = `
+  <strong>Controls:</strong><br>
+  Arrow Keys / WASD - Drive<br>
+  ↑/W - Accelerate<br>
+  ↓/S - Brake/Reverse<br>
+  ←/A - Turn Left<br>
+  →/D - Turn Right
+`;
+document.body.appendChild(instructions);
