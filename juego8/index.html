@@ -1,172 +1,81 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Car Soccer 3D HD</title>
-<style>
-  body { margin: 0; overflow: hidden; background: black; }
-</style>
-</head>
-<body>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158/build/three.min.js"></script>
-
-<script>
-/* ================= ESCENA ================= */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // cielo
-
-const camera = new THREE.PerspectiveCamera(
-  70, window.innerWidth / window.innerHeight, 0.1, 2000
-);
-
-/* ================= RENDER ================= */
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-/* ================= LUCES ================= */
-scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-sun.position.set(50, 100, 50);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-scene.add(sun);
-
-/* ================= CAMPO GRANDE ================= */
-const fieldSize = 120;
-
-const field = new THREE.Mesh(
-  new THREE.PlaneGeometry(fieldSize, fieldSize),
-  new THREE.MeshStandardMaterial({
-    color: 0x1f9e55,
-    roughness: 0.8
-  })
-);
-field.rotation.x = -Math.PI / 2;
-field.receiveShadow = true;
-scene.add(field);
-
-/* ================= PAREDES ================= */
-const wallMaterial = new THREE.MeshStandardMaterial({
-  color: 0x0a3d2c
-});
-
-function wall(x, z, w, d) {
-  const m = new THREE.Mesh(
-    new THREE.BoxGeometry(w, 5, d),
-    wallMaterial
-  );
-  m.position.set(x, 2.5, z);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  scene.add(m);
-}
-
-wall(0, fieldSize / 2, fieldSize, 2);
-wall(0, -fieldSize / 2, fieldSize, 2);
-wall(fieldSize / 2, 0, 2, fieldSize);
-wall(-fieldSize / 2, 0, 2, fieldSize);
-
-/* ================= COCHE ================= */
+/* ================= COCHE MEJORADO ================= */
 const car = new THREE.Group();
 
-// cuerpo
-const body = new THREE.Mesh(
-  new THREE.BoxGeometry(3, 1, 5),
-  new THREE.MeshStandardMaterial({ color: 0xff3b3b })
+// chasis inferior
+const chassis = new THREE.Mesh(
+  new THREE.BoxGeometry(4, 0.6, 6),
+  new THREE.MeshStandardMaterial({ 
+    color: 0xff3b3b,
+    metalness: 0.6,
+    roughness: 0.3
+  })
 );
-body.castShadow = true;
-car.add(body);
+chassis.position.y = 0.3;
+chassis.castShadow = true;
+car.add(chassis);
 
-// techo
-const top = new THREE.Mesh(
-  new THREE.BoxGeometry(2, 0.8, 2),
-  new THREE.MeshStandardMaterial({ color: 0xffaaaa })
+// cabina
+const cabin = new THREE.Mesh(
+  new THREE.BoxGeometry(3, 1.2, 3),
+  new THREE.MeshStandardMaterial({ 
+    color: 0x222222,
+    metalness: 0.8,
+    roughness: 0.2
+  })
 );
-top.position.y = 0.9;
-top.castShadow = true;
-car.add(top);
+cabin.position.set(0, 1.2, -0.5);
+cabin.castShadow = true;
+car.add(cabin);
 
-car.position.y = 0.5;
+// capó
+const hood = new THREE.Mesh(
+  new THREE.BoxGeometry(3.5, 0.4, 2),
+  new THREE.MeshStandardMaterial({ 
+    color: 0xff3b3b,
+    metalness: 0.6,
+    roughness: 0.3
+  })
+);
+hood.position.set(0, 0.8, 2);
+hood.castShadow = true;
+car.add(hood);
+
+// alerón trasero
+const spoiler = new THREE.Mesh(
+  new THREE.BoxGeometry(3.5, 0.3, 0.5),
+  new THREE.MeshStandardMaterial({ 
+    color: 0x1a1a1a,
+    metalness: 0.7,
+    roughness: 0.2
+  })
+);
+spoiler.position.set(0, 1.5, -3.2);
+spoiler.castShadow = true;
+car.add(spoiler);
+
+// ruedas
+const wheelGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.6, 16);
+const wheelMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0x1a1a1a,
+  metalness: 0.5,
+  roughness: 0.5
+});
+
+function addWheel(x, z) {
+  const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+  wheel.rotation.z = Math.PI / 2;
+  wheel.position.set(x, 0, z);
+  wheel.castShadow = true;
+  car.add(wheel);
+}
+
+addWheel(-2, 2);
+addWheel(2, 2);
+addWheel(-2, -2);
+addWheel(2, -2);
+
+car.position.y = 0.8;
 scene.add(car);
 
 let speed = 0;
 let angle = 0;
-
-/* ================= PELOTA ================= */
-const ball = new THREE.Mesh(
-  new THREE.SphereGeometry(1, 32, 32),
-  new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.3,
-    metalness: 0.1
-  })
-);
-ball.position.set(0, 1, 0);
-ball.castShadow = true;
-scene.add(ball);
-
-let ballVel = new THREE.Vector3(0.15, 0, 0.12);
-
-/* ================= CONTROLES ================= */
-const keys = {};
-addEventListener("keydown", e => keys[e.key] = true);
-addEventListener("keyup", e => keys[e.key] = false);
-
-/* ================= LOOP ================= */
-function animate() {
-  requestAnimationFrame(animate);
-
-  /* ===== COCHE ===== */
-  if (keys["w"]) speed += 0.02;
-  if (keys["s"]) speed *= 0.9;
-  if (keys["a"]) angle += 0.05;
-  if (keys["d"]) angle -= 0.05;
-
-  speed *= 0.98;
-  car.rotation.y = angle;
-  car.position.x += Math.sin(angle) * speed;
-  car.position.z += Math.cos(angle) * speed;
-
-  /* ===== PELOTA ===== */
-  ball.position.add(ballVel);
-  ballVel.multiplyScalar(0.995);
-
-  // rebote paredes
-  if (Math.abs(ball.position.x) > fieldSize / 2 - 2) ballVel.x *= -1;
-  if (Math.abs(ball.position.z) > fieldSize / 2 - 2) ballVel.z *= -1;
-
-  // colisión coche-pelota
-  const dist = car.position.distanceTo(ball.position);
-  if (dist < 3) {
-    const dir = ball.position.clone().sub(car.position).normalize();
-    ballVel.copy(dir.multiplyScalar(0.35));
-  }
-
-  /* ===== CÁMARA CINEMÁTICA ===== */
-  const camTarget = new THREE.Vector3(
-    car.position.x,
-    15,
-    car.position.z + 22
-  );
-
-  camera.position.lerp(camTarget, 0.08);
-  camera.lookAt(car.position);
-
-  renderer.render(scene, camera);
-}
-animate();
-
-/* ================= RESIZE ================= */
-addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-</script>
-
-</body>
-</html>
