@@ -25,7 +25,7 @@ h1{font-size:5em;margin:0;background:linear-gradient(#fff,#888);-webkit-backgrou
 
 <div id="menu">
 <h1>NOVA LEAGUE PRO</h1>
-<p style="color:#00d4ff">ELITE SOCCER SIMULATOR</p>
+<p style="color:#00d4ff">ELITE SOCCER SIMULATOR - 11 VS 11</p>
 <button class="btn" onclick="startGame(0.12)">AMATEUR</button>
 <button class="btn" onclick="startGame(0.18)">PROFESIONAL</button>
 <button class="btn" onclick="startGame(0.25)">LEYENDA</button>
@@ -120,32 +120,128 @@ g.parts={LLegP,RLegP,LArmP,RArmP,torso};
 return g;
 }
 
-/* ===== RESTO DEL JUEGO SIN CAMBIOS ===== */
-
+/* ===== 11 VS 11 TEAMS ===== */
 const redTeam=[],blueTeam=[];
-[[-68,0,true],[-50,20],[-50,-20],[-30,0],[-10,15],[-10,-15]].forEach(p=>{
+[[-68,0,true],[-60,20],[-60,-20],[-50,0],[-40,25],[-40,-25],[-30,15],[-30,-15],[-20,30],[-20,0],[-20,-30]].forEach(p=>{
 redTeam.push(createPlayer(0xff3333,p[0],p[1],p[2]));
 blueTeam.push(createPlayer(0x3333ff,-p[0],p[1],p[2]));
 });
-const user=redTeam[5];
+const user=redTeam[10];
 
 const ball=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16),new THREE.MeshStandardMaterial({color:0xffffff}));
 ball.position.y=0.5;ball.userData={vx:0,vz:0,holder:null};scene.add(ball);
 
-const keys={};onkeydown=e=>keys[e.key.toLowerCase()]=true;onkeyup=e=>keys[e.key.toLowerCase()]=false;
+const keys={};
+onkeydown=e=>keys[e.key.toLowerCase()]=true;
+onkeyup=e=>keys[e.key.toLowerCase()]=false;
 
-function animateHumanoid(p,m){if(m){p.userData.anim+=0.15;const s=Math.sin(p.userData.anim)*0.6;
-p.parts.LLegP.rotation.x=s;p.parts.RLegP.rotation.x=-s;
-p.parts.LArmP.rotation.x=-s*0.7;p.parts.RArmP.rotation.x=s*0.7;}}
+function animateHumanoid(p,m){
+if(m){
+p.userData.anim+=0.15;
+const s=Math.sin(p.userData.anim)*0.6;
+p.parts.LLegP.rotation.x=s;
+p.parts.RLegP.rotation.x=-s;
+p.parts.LArmP.rotation.x=-s*0.7;
+p.parts.RArmP.rotation.x=s*0.7;
+}
+}
+
+function dist2D(a,b){
+return Math.sqrt((a.x-b.position.x)**2+(a.z-b.position.z)**2);
+}
+
+function checkBallPickup(){
+if(!ball.userData.holder&&dist2D(ball.position,user)<2){
+ball.userData.holder=user;
+}
+}
+
+function checkGoal(){
+if(Math.abs(ball.position.z)<8&&ball.position.y<7){
+if(ball.position.x<-W/2+1){
+blueScore++;
+showGoal();
+resetBall();
+}else if(ball.position.x>W/2-1){
+redScore++;
+showGoal();
+resetBall();
+}
+}
+scoreEl.textContent=`🔴 ${redScore} - ${blueScore} 🔵`;
+}
+
+function showGoal(){
+goalMsg.style.display='block';
+setTimeout(()=>goalMsg.style.display='none',2000);
+}
+
+function resetBall(){
+ball.position.set(0,0.5,0);
+ball.userData.vx=0;
+ball.userData.vz=0;
+ball.userData.holder=null;
+}
 
 function animate(){
 requestAnimationFrame(animate);
 let moving=false;
-if(keys.w){user.position.x+=Math.sin(user.rotation.y)*0.35;user.position.z+=Math.cos(user.rotation.y)*0.35;moving=true;}
-if(keys.s){user.position.x-=Math.sin(user.rotation.y)*0.2;user.position.z-=Math.cos(user.rotation.y)*0.2;moving=true;}
-if(keys.a)user.rotation.y+=0.08;
-if(keys.d)user.rotation.y-=0.08;
+
+if(keys.w||keys.arrowup){
+user.position.x+=Math.sin(user.rotation.y)*0.35;
+user.position.z+=Math.cos(user.rotation.y)*0.35;
+moving=true;
+}
+if(keys.s||keys.arrowdown){
+user.position.x-=Math.sin(user.rotation.y)*0.2;
+user.position.z-=Math.cos(user.rotation.y)*0.2;
+moving=true;
+}
+if(keys.a||keys.arrowleft)user.rotation.y+=0.08;
+if(keys.d||keys.arrowright)user.rotation.y-=0.08;
+
 animateHumanoid(user,moving);
+checkBallPickup();
+
+// Ball logic
+if(ball.userData.holder){
+ball.position.x=ball.userData.holder.position.x+Math.sin(ball.userData.holder.rotation.y)*1.5;
+ball.position.z=ball.userData.holder.position.z+Math.cos(ball.userData.holder.rotation.y)*1.5;
+ball.position.y=0.5;
+}else{
+ball.position.x+=ball.userData.vx;
+ball.position.z+=ball.userData.vz;
+ball.userData.vx*=0.95;
+ball.userData.vz*=0.95;
+if(Math.abs(ball.userData.vx)<0.01)ball.userData.vx=0;
+if(Math.abs(ball.userData.vz)<0.01)ball.userData.vz=0;
+}
+
+// Shoot
+if(keys.e&&ball.userData.holder===user){
+ball.userData.holder=null;
+ball.userData.vx=Math.sin(user.rotation.y)*1.2;
+ball.userData.vz=Math.cos(user.rotation.y)*1.2;
+keys.e=false;
+}
+
+// Pass
+if(keys.q&&ball.userData.holder===user){
+ball.userData.holder=null;
+ball.userData.vx=Math.sin(user.rotation.y)*0.6;
+ball.userData.vz=Math.cos(user.rotation.y)*0.6;
+keys.q=false;
+}
+
+// Field boundaries
+user.position.x=Math.max(-W/2+2,Math.min(W/2-2,user.position.x));
+user.position.z=Math.max(-H/2+2,Math.min(H/2-2,user.position.z));
+
+ball.position.x=Math.max(-W/2,Math.min(W/2,ball.position.x));
+ball.position.z=Math.max(-H/2,Math.min(H/2,ball.position.z));
+
+checkGoal();
+
 camera.position.lerp(new THREE.Vector3(user.position.x-20*Math.sin(user.rotation.y),18,user.position.z-20*Math.cos(user.rotation.y)),0.1);
 camera.lookAt(user.position.x,2,user.position.z);
 renderer.render(scene,camera);
