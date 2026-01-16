@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Speed Click Obby 3D</title>
+<title>Speed Per Click 3D</title>
 <style>
 body { margin: 0; overflow: hidden; background: black; }
 #ui {
@@ -19,10 +19,10 @@ body { margin: 0; overflow: hidden; background: black; }
 <body>
 
 <div id="ui">
-    <p>⚡ Speed: <span id="speed">0.10</span></p>
+    <p>⚡ Speed: <span id="speed">0.00</span></p>
     <p>🏆 Victorias: <span id="wins">0</span></p>
-    <p>🥚 Huevos: <span id="eggs">0</span></p>
     <p>🧩 Obby: <span id="obby">1</span>/4</p>
+    <p>🖱️ Haz click para correr</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
@@ -34,7 +34,6 @@ scene.background = new THREE.Color(0x87ceeb);
 
 // ================= CÁMARA =================
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0, 6, 10);
 
 // ================= RENDER =================
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -46,7 +45,7 @@ scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
 
 // ================= SUELO =================
 const floor = new THREE.Mesh(
-    new THREE.BoxGeometry(200, 1, 200),
+    new THREE.BoxGeometry(500, 1, 500),
     new THREE.MeshStandardMaterial({ color: 0x00ff00 })
 );
 floor.position.y = -1;
@@ -67,117 +66,45 @@ player.add(head);
 scene.add(player);
 
 // ================= VARIABLES =================
-let speed = 0.1;
+let speed = 0;
 let wins = 0;
-let eggs = 0;
+let currentObby = 0;
 let velocityY = 0;
 let onGround = false;
-let currentObby = 0;
 
-// ================= CONTROLES =================
-const keys = {};
-document.addEventListener("keydown", e => keys[e.code] = true);
-document.addEventListener("keyup", e => keys[e.code] = false);
-
-// ================= CLICK SPEED =================
+// ================= CLICK = VELOCIDAD =================
 document.addEventListener("click", () => {
-    speed += 0.03;
+    speed += 0.02;
     document.getElementById("speed").innerText = speed.toFixed(2);
 });
 
-// ================= OBBYS ROBLOX =================
+// ================= OBBYS SPEED =================
 const obbys = [];
 const goals = [];
 
-function createPlatform(x, y, z, color = 0xff0000, disappears = false) {
-    const p = new THREE.Mesh(
-        new THREE.BoxGeometry(3, 0.5, 3),
-        new THREE.MeshStandardMaterial({ color })
-    );
-    p.position.set(x, y, z);
-    p.userData = { disappears, timer: 0, active: true };
-    scene.add(p);
-    return p;
-}
-
 for (let o = 0; o < 4; o++) {
     const platforms = [];
-    const baseZ = -o * 80;
+    const baseZ = -o * 250;
 
-    // 🧩 OBBY 1: Saltos básicos
-    if (o === 0) {
-        for (let i = 0; i < 10; i++) {
-            platforms.push(createPlatform(0, i * 2, baseZ - i * 6));
-        }
-    }
-
-    // 🔥 OBBY 2: Lava
-    if (o === 1) {
-        const lava = new THREE.Mesh(
-            new THREE.BoxGeometry(60, 1, 60),
-            new THREE.MeshStandardMaterial({ color: 0xff4400 })
+    for (let i = 0; i < 25; i++) {
+        const p = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 0.5, 6),
+            new THREE.MeshStandardMaterial({ color: 0xff0000 })
         );
-        lava.position.set(0, -0.5, baseZ - 30);
-        scene.add(lava);
-
-        for (let i = 0; i < 10; i++) {
-            platforms.push(createPlatform(
-                i % 2 === 0 ? -4 : 4,
-                i * 2,
-                baseZ - i * 6,
-                0x333333
-            ));
-        }
-    }
-
-    // 🌀 OBBY 3: Desaparecen
-    if (o === 2) {
-        for (let i = 0; i < 10; i++) {
-            platforms.push(createPlatform(
-                Math.sin(i) * 4,
-                i * 2,
-                baseZ - i * 6,
-                0xaa00ff,
-                true
-            ));
-        }
-    }
-
-    // ⚡ OBBY 4: Speed run
-    if (o === 3) {
-        for (let i = 0; i < 14; i++) {
-            platforms.push(createPlatform(
-                0,
-                1,
-                baseZ - i * 5,
-                0x00ffff
-            ));
-        }
+        p.position.set(0, 0, baseZ - i * 10);
+        scene.add(p);
+        platforms.push(p);
     }
 
     obbys.push(platforms);
 
     const goal = new THREE.Mesh(
-        new THREE.BoxGeometry(4, 1, 4),
+        new THREE.BoxGeometry(6, 1, 6),
         new THREE.MeshStandardMaterial({ color: 0xffff00 })
     );
-    goal.position.set(0, 20, baseZ - 70);
+    goal.position.set(0, 1, baseZ - 260);
     scene.add(goal);
     goals.push(goal);
-}
-
-// ================= HUEVOS =================
-const eggMeshes = [];
-for (let i = 0; i < 12; i++) {
-    const egg = new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xffffff })
-    );
-    egg.scale.y = 1.4;
-    egg.position.set((Math.random()-0.5)*6,1.5,-Math.random()*300);
-    egg.userData.collected = false;
-    scene.add(egg);
-    eggMeshes.push(egg);
 }
 
 // ================= COLISIÓN =================
@@ -190,78 +117,55 @@ function collide(obj) {
 function animate() {
     requestAnimationFrame(animate);
 
-    if (keys["KeyW"]) player.position.z -= speed;
-    if (keys["KeyS"]) player.position.z += speed;
-    if (keys["KeyA"]) player.position.x -= speed;
-    if (keys["KeyD"]) player.position.x += speed;
+    // Movimiento automático hacia delante
+    player.position.z -= speed;
 
-    if (keys["Space"] && onGround) {
-        velocityY = 0.35;
-        onGround = false;
+    // Salto
+    if (onGround) {
+        velocityY = 0;
     }
-
     velocityY -= 0.02;
     player.position.y += velocityY;
     onGround = false;
 
+    // Plataformas
     obbys[currentObby].forEach(p => {
-        if (!p.userData.active) return;
-
         if (collide(p) && velocityY <= 0) {
-            player.position.y = p.position.y + 1.2;
+            player.position.y = 0;
             velocityY = 0;
             onGround = true;
-
-            if (p.userData.disappears && p.userData.timer === 0) {
-                p.userData.timer = 30;
-            }
-        }
-
-        if (p.userData.timer > 0) {
-            p.userData.timer--;
-            p.material.transparent = true;
-            p.material.opacity = p.userData.timer / 30;
-            if (p.userData.timer === 0) {
-                p.visible = false;
-                p.userData.active = false;
-            }
         }
     });
 
-    if (player.position.y < 0) {
-        player.position.y = 0;
-        velocityY = 0;
-        onGround = true;
+    // Caída
+    if (player.position.y < -10) {
+        player.position.set(0, 0, -currentObby * 250);
+        speed = 0;
+        document.getElementById("speed").innerText = speed.toFixed(2);
     }
 
-    eggMeshes.forEach(egg => {
-        if (!egg.userData.collected && collide(egg)) {
-            egg.userData.collected = true;
-            egg.visible = false;
-            eggs++;
-            document.getElementById("eggs").innerText = eggs;
-        }
-    });
-
+    // Meta
     if (collide(goals[currentObby])) {
         wins++;
-        eggs += 5;
-        currentObby = (currentObby + 1) % 4;
+        currentObby++;
+
+        if (currentObby >= 4) currentObby = 0;
+
+        speed = 0;
+        player.position.set(0, 0, -currentObby * 250);
 
         document.getElementById("wins").innerText = wins;
-        document.getElementById("eggs").innerText = eggs;
         document.getElementById("obby").innerText = currentObby + 1;
-
-        player.position.set(0, 0, -currentObby * 80);
-        speed = 0.1;
+        document.getElementById("speed").innerText = "0.00";
 
         alert("🏆 ¡Obby completado!");
     }
 
+    // Cámara
     camera.position.set(
         player.position.x,
         player.position.y + 6,
-        player.position.z + 10
+        player.position.z + 12
     );
     camera.lookAt(player.position);
 
