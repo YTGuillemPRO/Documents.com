@@ -85,32 +85,74 @@ document.addEventListener("click", () => {
     document.getElementById("speed").innerText = speed.toFixed(2);
 });
 
-// ================= OBBYS =================
+// ================= OBBYS ROBLOX =================
 const obbys = [];
 const goals = [];
 
+function createPlatform(x, y, z, color = 0xff0000, disappears = false) {
+    const p = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 0.5, 3),
+        new THREE.MeshStandardMaterial({ color })
+    );
+    p.position.set(x, y, z);
+    p.userData = { disappears, timer: 0, active: true };
+    scene.add(p);
+    return p;
+}
+
 for (let o = 0; o < 4; o++) {
     const platforms = [];
+    const baseZ = -o * 80;
 
-    for (let i = 0; i < 10; i++) {
-        const p = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 0.5, 3),
-            new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    // 🧩 OBBY 1: Saltos básicos
+    if (o === 0) {
+        for (let i = 0; i < 10; i++) {
+            platforms.push(createPlatform(0, i * 2, baseZ - i * 6));
+        }
+    }
+
+    // 🔥 OBBY 2: Lava
+    if (o === 1) {
+        const lava = new THREE.Mesh(
+            new THREE.BoxGeometry(60, 1, 60),
+            new THREE.MeshStandardMaterial({ color: 0xff4400 })
         );
+        lava.position.set(0, -0.5, baseZ - 30);
+        scene.add(lava);
 
-        p.position.set(
-            (Math.random() - 0.5) * 6,
-            i * 2,
-            -i * 6 - o * 80
-        );
+        for (let i = 0; i < 10; i++) {
+            platforms.push(createPlatform(
+                i % 2 === 0 ? -4 : 4,
+                i * 2,
+                baseZ - i * 6,
+                0x333333
+            ));
+        }
+    }
 
-        // Plataforma que desaparece
-        p.userData.disappears = Math.random() < 0.5;
-        p.userData.timer = 0;
-        p.userData.active = true;
+    // 🌀 OBBY 3: Desaparecen
+    if (o === 2) {
+        for (let i = 0; i < 10; i++) {
+            platforms.push(createPlatform(
+                Math.sin(i) * 4,
+                i * 2,
+                baseZ - i * 6,
+                0xaa00ff,
+                true
+            ));
+        }
+    }
 
-        scene.add(p);
-        platforms.push(p);
+    // ⚡ OBBY 4: Speed run
+    if (o === 3) {
+        for (let i = 0; i < 14; i++) {
+            platforms.push(createPlatform(
+                0,
+                1,
+                baseZ - i * 5,
+                0x00ffff
+            ));
+        }
     }
 
     obbys.push(platforms);
@@ -119,27 +161,20 @@ for (let o = 0; o < 4; o++) {
         new THREE.BoxGeometry(4, 1, 4),
         new THREE.MeshStandardMaterial({ color: 0xffff00 })
     );
-    goal.position.set(0, 20, -60 - o * 80);
+    goal.position.set(0, 20, baseZ - 70);
     scene.add(goal);
     goals.push(goal);
 }
 
-// ================= HUEVOS 3D =================
+// ================= HUEVOS =================
 const eggMeshes = [];
-
 for (let i = 0; i < 12; i++) {
     const egg = new THREE.Mesh(
         new THREE.SphereGeometry(0.5, 16, 16),
         new THREE.MeshStandardMaterial({ color: 0xffffff })
     );
-
     egg.scale.y = 1.4;
-    egg.position.set(
-        (Math.random() - 0.5) * 6,
-        1.5,
-        -Math.random() * 300
-    );
-
+    egg.position.set((Math.random()-0.5)*6,1.5,-Math.random()*300);
     egg.userData.collected = false;
     scene.add(egg);
     eggMeshes.push(egg);
@@ -155,23 +190,20 @@ function collide(obj) {
 function animate() {
     requestAnimationFrame(animate);
 
-    // MOVIMIENTO
-    if (keys["KeyW"] || keys["ArrowUp"]) player.position.z -= speed;
-    if (keys["KeyS"] || keys["ArrowDown"]) player.position.z += speed;
-    if (keys["KeyA"] || keys["ArrowLeft"]) player.position.x -= speed;
-    if (keys["KeyD"] || keys["ArrowRight"]) player.position.x += speed;
+    if (keys["KeyW"]) player.position.z -= speed;
+    if (keys["KeyS"]) player.position.z += speed;
+    if (keys["KeyA"]) player.position.x -= speed;
+    if (keys["KeyD"]) player.position.x += speed;
 
     if (keys["Space"] && onGround) {
         velocityY = 0.35;
         onGround = false;
     }
 
-    // GRAVEDAD
     velocityY -= 0.02;
     player.position.y += velocityY;
     onGround = false;
 
-    // PLATAFORMAS
     obbys[currentObby].forEach(p => {
         if (!p.userData.active) return;
 
@@ -189,7 +221,6 @@ function animate() {
             p.userData.timer--;
             p.material.transparent = true;
             p.material.opacity = p.userData.timer / 30;
-
             if (p.userData.timer === 0) {
                 p.visible = false;
                 p.userData.active = false;
@@ -197,14 +228,12 @@ function animate() {
         }
     });
 
-    // SUELO
     if (player.position.y < 0) {
         player.position.y = 0;
         velocityY = 0;
         onGround = true;
     }
 
-    // HUEVOS
     eggMeshes.forEach(egg => {
         if (!egg.userData.collected && collide(egg)) {
             egg.userData.collected = true;
@@ -214,7 +243,6 @@ function animate() {
         }
     });
 
-    // META
     if (collide(goals[currentObby])) {
         wins++;
         eggs += 5;
@@ -227,10 +255,9 @@ function animate() {
         player.position.set(0, 0, -currentObby * 80);
         speed = 0.1;
 
-        alert("🏆 ¡Obby completado! +5 🥚");
+        alert("🏆 ¡Obby completado!");
     }
 
-    // CÁMARA
     camera.position.set(
         player.position.x,
         player.position.y + 6,
