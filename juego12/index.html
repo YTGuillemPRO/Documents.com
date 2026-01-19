@@ -2,92 +2,99 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Neon Dash 2.7 – Fullscreen GD Style</title>
+<title>Neon Dash 2.8</title>
+
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: black;
-  font-family: Arial, Helvetica, sans-serif;
+html,body{
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:#000;
+  font-family:Arial, Helvetica, sans-serif;
 }
 
-canvas {
-  display: block;
-  background: #000;
+canvas{
+  display:block;
+  background:#000;
 }
 
-#ui {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #0ff;
-  text-shadow: 0 0 15px #0ff;
-  z-index: 5;
+/* UI */
+#ui{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
 }
 
-.screen {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  font-size: 32px;
+.screen{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  color:#0ff;
+  font-size:32px;
+  text-shadow:0 0 15px #0ff;
 }
 
-.screen.active {
-  display: flex;
+.screen.active{display:flex;}
+
+button{
+  padding:14px 32px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:#f06;
+  color:white;
+  cursor:pointer;
+  box-shadow:0 0 20px #f06;
 }
 
-button {
-  padding: 15px 35px;
-  font-size: 22px;
-  border: none;
-  border-radius: 12px;
-  background: #f06;
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 0 25px #f06;
+button:hover{transform:scale(1.05)}
+
+#progress{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:14px;
+  background:#111;
+  z-index:15;
 }
 
-button:hover {
-  transform: scale(1.05);
-}
-
-#progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 14px;
-  width: 100%;
-  background: #111;
-  z-index: 10;
-}
-
-#bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg,#60f,#0ff,#f06);
+#bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#60f,#0ff,#f06);
 }
 </style>
 </head>
+
 <body>
 
 <div id="progress"><div id="bar"></div></div>
 
 <div id="ui">
   <div id="start" class="screen active">
-    <div>✨ NEON DASH 2.7 ✨</div>
-    <button id="play">JUGAR</button>
+    <div>✨ NEON DASH 2.8 ✨</div>
+    <button onclick="show('levels')">JUGAR</button>
   </div>
 
   <div id="levels" class="screen">
     <div>Selecciona Nivel</div>
-    <button data-lvl="1">Nivel 1</button>
-    <button data-lvl="2">Nivel 2</button>
-    <button data-lvl="3">Nivel 3</button>
-    <button data-lvl="4">Nivel 4 (UFO)</button>
+    <div>
+      <button onclick="startLevel(1)">1</button>
+      <button onclick="startLevel(2)">2</button>
+      <button onclick="startLevel(3)">3</button>
+      <button onclick="startLevel(4)">4</button>
+      <button onclick="startLevel(5)">5</button>
+      <button onclick="startLevel(6)">6</button>
+      <button onclick="startLevel(7)">7</button>
+      <button onclick="startLevel(8)">8</button>
+      <button onclick="startLevel(9)">9</button>
+      <button onclick="startLevel(10)">10</button>
+    </div>
   </div>
 
   <div id="over" class="screen">
@@ -99,217 +106,171 @@ button:hover {
 <canvas id="game"></canvas>
 
 <script>
-/* ================= FULLSCREEN ================= */
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+/* ===== CANVAS FULLSCREEN ===== */
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+function resize(){
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
 }
-addEventListener("resize", resize);
+addEventListener("resize",resize);
 resize();
 
-/* ================= UI ================= */
-const screens = {
-  start: document.getElementById("start"),
-  levels: document.getElementById("levels"),
-  over: document.getElementById("over")
+/* ===== UI ===== */
+const screens={
+  start:document.getElementById("start"),
+  levels:document.getElementById("levels"),
+  over:document.getElementById("over")
 };
 
-function show(name) {
-  Object.values(screens).forEach(s => s.classList.remove("active"));
-  screens[name].classList.add("active");
+function show(name){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  if(name) screens[name].classList.add("active");
 }
 
-document.getElementById("play").onclick = () => show("levels");
-
-/* ================= GAME DATA ================= */
-let state = "menu";
-let level = 1;
-let distance = 0;
-let levelLength = 18000;
-
-const GRAVITY = 0.8;
-const JUMP = -15;
+/* ===== GAME DATA ===== */
+let state="menu";
+let level=1;
+let distance=0;
+const levelLength=16000;
 
 let player;
-let spikes = [];
-let platforms = [];
-let portals = [];
+let spikes=[];
 
-const levelInfo = {
-  1: { speed: 6, color:"#0ff" },
-  2: { speed: 7, color:"#0f0" },
-  3: { speed: 8, color:"#f06" },
-  4: { speed: 8.5, color:"#ff0", ufo:true }
+const levels={
+  1:{speed:5,color:"#0ff"},
+  2:{speed:5.5,color:"#0f0"},
+  3:{speed:6,color:"#ff0"},
+  4:{speed:6.5,color:"#f06"},
+  5:{speed:7,color:"#60f"},
+  6:{speed:7.5,color:"#0ff"},
+  7:{speed:8,color:"#f00"},
+  8:{speed:8.5,color:"#0f0"},
+  9:{speed:9,color:"#ff0"},
+ 10:{speed:9.5,color:"#fff"}
 };
 
-/* ================= INIT LEVEL ================= */
-function initLevel(lvl) {
-  level = lvl;
-  distance = 0;
-  document.getElementById("bar").style.width = "0%";
+/* ===== START LEVEL ===== */
+function startLevel(lvl){
+  level=lvl;
+  distance=0;
+  document.getElementById("bar").style.width="0%";
+  show(null);
 
-  player = {
-    x: canvas.width * 0.2,
-    y: canvas.height * 0.7,
-    size: 30,
-    dy: 0,
-    grounded: false,
-    mode: "cube",
-    rot: 0
+  player={
+    x:canvas.width*0.25,
+    y:canvas.height*0.7,
+    size:30,
+    dy:0,
+    grounded:false,
+    rot:0
   };
 
-  spikes = [];
-  platforms = [];
-  portals = [];
-
-  let x = canvas.width;
-  for (let i = 0; i < 120; i++) {
-    x += 200 + Math.random()*150;
-
-    // spikes suelo
-    spikes.push({x, y: canvas.height*0.78, h: 40});
-
-    // spikes techo
-    if (i % 3 === 0)
-      spikes.push({x, y: canvas.height*0.1, h: 40, top:true});
-
-    // plataformas
-    if (i % 2 === 0)
-      platforms.push({
-        x: x + 100,
-        y: canvas.height*(0.55 + Math.random()*0.15),
-        w: 120,
-        h: 14
-      });
+  spikes=[];
+  let x=canvas.width;
+  for(let i=0;i<120;i++){
+    x+=200+Math.random()*120;
+    spikes.push({x,y:canvas.height*0.75,h:40});
   }
 
-  if (levelInfo[lvl].ufo) {
-    portals.push({x: canvas.width*3, y: canvas.height*0.5});
-  }
-
-  state = "play";
-  show(null);
+  state="play";
   requestAnimationFrame(loop);
 }
 
-/* ================= DRAW ================= */
-function drawPlayer() {
-  ctx.save();
-  ctx.translate(player.x+15, player.y+15);
-  ctx.rotate(player.rot);
-  ctx.shadowColor = levelInfo[level].color;
-  ctx.shadowBlur = 20;
-  ctx.fillStyle = levelInfo[level].color;
+/* ===== LOOP ===== */
+const GRAVITY=0.8;
+const JUMP=-15;
 
-  if (player.mode === "cube") {
-    ctx.fillRect(-15,-15,30,30);
-  } else {
-    ctx.beginPath();
-    ctx.ellipse(0,0,20,10,0,0,Math.PI*2);
-    ctx.fill();
-  }
-
-  ctx.restore();
-  ctx.shadowBlur = 0;
-}
-
-function drawSpikes() {
-  ctx.fillStyle = levelInfo[level].color;
-  spikes.forEach(s => {
-    ctx.beginPath();
-    if (!s.top) {
-      ctx.moveTo(s.x, s.y);
-      ctx.lineTo(s.x+25, s.y+s.h);
-      ctx.lineTo(s.x+50, s.y);
-    } else {
-      ctx.moveTo(s.x, s.y+s.h);
-      ctx.lineTo(s.x+25, s.y);
-      ctx.lineTo(s.x+50, s.y+s.h);
-    }
-    ctx.fill();
-  });
-}
-
-function drawPlatforms() {
-  ctx.fillStyle = "#333";
-  ctx.strokeStyle = "#0ff";
-  platforms.forEach(p => {
-    ctx.fillRect(p.x,p.y,p.w,p.h);
-    ctx.strokeRect(p.x,p.y,p.w,p.h);
-  });
-}
-
-/* ================= UPDATE ================= */
-function loop() {
-  if (state !== "play") return;
+function loop(){
+  if(state!=="play") return;
 
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  player.dy += GRAVITY;
-  player.y += player.dy;
+  /* suelo */
+  const floor=canvas.height*0.75;
+  ctx.fillStyle="#111";
+  ctx.fillRect(0,floor,canvas.width,canvas.height-floor);
 
-  if (player.mode==="cube") player.rot += 0.1;
+  /* player */
+  player.dy+=GRAVITY;
+  player.y+=player.dy;
+  player.rot+=0.1;
 
-  const floor = canvas.height*0.78;
-  if (player.y + player.size >= floor) {
-    player.y = floor - player.size;
-    player.dy = 0;
-    player.grounded = true;
-  } else player.grounded = false;
+  if(player.y+player.size>=floor){
+    player.y=floor-player.size;
+    player.dy=0;
+    player.grounded=true;
+  } else player.grounded=false;
 
-  const speed = levelInfo[level].speed;
-  spikes.forEach(s => s.x -= speed);
-  platforms.forEach(p => p.x -= speed);
-  portals.forEach(p => p.x -= speed);
+  /* move */
+  const speed=levels[level].speed;
+  spikes.forEach(s=>s.x-=speed);
+  distance+=speed;
 
-  distance += speed;
-  document.getElementById("bar").style.width =
+  /* draw spikes */
+  ctx.fillStyle=levels[level].color;
+  ctx.shadowColor=levels[level].color;
+  ctx.shadowBlur=10;
+  spikes.forEach(s=>{
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y);
+    ctx.lineTo(s.x+25,s.y+s.h);
+    ctx.lineTo(s.x+50,s.y);
+    ctx.fill();
+  });
+  ctx.shadowBlur=0;
+
+  /* draw player */
+  ctx.save();
+  ctx.translate(player.x+15,player.y+15);
+  ctx.rotate(player.rot);
+  ctx.fillStyle=levels[level].color;
+  ctx.fillRect(-15,-15,30,30);
+  ctx.restore();
+
+  /* collisions */
+  for(let s of spikes){
+    if(player.x<s.x+50 &&
+       player.x+player.size>s.x &&
+       player.y<s.y+s.h &&
+       player.y+player.size>s.y){
+      end(false);
+      return;
+    }
+  }
+
+  /* progress */
+  document.getElementById("bar").style.width=
     Math.min(distance/levelLength*100,100)+"%";
 
-  drawPlatforms();
-  drawSpikes();
-  drawPlayer();
-
-  // collisions
-  spikes.forEach(s=>{
-    if(player.x< s.x+50 &&
-       player.x+player.size> s.x &&
-       player.y< s.y+s.h &&
-       player.y+player.size> s.y) end(false);
-  });
-
-  if (distance >= levelLength) end(true);
+  if(distance>=levelLength){
+    end(true);
+    return;
+  }
 
   requestAnimationFrame(loop);
 }
 
-/* ================= INPUT ================= */
-addEventListener("keydown", e=>{
-  if (e.code==="Space" && state==="play") jump();
+/* ===== INPUT ===== */
+addEventListener("keydown",e=>{
+  if(e.code==="Space"&&state==="play") jump();
 });
-canvas.addEventListener("click", jump);
+canvas.addEventListener("click",jump);
 
-function jump() {
-  if (player.mode==="cube" && player.grounded) {
-    player.dy = JUMP;
+function jump(){
+  if(player.grounded){
+    player.dy=JUMP;
   }
 }
 
-/* ================= END ================= */
-function end(win) {
+/* ===== END ===== */
+function end(win){
   state="menu";
-  document.getElementById("overText").innerText =
-    win ? "🎉 NIVEL COMPLETADO" : "💥 GAME OVER";
+  document.getElementById("overText").innerText=
+    win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;
   show("over");
 }
-
-/* ================= LEVEL BUTTONS ================= */
-document.querySelectorAll("[data-lvl]").forEach(b=>{
-  b.onclick = ()=>initLevel(+b.dataset.lvl);
-});
 </script>
 </body>
 </html>
