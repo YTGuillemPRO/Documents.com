@@ -1,1 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Stickman Game</title>
+<style>
+    body {
+        margin: 0;
+        background: #222;
+        color: white;
+        text-align: center;
+    }
+    canvas {
+        background: #333;
+        display: block;
+        margin: auto;
+    }
+</style>
+</head>
+<body>
 
+<h2>Stickman - Salta y dispara</h2>
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {
+    x: 150,
+    y: 300,
+    vy: 0,
+    jumping: false,
+    life: 100,
+    stamina: 100
+};
+
+let gravity = 0.8;
+let arrows = [];
+let enemies = [];
+let apples = [];
+
+function spawnEnemy() {
+    enemies.push({ x: 800, y: 300, life: 20 });
+}
+
+function spawnApple() {
+    apples.push({ x: 800, y: 320 });
+}
+
+setInterval(spawnEnemy, 2000);
+setInterval(spawnApple, 5000);
+
+// CONTROLES
+document.addEventListener("keydown", e => {
+    if (e.code === "Space" && !player.jumping && player.stamina > 10) {
+        player.vy = -15;
+        player.jumping = true;
+        player.stamina -= 10;
+    }
+});
+
+canvas.addEventListener("click", () => {
+    arrows.push({ x: player.x + 20, y: player.y - 20 });
+});
+
+// GAME LOOP
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Gravedad
+    player.y += player.vy;
+    player.vy += gravity;
+
+    if (player.y >= 300) {
+        player.y = 300;
+        player.vy = 0;
+        player.jumping = false;
+    }
+
+    // Recuperar stamina
+    if (player.stamina < 100) player.stamina += 0.1;
+
+    // DIBUJAR STICKMAN
+    ctx.strokeStyle = "white";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y - 40, 10, 0, Math.PI * 2); // cabeza
+    ctx.moveTo(player.x, player.y - 30);
+    ctx.lineTo(player.x, player.y); // cuerpo
+    ctx.lineTo(player.x - 10, player.y + 20);
+    ctx.moveTo(player.x, player.y);
+    ctx.lineTo(player.x + 10, player.y + 20);
+    ctx.stroke();
+
+    // Flechas
+    arrows.forEach((a, i) => {
+        a.x += 8;
+        ctx.fillRect(a.x, a.y, 10, 2);
+
+        enemies.forEach((e, ei) => {
+            if (a.x > e.x && a.x < e.x + 20) {
+                e.life -= 20;
+                arrows.splice(i, 1);
+                if (e.life <= 0) enemies.splice(ei, 1);
+            }
+        });
+    });
+
+    // Enemigos
+    enemies.forEach((e, i) => {
+        e.x -= 2;
+        ctx.fillStyle = "red";
+        ctx.fillRect(e.x, e.y - 40, 20, 40);
+
+        if (e.x < player.x + 10) {
+            player.life -= 0.5;
+        }
+    });
+
+    // Manzanas
+    apples.forEach((a, i) => {
+        a.x -= 2;
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (Math.abs(a.x - player.x) < 15) {
+            player.life = Math.min(100, player.life + 20);
+            apples.splice(i, 1);
+        }
+    });
+
+    // HUD
+    ctx.fillStyle = "white";
+    ctx.fillText("Vida: " + Math.floor(player.life), 10, 20);
+    ctx.fillText("Stamina: " + Math.floor(player.stamina), 10, 40);
+
+    if (player.life > 0) {
+        requestAnimationFrame(update);
+    } else {
+        ctx.fillText("GAME OVER", 350, 200);
+    }
+}
+
+update();
+</script>
+
+</body>
+</html>
