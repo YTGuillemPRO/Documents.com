@@ -2,103 +2,145 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Stickman Game</title>
+<title>Stickman Plataforma</title>
 <style>
     body {
         margin: 0;
-        background: #222;
+        background: #1e1e1e;
         color: white;
         text-align: center;
+        font-family: Arial;
     }
     canvas {
-        background: #333;
         display: block;
         margin: auto;
+        background: #2b2b2b;
     }
 </style>
 </head>
 <body>
 
-<h2>Stickman - Salta y dispara</h2>
-<canvas id="game" width="800" height="400"></canvas>
+<h3>Stickman con Arco (Plataforma)</h3>
+<canvas id="game" width="900" height="450"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let player = {
-    x: 150,
-    y: 300,
+// PLATAFORMA PRINCIPAL
+const platform = {
+    x: 120,
+    y: 320,
+    width: 200,
+    height: 20
+};
+
+// JUGADOR
+const player = {
+    x: platform.x + platform.width / 2,
+    y: platform.y,
     vy: 0,
     jumping: false,
     life: 100,
     stamina: 100
 };
 
-let gravity = 0.8;
+const gravity = 0.9;
 let arrows = [];
 let enemies = [];
 let apples = [];
 
-function spawnEnemy() {
-    enemies.push({ x: 800, y: 300, life: 20 });
-}
-
-function spawnApple() {
-    apples.push({ x: 800, y: 320 });
-}
-
-setInterval(spawnEnemy, 2000);
-setInterval(spawnApple, 5000);
-
 // CONTROLES
 document.addEventListener("keydown", e => {
-    if (e.code === "Space" && !player.jumping && player.stamina > 10) {
-        player.vy = -15;
+    if (e.code === "Space" && !player.jumping && player.stamina > 15) {
+        player.vy = -16;
         player.jumping = true;
-        player.stamina -= 10;
+        player.stamina -= 15;
     }
 });
 
 canvas.addEventListener("click", () => {
-    arrows.push({ x: player.x + 20, y: player.y - 20 });
+    arrows.push({
+        x: player.x + 15,
+        y: player.y - 35,
+        vx: 10
+    });
 });
 
-// GAME LOOP
+// ENEMIGOS EN PLATAFORMAS
+function spawnEnemy() {
+    enemies.push({
+        x: 600,
+        y: 260,
+        life: 40
+    });
+}
+
+function spawnApple() {
+    apples.push({
+        x: 450,
+        y: 300
+    });
+}
+
+setInterval(spawnEnemy, 2500);
+setInterval(spawnApple, 6000);
+
+// LOOP
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Gravedad
+    // FONDO ESTRELLAS
+    ctx.fillStyle = "white";
+    for (let i = 0; i < 30; i++) {
+        ctx.fillRect(Math.random() * 900, Math.random() * 450, 2, 2);
+    }
+
+    // PLATAFORMA
+    ctx.fillStyle = "#555";
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+
+    // FÍSICAS JUGADOR
     player.y += player.vy;
     player.vy += gravity;
 
-    if (player.y >= 300) {
-        player.y = 300;
+    if (player.y >= platform.y) {
+        player.y = platform.y;
         player.vy = 0;
         player.jumping = false;
     }
 
-    // Recuperar stamina
-    if (player.stamina < 100) player.stamina += 0.1;
+    if (player.stamina < 100) player.stamina += 0.2;
 
-    // DIBUJAR STICKMAN
+    // STICKMAN
     ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(player.x, player.y - 40, 10, 0, Math.PI * 2); // cabeza
-    ctx.moveTo(player.x, player.y - 30);
-    ctx.lineTo(player.x, player.y); // cuerpo
-    ctx.lineTo(player.x - 10, player.y + 20);
-    ctx.moveTo(player.x, player.y);
-    ctx.lineTo(player.x + 10, player.y + 20);
+    ctx.arc(player.x, player.y - 45, 10, 0, Math.PI * 2);
+    ctx.moveTo(player.x, player.y - 35);
+    ctx.lineTo(player.x, player.y - 5);
+    ctx.lineTo(player.x - 10, player.y + 15);
+    ctx.moveTo(player.x, player.y - 5);
+    ctx.lineTo(player.x + 10, player.y + 15);
     ctx.stroke();
 
-    // Flechas
+    // ARCO
+    ctx.strokeStyle = "orange";
+    ctx.beginPath();
+    ctx.arc(player.x + 12, player.y - 30, 18, -1, 1);
+    ctx.stroke();
+
+    // FLECHAS
     arrows.forEach((a, i) => {
-        a.x += 8;
-        ctx.fillRect(a.x, a.y, 10, 2);
+        a.x += a.vx;
+        ctx.strokeStyle = "white";
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(a.x - 15, a.y);
+        ctx.stroke();
 
         enemies.forEach((e, ei) => {
-            if (a.x > e.x && a.x < e.x + 20) {
+            if (a.x > e.x && a.x < e.x + 25 && a.y > e.y - 40 && a.y < e.y) {
                 e.life -= 20;
                 arrows.splice(i, 1);
                 if (e.life <= 0) enemies.splice(ei, 1);
@@ -106,40 +148,38 @@ function update() {
         });
     });
 
-    // Enemigos
-    enemies.forEach((e, i) => {
-        e.x -= 2;
-        ctx.fillStyle = "red";
-        ctx.fillRect(e.x, e.y - 40, 20, 40);
-
-        if (e.x < player.x + 10) {
-            player.life -= 0.5;
-        }
+    // ENEMIGOS
+    enemies.forEach(e => {
+        ctx.fillStyle = "#777";
+        ctx.fillRect(e.x - 20, e.y, 60, 15);
+        ctx.fillStyle = "white";
+        ctx.fillRect(e.x, e.y - 40, 25, 40);
     });
 
-    // Manzanas
+    // MANZANAS
     apples.forEach((a, i) => {
-        a.x -= 2;
         ctx.fillStyle = "green";
         ctx.beginPath();
         ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
         ctx.fill();
 
-        if (Math.abs(a.x - player.x) < 15) {
+        if (Math.abs(a.x - player.x) < 15 && Math.abs(a.y - player.y) < 20) {
             player.life = Math.min(100, player.life + 20);
             apples.splice(i, 1);
         }
     });
 
     // HUD
-    ctx.fillStyle = "white";
-    ctx.fillText("Vida: " + Math.floor(player.life), 10, 20);
-    ctx.fillText("Stamina: " + Math.floor(player.stamina), 10, 40);
+    ctx.fillStyle = "red";
+    ctx.fillRect(20, 20, player.life * 2, 10);
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(20, 40, player.stamina * 2, 10);
 
     if (player.life > 0) {
         requestAnimationFrame(update);
     } else {
-        ctx.fillText("GAME OVER", 350, 200);
+        ctx.fillStyle = "white";
+        ctx.fillText("GAME OVER", 420, 220);
     }
 }
 
