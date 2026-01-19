@@ -2,81 +2,28 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Geometry Dash</title>
+<title>Neon Dash 3.1</title>
 <style>
-html,body{
-  margin:0;
-  padding:0;
-  overflow:hidden;
-  background:#000;
-  font-family:Arial, Helvetica, sans-serif;
-}
-
-canvas{
-  display:block;
-  background:#000;
-}
-
-/* UI */
-#ui{
-  position:fixed;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:10;
-}
-
-.screen{
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  gap:20px;
-  color:#0ff;
-  font-size:32px;
-  text-shadow:0 0 15px #0ff;
-}
-
+html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:Arial, Helvetica, sans-serif;}
+canvas{display:block;background:#000;}
+#ui{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;z-index:10;}
+.screen{display:none;flex-direction:column;align-items:center;gap:20px;color:#0ff;font-size:32px;text-shadow:0 0 15px #0ff;}
 .screen.active{display:flex;}
-
-button{
-  padding:14px 32px;
-  font-size:20px;
-  border:none;
-  border-radius:10px;
-  background:#f06;
-  color:white;
-  cursor:pointer;
-  box-shadow:0 0 20px #f06;
-}
-
-button:hover{transform:scale(1.05)}
-
-#progress{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:14px;
-  background:#111;
-  z-index:15;
-}
-
-#bar{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#60f,#0ff,#f06);
-}
+button{padding:14px 32px;font-size:20px;border:none;border-radius:10px;background:#f06;color:white;cursor:pointer;box-shadow:0 0 20px #f06;}
+button:hover{transform:scale(1.05);}
+#progress{position:fixed;top:0;left:0;width:100%;height:14px;background:#111;z-index:15;}
+#bar{height:100%;width:0%;background:linear-gradient(90deg,#60f,#0ff,#f06);}
 </style>
 </head>
-
 <body>
+
 <div id="progress"><div id="bar"></div></div>
 
 <div id="ui">
   <div id="start" class="screen active">
-    <div>✨ NEON DASH 3.0 ✨</div>
+    <div>✨ NEON DASH 3.1 ✨</div>
     <button onclick="show('levels')">JUGAR</button>
+    <button onclick="show('mapmaker')">MAP MAKER</button>
   </div>
 
   <div id="levels" class="screen">
@@ -90,16 +37,20 @@ button:hover{transform:scale(1.05)}
   </div>
 
   <div id="mapmaker" class="screen">
-    <div>Map Maker (Click para colocar bloques)</div>
+    <div>Map Maker (Click para colocar bloques o spikes)</div>
+    <div style="margin:10px;">
+      <button onclick="currentPlace='block'">Bloque</button>
+      <button onclick="currentPlace='spike'">Spike</button>
+      <button onclick="currentPlace='ufo'">UFO</button>
+    </div>
     <button onclick="saveMap()">Guardar Mapa</button>
-    <button onclick="show('levels')">Volver</button>
+    <button onclick="show('start')">Volver</button>
   </div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-/* ===== CANVAS FULLSCREEN ===== */
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
@@ -127,20 +78,12 @@ const levelLength=16000;
 let player;
 let spikes=[];
 let blocks=[];
-let portal;
+let ufos=[];
 
-const levels={
-  1:{speed:5,color:"#0ff",pattern:[]},
-  2:{speed:5.5,color:"#0f0",pattern:[]},
-  3:{speed:6,color:"#ff0",pattern:[]},
-  4:{speed:6.5,color:"#f06",pattern:[]},
-  5:{speed:7,color:"#60f",pattern:[]},
-  6:{speed:7.5,color:"#0ff",pattern:[]},
-  7:{speed:8,color:"#f00",pattern:[]},
-  8:{speed:8.5,color:"#0f0",pattern:[]},
-  9:{speed:9,color:"#ff0",pattern:[]},
-  10:{speed:9.5,color:"#fff",pattern:[]}
-};
+const levels={};
+for(let i=1;i<=10;i++){
+  levels[i]={speed:5+i*0.5,color:`hsl(${i*36},100%,50%)`};
+}
 
 /* Genera botones de niveles */
 const levelButtons=document.getElementById("levelButtons");
@@ -153,22 +96,19 @@ for(let i=1;i<=10;i++){
 
 /* ===== START LEVEL ===== */
 function startLevel(lvl){
-  level=lvl;
-  distance=0;
+  level=lvl; distance=0;
   document.getElementById("bar").style.width="0%";
   show(null);
 
-  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0};
-  spikes=[];
-  blocks=[];
-  portal={x:levelLength, y:canvas.height*0.75-60, size:50};
+  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0,jumps:0};
+  spikes=[]; blocks=[]; ufos=[];
 
-  // Generar spikes y bloques con patrones diferentes
   let x=canvas.width;
   for(let i=0;i<120;i++){
     x+=200+Math.random()*120;
     if(Math.random()<0.6) spikes.push({x,y:canvas.height*0.75,h:40});
     if(Math.random()<0.4) blocks.push({x,y:canvas.height*0.75-60,w:80,h:20});
+    if(Math.random()<0.05) ufos.push({x,y:canvas.height*0.75-100,w:50,h:20,used:false});
   }
 
   state="play";
@@ -182,7 +122,6 @@ const JUMP=-15;
 function loop(){
   if(state!=="play") return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   const floor=canvas.height*0.75;
   ctx.fillStyle="#111";
   ctx.fillRect(0,floor,canvas.width,canvas.height-floor);
@@ -191,15 +130,14 @@ function loop(){
   player.dy+=GRAVITY;
   player.y+=player.dy;
   player.rot+=0.1;
-
-  if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true;}
+  if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true; player.jumps=0;} 
   else player.grounded=false;
 
   /* move */
   const speed=levels[level].speed;
   spikes.forEach(s=>s.x-=speed);
   blocks.forEach(b=>b.x-=speed);
-  portal.x-=speed;
+  ufos.forEach(u=>u.x-=speed);
   distance+=speed;
 
   /* draw spikes */
@@ -209,7 +147,7 @@ function loop(){
   spikes.forEach(s=>{
     ctx.beginPath();
     ctx.moveTo(s.x,s.y);
-    ctx.lineTo(s.x+25,s.y-s.h); // invertidos hacia arriba
+    ctx.lineTo(s.x+25,s.y-s.h); 
     ctx.lineTo(s.x+50,s.y);
     ctx.fill();
   });
@@ -218,8 +156,14 @@ function loop(){
   blocks.forEach(b=>{
     ctx.fillStyle="#0ff";
     ctx.fillRect(b.x,b.y,b.w,b.h);
-    ctx.strokeStyle="#fff";
-    ctx.strokeRect(b.x,b.y,b.w,b.h);
+    ctx.strokeStyle="#fff"; ctx.strokeRect(b.x,b.y,b.w,b.h);
+  });
+
+  /* draw ufos */
+  ufos.forEach(u=>{
+    ctx.fillStyle=u.used?"#555":"`#f0f`";
+    ctx.fillRect(u.x,u.y,u.w,u.h);
+    ctx.strokeStyle="#fff"; ctx.strokeRect(u.x,u.y,u.w,u.h);
   });
 
   /* draw player */
@@ -230,64 +174,54 @@ function loop(){
   ctx.fillRect(-15,-15,30,30);
   ctx.restore();
 
-  /* draw portal UFO */
-  ctx.fillStyle="#f0f";
-  ctx.beginPath();
-  ctx.arc(portal.x, portal.y, portal.size, 0, Math.PI*2);
-  ctx.fill();
-  ctx.strokeStyle="#fff";
-  ctx.stroke();
-
   /* collisions spikes */
   for(let s of spikes){
-    if(player.x<s.x+50 &&
-       player.x+player.size>s.x &&
-       player.y<s.y &&
-       player.y+player.size>s.y-s.h){
-      end(false);
-      return;
-    }
+    if(player.x<s.x+50 && player.x+player.size>s.x &&
+       player.y<s.y && player.y+player.size>s.y-s.h){ end(false); return; }
   }
 
   /* collisions blocks */
   blocks.forEach(b=>{
     if(player.x+player.size> b.x && player.x< b.x+b.w &&
        player.y+player.size> b.y && player.y< b.y+b.h){
-      // posición player sobre el bloque
-      if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true;
+      if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true, player.jumps=0;
     }
   });
 
-  /* collisions portal */
-  if(player.x+player.size>portal.x-portal.size && player.x<portal.x+portal.size &&
-     player.y+player.size>portal.y-portal.size && player.y<portal.y+portal.size){
-    end(true);
-    return;
-  }
+  /* collisions ufos (permite saltos múltiples) */
+  ufos.forEach(u=>{
+    if(!u.used && player.x+player.size>u.x && player.x<u.x+u.w &&
+       player.y+player.size>u.y && player.y<u.y+u.h){
+      player.dy=JUMP*1.2; // impulso extra
+      player.jumps++;
+      u.used=true; // solo se activa una vez
+    }
+  });
 
-  /* progress */
   document.getElementById("bar").style.width=Math.min(distance/levelLength*100,100)+"%";
   requestAnimationFrame(loop);
 }
 
 /* ===== INPUT ===== */
-addEventListener("keydown",e=>{if(e.code==="Space"&&state==="play") jump();});
+addEventListener("keydown",e=>{
+  if(e.code==="Space"&&state==="play") jump();
+});
 canvas.addEventListener("click",jump);
-function jump(){if(player.grounded) player.dy=JUMP;}
+function jump(){if(player.grounded || player.jumps<2){player.dy=JUMP;player.jumps++;}}
 
 /* ===== END ===== */
 function end(win){
   state="menu";
-  document.getElementById("overText").innerText=
-    win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;
+  document.getElementById("overText").innerText=win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;
   show("over");
 }
 
-/* ===== MAPMAKER ===== */
+/* ===== MAP MAKER ===== */
 let mapEditor=[];
+let currentPlace="block";
 canvas.addEventListener("mousedown",e=>{
   if(state!=="mapmaker") return;
-  mapEditor.push({x:e.clientX, y:e.clientY, type:"block"});
+  mapEditor.push({x:e.clientX, y:e.clientY, type:currentPlace});
 });
 
 function saveMap(){
