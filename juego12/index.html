@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Neon Dash 2.8</title>
-
+<title>Neon Dash 3.0</title>
 <style>
 html,body{
   margin:0;
@@ -72,33 +71,27 @@ button:hover{transform:scale(1.05)}
 </head>
 
 <body>
-
 <div id="progress"><div id="bar"></div></div>
 
 <div id="ui">
   <div id="start" class="screen active">
-    <div>✨ NEON DASH 2.8 ✨</div>
+    <div>✨ NEON DASH 3.0 ✨</div>
     <button onclick="show('levels')">JUGAR</button>
   </div>
 
   <div id="levels" class="screen">
     <div>Selecciona Nivel</div>
-    <div>
-      <button onclick="startLevel(1)">1</button>
-      <button onclick="startLevel(2)">2</button>
-      <button onclick="startLevel(3)">3</button>
-      <button onclick="startLevel(4)">4</button>
-      <button onclick="startLevel(5)">5</button>
-      <button onclick="startLevel(6)">6</button>
-      <button onclick="startLevel(7)">7</button>
-      <button onclick="startLevel(8)">8</button>
-      <button onclick="startLevel(9)">9</button>
-      <button onclick="startLevel(10)">10</button>
-    </div>
+    <div id="levelButtons"></div>
   </div>
 
   <div id="over" class="screen">
     <div id="overText"></div>
+    <button onclick="show('levels')">Volver</button>
+  </div>
+
+  <div id="mapmaker" class="screen">
+    <div>Map Maker (Click para colocar bloques)</div>
+    <button onclick="saveMap()">Guardar Mapa</button>
     <button onclick="show('levels')">Volver</button>
   </div>
 </div>
@@ -109,11 +102,7 @@ button:hover{transform:scale(1.05)}
 /* ===== CANVAS FULLSCREEN ===== */
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
-
-function resize(){
-  canvas.width=innerWidth;
-  canvas.height=innerHeight;
-}
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
 addEventListener("resize",resize);
 resize();
 
@@ -121,9 +110,9 @@ resize();
 const screens={
   start:document.getElementById("start"),
   levels:document.getElementById("levels"),
-  over:document.getElementById("over")
+  over:document.getElementById("over"),
+  mapmaker:document.getElementById("mapmaker")
 };
-
 function show(name){
   Object.values(screens).forEach(s=>s.classList.remove("active"));
   if(name) screens[name].classList.add("active");
@@ -137,19 +126,30 @@ const levelLength=16000;
 
 let player;
 let spikes=[];
+let blocks=[];
+let portal;
 
 const levels={
-  1:{speed:5,color:"#0ff"},
-  2:{speed:5.5,color:"#0f0"},
-  3:{speed:6,color:"#ff0"},
-  4:{speed:6.5,color:"#f06"},
-  5:{speed:7,color:"#60f"},
-  6:{speed:7.5,color:"#0ff"},
-  7:{speed:8,color:"#f00"},
-  8:{speed:8.5,color:"#0f0"},
-  9:{speed:9,color:"#ff0"},
- 10:{speed:9.5,color:"#fff"}
+  1:{speed:5,color:"#0ff",pattern:[]},
+  2:{speed:5.5,color:"#0f0",pattern:[]},
+  3:{speed:6,color:"#ff0",pattern:[]},
+  4:{speed:6.5,color:"#f06",pattern:[]},
+  5:{speed:7,color:"#60f",pattern:[]},
+  6:{speed:7.5,color:"#0ff",pattern:[]},
+  7:{speed:8,color:"#f00",pattern:[]},
+  8:{speed:8.5,color:"#0f0",pattern:[]},
+  9:{speed:9,color:"#ff0",pattern:[]},
+  10:{speed:9.5,color:"#fff",pattern:[]}
 };
+
+/* Genera botones de niveles */
+const levelButtons=document.getElementById("levelButtons");
+for(let i=1;i<=10;i++){
+  const btn=document.createElement("button");
+  btn.innerText=i;
+  btn.onclick=()=>startLevel(i);
+  levelButtons.appendChild(btn);
+}
 
 /* ===== START LEVEL ===== */
 function startLevel(lvl){
@@ -158,20 +158,17 @@ function startLevel(lvl){
   document.getElementById("bar").style.width="0%";
   show(null);
 
-  player={
-    x:canvas.width*0.25,
-    y:canvas.height*0.7,
-    size:30,
-    dy:0,
-    grounded:false,
-    rot:0
-  };
-
+  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0};
   spikes=[];
+  blocks=[];
+  portal={x:levelLength, y:canvas.height*0.75-60, size:50};
+
+  // Generar spikes y bloques con patrones diferentes
   let x=canvas.width;
   for(let i=0;i<120;i++){
     x+=200+Math.random()*120;
-    spikes.push({x,y:canvas.height*0.75,h:40});
+    if(Math.random()<0.6) spikes.push({x,y:canvas.height*0.75,h:40});
+    if(Math.random()<0.4) blocks.push({x,y:canvas.height*0.75-60,w:80,h:20});
   }
 
   state="play";
@@ -184,10 +181,8 @@ const JUMP=-15;
 
 function loop(){
   if(state!=="play") return;
-
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  /* suelo */
   const floor=canvas.height*0.75;
   ctx.fillStyle="#111";
   ctx.fillRect(0,floor,canvas.width,canvas.height-floor);
@@ -197,15 +192,14 @@ function loop(){
   player.y+=player.dy;
   player.rot+=0.1;
 
-  if(player.y+player.size>=floor){
-    player.y=floor-player.size;
-    player.dy=0;
-    player.grounded=true;
-  } else player.grounded=false;
+  if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true;}
+  else player.grounded=false;
 
   /* move */
   const speed=levels[level].speed;
   spikes.forEach(s=>s.x-=speed);
+  blocks.forEach(b=>b.x-=speed);
+  portal.x-=speed;
   distance+=speed;
 
   /* draw spikes */
@@ -215,11 +209,18 @@ function loop(){
   spikes.forEach(s=>{
     ctx.beginPath();
     ctx.moveTo(s.x,s.y);
-    ctx.lineTo(s.x+25,s.y+s.h);
+    ctx.lineTo(s.x+25,s.y-s.h); // invertidos hacia arriba
     ctx.lineTo(s.x+50,s.y);
     ctx.fill();
   });
-  ctx.shadowBlur=0;
+
+  /* draw blocks */
+  blocks.forEach(b=>{
+    ctx.fillStyle="#0ff";
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+    ctx.strokeStyle="#fff";
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+  });
 
   /* draw player */
   ctx.save();
@@ -229,40 +230,50 @@ function loop(){
   ctx.fillRect(-15,-15,30,30);
   ctx.restore();
 
-  /* collisions */
+  /* draw portal UFO */
+  ctx.fillStyle="#f0f";
+  ctx.beginPath();
+  ctx.arc(portal.x, portal.y, portal.size, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle="#fff";
+  ctx.stroke();
+
+  /* collisions spikes */
   for(let s of spikes){
     if(player.x<s.x+50 &&
        player.x+player.size>s.x &&
-       player.y<s.y+s.h &&
-       player.y+player.size>s.y){
+       player.y<s.y &&
+       player.y+player.size>s.y-s.h){
       end(false);
       return;
     }
   }
 
-  /* progress */
-  document.getElementById("bar").style.width=
-    Math.min(distance/levelLength*100,100)+"%";
+  /* collisions blocks */
+  blocks.forEach(b=>{
+    if(player.x+player.size> b.x && player.x< b.x+b.w &&
+       player.y+player.size> b.y && player.y< b.y+b.h){
+      // posición player sobre el bloque
+      if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true;
+    }
+  });
 
-  if(distance>=levelLength){
+  /* collisions portal */
+  if(player.x+player.size>portal.x-portal.size && player.x<portal.x+portal.size &&
+     player.y+player.size>portal.y-portal.size && player.y<portal.y+portal.size){
     end(true);
     return;
   }
 
+  /* progress */
+  document.getElementById("bar").style.width=Math.min(distance/levelLength*100,100)+"%";
   requestAnimationFrame(loop);
 }
 
 /* ===== INPUT ===== */
-addEventListener("keydown",e=>{
-  if(e.code==="Space"&&state==="play") jump();
-});
+addEventListener("keydown",e=>{if(e.code==="Space"&&state==="play") jump();});
 canvas.addEventListener("click",jump);
-
-function jump(){
-  if(player.grounded){
-    player.dy=JUMP;
-  }
-}
+function jump(){if(player.grounded) player.dy=JUMP;}
 
 /* ===== END ===== */
 function end(win){
@@ -270,6 +281,18 @@ function end(win){
   document.getElementById("overText").innerText=
     win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;
   show("over");
+}
+
+/* ===== MAPMAKER ===== */
+let mapEditor=[];
+canvas.addEventListener("mousedown",e=>{
+  if(state!=="mapmaker") return;
+  mapEditor.push({x:e.clientX, y:e.clientY, type:"block"});
+});
+
+function saveMap(){
+  console.log("Mapa guardado:", mapEditor);
+  alert("Mapa guardado en consola (ejemplo).");
 }
 </script>
 </body>
