@@ -1,263 +1,218 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Documento de Diseño – Shooter Battle Royale AAA</title>
-    <style>
-        body { font-family: Arial, sans-serif; background:#0e0e11; color:#f0f0f0; line-height:1.6; }
-        h1, h2, h3 { color:#4dd0e1; }
-        section { margin-bottom:40px; }
-        ul { margin-left:20px; }
-        .role { color:#81c784; font-weight:bold; }
-    </style>
+<meta charset="UTF-8">
+<title>Frontier Fall – Prototype</title>
+<style>
+    body {
+        margin: 0;
+        background: #0b0f1a;
+        color: white;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #hud {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+    }
+    canvas {
+        display: block;
+    }
+</style>
 </head>
 <body>
 
-<h1>Documento Base de Diseño – Proyecto Shooter Battle Royale AAA</h1>
+<div id="hud">
+    <div>❤️ Vida: <span id="hp">100</span></div>
+    <div>👥 Enemigos: <span id="enemies">0</span></div>
+    <div>☠️ Estado: <span id="status">Vivo</span></div>
+</div>
 
-<section>
-<h2>1. Concepto General del Juego</h2>
-<p><span class="role">Equipo creativo:</span> Diseñador de juego, Productor</p>
-<p>
-Juego multijugador online tipo Battle Royale con construcción dinámica y habilidades,
-enfocado en ritmo rápido, creatividad del jugador y eventos vivos en el mapa.
-No es una copia de Fortnite: se enfatiza la movilidad avanzada, destrucción del entorno
-y eventos narrativos persistentes.
-</p>
-</section>
+<canvas id="game"></canvas>
 
-<section>
-<h2>2. Nombre Provisional</h2>
-<ul>
-    <li><strong>“FRONTIER FALL”</strong></li>
-    <li>Subtítulo: <em>Build. Adapt. Survive.</em></li>
-</ul>
-</section>
+<script>
+/* =========================
+   CONFIGURACIÓN BÁSICA
+========================= */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-<section>
-<h2>3. Estilo Artístico</h2>
-<p><span class="role">Artista & UI Designer</span></p>
-<ul>
-    <li>Estilo: Cartoon estilizado semi-realista</li>
-    <li>Colores: Saturados pero contrastados (inspiración cómic moderno)</li>
-    <li>Personajes: Proporciones exageradas, animaciones expresivas</li>
-    <li>UI: Minimalista, HUD modular, animaciones suaves</li>
-</ul>
-</section>
+const MAP_SIZE = 3000;
+const SAFE_ZONE_START = 1200;
 
-<section>
-<h2>4. Público Objetivo</h2>
-<ul>
-    <li>Edad: 12 – 35 años</li>
-    <li>Jugadores casuales y competitivos</li>
-    <li>Plataformas: PC, Consolas (cross-play)</li>
-</ul>
-</section>
+let safeZoneRadius = SAFE_ZONE_START;
+let gameOver = false;
 
-<section>
-<h2>5. Gameplay Principal</h2>
-<p><span class="role">Diseñador de Juego</span></p>
-<ul>
-    <li>100 jugadores por partida</li>
-    <li>Último jugador o escuadra en pie gana</li>
-    <li>Construcción táctica + combate frenético</li>
-</ul>
-</section>
+/* =========================
+   JUGADOR
+========================= */
+const player = {
+    x: MAP_SIZE / 2,
+    y: MAP_SIZE / 2,
+    r: 15,
+    speed: 4,
+    hp: 100
+};
 
-<section>
-<h2>6. Modo Battle Royale</h2>
-<ul>
-    <li>Solo / Dúos / Escuadras (4)</li>
-    <li>Tormenta energética que reduce el mapa</li>
-    <li>Reaparición limitada mediante balizas</li>
-</ul>
-</section>
+/* =========================
+   INPUT
+========================= */
+const keys = {};
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
 
-<section>
-<h2>7. Sistema de Construcción</h2>
-<p><span class="role">Programador & Diseñador</span></p>
-<ul>
-    <li>Materiales: Metal, Energía, Biomateria</li>
-    <li>Piezas: Muros, rampas, plataformas, domos</li>
-    <li>Límite: 300 piezas por jugador</li>
-    <li>Construcción rápida pero vulnerable</li>
-</ul>
-</section>
+/* =========================
+   DISPAROS
+========================= */
+const bullets = [];
+window.addEventListener("click", e => {
+    if (gameOver) return;
+    bullets.push({
+        x: player.x,
+        y: player.y,
+        dx: Math.cos(Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2)) * 10,
+        dy: Math.sin(Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2)) * 10
+    });
+});
 
-<section>
-<h2>8. Combate</h2>
-<ul>
-    <li>Armas: Rifles, escopetas, SMGs, armas energéticas</li>
-    <li>Balance por rareza y retroceso</li>
-    <li>TTK medio (ni instantáneo ni lento)</li>
-</ul>
-</section>
+/* =========================
+   ENEMIGOS (BOTS)
+========================= */
+const enemies = [];
+for (let i = 0; i < 20; i++) {
+    enemies.push({
+        x: Math.random() * MAP_SIZE,
+        y: Math.random() * MAP_SIZE,
+        r: 14,
+        hp: 50
+    });
+}
 
-<section>
-<h2>9. Movimiento del Jugador</h2>
-<ul>
-    <li>Sprint, deslizamiento, parkour ligero</li>
-    <li>Ganchos y pads de impulso</li>
-    <li>Enfoque vertical del combate</li>
-</ul>
-</section>
+/* =========================
+   GAME LOOP
+========================= */
+function update() {
+    if (gameOver) return;
 
-<section>
-<h2>10. Mapa y Entorno</h2>
-<ul>
-    <li>Mapa vivo que evoluciona cada temporada</li>
-    <li>Destrucción parcial del entorno</li>
-</ul>
-</section>
+    // Movimiento jugador
+    if (keys["w"]) player.y -= player.speed;
+    if (keys["s"]) player.y += player.speed;
+    if (keys["a"]) player.x -= player.speed;
+    if (keys["d"]) player.x += player.speed;
 
-<section>
-<h2>11. Tamaño del Mapa</h2>
-<ul>
-    <li>4km x 4km (escalable)</li>
-    <li>Streaming de mundo por sectores</li>
-</ul>
-</section>
+    // Disparos
+    bullets.forEach(b => {
+        b.x += b.dx;
+        b.y += b.dy;
+    });
 
-<section>
-<h2>12. Zonas y Biomas</h2>
-<ul>
-    <li>Ciudad flotante</li>
-    <li>Desierto tecnológico</li>
-    <li>Selva bioluminiscente</li>
-    <li>Zona ártica industrial</li>
-</ul>
-</section>
+    // Colisiones bala-enemigo
+    bullets.forEach((b, bi) => {
+        enemies.forEach((e, ei) => {
+            const d = Math.hypot(b.x - e.x, b.y - e.y);
+            if (d < e.r) {
+                e.hp -= 25;
+                bullets.splice(bi, 1);
+                if (e.hp <= 0) enemies.splice(ei, 1);
+            }
+        });
+    });
 
-<section>
-<h2>13. Eventos Dinámicos</h2>
-<ul>
-    <li>Invasiones NPC</li>
-    <li>Colapsos de zonas</li>
-    <li>Eventos narrativos en vivo</li>
-</ul>
-</section>
+    // Enemigos persiguen jugador
+    enemies.forEach(e => {
+        const a = Math.atan2(player.y - e.y, player.x - e.x);
+        e.x += Math.cos(a) * 1.2;
+        e.y += Math.sin(a) * 1.2;
 
-<section>
-<h2>14. Sistemas Clave</h2>
+        if (Math.hypot(player.x - e.x, player.y - e.y) < 20) {
+            player.hp -= 0.3;
+        }
+    });
 
-<h3>Inventario</h3>
-<ul>
-    <li>5 slots de armas</li>
-    <li>Slots separados para consumibles</li>
-</ul>
+    // Zona segura
+    safeZoneRadius -= 0.02;
+    const distCenter = Math.hypot(player.x - MAP_SIZE/2, player.y - MAP_SIZE/2);
+    if (distCenter > safeZoneRadius) {
+        player.hp -= 0.2;
+    }
 
-<h3>Loot y Rarezas</h3>
-<ul>
-    <li>Común, Raro, Épico, Legendario, Mítico</li>
-</ul>
+    // Fin del juego
+    if (player.hp <= 0) {
+        gameOver = true;
+        document.getElementById("status").textContent = "Derrota";
+    }
 
-<h3>Progresión del Jugador</h3>
-<ul>
-    <li>Nivel de cuenta</li>
-    <li>Desbloqueos cosméticos</li>
-</ul>
-</section>
+    if (enemies.length === 0) {
+        gameOver = true;
+        document.getElementById("status").textContent = "Victoria";
+    }
 
-<section>
-<h2>15. Temporadas y Pase de Batalla</h2>
-<ul>
-    <li>Duración: 10–12 semanas</li>
-    <li>100 niveles</li>
-    <li>Gratis + Premium</li>
-</ul>
-</section>
+    document.getElementById("hp").textContent = Math.floor(player.hp);
+    document.getElementById("enemies").textContent = enemies.length;
+}
 
-<section>
-<h2>16. Multijugador Online</h2>
-<p><span class="role">Arquitecto de Software</span></p>
+/* =========================
+   RENDER
+========================= */
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-<h3>Arquitectura Cliente-Servidor</h3>
-<ul>
-    <li>Servidor autoritativo</li>
-    <li>Instancias dedicadas en la nube</li>
-</ul>
+    ctx.save();
+    ctx.translate(
+        canvas.width/2 - player.x,
+        canvas.height/2 - player.y
+    );
 
-<h3>Matchmaking</h3>
-<ul>
-    <li>Skill-based (MMR)</li>
-    <li>Regiones automáticas</li>
-</ul>
+    // Mapa
+    ctx.fillStyle = "#1b263b";
+    ctx.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-<h3>Anti-Cheat Básico</h3>
-<ul>
-    <li>Validación server-side</li>
-    <li>Detección de patrones anómalos</li>
-</ul>
-</section>
+    // Zona segura
+    ctx.strokeStyle = "#4dd0e1";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(MAP_SIZE/2, MAP_SIZE/2, safeZoneRadius, 0, Math.PI * 2);
+    ctx.stroke();
 
-<section>
-<h2>17. Aspectos Técnicos</h2>
+    // Jugador
+    ctx.fillStyle = "#4caf50";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+    ctx.fill();
 
-<h3>Motor Recomendado</h3>
-<ul>
-    <li><strong>Unreal Engine 5</strong></li>
-    <li>Nanite, Lumen, networking robusto</li>
-</ul>
+    // Enemigos
+    ctx.fillStyle = "#e53935";
+    enemies.forEach(e => {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
-<h3>Lenguajes</h3>
-<ul>
-    <li>C++ (core)</li>
-    <li>Blueprints (rápido prototipado)</li>
-</ul>
+    // Balas
+    ctx.fillStyle = "#fff";
+    bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
-<h3>Rendimiento</h3>
-<ul>
-    <li>LOD dinámico</li>
-    <li>Instancing y culling agresivo</li>
-</ul>
-</section>
+    ctx.restore();
+}
 
-<section>
-<h2>18. Monetización Ética</h2>
-<ul>
-    <li>Solo cosméticos</li>
-    <li>No pay-to-win</li>
-</ul>
-
-<h3>Skins</h3>
-<ul>
-    <li>Personajes, armas, construcciones</li>
-</ul>
-
-<h3>Tienda</h3>
-<ul>
-    <li>Rotación semanal</li>
-    <li>Moneda premium</li>
-</ul>
-</section>
-
-<section>
-<h2>19. Plan de Desarrollo</h2>
-<p><span class="role">Productor</span></p>
-
-<h3>MVP</h3>
-<ul>
-    <li>Mapa básico</li>
-    <li>100 jugadores</li>
-    <li>Combate + construcción simple</li>
-</ul>
-
-<h3>Fases</h3>
-<ul>
-    <li>Preproducción (3 meses)</li>
-    <li>Producción (12 meses)</li>
-    <li>Beta y Live Ops</li>
-</ul>
-
-<h3>Equipo Necesario</h3>
-<ul>
-    <li>3 Programadores</li>
-    <li>2 Artistas</li>
-    <li>1 Diseñador</li>
-    <li>1 Productor</li>
-    <li>QA externo</li>
-</ul>
-</section>
+/* =========================
+   LOOP
+========================= */
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+loop();
+</script>
 
 </body>
 </html>
