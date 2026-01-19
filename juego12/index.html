@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Neon Dash 3.1</title>
+<title>Neon Dash 3.2</title>
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:Arial, Helvetica, sans-serif;}
 canvas{display:block;background:#000;}
@@ -21,7 +21,7 @@ button:hover{transform:scale(1.05);}
 
 <div id="ui">
   <div id="start" class="screen active">
-    <div>✨ NEON DASH 3.1 ✨</div>
+    <div>✨ NEON DASH 3.2 ✨</div>
     <button onclick="show('levels')">JUGAR</button>
     <button onclick="show('mapmaker')">MAP MAKER</button>
   </div>
@@ -37,7 +37,7 @@ button:hover{transform:scale(1.05);}
   </div>
 
   <div id="mapmaker" class="screen">
-    <div>Map Maker (Click para colocar bloques o spikes)</div>
+    <div>Map Maker (Click para colocar bloques, spikes o UFOs)</div>
     <div style="margin:10px;">
       <button onclick="currentPlace='block'">Bloque</button>
       <button onclick="currentPlace='spike'">Spike</button>
@@ -58,16 +58,8 @@ addEventListener("resize",resize);
 resize();
 
 /* ===== UI ===== */
-const screens={
-  start:document.getElementById("start"),
-  levels:document.getElementById("levels"),
-  over:document.getElementById("over"),
-  mapmaker:document.getElementById("mapmaker")
-};
-function show(name){
-  Object.values(screens).forEach(s=>s.classList.remove("active"));
-  if(name) screens[name].classList.add("active");
-}
+const screens={start:document.getElementById("start"),levels:document.getElementById("levels"),over:document.getElementById("over"),mapmaker:document.getElementById("mapmaker")};
+function show(name){Object.values(screens).forEach(s=>s.classList.remove("active"));if(name)screens[name].classList.add("active");}
 
 /* ===== GAME DATA ===== */
 let state="menu";
@@ -80,19 +72,13 @@ let spikes=[];
 let blocks=[];
 let ufos=[];
 
+/* Niveles */
 const levels={};
-for(let i=1;i<=10;i++){
-  levels[i]={speed:5+i*0.5,color:`hsl(${i*36},100%,50%)`};
-}
+for(let i=1;i<=10;i++){levels[i]={speed:5+i*0.5,color:`hsl(${i*36},100%,50%)`};}
 
 /* Genera botones de niveles */
 const levelButtons=document.getElementById("levelButtons");
-for(let i=1;i<=10;i++){
-  const btn=document.createElement("button");
-  btn.innerText=i;
-  btn.onclick=()=>startLevel(i);
-  levelButtons.appendChild(btn);
-}
+for(let i=1;i<=10;i++){const btn=document.createElement("button");btn.innerText=i;btn.onclick=()=>startLevel(i);levelButtons.appendChild(btn);}
 
 /* ===== START LEVEL ===== */
 function startLevel(lvl){
@@ -133,7 +119,6 @@ function loop(){
   if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true; player.jumps=0;} 
   else player.grounded=false;
 
-  /* move */
   const speed=levels[level].speed;
   spikes.forEach(s=>s.x-=speed);
   blocks.forEach(b=>b.x-=speed);
@@ -142,59 +127,39 @@ function loop(){
 
   /* draw spikes */
   ctx.fillStyle=levels[level].color;
-  ctx.shadowColor=levels[level].color;
-  ctx.shadowBlur=10;
+  ctx.shadowColor=levels[level].color; ctx.shadowBlur=10;
   spikes.forEach(s=>{
-    ctx.beginPath();
-    ctx.moveTo(s.x,s.y);
-    ctx.lineTo(s.x+25,s.y-s.h); 
-    ctx.lineTo(s.x+50,s.y);
-    ctx.fill();
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+25,s.y-s.h); ctx.lineTo(s.x+50,s.y); ctx.fill();
   });
+  ctx.shadowBlur=0;
 
   /* draw blocks */
-  blocks.forEach(b=>{
-    ctx.fillStyle="#0ff";
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-    ctx.strokeStyle="#fff"; ctx.strokeRect(b.x,b.y,b.w,b.h);
-  });
+  blocks.forEach(b=>{ctx.fillStyle="#0ff";ctx.fillRect(b.x,b.y,b.w,b.h);ctx.strokeStyle="#fff";ctx.strokeRect(b.x,b.y,b.w,b.h);});
 
   /* draw ufos */
-  ufos.forEach(u=>{
-    ctx.fillStyle=u.used?"#555":"`#f0f`";
-    ctx.fillRect(u.x,u.y,u.w,u.h);
-    ctx.strokeStyle="#fff"; ctx.strokeRect(u.x,u.y,u.w,u.h);
-  });
+  ufos.forEach(u=>{ctx.fillStyle=u.used?"#555":"#f0f";ctx.fillRect(u.x,u.y,u.w,u.h);ctx.strokeStyle="#fff";ctx.strokeRect(u.x,u.y,u.w,u.h);});
 
   /* draw player */
-  ctx.save();
-  ctx.translate(player.x+15,player.y+15);
-  ctx.rotate(player.rot);
-  ctx.fillStyle=levels[level].color;
-  ctx.fillRect(-15,-15,30,30);
-  ctx.restore();
+  ctx.save(); ctx.translate(player.x+15,player.y+15); ctx.rotate(player.rot); ctx.fillStyle=levels[level].color; ctx.fillRect(-15,-15,30,30); ctx.restore();
 
-  /* collisions spikes */
+  /* collision spikes (triángulo hitbox) */
   for(let s of spikes){
-    if(player.x<s.x+50 && player.x+player.size>s.x &&
-       player.y<s.y && player.y+player.size>s.y-s.h){ end(false); return; }
+    // usar rectángulo más pequeño centrado en punta
+    const spikeTopX = s.x+25, spikeTopY = s.y-s.h;
+    if(player.x+player.size>spikeTopX-15 && player.x<spikeTopX+15 &&
+       player.y+player.size>spikeTopY && player.y<spikeTopY+s.h){
+      end(false); return;
+    }
   }
 
-  /* collisions blocks */
-  blocks.forEach(b=>{
-    if(player.x+player.size> b.x && player.x< b.x+b.w &&
-       player.y+player.size> b.y && player.y< b.y+b.h){
-      if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true, player.jumps=0;
-    }
-  });
+  /* collision blocks */
+  blocks.forEach(b=>{if(player.x+player.size>b.x && player.x<b.x+b.w && player.y+player.size>b.y && player.y<b.y+b.h){if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true, player.jumps=0;} });
 
-  /* collisions ufos (permite saltos múltiples) */
+  /* collision UFO */
   ufos.forEach(u=>{
     if(!u.used && player.x+player.size>u.x && player.x<u.x+u.w &&
        player.y+player.size>u.y && player.y<u.y+u.h){
-      player.dy=JUMP*1.2; // impulso extra
-      player.jumps++;
-      u.used=true; // solo se activa una vez
+      player.dy=JUMP*1.2; player.jumps++; u.used=true;
     }
   });
 
@@ -203,30 +168,39 @@ function loop(){
 }
 
 /* ===== INPUT ===== */
-addEventListener("keydown",e=>{
-  if(e.code==="Space"&&state==="play") jump();
-});
+addEventListener("keydown",e=>{if(e.code==="Space"&&state==="play") jump();});
 canvas.addEventListener("click",jump);
 function jump(){if(player.grounded || player.jumps<2){player.dy=JUMP;player.jumps++;}}
 
 /* ===== END ===== */
-function end(win){
-  state="menu";
-  document.getElementById("overText").innerText=win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;
-  show("over");
-}
+function end(win){state="menu";document.getElementById("overText").innerText=win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;show("over");}
 
 /* ===== MAP MAKER ===== */
-let mapEditor=[];
-let currentPlace="block";
+let mapEditor=[]; let currentPlace="block";
+stateMapRender();
+
 canvas.addEventListener("mousedown",e=>{
   if(state!=="mapmaker") return;
-  mapEditor.push({x:e.clientX, y:e.clientY, type:currentPlace});
+  const rect={x:e.clientX,y:e.clientY,type:currentPlace};
+  mapEditor.push(rect);
+  renderMapEditor();
 });
 
-function saveMap(){
-  console.log("Mapa guardado:", mapEditor);
-  alert("Mapa guardado en consola (ejemplo).");
+function renderMapEditor(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  mapEditor.forEach(obj=>{
+    if(obj.type==="block"){ctx.fillStyle="#0ff";ctx.fillRect(obj.x,obj.y,80,20); ctx.strokeStyle="#fff";ctx.strokeRect(obj.x,obj.y,80,20);}
+    if(obj.type==="spike"){ctx.fillStyle="#f0f";ctx.beginPath();ctx.moveTo(obj.x,obj.y);ctx.lineTo(obj.x+25,obj.y-40);ctx.lineTo(obj.x+50,obj.y);ctx.fill();}
+    if(obj.type==="ufo"){ctx.fillStyle="#f0f";ctx.fillRect(obj.x,obj.y,50,20);ctx.strokeStyle="#fff";ctx.strokeRect(obj.x,obj.y,50,20);}
+  });
+}
+
+function saveMap(){console.log("Mapa guardado:",mapEditor);alert("Mapa guardado en consola (ejemplo).");}
+
+/* Render map maker continuamente */
+function stateMapRender(){
+  if(state==="mapmaker"){renderMapEditor(); requestAnimationFrame(stateMapRender);}
+  else setTimeout(stateMapRender,1000);
 }
 </script>
 </body>
