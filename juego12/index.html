@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Neon Dash 3.2</title>
+<title>Neon Dash</title>
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:Arial, Helvetica, sans-serif;}
 canvas{display:block;background:#000;}
@@ -72,13 +72,32 @@ let spikes=[];
 let blocks=[];
 let ufos=[];
 
-/* Niveles */
-const levels={};
-for(let i=1;i<=10;i++){levels[i]={speed:5+i*0.5,color:`hsl(${i*36},100%,50%)`};}
+/* ===== Niveles exactos (ejemplo) ===== */
+/* Reemplaza esto con los datos reales del Neon Dash original */
+const levelsData = {
+  1:{
+    speed:5, color:"#0ff",
+    spikes:[{x:800,y:550,h:40},{x:1200,y:550,h:40},{x:1600,y:550,h:40}],
+    blocks:[{x:1000,y:500,w:80,h:20},{x:1400,y:500,w:80,h:20}],
+    ufos:[{x:1800,y:450,w:50,h:20,used:false}]
+  },
+  2:{
+    speed:5.5, color:"#f0f",
+    spikes:[{x:700,y:550,h:40},{x:1300,y:550,h:40}],
+    blocks:[{x:900,y:500,w:80,h:20},{x:1500,y:500,w:80,h:20}],
+    ufos:[{x:1700,y:450,w:50,h:20,used:false}]
+  }
+  // Agrega aquí los niveles 3 a 10 siguiendo el mismo formato
+};
 
 /* Genera botones de niveles */
 const levelButtons=document.getElementById("levelButtons");
-for(let i=1;i<=10;i++){const btn=document.createElement("button");btn.innerText=i;btn.onclick=()=>startLevel(i);levelButtons.appendChild(btn);}
+for(let i=1;i<=10;i++){
+  const btn=document.createElement("button");
+  btn.innerText=i;
+  btn.onclick=()=>startLevel(i);
+  levelButtons.appendChild(btn);
+}
 
 /* ===== START LEVEL ===== */
 function startLevel(lvl){
@@ -86,16 +105,12 @@ function startLevel(lvl){
   document.getElementById("bar").style.width="0%";
   show(null);
 
-  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0,jumps:0};
-  spikes=[]; blocks=[]; ufos=[];
+  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0};
 
-  let x=canvas.width;
-  for(let i=0;i<120;i++){
-    x+=200+Math.random()*120;
-    if(Math.random()<0.6) spikes.push({x,y:canvas.height*0.75,h:40});
-    if(Math.random()<0.4) blocks.push({x,y:canvas.height*0.75-60,w:80,h:20});
-    if(Math.random()<0.05) ufos.push({x,y:canvas.height*0.75-100,w:50,h:20,used:false});
-  }
+  // Carga los objetos del nivel exacto
+  spikes = levelsData[lvl]?.spikes.map(s=>({...s})) || [];
+  blocks = levelsData[lvl]?.blocks.map(b=>({...b})) || [];
+  ufos = levelsData[lvl]?.ufos.map(u=>({...u})) || [];
 
   state="play";
   requestAnimationFrame(loop);
@@ -116,35 +131,34 @@ function loop(){
   player.dy+=GRAVITY;
   player.y+=player.dy;
   player.rot+=0.1;
-  if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true; player.jumps=0;} 
+  if(player.y+player.size>=floor){player.y=floor-player.size;player.dy=0;player.grounded=true;} 
   else player.grounded=false;
 
-  const speed=levels[level].speed;
+  const speed=levelsData[level].speed;
   spikes.forEach(s=>s.x-=speed);
   blocks.forEach(b=>b.x-=speed);
   ufos.forEach(u=>u.x-=speed);
   distance+=speed;
 
   /* draw spikes */
-  ctx.fillStyle=levels[level].color;
-  ctx.shadowColor=levels[level].color; ctx.shadowBlur=10;
+  ctx.fillStyle=levelsData[level].color;
+  ctx.shadowColor=levelsData[level].color; ctx.shadowBlur=10;
   spikes.forEach(s=>{
     ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+25,s.y-s.h); ctx.lineTo(s.x+50,s.y); ctx.fill();
   });
   ctx.shadowBlur=0;
 
   /* draw blocks */
-  blocks.forEach(b=>{ctx.fillStyle="#0ff";ctx.fillRect(b.x,b.y,b.w,b.h);ctx.strokeStyle="#fff";ctx.strokeRect(b.x,b.y,b.w,b.h);});
+  blocks.forEach(b=>{ctx.fillStyle="#0ff";ctx.fillRect(b.x,b.y,b.w,b.h); ctx.strokeStyle="#fff";ctx.strokeRect(b.x,b.y,b.w,b.h);});
 
   /* draw ufos */
-  ufos.forEach(u=>{ctx.fillStyle=u.used?"#555":"#f0f";ctx.fillRect(u.x,u.y,u.w,u.h);ctx.strokeStyle="#fff";ctx.strokeRect(u.x,u.y,u.w,u.h);});
+  ufos.forEach(u=>{ctx.fillStyle=u.used?"#555":"#f0f";ctx.fillRect(u.x,u.y,u.w,u.h); ctx.strokeStyle="#fff";ctx.strokeRect(u.x,u.y,u.w,u.h);});
 
   /* draw player */
-  ctx.save(); ctx.translate(player.x+15,player.y+15); ctx.rotate(player.rot); ctx.fillStyle=levels[level].color; ctx.fillRect(-15,-15,30,30); ctx.restore();
+  ctx.save(); ctx.translate(player.x+15,player.y+15); ctx.rotate(player.rot); ctx.fillStyle=levelsData[level].color; ctx.fillRect(-15,-15,30,30); ctx.restore();
 
-  /* collision spikes (triángulo hitbox) */
+  /* collision spikes */
   for(let s of spikes){
-    // usar rectángulo más pequeño centrado en punta
     const spikeTopX = s.x+25, spikeTopY = s.y-s.h;
     if(player.x+player.size>spikeTopX-15 && player.x<spikeTopX+15 &&
        player.y+player.size>spikeTopY && player.y<spikeTopY+s.h){
@@ -153,13 +167,17 @@ function loop(){
   }
 
   /* collision blocks */
-  blocks.forEach(b=>{if(player.x+player.size>b.x && player.x<b.x+b.w && player.y+player.size>b.y && player.y<b.y+b.h){if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true, player.jumps=0;} });
+  blocks.forEach(b=>{
+    if(player.x+player.size>b.x && player.x<b.x+b.w && player.y+player.size>b.y && player.y<b.y+b.h){
+      if(player.dy>0) player.y=b.y-player.size, player.dy=0, player.grounded=true;
+    }
+  });
 
   /* collision UFO */
   ufos.forEach(u=>{
     if(!u.used && player.x+player.size>u.x && player.x<u.x+u.w &&
        player.y+player.size>u.y && player.y<u.y+u.h){
-      player.dy=JUMP*1.2; player.jumps++; u.used=true;
+      player.dy=JUMP*1.2; u.used=true;
     }
   });
 
@@ -170,7 +188,7 @@ function loop(){
 /* ===== INPUT ===== */
 addEventListener("keydown",e=>{if(e.code==="Space"&&state==="play") jump();});
 canvas.addEventListener("click",jump);
-function jump(){if(player.grounded || player.jumps<2){player.dy=JUMP;player.jumps++;}}
+function jump(){if(player.grounded){player.dy=JUMP;}}
 
 /* ===== END ===== */
 function end(win){state="menu";document.getElementById("overText").innerText=win?`🎉 Nivel ${level} completado`:`💥 Game Over (Nivel ${level})`;show("over");}
@@ -197,7 +215,6 @@ function renderMapEditor(){
 
 function saveMap(){console.log("Mapa guardado:",mapEditor);alert("Mapa guardado en consola (ejemplo).");}
 
-/* Render map maker continuamente */
 function stateMapRender(){
   if(state==="mapmaker"){renderMapEditor(); requestAnimationFrame(stateMapRender);}
   else setTimeout(stateMapRender,1000);
