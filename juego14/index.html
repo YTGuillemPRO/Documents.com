@@ -2,217 +2,31 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Frontier Fall – Prototype</title>
+<title>Frontier Fall – Lobby</title>
 <style>
-    body {
-        margin: 0;
-        background: #0b0f1a;
-        color: white;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-    }
-    #hud {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-    }
-    canvas {
-        display: block;
-    }
+body {
+    margin: 0;
+    background: radial-gradient(circle, #0b0f1a, #000);
+    color: white;
+    font-family: Arial;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+button {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
 
-<div id="hud">
-    <div>❤️ Vida: <span id="hp">100</span></div>
-    <div>👥 Enemigos: <span id="enemies">0</span></div>
-    <div>☠️ Estado: <span id="status">Vivo</span></div>
-</div>
-
-<canvas id="game"></canvas>
-
-<script>
-/* =========================
-   CONFIGURACIÓN BÁSICA
-========================= */
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const MAP_SIZE = 3000;
-const SAFE_ZONE_START = 1200;
-
-let safeZoneRadius = SAFE_ZONE_START;
-let gameOver = false;
-
-/* =========================
-   JUGADOR
-========================= */
-const player = {
-    x: MAP_SIZE / 2,
-    y: MAP_SIZE / 2,
-    r: 15,
-    speed: 4,
-    hp: 100
-};
-
-/* =========================
-   INPUT
-========================= */
-const keys = {};
-window.addEventListener("keydown", e => keys[e.key] = true);
-window.addEventListener("keyup", e => keys[e.key] = false);
-
-/* =========================
-   DISPAROS
-========================= */
-const bullets = [];
-window.addEventListener("click", e => {
-    if (gameOver) return;
-    bullets.push({
-        x: player.x,
-        y: player.y,
-        dx: Math.cos(Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2)) * 10,
-        dy: Math.sin(Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2)) * 10
-    });
-});
-
-/* =========================
-   ENEMIGOS (BOTS)
-========================= */
-const enemies = [];
-for (let i = 0; i < 20; i++) {
-    enemies.push({
-        x: Math.random() * MAP_SIZE,
-        y: Math.random() * MAP_SIZE,
-        r: 14,
-        hp: 50
-    });
-}
-
-/* =========================
-   GAME LOOP
-========================= */
-function update() {
-    if (gameOver) return;
-
-    // Movimiento jugador
-    if (keys["w"]) player.y -= player.speed;
-    if (keys["s"]) player.y += player.speed;
-    if (keys["a"]) player.x -= player.speed;
-    if (keys["d"]) player.x += player.speed;
-
-    // Disparos
-    bullets.forEach(b => {
-        b.x += b.dx;
-        b.y += b.dy;
-    });
-
-    // Colisiones bala-enemigo
-    bullets.forEach((b, bi) => {
-        enemies.forEach((e, ei) => {
-            const d = Math.hypot(b.x - e.x, b.y - e.y);
-            if (d < e.r) {
-                e.hp -= 25;
-                bullets.splice(bi, 1);
-                if (e.hp <= 0) enemies.splice(ei, 1);
-            }
-        });
-    });
-
-    // Enemigos persiguen jugador
-    enemies.forEach(e => {
-        const a = Math.atan2(player.y - e.y, player.x - e.x);
-        e.x += Math.cos(a) * 1.2;
-        e.y += Math.sin(a) * 1.2;
-
-        if (Math.hypot(player.x - e.x, player.y - e.y) < 20) {
-            player.hp -= 0.3;
-        }
-    });
-
-    // Zona segura
-    safeZoneRadius -= 0.02;
-    const distCenter = Math.hypot(player.x - MAP_SIZE/2, player.y - MAP_SIZE/2);
-    if (distCenter > safeZoneRadius) {
-        player.hp -= 0.2;
-    }
-
-    // Fin del juego
-    if (player.hp <= 0) {
-        gameOver = true;
-        document.getElementById("status").textContent = "Derrota";
-    }
-
-    if (enemies.length === 0) {
-        gameOver = true;
-        document.getElementById("status").textContent = "Victoria";
-    }
-
-    document.getElementById("hp").textContent = Math.floor(player.hp);
-    document.getElementById("enemies").textContent = enemies.length;
-}
-
-/* =========================
-   RENDER
-========================= */
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.translate(
-        canvas.width/2 - player.x,
-        canvas.height/2 - player.y
-    );
-
-    // Mapa
-    ctx.fillStyle = "#1b263b";
-    ctx.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
-
-    // Zona segura
-    ctx.strokeStyle = "#4dd0e1";
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(MAP_SIZE/2, MAP_SIZE/2, safeZoneRadius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Jugador
-    ctx.fillStyle = "#4caf50";
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Enemigos
-    ctx.fillStyle = "#e53935";
-    enemies.forEach(e => {
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    // Balas
-    ctx.fillStyle = "#fff";
-    bullets.forEach(b => {
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    ctx.restore();
-}
-
-/* =========================
-   LOOP
-========================= */
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-loop();
-</script>
+<h1>🔥 FRONTIER FALL</h1>
+<button onclick="location.href='game.html'">JUGAR</button>
+<button onclick="location.href='shop.html'">TIENDA</button>
 
 </body>
 </html>
