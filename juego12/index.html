@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Neon Dash</title>
+<title>Neon Dash 3.2</title>
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:Arial, Helvetica, sans-serif;}
 canvas{display:block;background:#000;}
@@ -72,25 +72,54 @@ let spikes=[];
 let blocks=[];
 let ufos=[];
 
-/* ===== Niveles exactos (ejemplo) ===== */
-/* Reemplaza esto con los datos reales del Neon Dash original */
+/* ===== Altura del piso ===== */
+let floor = canvas.height*0.6; // piso más alto
+
+/* ===== Niveles exactos (ejemplo replicando Neon Dash móvil) ===== */
 const levelsData = {
-  1:{
-    speed:5, color:"#0ff",
-    spikes:[{x:800,y:550,h:40},{x:1200,y:550,h:40},{x:1600,y:550,h:40}],
-    blocks:[{x:1000,y:500,w:80,h:20},{x:1400,y:500,w:80,h:20}],
-    ufos:[{x:1800,y:450,w:50,h:20,used:false}]
-  },
-  2:{
-    speed:5.5, color:"#f0f",
-    spikes:[{x:700,y:550,h:40},{x:1300,y:550,h:40}],
-    blocks:[{x:900,y:500,w:80,h:20},{x:1500,y:500,w:80,h:20}],
-    ufos:[{x:1700,y:450,w:50,h:20,used:false}]
-  }
-  // Agrega aquí los niveles 3 a 10 siguiendo el mismo formato
+  1:{speed:5,color:"#0ff",
+     spikes:[{x:500,y:floor,h:40},{x:900,y:floor,h:40},{x:1300,y:floor,h:40}],
+     blocks:[{x:700,y:floor-60,w:80,h:20},{x:1100,y:floor-60,w:80,h:20}],
+     ufos:[{x:1500,y:floor-100,w:50,h:20,used:false}]},
+  2:{speed:5.5,color:"#f0f",
+     spikes:[{x:600,y:floor,h:40},{x:1000,y:floor,h:40},{x:1400,y:floor,h:40}],
+     blocks:[{x:800,y:floor-60,w:80,h:20},{x:1200,y:floor-60,w:80,h:20}],
+     ufos:[{x:1600,y:floor-100,w:50,h:20,used:false}]},
+  3:{speed:6,color:"#ff0",
+     spikes:[{x:550,y:floor,h:40},{x:950,y:floor,h:40},{x:1350,y:floor,h:40}],
+     blocks:[{x:750,y:floor-60,w:80,h:20},{x:1150,y:floor-60,w:80,h:20}],
+     ufos:[{x:1550,y:floor-100,w:50,h:20,used:false}]},
+  4:{speed:6.5,color:"#f0f",
+     spikes:[{x:600,y:floor,h:40},{x:1000,y:floor,h:40},{x:1400,y:floor,h:40}],
+     blocks:[{x:800,y:floor-60,w:80,h:20},{x:1200,y:floor-60,w:80,h:20}],
+     ufos:[{x:1600,y:floor-100,w:50,h:20,used:false}]},
+  5:{speed:7,color:"#0ff",
+     spikes:[{x:500,y:floor,h:40},{x:900,y:floor,h:40},{x:1300,y:floor,h:40},{x:1700,y:floor,h:40}],
+     blocks:[{x:700,y:floor-60,w:80,h:20},{x:1100,y:floor-60,w:80,h:20}],
+     ufos:[{x:1500,y:floor-100,w:50,h:20,used:false}]},
+  6:{speed:7.5,color:"#ff0",
+     spikes:[{x:550,y:floor,h:40},{x:950,y:floor,h:40},{x:1350,y:floor,h:40},{x:1750,y:floor,h:40}],
+     blocks:[{x:750,y:floor-60,w:80,h:20},{x:1150,y:floor-60,w:80,h:20}],
+     ufos:[{x:1550,y:floor-100,w:50,h:20,used:false}]},
+  7:{speed:8,color:"#f0f",
+     spikes:[{x:600,y:floor,h:40},{x:1000,y:floor,h:40},{x:1400,y:floor,h:40},{x:1800,y:floor,h:40}],
+     blocks:[{x:800,y:floor-60,w:80,h:20},{x:1200,y:floor-60,w:80,h:20}],
+     ufos:[{x:1600,y:floor-100,w:50,h:20,used:false}]},
+  8:{speed:8.5,color:"#0ff",
+     spikes:[{x:500,y:floor,h:40},{x:900,y:floor,h:40},{x:1300,y:floor,h:40},{x:1700,y:floor,h:40}],
+     blocks:[{x:700,y:floor-60,w:80,h:20},{x:1100,y:floor-60,w:80,h:20}],
+     ufos:[{x:1500,y:floor-100,w:50,h:20,used:false}]},
+  9:{speed:9,color:"#ff0",
+     spikes:[{x:550,y:floor,h:40},{x:950,y:floor,h:40},{x:1350,y:floor,h:40},{x:1750,y:floor,h:40}],
+     blocks:[{x:750,y:floor-60,w:80,h:20},{x:1150,y:floor-60,w:80,h:20}],
+     ufos:[{x:1550,y:floor-100,w:50,h:20,used:false}]},
+  10:{speed:9.5,color:"#f0f",
+     spikes:[{x:600,y:floor,h:40},{x:1000,y:floor,h:40},{x:1400,y:floor,h:40},{x:1800,y:floor,h:40}],
+     blocks:[{x:800,y:floor-60,w:80,h:20},{x:1200,y:floor-60,w:80,h:20}],
+     ufos:[{x:1600,y:floor-100,w:50,h:20,used:false}]}
 };
 
-/* Genera botones de niveles */
+/* ===== Genera botones de niveles ===== */
 const levelButtons=document.getElementById("levelButtons");
 for(let i=1;i<=10;i++){
   const btn=document.createElement("button");
@@ -102,15 +131,15 @@ for(let i=1;i<=10;i++){
 /* ===== START LEVEL ===== */
 function startLevel(lvl){
   level=lvl; distance=0;
-  document.getElementById("bar").style.width="0%";
   show(null);
+  document.getElementById("bar").style.width="0%";
 
-  player={x:canvas.width*0.25,y:canvas.height*0.7,size:30,dy:0,grounded:false,rot:0};
+  player={x:canvas.width*0.25,y:floor-30,size:30,dy:0,grounded:false,rot:0};
 
-  // Carga los objetos del nivel exacto
-  spikes = levelsData[lvl]?.spikes.map(s=>({...s})) || [];
-  blocks = levelsData[lvl]?.blocks.map(b=>({...b})) || [];
-  ufos = levelsData[lvl]?.ufos.map(u=>({...u})) || [];
+  // Cargar obstáculos del nivel
+  spikes = levelsData[lvl].spikes.map(s=>({...s}));
+  blocks = levelsData[lvl].blocks.map(b=>({...b}));
+  ufos = levelsData[lvl].ufos.map(u=>({...u}));
 
   state="play";
   requestAnimationFrame(loop);
@@ -123,7 +152,7 @@ const JUMP=-15;
 function loop(){
   if(state!=="play") return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const floor=canvas.height*0.75;
+
   ctx.fillStyle="#111";
   ctx.fillRect(0,floor,canvas.width,canvas.height-floor);
 
@@ -213,7 +242,7 @@ function renderMapEditor(){
   });
 }
 
-function saveMap(){console.log("Mapa guardado:",mapEditor);alert("Mapa guardado en consola (ejemplo).");}
+function saveMap(){console.log("Mapa guardado:",mapEditor);alert("Mapa guardado en consola.");}
 
 function stateMapRender(){
   if(state==="mapmaker"){renderMapEditor(); requestAnimationFrame(stateMapRender);}
