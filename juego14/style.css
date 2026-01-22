@@ -1,37 +1,49 @@
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0f1a;
-    color: white;
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
 }
 
-.menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+/* HUD */
+#hud {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-button {
-    padding: 15px 30px;
-    margin: 10px;
-    font-size: 18px;
-    background: #1e88e5;
-    color: white;
-    border: none;
-    cursor: pointer;
+/* Mira a la derecha */
+#crosshair {
+  position: absolute;
+  top: 50%;
+  right: 40%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  color: white;
 }
 
-button:hover {
-    background: #1565c0;
+/* Inventario */
+#inventory {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
 }
 
-.shop-item {
-    border: 1px solid #444;
-    padding: 15px;
-    margin: 10px;
-    width: 250px;
-    text-align: center;
+.slot {
+  width: 60px;
+  height: 60px;
+  border: 3px solid white;
+  color: white;
+  text-align: center;
+  line-height: 60px;
+  font-size: 20px;
+  background: rgba(0,0,0,0.5);
 }
 
+.slot.active {
+  border-color: gold;
+}
