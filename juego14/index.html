@@ -2,15 +2,23 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Frontier Fall - Lobby</title>
+<title>Fornite</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="menu">
+<body>
 
-<h1>🔥 FRONTIER FALL</h1>
+<!-- GUI -->
+<div id="hud">
+  <div id="crosshair">+</div>
 
-<button onclick="location.href='game.html'">JUGAR</button>
-<button onclick="location.href='shop.html'">TIENDA</button>
+  <div id="inventory">
+    <div class="slot active">1</div>
+    <div class="slot">2</div>
+    <div class="slot">3</div>
+  </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
