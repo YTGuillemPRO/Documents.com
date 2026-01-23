@@ -3,155 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IA Inteligente Offline</title>
+  <title>IA Híbrida con Internet</title>
   <style>
     :root {
-      --bg: #121212;
-      --card: #1e1e1e;
-      --text: #e0e0e0;
-      --accent: #bb86fc;
-      --user: #3700b3;
-      --ai: #2c2c2c;
+      --bg: #0b0e14;
+      --card: #151921;
+      --text: #ffffff;
+      --accent: #00d2ff;
+      --user: #242933;
+      --ai: #1c212c;
     }
 
     body { 
-      font-family: 'Segoe UI', Tahoma, sans-serif; 
+      font-family: 'Segoe UI', sans-serif; 
       background: var(--bg); color: var(--text);
       margin: 0; display: flex; flex-direction: column; height: 100vh; 
     }
 
-    header { padding: 15px; background: var(--card); text-align: center; border-bottom: 2px solid var(--accent); font-weight: bold; }
+    header { padding: 15px; background: var(--card); text-align: center; border-bottom: 2px solid var(--accent); font-weight: bold; letter-spacing: 2px; }
 
-    #chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    #chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-    .msg { max-width: 85%; padding: 12px; border-radius: 12px; line-height: 1.4; position: relative; }
-    .user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 2px; }
-    .ai { align-self: flex-start; background: var(--ai); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
+    .msg { max-width: 85%; padding: 15px; border-radius: 12px; line-height: 1.5; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 2px; border: 1px solid #3b4252; }
+    .ai { align-self: flex-start; background: var(--ai); border-bottom-left-radius: 2px; border-left: 4px solid var(--accent); }
 
-    #input-container { display: flex; padding: 15px; background: var(--card); gap: 10px; }
-    #input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; outline: none; }
-    #btn-send { padding: 0 20px; border: none; border-radius: 8px; background: var(--accent); color: black; font-weight: bold; cursor: pointer; }
+    .status { font-size: 0.8rem; color: var(--accent); margin-bottom: 5px; font-style: italic; }
+
+    #input-container { display: flex; padding: 20px; background: var(--card); gap: 10px; }
+    #input { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #3b4252; background: #0b0e14; color: white; outline: none; }
+    #btn-send { padding: 0 25px; border: none; border-radius: 8px; background: var(--accent); color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    #btn-send:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
 
-  <header id="header-name">IA CEREBRO v3</header>
+  <header>AI WEB INVESTIGATOR</header>
   <div id="chat"></div>
 
   <div id="input-container">
-    <input type="text" id="input" placeholder="Escribe algo (aunque tengas faltas)..." autocomplete="off">
+    <input type="text" id="input" placeholder="Pregúntame algo que deba buscar en la web..." autocomplete="off">
     <button id="btn-send">Enviar</button>
   </div>
 
   <script>
-    /* ================= BASE DE CONOCIMIENTO (HISTORIA Y PAÍSES) ================= */
-    const CONOCIMIENTO = {
-      // Geografía
-      "españa": "País de Europa. Capital: Madrid. Moneda: Euro.",
-      "mexico": "País de América. Capital: CDMX. Moneda: Peso Mexicano.",
-      "francia": "País de Europa. Capital: París. Famoso por la Torre Eiffel.",
-      "argentina": "País de América del Sur. Capital: Buenos Aires. Cuna del Tango.",
-      
-      // Historia
-      "revolucion francesa": "Conflicto social y político (1789) que derrocó la monarquía en Francia y estableció derechos ciudadanos.",
-      "segunda guerra mundial": "Guerra global (1939-1945) entre Aliados y Potencias del Eje. Terminó con la derrota de la Alemania nazi.",
-      "imperio romano": "Una de las civilizaciones más grandes de la historia, centrada en Roma, dominó el Mediterráneo por siglos.",
-      "descubrimiento de america": "Llegada de Cristóbal Colón en 1492, conectando Europa con el nuevo continente.",
-      "egipto antiguo": "Civilización famosa por sus pirámides, faraones y el río Nilo.",
-      "independencia de mexico": "Proceso que inició en 1810 para liberarse del dominio español.",
-      
-      // Conceptos simples
-      "hola": "¡Hola! ¿Cómo estás?",
-      "quien eres": "Soy tu asistente inteligente offline con conocimientos de historia y geografía.",
-      "gracias": "¡De nada! Es un placer ayudarte.",
-      "adios": "¡Hasta pronto! Cuídate mucho."
-    };
-
-    /* ================= MOTOR DE COMPRENSIÓN (FUZZY LOGIC) ================= */
-    // Función para limpiar texto y manejar errores de ortografía simples
-    function normalizar(texto) {
-      return texto.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar tildes
-        .replace(/[y]/g, "i") // Intercambiar i/y común
-        .replace(/[v]/g, "b") // Intercambiar b/v común
-        .replace(/[h]/g, "")  // Quitar h (error común)
-        .replace(/[^a-z0-9 ]/g, ""); // Quitar símbolos
-    }
-
-    // Calcula similitud entre palabras para entender si hay letras mal
-    function calcularSimilitud(s1, s2) {
-      if (s1.includes(s2) || s2.includes(s1)) return true;
-      // Lógica simple: si comparten más del 70% de las letras en orden
-      let coincidencias = 0;
-      let minLen = Math.min(s1.length, s2.length);
-      for(let i=0; i<minLen; i++) { if(s1[i] === s2[i]) coincidencias++; }
-      return (coincidencias / s1.length) > 0.7;
-    }
-
-    /* ================= LÓGICA DE RESPUESTA ================= */
-    let memoriaExtra = JSON.parse(localStorage.getItem("ia_pro_mem")) || {};
-
-    function pensar(inputUsuario) {
-      const original = inputUsuario.toLowerCase();
-      const limpia = normalizar(inputUsuario);
-
-      // 1. Buscar en Conocimiento Estático (Historia/Países)
-      for (let clave in CONOCIMIENTO) {
-        let claveLimpia = normalizar(clave);
-        if (limpia.includes(claveLimpia) || calcularSimilitud(limpia, claveLimpia)) {
-          return CONOCIMIENTO[clave];
-        }
-      }
-
-      // 2. Buscar en Memoria Aprendida
-      for (let k in memoriaExtra) {
-        if (limpia.includes(normalizar(k))) return memoriaExtra[k];
-      }
-
-      // 3. Comandos de aprendizaje
-      if (original.includes("aprende que") && original.includes(" es ")) {
-        let partes = original.split("aprende que")[1].split(" es ");
-        memoriaExtra[partes[0].trim()] = partes[1].trim();
-        localStorage.setItem("ia_pro_mem", JSON.stringify(memoriaExtra));
-        return "He guardado ese dato en mi memoria a largo plazo.";
-      }
-
-      // 4. Matemáticas (Reutilizado y mejorado)
-      try {
-        let op = original.replace(/x/g, "*").replace(/[^0-9+\-*/(). ]/g, "");
-        if (op.length > 2) {
-          let res = eval(op);
-          if (!isNaN(res)) return "El resultado matemático es: " + res;
-        }
-      } catch(e) {}
-
-      return "No estoy seguro de entenderte (recuerda que soy offline). ¿Puedes repetirlo o enseñarme con 'aprende que...'?";
-    }
-
-    /* ================= INTERFAZ ================= */
     const chatBox = document.getElementById("chat");
     const inputField = document.getElementById("input");
 
-    function addMsg(quien, texto, clase) {
+    /* ================= FUNCIÓN DE BÚSQUEDA WEB (WIKIPEDIA) ================= */
+    async function investigarWeb(tema) {
+      const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(tema)}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.extract) {
+          return data.extract;
+        } else {
+          return "No encontré información específica, pero puedo seguir aprendiendo si me lo explicas.";
+        }
+      } catch (error) {
+        return "Hubo un error al intentar conectarme a la red. ¿Tienes internet?";
+      }
+    }
+
+    /* ================= LÓGICA DE RESPUESTA ================= */
+    async function pensar(texto) {
+      const t = texto.toLowerCase();
+
+      // 1. Detectar intención de búsqueda (Quién es, Qué es, etc.)
+      if (t.includes("quien es") || t.includes("que es") || t.includes("quien fue") || t.includes("investiga") || t.includes("presidente")) {
+        let busqueda = t.replace(/quien es|que es|quien fue|investiga sobre|cuentame de|el |la /g, "").trim();
+        
+        // Caso específico Presidente USA (para que sea más preciso)
+        if(t.includes("presidente") && t.includes("estados unidos")) busqueda = "Presidente de los Estados Unidos";
+
+        addMsg("IA", "Investigando en la web...", "ai", true);
+        const resultado = await investigarWeb(busqueda);
+        
+        // Eliminar el mensaje de "Investigando..."
+        const loadingMsg = document.querySelector('.status');
+        if(loadingMsg) loadingMsg.parentElement.remove();
+
+        return resultado;
+      }
+
+      // 2. Respuestas locales sencillas (con tolerancia a fallos)
+      if (t.includes("hola") || t.includes("buenos dias")) return "¡Hola! Estoy listo para investigar lo que necesites.";
+      if (t.includes("gracias")) return "¡De nada! ¿Quieres saber algo más sobre historia o actualidad?";
+      
+      // 3. Matemáticas rápidas
+      try {
+        let op = t.replace(/x/g, "*").replace(/[^0-9+\-*/(). ]/g, "");
+        if (op.length >= 3) return "El resultado es: " + eval(op);
+      } catch(e) {}
+
+      return "Para ayudarte mejor, prueba a preguntarme '¿Quién es...?' o '¿Qué es...?' y buscaré en mis archivos web.";
+    }
+
+    /* ================= INTERFAZ ================= */
+    function addMsg(quien, texto, clase, esLoading = false) {
       const d = document.createElement("div");
       d.className = `msg ${clase}`;
-      d.innerHTML = `<b>${quien}</b><br>${texto}`;
+      if(esLoading) d.innerHTML = `<div class="status">Buscando...</div>`;
+      else d.innerHTML = `<b>${quien}</b><br>${texto}`;
       chatBox.appendChild(d);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function enviar() {
+    async function enviar() {
       const txt = inputField.value.trim();
       if (!txt) return;
+
       addMsg("Tú", txt, "user");
-      setTimeout(() => addMsg("IA", pensar(txt), "ai"), 400);
       inputField.value = "";
+
+      const respuesta = await pensar(txt);
+      addMsg("IA", respuesta, "ai");
     }
 
     document.getElementById("btn-send").onclick = enviar;
     inputField.onkeydown = (e) => { if(e.key === "Enter") enviar(); };
 
-    addMsg("IA", "¡Hola! Entiendo de historia, países y matemáticas. No te preocupes si escribes con faltas, ¡intentaré entenderte!", "ai");
+    addMsg("IA", "Sistema Híbrido Activo. Pregúntame sobre cualquier personaje histórico, país o el presidente de cualquier lugar.", "ai");
   </script>
 </body>
 </html>
