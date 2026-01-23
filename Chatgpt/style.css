@@ -1,1 +1,37 @@
+body {
+  background: #0f0f0f;
+  color: #00ffcc;
+  font-family: monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#box {
+  width: 360px;
+  background: #111;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+#chat {
+  height: 260px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+input, button {
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px;
+  background: #000;
+  color: #00ffcc;
+  border: 1px solid #00ffcc;
+}
+
+button:hover {
+  background: #00ffcc;
+  color: #000;
+}
 
