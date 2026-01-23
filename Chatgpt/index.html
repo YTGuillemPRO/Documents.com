@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>IA Básica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat {
+      width: 300px;
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    #messages {
+      height: 200px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat">
+  <div id="messages"></div>
+  <input type="text" id="input" placeholder="Escribe algo..." />
+</div>
+
+<script>
+  const input = document.getElementById("input");
+  const messages = document.getElementById("messages");
+
+  function responder(texto) {
+    texto = texto.toLowerCase();
+
+    if (texto.includes("hola")) return "Hola 👋 ¿cómo estás?";
+    if (texto.includes("como estas")) return "Estoy bien, gracias por preguntar 🙂";
+    if (texto.includes("tu nombre")) return "Soy una IA básica hecha en HTML 🤖";
+    if (texto.includes("adios")) return "¡Hasta luego! 👋";
+
+    return "No entiendo eso todavía 😅";
+  }
+
+  input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter" && input.value !== "") {
+      const userText = input.value;
+      messages.innerHTML += `<div><b>Tú:</b> ${userText}</div>`;
+
+      const respuesta = responder(userText);
+      messages.innerHTML += `<div><b>IA:</b> ${respuesta}</div>`;
+
+      input.value = "";
+      messages.scrollTop = messages.scrollHeight;
+    }
+  });
+</script>
+
+</body>
+</html>
 
