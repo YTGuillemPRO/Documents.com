@@ -2,66 +2,72 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>FPS Engine: Elite Lobby</title>
+    <title>Warzone JS: Training Ground</title>
     <style>
-        :root { --cod-orange: #ff9d00; --cod-bg: #0a0a0a; }
-        body { margin: 0; overflow: hidden; background: var(--cod-bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        :root { --cod-orange: #ff9d00; --cod-bg: #0a0a0a; --ui-panel: rgba(0,0,0,0.85); }
+        body { margin: 0; overflow: hidden; background: var(--cod-bg); font-family: 'Arial Black', sans-serif; color: white; }
         
-        /* --- ESTILO LOBBY --- */
-        #lobby {
-            position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=2000');
-            background-size: cover; display: flex; flex-direction: column;
-            justify-content: center; align-items: flex-start; padding-left: 10%; z-index: 20;
+        /* --- LOBBY & TIENDA --- */
+        #ui-overlay {
+            position: absolute; width: 100%; height: 100%; z-index: 20;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9));
+            display: flex; flex-direction: column; justify-content: center; padding-left: 5%;
         }
-        .menu-item {
-            font-size: 40px; font-weight: 900; color: #666; cursor: pointer;
-            margin: 10px 0; transition: 0.3s; text-transform: uppercase; font-style: italic;
+        .menu-btn {
+            font-size: 35px; cursor: pointer; margin: 10px 0; transition: 0.2s;
+            color: #888; text-transform: uppercase;
         }
-        .menu-item:hover { color: white; transform: translateX(20px); text-shadow: 0 0 15px var(--cod-orange); }
-        .active-menu { color: var(--cod-orange); border-left: 5px solid var(--cod-orange); padding-left: 15px; }
+        .menu-btn:hover { color: white; transform: translateX(15px); }
+        .active { color: var(--cod-orange); }
 
-        /* --- INTERFAZ DE JUEGO (HUD) --- */
-        #game-ui { display: none; }
+        #shop-panel {
+            display: none; position: absolute; right: 5%; top: 20%;
+            width: 300px; background: var(--ui-panel); border: 2px solid var(--cod-orange); padding: 20px;
+        }
+
+        /* --- HUD --- */
+        #game-ui { display: none; pointer-events: none; }
+        #hud-bottom {
+            position: absolute; bottom: 30px; width: 100%; display: flex;
+            justify-content: space-between; padding: 0 50px; box-sizing: border-box;
+        }
         #crosshair {
-            position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
-            transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
+            position: absolute; top: 50%; left: 50%; width: 24px; height: 24px;
+            transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%;
         }
-        #crosshair::before, #crosshair::after {
-            content: ''; position: absolute; background: rgba(255,255,255,0.8);
-        }
-        .v-line { left: 9px; width: 2px; height: 20px; }
-        .h-line { top: 9px; height: 2px; width: 20px; }
-        
-        #hud {
-            position: absolute; bottom: 40px; right: 40px; text-align: right;
-            pointer-events: none; text-shadow: 2px 2px 5px black;
-        }
-        #ammo { font-size: 60px; font-weight: 900; color: white; }
-        #status { color: var(--cod-orange); letter-spacing: 2px; }
+        .stat-box { background: rgba(0,0,0,0.5); padding: 10px 20px; border-left: 4px solid var(--cod-orange); }
+        .currency { color: var(--cod-orange); font-size: 24px; }
     </style>
 </head>
 <body>
 
-<div id="lobby">
-    <h1 style="font-size: 80px; margin-bottom: 0;">WARZONE <span style="color:var(--cod-orange)">JS</span></h1>
-    <p style="margin-bottom: 50px; color: #aaa;">SISTEMA DE COMBATE EN PRIMERA PERSONA</p>
+<div id="ui-overlay">
+    <h1 style="font-size: 60px; margin: 0;">WARZONE <span style="color:var(--cod-orange)">JS</span></h1>
+    <div id="wallet-display" class="currency" style="margin-bottom: 20px;">CALL BUCKS: 0</div>
     
-    <div class="menu-item active-menu" onclick="startGame()">DESPLEGAR (JUGAR)</div>
-    <div class="menu-item">ARMAMENTO</div>
-    <div class="menu-item">OPERADORES</div>
-    <div class="menu-item" onclick="location.reload()">SALIR</div>
+    <div class="menu-btn active" onclick="deploy()">DESPLEGAR EN ENTRENAMIENTO</div>
+    <div class="menu-btn" onclick="toggleShop()">TIENDA DE ARMAS</div>
+    <div class="menu-btn" onclick="location.reload()">SALIR</div>
+
+    <div id="shop-panel">
+        <h3>SUMINISTROS</h3>
+        <p>Subfusil MP5 - <span class="currency">500 CB</span> <button onclick="buyWeapon('MP5', 500)">COMPRAR</button></p>
+        <p>Francotirador - <span class="currency">1200 CB</span> <button onclick="buyWeapon('SNIPER', 1200)">COMPRAR</button></p>
+        <button onclick="toggleShop()" style="margin-top:10px;">CERRAR</button>
+    </div>
 </div>
 
 <div id="game-ui">
-    <div id="crosshair">
-        <div class="v-line" style="position:absolute; background:white; width:2px; height:20px; left:9px;"></div>
-        <div class="h-line" style="position:absolute; background:white; height:2px; width:20px; top:9px;"></div>
-    </div>
-    <div id="hud">
-        <div id="status">EN LÍNEA</div>
-        <div id="ammo">30 / 30</div>
-        <div style="font-size: 12px; color: #888;">PRESS [R] TO RELOAD</div>
+    <div id="crosshair"></div>
+    <div id="hud-bottom">
+        <div class="stat-box">
+            <div id="weapon-name">RIFLE ASALTO</div>
+            <div id="ammo" style="font-size: 40px;">30 / 30</div>
+        </div>
+        <div class="stat-box">
+            <div style="font-size: 12px;">CRÉDITOS</div>
+            <div id="ingame-cash" class="currency">0</div>
+        </div>
     </div>
 </div>
 
@@ -72,132 +78,158 @@
 <script type="module">
     import * as THREE from 'three';
 
-    let camera, scene, renderer, weapon, raycaster;
+    let scene, camera, renderer, weapon, raycaster;
+    let callBucks = 1000;
     let ammo = 30, isReloading = false, isFiring = false;
+    let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
     let enemies = [];
-    let lastFireTime = 0;
+    let velocity = new THREE.Vector3();
 
-    function initGame() {
+    function init() {
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505);
-        scene.fog = new THREE.Fog(0x050505, 0, 60);
+        scene.background = new THREE.Color(0x111111);
+        scene.fog = new THREE.Fog(0x111111, 0, 100);
 
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        const light = new THREE.PointLight(0xffffff, 50, 100);
-        light.position.set(0, 10, 0);
-        scene.add(light, new THREE.AmbientLight(0x404040, 2));
-
-        // Suelo metálico
-        const floorGeo = new THREE.PlaneGeometry(200, 200);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.5 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
+        // Zona de Entrenamiento: Suelo de hormigón
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, 200),
+            new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 })
+        );
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5), new THREE.DirectionalLight(0xffffff, 1));
 
-        // Modelo de Arma Realista (Grupo de cubos detallados)
+        // Arma
         weapon = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, 1.2), new THREE.MeshStandardMaterial({color: 0x0a0a0a}));
-        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5), new THREE.MeshStandardMaterial({color: 0x111111}));
-        barrel.rotation.x = Math.PI / 2;
-        barrel.position.z = -0.8;
-        weapon.add(body, barrel);
-        
-        weapon.position.set(0.5, -0.4, -0.8);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.8), new THREE.MeshStandardMaterial({color: 0x222222}));
+        weapon.add(body);
+        weapon.position.set(0.4, -0.4, -0.6);
         camera.add(weapon);
         scene.add(camera);
 
-        for(let i=0; i<8; i++) spawnEnemy();
+        // Dianas de entrenamiento
+        for(let i=0; i<10; i++) spawnTarget();
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        raycaster = new THREE.Raycaster();
-
-        // Controles Mouse
-        document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement === document.body) {
-                camera.rotation.y -= e.movementX * 0.002;
-                camera.rotation.x -= e.movementY * 0.002;
-                camera.rotation.x = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, camera.rotation.x));
-            }
-        });
-
-        window.addEventListener('mousedown', (e) => {
-            if(e.button === 0) isFiring = true;
-            if(e.button === 2) zoom(true);
-        });
-        window.addEventListener('mouseup', (e) => {
-            if(e.button === 0) isFiring = false;
-            if(e.button === 2) zoom(false);
-        });
-        window.addEventListener('keydown', (e) => { if(e.key.toLowerCase()==='r') reload(); });
-        
-        document.oncontextmenu = () => false;
+        setupControls();
         animate();
     }
 
-    window.startGame = function() {
-        document.getElementById('lobby').style.display = 'none';
+    function setupControls() {
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyA': moveLeft = true; break;
+                case 'KeyD': moveRight = true; break;
+                case 'KeyR': reload(); break;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            switch(e.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyA': moveLeft = false; break;
+                case 'KeyD': moveRight = false; break;
+            }
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement) {
+                camera.rotation.y -= e.movementX * 0.002;
+                camera.rotation.x -= e.movementY * 0.002;
+                camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x));
+            }
+        });
+        window.addEventListener('mousedown', (e) => { if(e.button===0) isFiring=true; if(e.button===2) zoom(true); });
+        window.addEventListener('mouseup', (e) => { if(e.button===0) isFiring=false; if(e.button===2) zoom(false); });
+        
+        raycaster = new THREE.Raycaster();
+        document.oncontextmenu = () => false;
+    }
+
+    function spawnTarget() {
+        const target = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.5, 0.5, 0.1, 32),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 0.2 })
+        );
+        target.rotation.x = Math.PI/2;
+        target.position.set(Math.random()*40-20, 1.5, Math.random()*-50-5);
+        scene.add(target);
+        enemies.push(target);
+    }
+
+    window.deploy = function() {
+        document.getElementById('ui-overlay').style.display = 'none';
         document.getElementById('game-ui').style.display = 'block';
         document.body.requestPointerLock();
-        if(!renderer) initGame();
+        if(!renderer) init();
     }
 
-    function spawnEnemy() {
-        const enemy = new THREE.Mesh(
-            new THREE.BoxGeometry(1.5, 3.5, 0.5),
-            new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x330000 })
-        );
-        enemy.position.set(Math.random()*40-20, 1.75, Math.random()*-40 - 10);
-        scene.add(enemy);
-        enemies.push(enemy);
+    window.toggleShop = function() {
+        const shop = document.getElementById('shop-panel');
+        shop.style.display = shop.style.display === 'block' ? 'none' : 'block';
     }
 
-    function zoom(active) {
-        camera.fov = active ? 35 : 75;
-        weapon.position.x = active ? 0 : 0.5; // Centra el arma
-        camera.updateProjectionMatrix();
+    window.buyWeapon = function(name, cost) {
+        if(callBucks >= cost) {
+            callBucks -= cost;
+            document.getElementById('wallet-display').innerText = `CALL BUCKS: ${callBucks}`;
+            document.getElementById('weapon-name').innerText = name;
+            alert(`Compraste ${name}!`);
+        } else {
+            alert("No tienes suficientes Call Bucks");
+        }
     }
 
     function shoot() {
         if (ammo <= 0 || isReloading) return;
         ammo--;
-        document.getElementById('ammo').innerText = `${ammo} / 30`;
+        updateHUD();
         
-        // Animación de disparo
-        weapon.position.z += 0.1;
-        setTimeout(() => weapon.position.z -= 0.1, 50);
-
         raycaster.setFromCamera({x:0, y:0}, camera);
-        const intersects = raycaster.intersectObjects(enemies);
-        if (intersects.length > 0) {
-            const target = intersects[0].object;
-            scene.remove(target);
-            enemies = enemies.filter(e => e !== target);
-            setTimeout(spawnEnemy, 1500);
+        const hits = raycaster.intersectObjects(enemies);
+        if(hits.length > 0) {
+            scene.remove(hits[0].object);
+            enemies = enemies.filter(e => e !== hits[0].object);
+            callBucks += 50; // Recompensa por tiro
+            updateHUD();
+            setTimeout(spawnTarget, 1000);
         }
     }
 
+    function updateHUD() {
+        document.getElementById('ammo').innerText = `${ammo} / 30`;
+        document.getElementById('ingame-cash').innerText = callBucks;
+        document.getElementById('wallet-display').innerText = `CALL BUCKS: ${callBucks}`;
+    }
+
+    function zoom(active) { camera.fov = active ? 40 : 75; camera.updateProjectionMatrix(); }
+
     function reload() {
-        if(isReloading || ammo === 30) return;
+        if(isReloading) return;
         isReloading = true;
-        document.getElementById('status').innerText = "RECARGANDO...";
-        setTimeout(() => {
-            ammo = 30; isReloading = false;
-            document.getElementById('status').innerText = "EN LÍNEA";
-            document.getElementById('ammo').innerText = "30 / 30";
-        }, 1800);
+        setTimeout(() => { ammo = 30; isReloading = false; updateHUD(); }, 1500);
     }
 
     function animate() {
         requestAnimationFrame(animate);
-        if (isFiring && performance.now() - lastFireTime > 110) {
-            shoot();
-            lastFireTime = performance.now();
+        
+        if (document.pointerLockElement) {
+            const speed = 0.15;
+            if (moveForward) camera.translateZ(-speed);
+            if (moveBackward) camera.translateZ(speed);
+            if (moveLeft) camera.translateX(-speed);
+            if (moveRight) camera.translateX(speed);
+            camera.position.y = 1.7; // Mantener altura de ojos
         }
-        renderer.render(scene, camera);
+
+        if (isFiring && Math.random() > 0.8) shoot(); // Simulación ráfaga
+        if(renderer) renderer.render(scene, camera);
     }
 </script>
 </body>
