@@ -2,152 +2,156 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>ChatGPT Offline Avanzado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IA Inteligente Offline</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
-    #chat { flex: 1; padding: 10px; overflow-y: auto; background: #fff; }
-    #chat div { margin-bottom: 10px; }
-    #input-container { display: flex; padding: 10px; background: #ddd; }
-    #input { flex: 1; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
-    #btn-send { padding: 10px 20px; margin-left: 10px; font-size: 16px; border: none; border-radius: 5px; background: #4caf50; color: white; cursor: pointer; }
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --text: #e0e0e0;
+      --accent: #bb86fc;
+      --user: #3700b3;
+      --ai: #2c2c2c;
+    }
+
+    body { 
+      font-family: 'Segoe UI', Tahoma, sans-serif; 
+      background: var(--bg); color: var(--text);
+      margin: 0; display: flex; flex-direction: column; height: 100vh; 
+    }
+
+    header { padding: 15px; background: var(--card); text-align: center; border-bottom: 2px solid var(--accent); font-weight: bold; }
+
+    #chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+    .msg { max-width: 85%; padding: 12px; border-radius: 12px; line-height: 1.4; position: relative; }
+    .user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 2px; }
+    .ai { align-self: flex-start; background: var(--ai); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
+
+    #input-container { display: flex; padding: 15px; background: var(--card); gap: 10px; }
+    #input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; outline: none; }
+    #btn-send { padding: 0 20px; border: none; border-radius: 8px; background: var(--accent); color: black; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
+  <header id="header-name">IA CEREBRO v3</header>
   <div id="chat"></div>
 
   <div id="input-container">
-    <input type="text" id="input" placeholder="Escribe algo...">
+    <input type="text" id="input" placeholder="Escribe algo (aunque tengas faltas)..." autocomplete="off">
     <button id="btn-send">Enviar</button>
   </div>
 
   <script>
-    /* ================= MEMORIA ================= */
-    let memoria = JSON.parse(localStorage.getItem("memoriaIA")) || {
-      nombre: "IA",
-      conocimientos: {}
+    /* ================= BASE DE CONOCIMIENTO (HISTORIA Y PAÍSES) ================= */
+    const CONOCIMIENTO = {
+      // Geografía
+      "españa": "País de Europa. Capital: Madrid. Moneda: Euro.",
+      "mexico": "País de América. Capital: CDMX. Moneda: Peso Mexicano.",
+      "francia": "País de Europa. Capital: París. Famoso por la Torre Eiffel.",
+      "argentina": "País de América del Sur. Capital: Buenos Aires. Cuna del Tango.",
+      
+      // Historia
+      "revolucion francesa": "Conflicto social y político (1789) que derrocó la monarquía en Francia y estableció derechos ciudadanos.",
+      "segunda guerra mundial": "Guerra global (1939-1945) entre Aliados y Potencias del Eje. Terminó con la derrota de la Alemania nazi.",
+      "imperio romano": "Una de las civilizaciones más grandes de la historia, centrada en Roma, dominó el Mediterráneo por siglos.",
+      "descubrimiento de america": "Llegada de Cristóbal Colón en 1492, conectando Europa con el nuevo continente.",
+      "egipto antiguo": "Civilización famosa por sus pirámides, faraones y el río Nilo.",
+      "independencia de mexico": "Proceso que inició en 1810 para liberarse del dominio español.",
+      
+      // Conceptos simples
+      "hola": "¡Hola! ¿Cómo estás?",
+      "quien eres": "Soy tu asistente inteligente offline con conocimientos de historia y geografía.",
+      "gracias": "¡De nada! Es un placer ayudarte.",
+      "adios": "¡Hasta pronto! Cuídate mucho."
     };
 
-    function guardar() {
-      localStorage.setItem("memoriaIA", JSON.stringify(memoria));
+    /* ================= MOTOR DE COMPRENSIÓN (FUZZY LOGIC) ================= */
+    // Función para limpiar texto y manejar errores de ortografía simples
+    function normalizar(texto) {
+      return texto.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar tildes
+        .replace(/[y]/g, "i") // Intercambiar i/y común
+        .replace(/[v]/g, "b") // Intercambiar b/v común
+        .replace(/[h]/g, "")  // Quitar h (error común)
+        .replace(/[^a-z0-9 ]/g, ""); // Quitar símbolos
     }
 
-    /* ================= CHAT ================= */
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("input");
-
-    function add(q, t) {
-      chat.innerHTML += `<div><b>${q}:</b> ${t}</div>`;
-      chat.scrollTop = chat.scrollHeight;
+    // Calcula similitud entre palabras para entender si hay letras mal
+    function calcularSimilitud(s1, s2) {
+      if (s1.includes(s2) || s2.includes(s1)) return true;
+      // Lógica simple: si comparten más del 70% de las letras en orden
+      let coincidencias = 0;
+      let minLen = Math.min(s1.length, s2.length);
+      for(let i=0; i<minLen; i++) { if(s1[i] === s2[i]) coincidencias++; }
+      return (coincidencias / s1.length) > 0.7;
     }
 
-    /* ================= FUNCIONES MATEMÁTICAS ================= */
-    function factorial(n) {
-      if(n < 0) return NaN;
-      let f = 1;
-      for(let i=2;i<=n;i++) f*=i;
-      return f;
-    }
+    /* ================= LÓGICA DE RESPUESTA ================= */
+    let memoriaExtra = JSON.parse(localStorage.getItem("ia_pro_mem")) || {};
 
-    function combinatoria(n,k){
-      return factorial(n)/(factorial(k)*factorial(n-k));
-    }
+    function pensar(inputUsuario) {
+      const original = inputUsuario.toLowerCase();
+      const limpia = normalizar(inputUsuario);
 
-    function raiz(n, r=2){
-      return Math.pow(n, 1/r);
-    }
-
-    function parseOperacion(texto){
-      // Convertir palabras a números
-      const numeros = {"cero":0,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,
-                       "seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10};
-      for(let n in numeros){
-        texto = texto.replaceAll(n, numeros[n]);
-      }
-
-      texto = texto.toLowerCase()
-        .replace(/cuanto es|cuánto es|calcula|resultado de/g,"")
-        .replace(/\bpor\b/g,"*")
-        .replace(/\bentre\b|\bdividido\b/g,"/")
-        .replace(/más/g,"+")
-        .replace(/menos/g,"-")
-        .replace(/x/g,"*") // ✅ Multiplicación con "x"
-        .replace(/elevado a/g,"**")
-        .replace(/factorial de (\d+)/g,"factorial($1)")
-        .replace(/raíz de (\d+)/g,"raiz($1)")
-        .replace(/raíz (\d+) de (\d+)/g,"raiz($2,$1)")
-        .replace(/combinatoria (\d+) entre (\d+)/g,"combinatoria($1,$2)");
-
-      return texto.replace(/[^0-9+\-*/().**factorialcombinatoriaraiz ]/g,"");
-    }
-
-    function resolver(texto){
-      try {
-        const expr = parseOperacion(texto);
-        if(!expr) return null;
-        const r = eval(expr);
-        if(!isNaN(r)) return "El resultado es " + r;
-      } catch(e) { return null; }
-      return null;
-    }
-
-    /* ================= INTELIGENCIA ================= */
-    function pensar(texto) {
-      texto = texto.toLowerCase();
-
-      // Cambiar nombre
-      if (texto.startsWith("llamate ")) {
-        const nuevoNombre = texto.replace("llamate ", "").trim();
-        if (nuevoNombre) {
-          memoria.nombre = nuevoNombre;
-          guardar();
-          return `He cambiado mi nombre a ${memoria.nombre} ✅`;
-        } else return "No entendí el nombre 😅";
-      }
-
-      // Aprender cosas nuevas
-      if (texto.startsWith("aprende que")) {
-        const p = texto.replace("aprende que","").split(" es ");
-        if(p.length===2){
-          memoria.conocimientos[p[0].trim()] = p[1].trim();
-          guardar();
-          return "He aprendido eso 🧠";
+      // 1. Buscar en Conocimiento Estático (Historia/Países)
+      for (let clave in CONOCIMIENTO) {
+        let claveLimpia = normalizar(clave);
+        if (limpia.includes(claveLimpia) || calcularSimilitud(limpia, claveLimpia)) {
+          return CONOCIMIENTO[clave];
         }
       }
 
-      // Matemáticas complejas
-      const r = resolver(texto);
-      if(r) return r;
-
-      // Conocimientos previos
-      for(let k in memoria.conocimientos){
-        if(texto.includes(k)) return memoria.conocimientos[k];
+      // 2. Buscar en Memoria Aprendida
+      for (let k in memoriaExtra) {
+        if (limpia.includes(normalizar(k))) return memoriaExtra[k];
       }
 
-      // Saludos básicos
-      if(texto.includes("hola")) return `Hola 👋, soy ${memoria.nombre}`;
-      if(texto.includes("quien eres")) return `Soy ${memoria.nombre}, tu asistente offline 🤖`;
+      // 3. Comandos de aprendizaje
+      if (original.includes("aprende que") && original.includes(" es ")) {
+        let partes = original.split("aprende que")[1].split(" es ");
+        memoriaExtra[partes[0].trim()] = partes[1].trim();
+        localStorage.setItem("ia_pro_mem", JSON.stringify(memoriaExtra));
+        return "He guardado ese dato en mi memoria a largo plazo.";
+      }
 
-      return "No lo sé aún, pero puedo calcular y aprender 🧠";
+      // 4. Matemáticas (Reutilizado y mejorado)
+      try {
+        let op = original.replace(/x/g, "*").replace(/[^0-9+\-*/(). ]/g, "");
+        if (op.length > 2) {
+          let res = eval(op);
+          if (!isNaN(res)) return "El resultado matemático es: " + res;
+        }
+      } catch(e) {}
+
+      return "No estoy seguro de entenderte (recuerda que soy offline). ¿Puedes repetirlo o enseñarme con 'aprende que...'?";
     }
 
-    /* ================= ENVIAR ================= */
+    /* ================= INTERFAZ ================= */
+    const chatBox = document.getElementById("chat");
+    const inputField = document.getElementById("input");
+
+    function addMsg(quien, texto, clase) {
+      const d = document.createElement("div");
+      d.className = `msg ${clase}`;
+      d.innerHTML = `<b>${quien}</b><br>${texto}`;
+      chatBox.appendChild(d);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
     function enviar() {
-      if(!input.value) return;
-      add("Tú", input.value);
-      const r = pensar(input.value);
-      add(memoria.nombre, r);
-      input.value = "";
+      const txt = inputField.value.trim();
+      if (!txt) return;
+      addMsg("Tú", txt, "user");
+      setTimeout(() => addMsg("IA", pensar(txt), "ai"), 400);
+      inputField.value = "";
     }
 
     document.getElementById("btn-send").onclick = enviar;
-    input.addEventListener("keydown", function(e){
-      if(e.key==="Enter") enviar();
-    });
+    inputField.onkeydown = (e) => { if(e.key === "Enter") enviar(); };
 
-    // Mensaje de bienvenida
-    add(memoria.nombre, `Hola, soy tu asistente offline. Puedes cambiar mi nombre escribiendo 'llamate <nombre>' o enseñarme cosas con 'aprende que ... es ...'. Puedo resolver operaciones complejas como factoriales, raíces, combinatorias, potencias y paréntesis anidados. También puedes escribir multiplicaciones con "x", por ejemplo: 80x33.`);
+    addMsg("IA", "¡Hola! Entiendo de historia, países y matemáticas. No te preocupes si escribes con faltas, ¡intentaré entenderte!", "ai");
   </script>
-
 </body>
 </html>
