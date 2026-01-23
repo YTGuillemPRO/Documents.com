@@ -2,18 +2,128 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Asistente IA</title>
-  <link rel="stylesheet" href="style.css">
+  <title>ChatGPT Offline</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+    #chat { flex: 1; padding: 10px; overflow-y: auto; background: #fff; }
+    #chat div { margin-bottom: 10px; }
+    #input-container { display: flex; padding: 10px; background: #ddd; }
+    #input { flex: 1; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
+    #btn-send { padding: 10px 20px; margin-left: 10px; font-size: 16px; border: none; border-radius: 5px; background: #4caf50; color: white; cursor: pointer; }
+  </style>
 </head>
 <body>
 
-<div id="box">
   <div id="chat"></div>
-  <input id="input" placeholder="Escribe o habla">
-  <button onclick="enviar()">Enviar</button>
-  <button onclick="escuchar()">🎤 Hablar</button>
-</div>
 
-<script src="main.js"></script>
+  <div id="input-container">
+    <input type="text" id="input" placeholder="Escribe algo...">
+    <button id="btn-send">Enviar</button>
+  </div>
+
+  <script>
+    /* ================= MEMORIA ================= */
+    let memoria = JSON.parse(localStorage.getItem("memoriaIA")) || {
+      conocimientos: {}
+    };
+
+    function guardar() {
+      localStorage.setItem("memoriaIA", JSON.stringify(memoria));
+    }
+
+    /* ================= CHAT ================= */
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+
+    function add(q, t) {
+      chat.innerHTML += `<div><b>${q}:</b> ${t}</div>`;
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    /* ================= TRADUCTOR HUMANO → MATH ================= */
+    const numeros = {
+      "cero":0,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,
+      "seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10
+    };
+
+    function traducirOperacion(texto) {
+      texto = texto.toLowerCase();
+
+      // palabras a números
+      for (let n in numeros) {
+        texto = texto.replaceAll(n, numeros[n]);
+      }
+
+      // palabras matemáticas
+      texto = texto
+        .replace(/cuánto es|cuanto es|calcula|resultado de/g, "")
+        .replace(/más/g, "+")
+        .replace(/menos/g, "-")
+        .replace(/por/g, "*")
+        .replace(/entre|dividido/g, "/")
+        .replace(/elevado a/g, "**");
+
+      // limpieza
+      texto = texto.replace(/[^0-9+\-*/().**]/g, "");
+
+      return texto;
+    }
+
+    function resolver(texto) {
+      try {
+        const expr = traducirOperacion(texto);
+        if (!expr) return null;
+        const r = eval(expr);
+        if (!isNaN(r)) return "El resultado es " + r;
+      } catch {}
+      return null;
+    }
+
+    /* ================= INTELIGENCIA ================= */
+    function pensar(texto) {
+      // aprender
+      if (texto.toLowerCase().startsWith("aprende que")) {
+        const p = texto.toLowerCase().replace("aprende que","").split(" es ");
+        if (p.length === 2) {
+          memoria.conocimientos[p[0]] = p[1];
+          guardar();
+          return "He aprendido eso 🧠";
+        }
+      }
+
+      // matemáticas humanas
+      const r = resolver(texto);
+      if (r) return r;
+
+      // conocimientos
+      for (let k in memoria.conocimientos) {
+        if (texto.toLowerCase().includes(k)) return memoria.conocimientos[k];
+      }
+
+      if (texto.toLowerCase().includes("hola")) return "Hola 👋";
+      if (texto.toLowerCase().includes("quien eres")) return "Soy una IA offline muy avanzada 🤖";
+
+      return "No lo sé aún, pero puedo calcular y aprender";
+    }
+
+    /* ================= ENVIAR ================= */
+    function enviar() {
+      if (!input.value) return;
+      add("Tú", input.value);
+      const r = pensar(input.value);
+      add("IA", r);
+      input.value = "";
+    }
+
+    document.getElementById("btn-send").onclick = enviar;
+    input.addEventListener("keydown", function(e){
+      if(e.key === "Enter") enviar();
+    });
+
+    // Mensaje de bienvenida
+    add("IA", "Hola, soy tu asistente offline. Pregúntame cosas o enséñame con 'aprende que ... es ...'.");
+  </script>
+
 </body>
 </html>
+
