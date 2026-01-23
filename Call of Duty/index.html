@@ -2,178 +2,187 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>CoD Web Experience - Engine</title>
+    <title>FPS Engine - GitHub Edition</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #1a1a1a;
-            font-family: 'Courier New', Courier, monospace;
-            cursor: crosshair;
-            user-select: none;
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #instructions {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; text-align: center; background: rgba(0,0,0,0.8);
+            padding: 20px; border: 2px solid #555; cursor: pointer; z-index: 10;
         }
-
-        /* Contenedor del Juego */
-        #game-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.2s ease-out; /* Efecto zoom al apuntar */
-        }
-
-        /* Mira (Crosshair) */
-        #crosshair {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(0, 255, 0, 0.7);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* Enemigo de prueba */
-        .enemy {
-            position: absolute;
-            width: 60px;
-            height: 100px;
-            background: #8b0000;
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 15px rgba(255,0,0,0.5);
-            transition: opacity 0.2s;
-        }
-
-        /* HUD: Munición y Estado */
         #hud {
-            position: absolute;
-            bottom: 30px;
-            right: 50px;
-            color: white;
-            text-align: right;
-            text-shadow: 2px 2px 4px black;
+            position: absolute; bottom: 40px; right: 40px; color: white;
+            text-align: right; pointer-events: none; text-shadow: 2px 2px 4px #000;
         }
-
-        #ammo-count { font-size: 48px; font-weight: bold; }
-        #status { font-size: 18px; color: #ffcc00; }
-
-        /* Efecto de Apuntado (ADS) */
-        .ads-mode {
-            transform: scale(1.5); /* Simula zoom de mira */
+        #ammo { font-size: 50px; font-weight: bold; }
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    </div>
-
-<div id="crosshair"></div>
-
-<div id="hud">
-    <div id="status">READY</div>
-    <div id="ammo-count">30 / 30</div>
-    <div style="font-size: 12px;">[L-CLICK] FIRE | [R-CLICK] AIM | [R] RELOAD</div>
+<div id="instructions">
+    <h1>CLICK PARA JUGAR</h1>
+    <p>(W,A,S,D para mover | Mouse para apuntar)<br>
+    (L-Click: Disparar | R-Click: Mira | R: Recargar)</p>
 </div>
 
-<script>
-    const container = document.getElementById('game-container');
-    const ammoLabel = document.getElementById('ammo-count');
-    const statusLabel = document.getElementById('status');
-    
-    let state = {
-        ammo: 30,
-        maxAmmo: 30,
-        isReloading: false,
-        isAiming: false,
-        isFiring: false,
-        fireRate: 100, // milisegundos entre balas
-    };
+<div id="crosshair"></div>
+<div id="hud">
+    <div id="status">LISTO</div>
+    <div id="ammo">30 / 30</div>
+</div>
 
-    // --- LÓGICA DE ENEMIGOS ---
-    function spawnEnemy() {
-        const enemy = document.createElement('div');
-        enemy.className = 'enemy';
-        enemy.style.left = Math.random() * (window.innerWidth - 100) + 'px';
-        enemy.style.top = Math.random() * (window.innerHeight - 200) + 'px';
+<script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+
+    let camera, scene, renderer, weapon, raycaster;
+    let ammo = 30, isReloading = false, isFiring = false;
+    let enemies = [];
+    
+    const clock = new THREE.Clock();
+    const instructions = document.getElementById('instructions');
+
+    init();
+    animate();
+
+    function init() {
+        // 1. Escena y Cámara
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+        scene.fog = new THREE.Fog(0x222222, 0, 50);
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        enemy.onclick = (e) => {
-            if (state.ammo > 0 && !state.isReloading) {
-                enemy.style.opacity = '0';
-                setTimeout(() => { enemy.remove(); spawnEnemy(); }, 200);
+        // 2. Luces
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+        scene.add(light);
+
+        // 3. Suelo (Grid)
+        const grid = new THREE.GridHelper(200, 50, 0x444444, 0x222222);
+        scene.add(grid);
+
+        // 4. El Arma (Representación en 1ª Persona)
+        const weaponGroup = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(0.2, 0.3, 1);
+        const bodyMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.set(0.4, -0.4, -0.8); // Posición estilo CoD
+        weaponGroup.add(body);
+        camera.add(weaponGroup);
+        scene.add(camera);
+        weapon = weaponGroup;
+
+        // 5. Enemigos
+        spawnEnemy();
+
+        // 6. Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 7. Controles de Cámara (Pointer Lock)
+        instructions.addEventListener('click', () => {
+            document.body.requestPointerLock();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === document.body) {
+                camera.rotation.y -= e.movementX * 0.002;
+                camera.rotation.x -= e.movementY * 0.002;
+                camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
             }
-        };
-        container.appendChild(enemy);
+        });
+
+        // 8. Eventos de Disparo y Apuntado
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 0) isFiring = true;
+            if (e.button === 2) zoomIn(true);
+        });
+        window.addEventListener('mouseup', (e) => {
+            if (e.button === 0) isFiring = false;
+            if (e.button === 2) zoomIn(false);
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') reload();
+        });
+
+        raycaster = new THREE.Raycaster();
+        document.oncontextmenu = () => false;
     }
 
-    // Inicializar enemigos
-    for(let i=0; i<3; i++) spawnEnemy();
+    function spawnEnemy() {
+        const geo = new THREE.BoxGeometry(1, 2, 1);
+        const mat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+        const enemy = new THREE.Mesh(geo, mat);
+        enemy.position.set(Math.random()*20-10, 1, Math.random()* -20 - 5);
+        scene.add(enemy);
+        enemies.push(enemy);
+    }
 
-    // --- SISTEMA DE DISPARO REALISTA ---
-    function fire() {
-        if (state.ammo <= 0) {
-            reload();
-            return;
-        }
-        if (state.isReloading) return;
+    function zoomIn(active) {
+        camera.fov = active ? 40 : 75; // Zoom CoD
+        weapon.position.x = active ? -0.4 : 0; // Alinea el arma al centro
+        camera.updateProjectionMatrix();
+    }
 
-        state.ammo--;
-        updateHUD();
+    function shoot() {
+        if (ammo <= 0 || isReloading) return;
         
-        // Efecto visual de retroceso (recoil) leve
-        container.style.marginTop = "-5px";
-        setTimeout(() => container.style.marginTop = "0px", 50);
+        ammo--;
+        document.getElementById('ammo').innerText = `${ammo} / 30`;
+        
+        // Retroceso visual
+        weapon.position.z += 0.05;
+        setTimeout(() => weapon.position.z -= 0.05, 50);
 
-        if (state.isFiring) {
-            setTimeout(fire, state.fireRate);
+        // Lógica de impacto
+        raycaster.setFromCamera({x: 0, y: 0}, camera);
+        const hits = raycaster.intersectObjects(enemies);
+        if (hits.length > 0) {
+            const target = hits[0].object;
+            scene.remove(target);
+            enemies = enemies.filter(e => e !== target);
+            setTimeout(spawnEnemy, 1000);
         }
     }
 
     function reload() {
-        if (state.isReloading || state.ammo === state.maxAmmo) return;
-        state.isReloading = true;
-        statusLabel.innerText = "RELOADING...";
-        
+        if (isReloading || ammo === 30) return;
+        isReloading = true;
+        document.getElementById('status').innerText = "RECARGANDO...";
         setTimeout(() => {
-            state.ammo = state.maxAmmo;
-            state.isReloading = false;
-            statusLabel.innerText = "READY";
-            updateHUD();
-        }, 1500); // 1.5s de recarga
+            ammo = 30;
+            isReloading = false;
+            document.getElementById('status').innerText = "LISTO";
+            document.getElementById('ammo').innerText = "30 / 30";
+        }, 2000);
     }
 
-    function updateHUD() {
-        ammoLabel.innerText = `${state.ammo} / ${state.maxAmmo}`;
+    let lastFireTime = 0;
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        if (isFiring && performance.now() - lastFireTime > 100) {
+            shoot();
+            lastFireTime = performance.now();
+        }
+
+        renderer.render(scene, camera);
     }
 
-    // --- CONTROLES (MOUSE Y TECLADO) ---
-    window.addEventListener('mousedown', (e) => {
-        if (e.button === 0) { // Clic izquierdo: Disparar
-            state.isFiring = true;
-            fire();
-        }
-        if (e.button === 2) { // Clic derecho: Apuntar (ADS)
-            state.isAiming = true;
-            container.classList.add('ads-mode');
-        }
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    window.addEventListener('mouseup', (e) => {
-        if (e.button === 0) state.isFiring = false;
-        if (e.button === 2) {
-            state.isAiming = false;
-            container.classList.remove('ads-mode');
-        }
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key.toLowerCase() === 'r') reload();
-    });
-
-    // Desactivar menú contextual para usar clic derecho para apuntar
-    window.oncontextmenu = (e) => e.preventDefault();
 </script>
-
 </body>
 </html>
