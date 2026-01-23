@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>ChatGPT Offline</title>
+  <title>ChatGPT Offline Avanzado</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
     #chat { flex: 1; padding: 10px; overflow-y: auto; background: #fff; }
@@ -24,6 +24,7 @@
   <script>
     /* ================= MEMORIA ================= */
     let memoria = JSON.parse(localStorage.getItem("memoriaIA")) || {
+      nombre: "IA",
       conocimientos: {}
     };
 
@@ -40,90 +41,113 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    /* ================= TRADUCTOR HUMANO → MATH ================= */
-    const numeros = {
-      "cero":0,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,
-      "seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10
-    };
+    /* ================= FUNCIONES MATEMÁTICAS ================= */
+    function factorial(n) {
+      if(n < 0) return NaN;
+      let f = 1;
+      for(let i=2;i<=n;i++) f*=i;
+      return f;
+    }
 
-    function traducirOperacion(texto) {
-      texto = texto.toLowerCase();
+    function combinatoria(n,k){
+      return factorial(n)/(factorial(k)*factorial(n-k));
+    }
 
-      // palabras a números
-      for (let n in numeros) {
+    function raiz(n, r=2){
+      return Math.pow(n, 1/r);
+    }
+
+    function parseOperacion(texto){
+      // Convertir palabras a números
+      const numeros = {"cero":0,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,
+                       "seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10};
+      for(let n in numeros){
         texto = texto.replaceAll(n, numeros[n]);
       }
 
-      // palabras matemáticas
-      texto = texto
-        .replace(/cuánto es|cuanto es|calcula|resultado de/g, "")
-        .replace(/más/g, "+")
-        .replace(/menos/g, "-")
-        .replace(/por/g, "*")
-        .replace(/entre|dividido/g, "/")
-        .replace(/elevado a/g, "**");
+      texto = texto.toLowerCase()
+        .replace(/cuanto es|cuánto es|calcula|resultado de/g,"")
+        .replace(/\bpor\b/g,"*")
+        .replace(/\bentre\b|\bdividido\b/g,"/")
+        .replace(/más/g,"+")
+        .replace(/menos/g,"-")
+        .replace(/x/g,"*") // ✅ Multiplicación con "x"
+        .replace(/elevado a/g,"**")
+        .replace(/factorial de (\d+)/g,"factorial($1)")
+        .replace(/raíz de (\d+)/g,"raiz($1)")
+        .replace(/raíz (\d+) de (\d+)/g,"raiz($2,$1)")
+        .replace(/combinatoria (\d+) entre (\d+)/g,"combinatoria($1,$2)");
 
-      // limpieza
-      texto = texto.replace(/[^0-9+\-*/().**]/g, "");
-
-      return texto;
+      return texto.replace(/[^0-9+\-*/().**factorialcombinatoriaraiz ]/g,"");
     }
 
-    function resolver(texto) {
+    function resolver(texto){
       try {
-        const expr = traducirOperacion(texto);
-        if (!expr) return null;
+        const expr = parseOperacion(texto);
+        if(!expr) return null;
         const r = eval(expr);
-        if (!isNaN(r)) return "El resultado es " + r;
-      } catch {}
+        if(!isNaN(r)) return "El resultado es " + r;
+      } catch(e) { return null; }
       return null;
     }
 
     /* ================= INTELIGENCIA ================= */
     function pensar(texto) {
-      // aprender
-      if (texto.toLowerCase().startsWith("aprende que")) {
-        const p = texto.toLowerCase().replace("aprende que","").split(" es ");
-        if (p.length === 2) {
-          memoria.conocimientos[p[0]] = p[1];
+      texto = texto.toLowerCase();
+
+      // Cambiar nombre
+      if (texto.startsWith("llamate ")) {
+        const nuevoNombre = texto.replace("llamate ", "").trim();
+        if (nuevoNombre) {
+          memoria.nombre = nuevoNombre;
+          guardar();
+          return `He cambiado mi nombre a ${memoria.nombre} ✅`;
+        } else return "No entendí el nombre 😅";
+      }
+
+      // Aprender cosas nuevas
+      if (texto.startsWith("aprende que")) {
+        const p = texto.replace("aprende que","").split(" es ");
+        if(p.length===2){
+          memoria.conocimientos[p[0].trim()] = p[1].trim();
           guardar();
           return "He aprendido eso 🧠";
         }
       }
 
-      // matemáticas humanas
+      // Matemáticas complejas
       const r = resolver(texto);
-      if (r) return r;
+      if(r) return r;
 
-      // conocimientos
-      for (let k in memoria.conocimientos) {
-        if (texto.toLowerCase().includes(k)) return memoria.conocimientos[k];
+      // Conocimientos previos
+      for(let k in memoria.conocimientos){
+        if(texto.includes(k)) return memoria.conocimientos[k];
       }
 
-      if (texto.toLowerCase().includes("hola")) return "Hola 👋";
-      if (texto.toLowerCase().includes("quien eres")) return "Soy una IA offline muy avanzada 🤖";
+      // Saludos básicos
+      if(texto.includes("hola")) return `Hola 👋, soy ${memoria.nombre}`;
+      if(texto.includes("quien eres")) return `Soy ${memoria.nombre}, tu asistente offline 🤖`;
 
-      return "No lo sé aún, pero puedo calcular y aprender";
+      return "No lo sé aún, pero puedo calcular y aprender 🧠";
     }
 
     /* ================= ENVIAR ================= */
     function enviar() {
-      if (!input.value) return;
+      if(!input.value) return;
       add("Tú", input.value);
       const r = pensar(input.value);
-      add("IA", r);
+      add(memoria.nombre, r);
       input.value = "";
     }
 
     document.getElementById("btn-send").onclick = enviar;
     input.addEventListener("keydown", function(e){
-      if(e.key === "Enter") enviar();
+      if(e.key==="Enter") enviar();
     });
 
     // Mensaje de bienvenida
-    add("IA", "Hola, soy tu asistente offline. Pregúntame cosas o enséñame con 'aprende que ... es ...'.");
+    add(memoria.nombre, `Hola, soy tu asistente offline. Puedes cambiar mi nombre escribiendo 'llamate <nombre>' o enseñarme cosas con 'aprende que ... es ...'. Puedo resolver operaciones complejas como factoriales, raíces, combinatorias, potencias y paréntesis anidados. También puedes escribir multiplicaciones con "x", por ejemplo: 80x33.`);
   </script>
 
 </body>
 </html>
-
