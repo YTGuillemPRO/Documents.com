@@ -2,38 +2,67 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>FPS Engine - GitHub Edition</title>
+    <title>FPS Engine: Elite Lobby</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        #instructions {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; text-align: center; background: rgba(0,0,0,0.8);
-            padding: 20px; border: 2px solid #555; cursor: pointer; z-index: 10;
+        :root { --cod-orange: #ff9d00; --cod-bg: #0a0a0a; }
+        body { margin: 0; overflow: hidden; background: var(--cod-bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        
+        /* --- ESTILO LOBBY --- */
+        #lobby {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover; display: flex; flex-direction: column;
+            justify-content: center; align-items: flex-start; padding-left: 10%; z-index: 20;
         }
-        #hud {
-            position: absolute; bottom: 40px; right: 40px; color: white;
-            text-align: right; pointer-events: none; text-shadow: 2px 2px 4px #000;
+        .menu-item {
+            font-size: 40px; font-weight: 900; color: #666; cursor: pointer;
+            margin: 10px 0; transition: 0.3s; text-transform: uppercase; font-style: italic;
         }
-        #ammo { font-size: 50px; font-weight: bold; }
+        .menu-item:hover { color: white; transform: translateX(20px); text-shadow: 0 0 15px var(--cod-orange); }
+        .active-menu { color: var(--cod-orange); border-left: 5px solid var(--cod-orange); padding-left: 15px; }
+
+        /* --- INTERFAZ DE JUEGO (HUD) --- */
+        #game-ui { display: none; }
         #crosshair {
-            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
-            border: 2px solid rgba(255,255,255,0.5); border-radius: 50%;
-            transform: translate(-50%, -50%); pointer-events: none;
+            position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
         }
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute; background: rgba(255,255,255,0.8);
+        }
+        .v-line { left: 9px; width: 2px; height: 20px; }
+        .h-line { top: 9px; height: 2px; width: 20px; }
+        
+        #hud {
+            position: absolute; bottom: 40px; right: 40px; text-align: right;
+            pointer-events: none; text-shadow: 2px 2px 5px black;
+        }
+        #ammo { font-size: 60px; font-weight: 900; color: white; }
+        #status { color: var(--cod-orange); letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
-<div id="instructions">
-    <h1>CLICK PARA JUGAR</h1>
-    <p>(W,A,S,D para mover | Mouse para apuntar)<br>
-    (L-Click: Disparar | R-Click: Mira | R: Recargar)</p>
+<div id="lobby">
+    <h1 style="font-size: 80px; margin-bottom: 0;">WARZONE <span style="color:var(--cod-orange)">JS</span></h1>
+    <p style="margin-bottom: 50px; color: #aaa;">SISTEMA DE COMBATE EN PRIMERA PERSONA</p>
+    
+    <div class="menu-item active-menu" onclick="startGame()">DESPLEGAR (JUGAR)</div>
+    <div class="menu-item">ARMAMENTO</div>
+    <div class="menu-item">OPERADORES</div>
+    <div class="menu-item" onclick="location.reload()">SALIR</div>
 </div>
 
-<div id="crosshair"></div>
-<div id="hud">
-    <div id="status">LISTO</div>
-    <div id="ammo">30 / 30</div>
+<div id="game-ui">
+    <div id="crosshair">
+        <div class="v-line" style="position:absolute; background:white; width:2px; height:20px; left:9px;"></div>
+        <div class="h-line" style="position:absolute; background:white; height:2px; width:20px; top:9px;"></div>
+    </div>
+    <div id="hud">
+        <div id="status">EN LÍNEA</div>
+        <div id="ammo">30 / 30</div>
+        <div style="font-size: 12px; color: #888;">PRESS [R] TO RELOAD</div>
+    </div>
 </div>
 
 <script type="importmap">
@@ -46,143 +75,130 @@
     let camera, scene, renderer, weapon, raycaster;
     let ammo = 30, isReloading = false, isFiring = false;
     let enemies = [];
-    
-    const clock = new THREE.Clock();
-    const instructions = document.getElementById('instructions');
+    let lastFireTime = 0;
 
-    init();
-    animate();
-
-    function init() {
-        // 1. Escena y Cámara
+    function initGame() {
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222);
-        scene.fog = new THREE.Fog(0x222222, 0, 50);
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.Fog(0x050505, 0, 60);
 
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        // 2. Luces
-        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
-        scene.add(light);
+        const light = new THREE.PointLight(0xffffff, 50, 100);
+        light.position.set(0, 10, 0);
+        scene.add(light, new THREE.AmbientLight(0x404040, 2));
 
-        // 3. Suelo (Grid)
-        const grid = new THREE.GridHelper(200, 50, 0x444444, 0x222222);
-        scene.add(grid);
+        // Suelo metálico
+        const floorGeo = new THREE.PlaneGeometry(200, 200);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
 
-        // 4. El Arma (Representación en 1ª Persona)
-        const weaponGroup = new THREE.Group();
-        const bodyGeo = new THREE.BoxGeometry(0.2, 0.3, 1);
-        const bodyMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.set(0.4, -0.4, -0.8); // Posición estilo CoD
-        weaponGroup.add(body);
-        camera.add(weaponGroup);
+        // Modelo de Arma Realista (Grupo de cubos detallados)
+        weapon = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, 1.2), new THREE.MeshStandardMaterial({color: 0x0a0a0a}));
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5), new THREE.MeshStandardMaterial({color: 0x111111}));
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.z = -0.8;
+        weapon.add(body, barrel);
+        
+        weapon.position.set(0.5, -0.4, -0.8);
+        camera.add(weapon);
         scene.add(camera);
-        weapon = weaponGroup;
 
-        // 5. Enemigos
-        spawnEnemy();
+        for(let i=0; i<8; i++) spawnEnemy();
 
-        // 6. Renderer
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 7. Controles de Cámara (Pointer Lock)
-        instructions.addEventListener('click', () => {
-            document.body.requestPointerLock();
-        });
+        raycaster = new THREE.Raycaster();
 
+        // Controles Mouse
         document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement === document.body) {
                 camera.rotation.y -= e.movementX * 0.002;
                 camera.rotation.x -= e.movementY * 0.002;
-                camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                camera.rotation.x = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, camera.rotation.x));
             }
         });
 
-        // 8. Eventos de Disparo y Apuntado
         window.addEventListener('mousedown', (e) => {
-            if (e.button === 0) isFiring = true;
-            if (e.button === 2) zoomIn(true);
+            if(e.button === 0) isFiring = true;
+            if(e.button === 2) zoom(true);
         });
         window.addEventListener('mouseup', (e) => {
-            if (e.button === 0) isFiring = false;
-            if (e.button === 2) zoomIn(false);
+            if(e.button === 0) isFiring = false;
+            if(e.button === 2) zoom(false);
         });
-        window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'r') reload();
-        });
-
-        raycaster = new THREE.Raycaster();
+        window.addEventListener('keydown', (e) => { if(e.key.toLowerCase()==='r') reload(); });
+        
         document.oncontextmenu = () => false;
+        animate();
+    }
+
+    window.startGame = function() {
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'block';
+        document.body.requestPointerLock();
+        if(!renderer) initGame();
     }
 
     function spawnEnemy() {
-        const geo = new THREE.BoxGeometry(1, 2, 1);
-        const mat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-        const enemy = new THREE.Mesh(geo, mat);
-        enemy.position.set(Math.random()*20-10, 1, Math.random()* -20 - 5);
+        const enemy = new THREE.Mesh(
+            new THREE.BoxGeometry(1.5, 3.5, 0.5),
+            new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x330000 })
+        );
+        enemy.position.set(Math.random()*40-20, 1.75, Math.random()*-40 - 10);
         scene.add(enemy);
         enemies.push(enemy);
     }
 
-    function zoomIn(active) {
-        camera.fov = active ? 40 : 75; // Zoom CoD
-        weapon.position.x = active ? -0.4 : 0; // Alinea el arma al centro
+    function zoom(active) {
+        camera.fov = active ? 35 : 75;
+        weapon.position.x = active ? 0 : 0.5; // Centra el arma
         camera.updateProjectionMatrix();
     }
 
     function shoot() {
         if (ammo <= 0 || isReloading) return;
-        
         ammo--;
         document.getElementById('ammo').innerText = `${ammo} / 30`;
         
-        // Retroceso visual
-        weapon.position.z += 0.05;
-        setTimeout(() => weapon.position.z -= 0.05, 50);
+        // Animación de disparo
+        weapon.position.z += 0.1;
+        setTimeout(() => weapon.position.z -= 0.1, 50);
 
-        // Lógica de impacto
-        raycaster.setFromCamera({x: 0, y: 0}, camera);
-        const hits = raycaster.intersectObjects(enemies);
-        if (hits.length > 0) {
-            const target = hits[0].object;
+        raycaster.setFromCamera({x:0, y:0}, camera);
+        const intersects = raycaster.intersectObjects(enemies);
+        if (intersects.length > 0) {
+            const target = intersects[0].object;
             scene.remove(target);
             enemies = enemies.filter(e => e !== target);
-            setTimeout(spawnEnemy, 1000);
+            setTimeout(spawnEnemy, 1500);
         }
     }
 
     function reload() {
-        if (isReloading || ammo === 30) return;
+        if(isReloading || ammo === 30) return;
         isReloading = true;
         document.getElementById('status').innerText = "RECARGANDO...";
         setTimeout(() => {
-            ammo = 30;
-            isReloading = false;
-            document.getElementById('status').innerText = "LISTO";
+            ammo = 30; isReloading = false;
+            document.getElementById('status').innerText = "EN LÍNEA";
             document.getElementById('ammo').innerText = "30 / 30";
-        }, 2000);
+        }, 1800);
     }
 
-    let lastFireTime = 0;
     function animate() {
         requestAnimationFrame(animate);
-        
-        if (isFiring && performance.now() - lastFireTime > 100) {
+        if (isFiring && performance.now() - lastFireTime > 110) {
             shoot();
             lastFireTime = performance.now();
         }
-
         renderer.render(scene, camera);
     }
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
 </script>
 </body>
 </html>
