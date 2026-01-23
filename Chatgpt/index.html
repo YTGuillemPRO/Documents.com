@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IA Híbrida con Internet</title>
+  <title>IA Inteligente Pro (Web + Fix)</title>
   <style>
     :root {
       --bg: #0b0e14;
@@ -24,25 +24,24 @@
 
     #chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-    .msg { max-width: 85%; padding: 15px; border-radius: 12px; line-height: 1.5; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .msg { max-width: 85%; padding: 15px; border-radius: 12px; line-height: 1.5; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
     .user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 2px; border: 1px solid #3b4252; }
     .ai { align-self: flex-start; background: var(--ai); border-bottom-left-radius: 2px; border-left: 4px solid var(--accent); }
 
-    .status { font-size: 0.8rem; color: var(--accent); margin-bottom: 5px; font-style: italic; }
+    .status { font-size: 0.8rem; color: var(--accent); font-style: italic; }
 
     #input-container { display: flex; padding: 20px; background: var(--card); gap: 10px; }
     #input { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #3b4252; background: #0b0e14; color: white; outline: none; }
-    #btn-send { padding: 0 25px; border: none; border-radius: 8px; background: var(--accent); color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    #btn-send:hover { transform: scale(1.05); }
+    #btn-send { padding: 0 25px; border: none; border-radius: 8px; background: var(--accent); color: black; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <header>AI WEB INVESTIGATOR</header>
+  <header>ULTRA AI INVESTIGATOR</header>
   <div id="chat"></div>
 
   <div id="input-container">
-    <input type="text" id="input" placeholder="Pregúntame algo que deba buscar en la web..." autocomplete="off">
+    <input type="text" id="input" placeholder="Pregunta sobre Pedro Sánchez, Agujeros Negros..." autocomplete="off">
     <button id="btn-send">Enviar</button>
   </div>
 
@@ -50,62 +49,66 @@
     const chatBox = document.getElementById("chat");
     const inputField = document.getElementById("input");
 
-    /* ================= FUNCIÓN DE BÚSQUEDA WEB (WIKIPEDIA) ================= */
+    // Función para poner en mayúsculas la primera letra de cada palabra
+    function capitalizar(str) {
+      return str.replace(/\b\w/g, l => l.toUpperCase());
+    }
+
     async function investigarWeb(tema) {
-      const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(tema)}`;
+      // Limpiar el tema: quitar signos y poner mayúsculas necesarias para Wikipedia
+      let busqueda = tema.replace(/[¿?¡!]/g, "").trim();
+      busqueda = capitalizar(busqueda);
+
+      const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(busqueda.replace(/ /g, "_"))}`;
+      
       try {
         const response = await fetch(url);
+        if (!response.ok) throw new Error();
         const data = await response.json();
-        if (data.extract) {
-          return data.extract;
-        } else {
-          return "No encontré información específica, pero puedo seguir aprendiendo si me lo explicas.";
-        }
+        return data.extract || "No encontré detalles específicos, intenta con otro nombre.";
       } catch (error) {
-        return "Hubo un error al intentar conectarme a la red. ¿Tienes internet?";
+        return "No encontré información. Asegúrate de escribir bien el nombre o estar conectado a internet.";
       }
     }
 
-    /* ================= LÓGICA DE RESPUESTA ================= */
     async function pensar(texto) {
       const t = texto.toLowerCase();
 
-      // 1. Detectar intención de búsqueda (Quién es, Qué es, etc.)
-      if (t.includes("quien es") || t.includes("que es") || t.includes("quien fue") || t.includes("investiga") || t.includes("presidente")) {
-        let busqueda = t.replace(/quien es|que es|quien fue|investiga sobre|cuentame de|el |la /g, "").trim();
+      // 1. Prioridad: ¿Es una pregunta de conocimiento?
+      if (t.includes("quien es") || t.includes("que es") || t.includes("quien fue") || t.includes("cuentame") || t.includes("sabes de")) {
+        let tema = t.replace(/quien es|que es|quien fue|investiga sobre|cuentame de|sabes de|el |la |un |una /g, "").trim();
         
-        // Caso específico Presidente USA (para que sea más preciso)
-        if(t.includes("presidente") && t.includes("estados unidos")) busqueda = "Presidente de los Estados Unidos";
-
-        addMsg("IA", "Investigando en la web...", "ai", true);
-        const resultado = await investigarWeb(busqueda);
+        // Mostrar estado de carga
+        const tempId = Date.now();
+        addMsg("IA", "Buscando en mi base de datos web...", "ai", tempId);
         
-        // Eliminar el mensaje de "Investigando..."
-        const loadingMsg = document.querySelector('.status');
-        if(loadingMsg) loadingMsg.parentElement.remove();
-
-        return resultado;
+        const resultado = await investigarWeb(tema);
+        
+        // Reemplazar el mensaje de carga con el resultado
+        document.getElementById(tempId).innerHTML = `<b>IA</b><br>${resultado}`;
+        return null; // Ya respondimos arriba
       }
 
-      // 2. Respuestas locales sencillas (con tolerancia a fallos)
-      if (t.includes("hola") || t.includes("buenos dias")) return "¡Hola! Estoy listo para investigar lo que necesites.";
-      if (t.includes("gracias")) return "¡De nada! ¿Quieres saber algo más sobre historia o actualidad?";
-      
-      // 3. Matemáticas rápidas
-      try {
-        let op = t.replace(/x/g, "*").replace(/[^0-9+\-*/(). ]/g, "");
-        if (op.length >= 3) return "El resultado es: " + eval(op);
-      } catch(e) {}
+      // 2. ¿Son matemáticas puras? (Solo si tiene números)
+      if (/[0-9]/.test(t) && /[\+\-\*\/]/.test(t)) {
+        try {
+          let op = t.replace(/x/g, "*").replace(/[^0-9+\-*/(). ]/g, "");
+          let res = eval(op);
+          if (res !== undefined) return "El resultado matemático es: " + res;
+        } catch(e) {}
+      }
 
-      return "Para ayudarte mejor, prueba a preguntarme '¿Quién es...?' o '¿Qué es...?' y buscaré en mis archivos web.";
+      // 3. Respuestas básicas
+      if (t.includes("hola")) return "¡Hola! Soy tu IA mejorada. Pregúntame sobre cualquier persona o concepto.";
+      
+      return "No estoy seguro, pero puedo investigarlo si me preguntas '¿Qué es...?' o '¿Quién es...?'";
     }
 
-    /* ================= INTERFAZ ================= */
-    function addMsg(quien, texto, clase, esLoading = false) {
+    function addMsg(quien, texto, clase, id = null) {
       const d = document.createElement("div");
       d.className = `msg ${clase}`;
-      if(esLoading) d.innerHTML = `<div class="status">Buscando...</div>`;
-      else d.innerHTML = `<b>${quien}</b><br>${texto}`;
+      if(id) d.id = id;
+      d.innerHTML = `<b>${quien}</b><br>${texto}`;
       chatBox.appendChild(d);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -118,13 +121,15 @@
       inputField.value = "";
 
       const respuesta = await pensar(txt);
-      addMsg("IA", respuesta, "ai");
+      if(respuesta) {
+        setTimeout(() => addMsg("IA", respuesta, "ai"), 300);
+      }
     }
 
     document.getElementById("btn-send").onclick = enviar;
     inputField.onkeydown = (e) => { if(e.key === "Enter") enviar(); };
 
-    addMsg("IA", "Sistema Híbrido Activo. Pregúntame sobre cualquier personaje histórico, país o el presidente de cualquier lugar.", "ai");
+    addMsg("IA", "¡Arreglado! Ahora puedes preguntarme por **Pedro Sánchez**, **Agujeros Negros** o lo que quieras. ¡Pruébame!", "ai");
   </script>
 </body>
 </html>
