@@ -1,5 +1,5 @@
 {
-  "name": "Call of Duty",
+  "name": "call-of-duty",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,4 +9,3 @@
     "three": "^0.160.0"
   }
 }
-
