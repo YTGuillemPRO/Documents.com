@@ -1,129 +1,145 @@
 class Game {
-    constructor(scene, ball, camera, infoDiv) {
-        this.scene = scene;
-        this.ball = ball;
-        this.camera = camera;
-        this.infoDiv = infoDiv;
+  constructor(scene, ball, camera, info) {
+    this.scene = scene;
+    this.ball = ball;
+    this.camera = camera;
+    this.info = info;
 
-        this.levelIndex = 0;
-        this.attempts = 3;
-        this.isMoving = false;
-        this.direction = new THREE.Vector3(1,0,0);
-        this.platforms = [];
-        this.obstacles = [];
-        this.goal = null;
+    this.level = 0;
+    this.attempts = 3;
+    this.speed = 5;
+    this.side = 1;
+    this.moving = false;
+
+    this.platforms = [];
+    this.obstacles = [];
+    this.goal = null;
+    this.goalkeeper = null;
+    this.goalDir = 1;
+  }
+
+  startLevel(i) {
+    [...this.platforms, ...this.obstacles, this.goal, this.goalkeeper]
+      .forEach(o => o && this.scene.remove(o));
+
+    this.platforms = [];
+    this.obstacles = [];
+
+    const lvl = levels[i];
+    let x = 0, z = 0;
+
+    // Plataformas (zigzag hacia delante)
+    for (let p = 0; p < lvl.length; p++) {
+      const geo = new THREE.BoxGeometry(2.4, 0.3, 2.4);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xffc83d });
+      const tile = new THREE.Mesh(geo, mat);
+      tile.position.set(x, 0, z);
+      this.scene.add(tile);
+      this.platforms.push(tile);
+
+      x += this.side * 2.4;
+      z -= 2.4;
+      this.side *= -1;
     }
 
-    startLevel(levelIndex) {
-        // Limpiar plataformas y obstáculos previos
-        this.platforms.forEach(p => this.scene.remove(p));
-        this.obstacles.forEach(o => this.scene.remove(o));
-        if(this.goal) this.scene.remove(this.goal);
-
-        this.platforms = [];
-        this.obstacles = [];
-
-        const lvl = levels[levelIndex];
-        let posX = 0;
-        let posZ = 0;
-        let toggle = true;
-        const platformSize = 2.5;
-        const gap = 0.5;
-
-        // Generar plataforma principal (camino)
-        for(let i=0; i<lvl.length; i++){
-            const geo = new THREE.BoxGeometry(platformSize,0.4,platformSize);
-            const mat = new THREE.MeshStandardMaterial({color:0xffdb58});
-            const p = new THREE.Mesh(geo,mat);
-            p.position.set(posX,0,posZ);
-            this.scene.add(p);
-            this.platforms.push(p);
-
-            if(toggle) posX += platformSize + gap;
-            else posZ += platformSize + gap;
-            toggle = !toggle;
-        }
-
-        // Generar obstáculos aleatorios
-        for(let i=0; i<lvl.obstacles; i++){
-            const obsGeo = new THREE.BoxGeometry(platformSize,0.4,platformSize);
-            const obsMat = new THREE.MeshStandardMaterial({color:0xff0000});
-            const obs = new THREE.Mesh(obsGeo,obsMat);
-            const randIndex = Math.floor(Math.random()*this.platforms.length);
-            const p = this.platforms[randIndex];
-            obs.position.set(p.position.x,0.2,p.position.z);
-            this.scene.add(obs);
-            this.obstacles.push(obs);
-        }
-
-        // Portería al final
-        const goalGeo = new THREE.BoxGeometry(platformSize*1.3,0.4,platformSize*1.3);
-        const goalMat = new THREE.MeshStandardMaterial({color:0x27ae60});
-        this.goal = new THREE.Mesh(goalGeo,goalMat);
-        const lastPlatform = this.platforms[this.platforms.length-1];
-        this.goal.position.set(lastPlatform.position.x,0.2,lastPlatform.position.z);
-        this.scene.add(this.goal);
-
-        // Reset bola
-        this.ball.position.set(0,0.4,0);
-        this.direction.set(1,0,0);
-        this.isMoving = false;
-
-        this.updateUI();
+    // Obstáculos
+    for (let o = 0; o < lvl.obstacles; o++) {
+      const ref = this.platforms[Math.floor(Math.random() * (this.platforms.length - 2)) + 1];
+      const obs = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.4, 1, 16),
+        new THREE.MeshStandardMaterial({ color: 0xff4d4d })
+      );
+      obs.position.set(ref.position.x, 0.5, ref.position.z);
+      this.scene.add(obs);
+      this.obstacles.push(obs);
     }
 
-    updateUI(){
-        this.infoDiv.textContent = `Nivel: ${this.levelIndex+1} | Intentos: ${this.attempts}`;
+    // Portería
+    this.goal = new THREE.Mesh(
+      new THREE.BoxGeometry(4, 0.3, 1),
+      new THREE.MeshStandardMaterial({ color: 0x2ecc71 })
+    );
+    const last = this.platforms.at(-1);
+    this.goal.position.set(0, 0.15, last.position.z - 3);
+    this.scene.add(this.goal);
+
+    // Portero
+    this.goalkeeper = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 1, 0.4),
+      new THREE.MeshStandardMaterial({ color: 0x3498db })
+    );
+    this.goalkeeper.position.set(0, 0.5, this.goal.position.z);
+    this.scene.add(this.goalkeeper);
+
+    // Bola
+    this.ball.position.set(0, 0.4, 0);
+    this.direction = new THREE.Vector3(0, 0, -1);
+    this.sideDir = 1;
+    this.moving = false;
+
+    this.updateUI();
+  }
+
+  tap() {
+    this.moving = true;
+    this.sideDir *= -1;
+    this.direction.x = this.sideDir;
+  }
+
+  update(dt) {
+    if (!this.moving) return;
+
+    this.ball.position.addScaledVector(this.direction, this.speed * dt);
+
+    // Portero movimiento
+    this.goalkeeper.position.x += this.goalDir * dt * 2;
+    if (Math.abs(this.goalkeeper.position.x) > 1.5) this.goalDir *= -1;
+
+    if (this.hit(this.obstacles) || this.hit([this.goalkeeper])) {
+      this.fail();
     }
 
-    changeDirection(){
-        this.isMoving = true;
-        if(this.direction.x === 1) this.direction.set(0,0,1);
-        else this.direction.set(1,0,0);
+    if (this.hit([this.goal])) {
+      this.nextLevel();
     }
+  }
 
-    update(delta){
-        if(!this.isMoving) return;
+  hit(arr) {
+    const b = new THREE.Box3().setFromObject(this.ball);
+    return arr.some(o => b.intersectsBox(new THREE.Box3().setFromObject(o)));
+  }
 
-        this.ball.position.addScaledVector(this.direction,5*delta);
-
-        if(this.checkCollision(this.obstacles)){
-            this.attempts--;
-            if(this.attempts<=0){
-                alert(`Has perdido en el nivel ${this.levelIndex+1}`);
-                this.levelIndex = 0;
-                this.attempts = 3;
-            } else {
-                alert('Has tocado un obstáculo, intenta otra vez.');
-            }
-            this.startLevel(this.levelIndex);
-        } else if(this.checkCollision([this.goal])){
-            alert('¡Gol! Pasas al siguiente nivel');
-            this.levelIndex++;
-            if(this.levelIndex >= levels.length){
-                alert('¡Has completado todos los niveles!');
-                this.levelIndex = 0;
-            }
-            this.attempts = 3;
-            this.startLevel(this.levelIndex);
-        }
+  fail() {
+    this.attempts--;
+    alert("💥 Has perdido");
+    if (this.attempts <= 0) {
+      this.level = 0;
+      this.attempts = 3;
     }
+    this.startLevel(this.level);
+  }
 
-    checkCollision(objects){
-        const ballBox = new THREE.Box3().setFromObject(this.ball);
-        for(const o of objects){
-            const box = new THREE.Box3().setFromObject(o);
-            if(ballBox.intersectsBox(box)){
-                return true;
-            }
-        }
-        return false;
-    }
+  nextLevel() {
+    alert("⚽ ¡GOOOL!");
+    this.level++;
+    if (this.level >= levels.length) this.level = 0;
+    this.attempts = 3;
+    this.startLevel(this.level);
+  }
 
-    updateCamera(){
-        const offset = new THREE.Vector3(4,5,4);
-        this.camera.position.copy(this.ball.position).add(offset);
-        this.camera.lookAt(this.ball.position);
-    }
+  updateCamera() {
+    this.camera.position.lerp(
+      new THREE.Vector3(
+        this.ball.position.x,
+        this.ball.position.y + 5,
+        this.ball.position.z + 6
+      ),
+      0.1
+    );
+    this.camera.lookAt(this.ball.position);
+  }
+
+  updateUI() {
+    this.info.textContent = `Nivel ${this.level + 1} | Intentos ${this.attempts}`;
+  }
 }
-
