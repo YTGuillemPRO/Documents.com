@@ -1,17 +1,49 @@
-#shop {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 100;
+body, html {
+    margin: 0; overflow: hidden;
+    font-family: 'Arial', sans-serif;
+    background: #f3e1f9;
 }
-#shop button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    background: white;
-    cursor: pointer;
-    font-weight: bold;
+
+#info {
+    position: fixed; top: 15px; left: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px; border-radius: 8px;
+    font-weight: bold; color: #54007d; z-index: 10;
 }
+
+#startScreen {
+    position: fixed; inset: 0;
+    background: rgba(155, 89, 182, 0.8);
+    color: white; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 50; cursor: pointer;
+    text-align: center;
+}
+
+/* Tienda arriba a la derecha */
+#shopWrapper {
+    position: fixed; top: 15px; right: 15px;
+    z-index: 100; text-align: right;
+}
+
+#shopBtn {
+    padding: 10px 20px; font-weight: bold;
+    background: #ffdb4d; border: none;
+    border-radius: 5px; cursor: pointer;
+}
+
+#shopMenu {
+    background: white; margin-top: 10px;
+    padding: 10px; border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    width: 180px;
+}
+
+.hidden { display: none; }
+
+.item {
+    padding: 8px; border-bottom: 1px solid #eee;
+    cursor: pointer; font-size: 14px;
+}
+
+.item:hover { background: #f9f9f9; }
