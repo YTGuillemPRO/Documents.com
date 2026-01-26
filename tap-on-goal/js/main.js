@@ -1,48 +1,32 @@
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // Cielo azul
+scene.background = new THREE.Color(0xf6e9ff);
 
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Luz
-scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-sun.position.set(10, 20, 10);
-sun.castShadow = true;
-scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const light = new THREE.DirectionalLight(0xffffff, 0.5);
+light.position.set(0, 10, 0);
+scene.add(light);
 
-// Suelo de césped decorativo
-const groundGeo = new THREE.PlaneGeometry(100, 200);
-const groundMat = new THREE.MeshStandardMaterial({ color: 0x27ae60 });
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.5;
-scene.add(ground);
-
-// Bola con textura simple
-const ball = new THREE.Mesh(
-  new THREE.SphereGeometry(0.4, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 })
-);
-ball.castShadow = true;
+// Bola de fútbol (Blanca y Negra)
+const ballGeo = new THREE.SphereGeometry(0.4, 16, 16);
+const ballMat = new THREE.MeshStandardMaterial({ 
+    color: 0xffffff,
+    map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/uv_grid_opengl.jpg') // Simulando textura
+});
+const ball = new THREE.Mesh(ballGeo, ballMat);
 scene.add(ball);
 
 const info = document.getElementById("info");
-const startScreen = document.getElementById("startScreen");
 
 const game = new Game(scene, ball, camera, info);
 game.startLevel(0);
 
-const startAction = () => {
-    startScreen.style.display = "none";
-    game.tap();
-};
-
-window.addEventListener("mousedown", startAction);
-window.addEventListener("touchstart", startAction);
+// Escuchar el clic para la posición
+window.addEventListener("mousedown", (e) => game.tap(e));
 
 window.addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
@@ -50,10 +34,9 @@ window.addEventListener("resize", () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  game.update(clock.getDelta());
+  game.update(0.016); // asumiendo 60fps
   game.updateCamera();
   renderer.render(scene, camera);
 }
