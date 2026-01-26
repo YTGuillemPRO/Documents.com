@@ -1,33 +1,48 @@
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf6e9ff);
+scene.background = new THREE.Color(0x87ceeb); // Cielo azul
 
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Luces suaves
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-sun.position.set(5, 10, 5);
+// Luz
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+sun.position.set(10, 20, 10);
+sun.castShadow = true;
 scene.add(sun);
 
-// Bola
+// Suelo de césped decorativo
+const groundGeo = new THREE.PlaneGeometry(100, 200);
+const groundMat = new THREE.MeshStandardMaterial({ color: 0x27ae60 });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.5;
+scene.add(ground);
+
+// Bola con textura simple
 const ball = new THREE.Mesh(
   new THREE.SphereGeometry(0.4, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 0x9b59b6 })
+  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 })
 );
+ball.castShadow = true;
 scene.add(ball);
 
-// UI
 const info = document.getElementById("info");
+const startScreen = document.getElementById("startScreen");
 
-// Juego
 const game = new Game(scene, ball, camera, info);
 game.startLevel(0);
 
-window.addEventListener("mousedown", () => game.tap());
-window.addEventListener("touchstart", () => game.tap());
+const startAction = () => {
+    startScreen.style.display = "none";
+    game.tap();
+};
+
+window.addEventListener("mousedown", startAction);
+window.addEventListener("touchstart", startAction);
 
 window.addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
