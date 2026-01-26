@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
 export class Game {
   constructor() {
@@ -73,10 +73,9 @@ export class Game {
     if (this.keys["KeyA"]) this.player.position.x -= this.speed;
     if (this.keys["KeyD"]) this.player.position.x += this.speed;
 
-    // Enemy follows player
+    // Enemy follows
     this.enemy.position.lerp(this.player.position, 0.01);
 
     this.renderer.render(this.scene, this.camera);
   }
 }
-
