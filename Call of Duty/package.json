@@ -1,1 +1,12 @@
+{
+  "name": "Call of Duty",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}
 
