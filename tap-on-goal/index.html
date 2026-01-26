@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tap On Goal 3D</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Tap On Goal 3D</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="info">Cargando...</div>
+    
+    <div id="shop">
+        <button onclick="game.buySkin(0xff0000, 100)">🔴 Roja (100)</button>
+        <button onclick="game.buySkin(0x00ff00, 200)">🟢 Verde (200)</button>
+        <button onclick="game.buySkin(0xffff00, 500)">🟡 Oro (500)</button>
+    </div>
 
-<div id="info">Nivel: 1 | Intentos: 3</div>
-<div id="startScreen">START<br><small>Haz clic para comenzar</small></div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-<script src="js/levels.js"></script>
-<script src="js/game.js"></script>
-<script src="js/main.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
-
