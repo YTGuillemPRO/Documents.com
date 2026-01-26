@@ -7,12 +7,11 @@ class Game {
 
     this.level = 0;
     this.attempts = 3;
-    this.speed = 6;
-    this.side = 1;
+    this.speed = 8;
     this.moving = false;
-    this.isShooting = false; // Nuevo: Estado de tiro final
+    this.targetX = 0; // Posición horizontal deseada
+    this.laneWidth = 6; // Ancho del campo
 
-    this.platforms = [];
     this.obstacles = [];
     this.goal = null;
     this.goalkeeper = null;
@@ -20,149 +19,122 @@ class Game {
   }
 
   startLevel(i) {
-    [...this.platforms, ...this.obstacles, this.goal, this.goalkeeper]
-      .forEach(o => o && this.scene.remove(o));
-
-    this.platforms = [];
+    // Limpiar escena
+    [...this.obstacles, this.goal, this.goalkeeper, this.floor].forEach(o => o && this.scene.remove(o));
     this.obstacles = [];
-    this.isShooting = false;
 
     const lvl = levels[i];
-    let x = 0, z = 0;
+    const trackLength = lvl.length * 5;
 
-    // Generar Plataformas
-    for (let p = 0; p < lvl.length; p++) {
-      const geo = new THREE.BoxGeometry(2.5, 0.4, 2.5);
-      const mat = new THREE.MeshStandardMaterial({ color: (p % 2 === 0) ? 0xffdb4d : 0xffc83d });
-      const tile = new THREE.Mesh(geo, mat);
-      tile.position.set(x, 0, z);
-      this.scene.add(tile);
-      this.platforms.push(tile);
+    // Crear Suelo (Pasillo rosa/morado como en la imagen)
+    const floorGeo = new THREE.PlaneGeometry(this.laneWidth, trackLength);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0xe082ff }); // Rosa/Morado
+    this.floor = new THREE.Mesh(floorGeo, floorMat);
+    this.floor.rotation.x = -Math.PI / 2;
+    this.floor.position.z = -trackLength / 2 + 2;
+    this.scene.add(this.floor);
 
-      if (p < lvl.length - 1) {
-        x += this.side * 2.5;
-        z -= 2.5;
-        this.side *= -1;
-      }
-    }
-
-    // Obstáculos (Jugadores contrarios estáticos)
+    // Crear Obstáculos Amarillos (Bloques)
     for (let o = 0; o < lvl.obstacles; o++) {
-      const ref = this.platforms[Math.floor(Math.random() * (this.platforms.length - 3)) + 1];
-      const obs = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.5, 1.8, 16),
-        new THREE.MeshStandardMaterial({ color: 0xff4d4d })
-      );
-      obs.position.set(ref.position.x, 0.9, ref.position.z);
+      const obsGeo = new THREE.BoxGeometry(2.5, 0.8, 1);
+      const obsMat = new THREE.MeshStandardMaterial({ color: 0xffdb4d }); // Amarillo
+      const obs = new THREE.Mesh(obsGeo, obsMat);
+      
+      // Posición aleatoria en X y Z
+      const x = (Math.random() - 0.5) * (this.laneWidth - 1);
+      const z = -Math.random() * (trackLength - 10) - 5;
+      
+      obs.position.set(x, 0.4, z);
       this.scene.add(obs);
       this.obstacles.push(obs);
     }
 
-    // Portería realista
-    const goalGeo = new THREE.BoxGeometry(5, 2.5, 0.5);
+    // Portería al final
+    const goalGeo = new THREE.BoxGeometry(4, 2, 0.2);
     const goalMat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
     this.goal = new THREE.Mesh(goalGeo, goalMat);
-    const last = this.platforms.at(-1);
-    this.goal.position.set(last.position.x, 1.25, last.position.z - 6);
+    this.goal.position.set(0, 1, -trackLength);
     this.scene.add(this.goal);
 
     // Portero
     this.goalkeeper = new THREE.Mesh(
-      new THREE.BoxGeometry(1.2, 1.5, 0.6),
-      new THREE.MeshStandardMaterial({ color: 0x3498db })
+      new THREE.BoxGeometry(0.8, 1.2, 0.4),
+      new THREE.MeshStandardMaterial({ color: 0x333333 })
     );
-    this.goalkeeper.position.set(last.position.x, 0.75, this.goal.position.z + 0.5);
+    this.goalkeeper.position.set(0, 0.6, -trackLength + 0.5);
     this.scene.add(this.goalkeeper);
 
     // Reset Bola
-    this.ball.position.set(0, 0.6, 0);
-    this.direction = new THREE.Vector3(0, 0, -1);
-    this.sideDir = 0;
+    this.ball.position.set(0, 0.4, 0);
+    this.targetX = 0;
     this.moving = false;
     this.updateUI();
   }
 
-  tap() {
-    if (!this.moving) {
-      this.moving = true;
-      this.direction.set(this.side, 0, -1).normalize();
-      return;
-    }
+  // Al hacer clic, movemos la bola hacia ese lado
+  tap(event) {
+    this.moving = true;
+    const screenWidth = window.innerWidth;
+    const clickX = event.clientX;
 
-    if (!this.isShooting) {
-      // Cambio de zigzag normal
-      this.side *= -1;
-      this.direction.set(this.side, 0, -1).normalize();
-      
-      // Si estamos cerca de la última plataforma, activamos modo tiro
-      const lastTile = this.platforms.at(-1);
-      if (Math.abs(this.ball.position.z - lastTile.position.z) < 1) {
-        this.isShooting = true;
-        // En el modo tiro, el balón sigue recto hasta que el usuario decida apuntar
-      }
+    // Si haces clic a la izquierda del centro, vas a la izquierda, si no a la derecha
+    if (clickX < screenWidth / 2) {
+      this.targetX = -this.laneWidth / 3;
     } else {
-      // Ejecutar el tiro final hacia la portería
-      // Calculamos dirección hacia la portería con un ligero ángulo basado en el tiempo
-      const shootX = (Math.random() - 0.5) * 4; 
-      this.direction.set(shootX, 0, -5).normalize();
-      this.speed *= 1.5; // El tiro es más rápido
+      this.targetX = this.laneWidth / 3;
     }
   }
 
   update(dt) {
     if (!this.moving) return;
 
-    this.ball.position.addScaledVector(this.direction, this.speed * dt);
-    this.ball.rotation.x -= dt * 5; // Efecto de rotación
+    // Movimiento constante hacia adelante
+    this.ball.position.z -= this.speed * dt;
 
-    // Movimiento del Portero
-    this.goalkeeper.position.x += this.goalDir * dt * (3 + this.level);
-    const lastTile = this.platforms.at(-1);
-    if (Math.abs(this.goalkeeper.position.x - lastTile.position.x) > 2) this.goalDir *= -1;
+    // Movimiento suave lateral (Lerp hacia el lado donde clicamos)
+    this.ball.position.x = THREE.MathUtils.lerp(this.ball.position.x, this.targetX, 0.1);
 
-    // Colisiones
-    if (this.hit(this.obstacles) || this.hit([this.goalkeeper])) {
-      this.fail();
+    // Rotación de la bola
+    this.ball.rotation.x -= this.speed * dt * 2;
+
+    // Movimiento del portero
+    this.goalkeeper.position.x += this.goalDir * dt * 3;
+    if (Math.abs(this.goalkeeper.position.x) > 1.5) this.goalDir *= -1;
+
+    // Colisiones con bloques amarillos (Perder)
+    if (this.hit(this.obstacles)) {
+      this.fail("¡Chocaste con un obstáculo!");
     }
 
-    // Comprobar si se sale de las plataformas (caída)
-    if (!this.isShooting && !this.onPlatform()) {
-        this.fail();
+    // Colisión con portero
+    if (this.hit([this.goalkeeper])) {
+      this.fail("¡El portero la detuvo!");
     }
 
     // Gol
     if (this.hit([this.goal])) {
       this.nextLevel();
     }
-    
-    // Si el balón se pasa de la portería sin entrar
+
+    // Si se sale del campo (opcional)
     if (this.ball.position.z < this.goal.position.z - 2) {
-        this.fail();
+      this.fail("¡Fuera!");
     }
   }
 
-  onPlatform() {
-    const b = new THREE.Box3().setFromObject(this.ball);
-    return this.platforms.some(p => {
-        const pBox = new THREE.Box3().setFromObject(p);
-        return b.intersectsBox(pBox);
-    });
-  }
-
   hit(arr) {
-    const b = new THREE.Sphere(this.ball.position, 0.4);
+    const ballBox = new THREE.Box3().setFromObject(this.ball);
     return arr.some(o => {
-        const oBox = new THREE.Box3().setFromObject(o);
-        return oBox.intersectsSphere(b);
+      const obsBox = new THREE.Box3().setFromObject(o);
+      return ballBox.intersectsBox(obsBox);
     });
   }
 
-  fail() {
+  fail(msg) {
     this.moving = false;
-    this.speed = 6;
     this.attempts--;
+    alert(msg);
     if (this.attempts <= 0) {
-      alert("GAME OVER - Reiniciando");
       this.level = 0;
       this.attempts = 3;
     }
@@ -171,24 +143,19 @@ class Game {
 
   nextLevel() {
     this.moving = false;
+    alert("⚽ ¡GOOOOL!");
     this.level++;
-    this.speed = 6 + (this.level * 0.5);
-    alert("¡GOOOLAZO!");
-    if (this.level >= levels.length) {
-        alert("¡HAS GANADO EL TORNEO!");
-        this.level = 0;
-    }
+    if (this.level >= levels.length) this.level = 0;
     this.startLevel(this.level);
   }
 
   updateCamera() {
-    const offset = new THREE.Vector3(0, 5, 7);
-    const targetPos = this.ball.position.clone().add(offset);
-    this.camera.position.lerp(targetPos, 0.1);
-    this.camera.lookAt(this.ball.position);
+    const camPos = new THREE.Vector3(0, 4, this.ball.position.z + 6);
+    this.camera.position.lerp(camPos, 0.1);
+    this.camera.lookAt(new THREE.Vector3(0, 0, this.ball.position.z - 2));
   }
 
   updateUI() {
-    this.info.innerHTML = `NIVEL: <b>${this.level + 1}</b> | INTENTOS: <b>${this.attempts}</b>`;
+    this.info.innerHTML = `NIVEL ${this.level + 1} | ❤️ ${this.attempts}`;
   }
 }
