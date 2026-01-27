@@ -1,39 +1,52 @@
 import pygame
-import asyncio  # 1. Importa esto
+import asyncio  # Requerido para web
 from player import Player
 from world import World
 from ui import draw_ui
 
-async def main():  # 2. Mete todo el código dentro de esta función
+async def main():
     pygame.init()
+    
+    # Configuración de pantalla
     WIDTH, HEIGHT = 800, 600
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock = pygame.time.Clock()
+    pygame.display.set_caption("Crónicas del Multiverso")
     
+    clock = pygame.time.Clock()
+    FPS = 60
+    
+    # Instancias
     world = World()
     player = Player(100, 100)
+    
     running = True
-
     while running:
+        # Fondo
+        screen.fill((0, 0, 0))
+        
+        # Eventos
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+        
+        # Lógica
         keys = pygame.key.get_pressed()
         player.update(keys, world)
         
-        screen.fill((0, 0, 0))
+        # Dibujo
         world.draw(screen)
         player.draw(screen)
         draw_ui(screen, player)
         
+        # Actualización física
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
         
-        await asyncio.sleep(0)  # 3. MUY IMPORTANTE: Esto permite que el motor web funcione
+        # --- ESTA LÍNEA ES EL MOTOR PARA LA WEB ---
+        await asyncio.sleep(0) 
 
     pygame.quit()
 
-# 4. Llama a la función de esta manera
+# Ejecución asíncrona
 if __name__ == "__main__":
     asyncio.run(main())
