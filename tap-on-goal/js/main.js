@@ -30,16 +30,25 @@ scene.add(ball);
 const info = document.getElementById("info");
 const game = new Game(scene, ball, camera, info);
 
-const clock = new THREE.Clock();
+// START SCREEN (AQUÍ ESTABA EL ERROR)
+const startScreen = document.getElementById("startScreen");
+startScreen.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  game.startRun();
+});
 
+// Input de juego
 window.addEventListener("mousedown", e => game.tap(e));
 window.addEventListener("touchstart", e => game.tap(e));
 
+// Resize
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
