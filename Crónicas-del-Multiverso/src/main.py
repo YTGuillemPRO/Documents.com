@@ -1,53 +1,45 @@
 import pygame
 from player import Player
 from world import World
-from ui import UIHandler
+from ui import draw_ui
 
-def main():
-    pygame.init()
-    
-    # Configuración de pantalla
-    WIDTH, HEIGHT = 800, 600
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Crónicas del Multiverso")
-    
-    clock = pygame.time.Clock()
-    FPS = 60
-    
-    # Instancias
-    world = World()
-    player = Player(100, 100)
-    ui = UIHandler(screen)
-    
-    running = True
-    while running:
-        # 1. Gestión de Eventos
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                running = False
-            
-            # Pasar eventos a la UI (para detectar clics en botones)
-            ui.handle_events(event, player)
+# Inicialización
+pygame.init()
 
-        # 2. Lógica/Actualización
-        keys = pygame.key.get_pressed()
-        player.update(keys, world)
-        
-        # Lógica de Auto-click (basado en tiempo)
-        player.apply_auto_click()
+# Configuración de pantalla
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Crónicas del Multiverso")
 
-        # 3. Renderizado
-        screen.fill((30, 30, 30)) # Fondo gris oscuro para mejor contraste
-        
-        world.draw(screen)
-        player.draw(screen)
-        ui.draw(player) # Dibuja el ScreenGui (Frame y botones)
-        
-        pygame.display.flip()
-        clock.tick(FPS)
+# Reloj y FPS
+clock = pygame.time.Clock()
+FPS = 60
 
-    pygame.quit()
+# Instancias de mundo y jugador
+world = World()
+player = Player(100, 100)
 
-if __name__ == "__main__":
-    main()
+# Bucle principal del juego
+running = True
+while running:
+    screen.fill((0, 0, 0))  # Fondo negro
+
+    # Gestión de eventos
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Lógica de actualización
+    keys = pygame.key.get_pressed()
+    player.update(keys, world)
+
+    # Renderizado
+    world.draw(screen)
+    player.draw(screen)
+    draw_ui(screen, player)
+
+    # Actualizar pantalla
+    pygame.display.flip()
+    clock.tick(FPS)
+
+pygame.quit()
