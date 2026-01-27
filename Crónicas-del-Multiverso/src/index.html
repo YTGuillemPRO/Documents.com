@@ -2,29 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crónicas del Multiverso</title>
+    <script src="https://pygame-web.github.io/archives/0.8/pygbag.js"></script>
     <style>
-        body { background-color: black; color: white; text-align: center; }
-        #status { margin-top: 20px; }
+        body { background-color: #000; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; font-family: sans-serif; }
+        #status { position: absolute; top: 50%; text-align: center; width: 100%; }
     </style>
 </head>
 <body>
-    <h1>Crónicas del Multiverso</h1>
-    <div id="game-container">
-        <p id="status">Cargando motor de Python...</p>
-    </div>
+    <div id="status">Iniciando motor de Crónicas del Multiverso...</div>
+    <div id="game-container"></div>
 
-    <script src="https://pygame-web.github.io/archives/0.8/pygbag.js"></script>
     <script>
-        // Configuración básica para que el navegador ejecute tu main.py
         window.onload = async () => {
-            const config = {
-                尺度: "fit",
-                autorun: true,
-                terminal: false
-            };
-            // Aquí se iniciaría la carga del script de Python
-            console.log("Iniciando Crónicas del Multiverso...");
+            // El motor busca automáticamente el archivo main.py en la misma carpeta
+            await pygbag.start("game-container", {
+                appName: "cronicas_del_multiverso",
+                entryPoint: "main.py",
+                showTerminal: false
+            });
+            document.getElementById("status").style.display = "none";
         };
     </script>
 </body>
