@@ -48,22 +48,23 @@
     </div>
   </div>
 
+  <section><a href="Crónicas-del-Multiverso/src/index.html">🛡️ Crónicas del Multiverso</a></section>
   <section><a href="juego1/index.html">Pets and Money</a></section>
   <section><a href="juego2/index.html">No cliques el Botón</a></section>
   <section><a href="juego3/index.html">Steal a Brainrot</a></section>
   <section><a href="juego4/index.html">FiFa</a></section>
   <section><a href="juego5/index.html">TikTok</a></section>
   <section><a href="juego6/index.html">Clash Royale</a></section>
- <section><a href="juego7/index.html">La serpiente</a></section>
+  <section><a href="juego7/index.html">La serpiente</a></section>
   <section><a href="juego8/index.html">Rocket League</a></section>
   <section><a href="juego9/index.html">Speed per click</a></section>
-   <section><a href="juego10/index.html">Minecraft</a></section> 
-   <section><a href="juego11/index.html">Obby Practica</a></section> 
-     <section><a href="juego12/index.html">Geometry Dash</a></section> 
-   <section><a href="juego13/index.html">1 V 1 Arco</a></section>
-     <section><a href="juego14/index.html">Fornite</a></section>
+  <section><a href="juego10/index.html">Minecraft</a></section> 
+  <section><a href="juego11/index.html">Obby Practica</a></section> 
+  <section><a href="juego12/index.html">Geometry Dash</a></section> 
+  <section><a href="juego13/index.html">1 V 1 Arco</a></section>
+  <section><a href="juego14/index.html">Fornite</a></section>
   <section><a href="call-of-duty/index.html">Call of Duty - Proximamente</a></section>
-   <section><a href="Chatgpt/index.html">Chatgpt</a></section>
+  <section><a href="Chatgpt/index.html">Chatgpt</a></section>
   <section><a href="tap-on-goal/index.html">Tap On Goal</a></section>
 
   <script type="module">
@@ -97,14 +98,11 @@
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('password');
 
-    // Función inteligente: Entra si existe, si no, Crea la cuenta
     const handleAuth = async (email, password) => {
       try {
-        // Intentar entrar
         await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {
-        // Si el error es que el usuario no existe, lo creamos
-        if (error.code === 'auth/user-not-found') {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
           try {
             await createUserWithEmailAndPassword(auth, email, password);
             alert("Cuenta nueva creada automáticamente.");
@@ -117,12 +115,10 @@
       }
     };
 
-    // Botón principal
     document.getElementById('btn-login-email').onclick = () => {
       handleAuth(emailInput.value, emailInput.value === "" ? "" : passInput.value);
     };
 
-    // Cambiar de cuenta (Tres puntos)
     dotsMenu.onclick = async () => {
       const email = prompt("Canviar de compte\nEscriu el correu:");
       if (!email) return;
@@ -150,7 +146,7 @@
 
     window.onload = function () {
       setTimeout(() => {
-        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa...");
+        const entendido = confirm("⚠️ AVISO ⚠️\n\nEsta página es para jugar en casa si estas en una escuela entras asumiendo tu responsabilidad.");
         if (!entendido) window.location.href = "https://www.google.com";
       }, 500);
     };
