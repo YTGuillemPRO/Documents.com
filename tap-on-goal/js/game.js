@@ -8,9 +8,11 @@ class Game {
     this.level = 0;
     this.coins = parseInt(localStorage.getItem("coins")) || 0;
     this.attempts = 3;
+
     this.moving = false;
     this.isShootingZone = false;
     this.dir = new THREE.Vector3(1, 0, -1).normalize();
+
     this.obstacles = [];
     this.goalDir = 1;
 
@@ -82,15 +84,13 @@ class Game {
     this.updateUI();
   }
 
-  tap(e) {
-    if (e.target.closest('#shopWrapper')) return;
+  startRun() {
+    this.moving = true;
+  }
 
-    const startScreen = document.getElementById("startScreen");
-    if (!this.moving) {
-      startScreen.style.display = "none";
-      this.moving = true;
-      return;
-    }
+  tap(e) {
+    if (!this.moving) return;
+    if (e.target.closest('#shopWrapper')) return;
 
     if (!this.isShootingZone) {
       this.dir.x *= -1;
@@ -131,11 +131,13 @@ class Game {
   fail() {
     this.attempts--;
     this.moving = false;
+
     if (this.attempts <= 0) {
       alert("GAME OVER");
       this.level = 0;
       this.attempts = 3;
     }
+
     document.getElementById("startScreen").style.display = "flex";
     this.startLevel(this.level);
   }
@@ -144,17 +146,18 @@ class Game {
     const reward = levels[this.level].reward;
     this.coins += reward;
     localStorage.setItem("coins", this.coins);
+
     alert(`¡GOL! +${reward} monedas`);
+
     this.level++;
+    this.moving = false;
     document.getElementById("startScreen").style.display = "flex";
     this.startLevel(this.level);
   }
 
   updateCamera() {
-    this.camera.position.lerp(
-      new THREE.Vector3(0, 6, 8).add(this.ball.position),
-      0.08
-    );
+    const target = this.ball.position.clone().add(new THREE.Vector3(0, 6, 8));
+    this.camera.position.lerp(target, 0.1);
     this.camera.lookAt(this.ball.position);
   }
 
