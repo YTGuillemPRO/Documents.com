@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>UNO 🃏</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0b3d91;
+    color: white;
+    text-align: center;
+  }
+  .hand {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 10px;
+  }
+  .card {
+    width: 60px;
+    height: 90px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid #000;
+  }
+  .red { background: #e74c3c; }
+  .blue { background: #3498db; }
+  .green { background: #2ecc71; }
+  .yellow { background: #f1c40f; color: #000; }
+  .black { background: #2c3e50; }
+
+  button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>🃏 UNO</h1>
+<p id="status"></p>
+
+<h2>Carta actual</h2>
+<div id="pile"></div>
+
+<h2>Tu mano</h2>
+<div class="hand" id="playerHand"></div>
+
+<button onclick="drawCard()">Robar carta</button>
+
+<script>
+const colors = ["red", "blue", "green", "yellow"];
+const values = ["0","1","2","3","4","5","6","7","8","9","+2","⏭","🔄"];
+const wilds = ["+4","🎨"];
+
+let deck = [];
+let player = [];
+let cpu = [];
+let pile = null;
+let currentColor = null;
+
+function createDeck() {
+  deck = [];
+  colors.forEach(color => {
+    values.forEach(value => {
+      deck.push({ color, value });
+    });
+  });
+  wilds.forEach(v => {
+    for (let i = 0; i < 4; i++) deck.push({ color: "black", value: v });
+  });
+  deck.sort(() => Math.random() - 0.5);
+}
+
+function draw() {
+  if (deck.length === 0) createDeck();
+  return deck.pop();
+}
+
+function startGame() {
+  createDeck();
+  player = [];
+  cpu = [];
+  for (let i = 0; i < 7; i++) {
+    player.push(draw());
+    cpu.push(draw());
+  }
+  pile = draw();
+  currentColor = pile.color !== "black" ? pile.color : "red";
+  render();
+}
+
+function render() {
+  document.getElementById("playerHand").innerHTML = "";
+  player.forEach((card, i) => {
+    const div = document.createElement("div");
+    div.className = `card ${card.color}`;
+    div.textContent = card.value;
+    div.onclick = () => playCard(i);
+    document.getElementById("playerHand").appendChild(div);
+  });
+
+  const p = document.getElementById("pile");
+  p.innerHTML = "";
+  const c = document.createElement("div");
+  c.className = `card ${currentColor}`;
+  c.textContent = pile.value;
+  p.appendChild(c);
+
+  document.getElementById("status").textContent =
+    `CPU tiene ${cpu.length} cartas`;
+}
+
+function valid(card) {
+  return (
+    card.color === currentColor ||
+    card.value === pile.value ||
+    card.color === "black"
+  );
+}
+
+function playCard(i) {
+  const card = player[i];
+  if (!valid(card)) return alert("Carta inválida");
+  player.splice(i, 1);
+  applyCard(card, "player");
+  if (player.length === 0) return alert("🎉 GANASTE!");
+  cpuTurn();
+}
+
+function drawCard() {
+  player.push(draw());
+  render();
+}
+
+function applyCard(card, who) {
+  pile = card;
+  if (card.color !== "black") currentColor = card.color;
+  if (card.value === "+2") {
+    if (who === "player") cpu.push(draw(), draw());
+    else player.push(draw(), draw());
+  }
+  if (card.value === "+4") {
+    if (who === "player") cpu.push(draw(), draw(), draw(), draw());
+    else player.push(draw(), draw(), draw(), draw());
+    currentColor = prompt("Elige color: red, blue, green, yellow");
+  }
+  if (card.value === "🎨") {
+    currentColor = prompt("Elige color: red, blue, green, yellow");
+  }
+  render();
+}
+
+function cpuTurn() {
+  setTimeout(() => {
+    let played = false;
+    for (let i = 0; i < cpu.length; i++) {
+      if (valid(cpu[i])) {
+        applyCard(cpu.splice(i,1)[0], "cpu");
+        played = true;
+        break;
+      }
+    }
+    if (!played) cpu.push(draw());
+    if (cpu.length === 0) alert("💀 La CPU ganó");
+    render();
+  }, 800);
+}
+
+startGame();
+</script>
+
+</body>
+</html>
