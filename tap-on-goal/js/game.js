@@ -14,8 +14,6 @@ class Game {
     this.hasShot = false;
 
     this.dir = new THREE.Vector3(1, 0, -1).normalize();
-    this.velocityY = 0;
-    this.gravity = -18;
 
     this.obstacles = [];
     this.goalDir = 1;
@@ -28,10 +26,9 @@ class Game {
       .forEach(o => o && this.scene.remove(o));
 
     this.obstacles = [];
+    this.moving = false;
     this.isShootingZone = false;
     this.hasShot = false;
-    this.moving = false;
-    this.velocityY = 0;
 
     const lvl = levels[i] || levels[0];
     const trackLength = lvl.length * 5;
@@ -46,7 +43,7 @@ class Game {
     this.floor.position.z = -trackLength / 2;
     this.scene.add(this.floor);
 
-    // Zona de tiro
+    // Zona verde (tiro)
     this.goalZone = new THREE.Mesh(
       new THREE.PlaneGeometry(trackWidth, 8),
       new THREE.MeshStandardMaterial({ color: 0x2ecc71 })
@@ -77,11 +74,13 @@ class Game {
         new THREE.BoxGeometry(2.8, 0.8, 1.5),
         new THREE.MeshStandardMaterial({ color: 0xffdb4d })
       );
+
       obs.position.set(
         (Math.random() - 0.5) * (trackWidth - 3),
         0.4,
         -(i * 6 + 8)
       );
+
       this.scene.add(obs);
       this.obstacles.push(obs);
     }
@@ -99,17 +98,20 @@ class Game {
     if (!this.moving) return;
     if (e.target.closest('#shopWrapper')) return;
 
-    // Zig-zag antes del chute
+    // Antes del tiro → zig zag
     if (!this.isShootingZone) {
       this.dir.x *= -1;
       return;
     }
 
-    // CHUTE
+    // Tiro recto
     if (!this.hasShot) {
       this.hasShot = true;
-      this.dir.set(this.ball.position.x * -0.6, 0, -1).normalize();
-      this.velocityY = 10; // fuerza del chute
+      this.dir.set(
+        this.ball.position.x * -0.4, // apunta a portería
+        0,
+        -1
+      ).normalize();
     }
   }
 
@@ -117,34 +119,23 @@ class Game {
     if (!this.moving) return;
 
     const lvl = levels[this.level];
-    const speed = lvl.speed;
+    const speed = this.hasShot ? lvl.speed * 2 : lvl.speed;
 
-    // Movimiento horizontal
     this.ball.position.addScaledVector(this.dir, speed * dt);
 
-    // Movimiento vertical (chute)
-    if (this.hasShot) {
-      this.velocityY += this.gravity * dt;
-      this.ball.position.y += this.velocityY * dt;
-
-      if (this.ball.position.y < 0.5) {
-        this.ball.position.y = 0.5;
-        this.velocityY = 0;
-      }
-    }
-
-    // Detectar zona verde
+    // Entrar en zona verde
     if (!this.isShootingZone &&
         this.ball.position.z < this.goalZone.position.z + 4) {
       this.isShootingZone = true;
       this.dir.set(0, 0, -1);
     }
 
-    // Movimiento del portero
+    // Movimiento portero
     this.goalkeeper.position.x += this.goalDir * dt * lvl.goalkeeperSpeed;
     if (Math.abs(this.goalkeeper.position.x) > 2.5) this.goalDir *= -1;
 
-    if (!this.hasShot && this.hit(this.obstacles)) this.fail();
+    // Colisiones
+    if (this.hit(this.obstacles)) this.fail();
     if (this.hit([this.goalkeeper])) this.fail();
     if (this.hit([this.goal])) this.nextLevel();
     if (Math.abs(this.ball.position.x) > 7) this.fail();
@@ -176,7 +167,7 @@ class Game {
     this.coins += reward;
     localStorage.setItem("coins", this.coins);
 
-    alert(`⚽ ¡GOLAZO! +${reward} monedas`);
+    alert(`⚽ ¡GOL! +${reward} monedas`);
 
     this.level++;
     this.moving = false;
