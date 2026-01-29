@@ -1,1 +1,1694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER STRANDED - Survival Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        :root {
+            --bg-deep: #0a0e27;
+            --bg-dark: #161b33;
+            --bg-mid: #1f2747;
+            --accent-cyan: #00d9ff;
+            --accent-purple: #b84dff;
+            --accent-orange: #ff6b35;
+            --accent-green: #00ff88;
+            --text-primary: #e8f0ff;
+            --text-dim: #8899bb;
+            --danger: #ff3366;
+            --warning: #ffaa00;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(184, 77, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0e27 0%, #161b33 100%);
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .stat-group {
+            background: rgba(22, 27, 51, 0.85);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-bar {
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            color: var(--text-dim);
+        }
+
+        .bar-container {
+            width: 180px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
+
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+        }
+
+        .health-bar { background: linear-gradient(90deg, #ff3366 0%, #ff6b35 100%); }
+        .energy-bar { background: linear-gradient(90deg, #00d9ff 0%, #00ff88 100%); }
+        .hunger-bar { background: linear-gradient(90deg, #ffaa00 0%, #ff6b35 100%); }
+        .oxygen-bar { background: linear-gradient(90deg, #b84dff 0%, #00d9ff 100%); }
+
+        #resources {
+            display: flex;
+            gap: 15px;
+            background: rgba(22, 27, 51, 0.85);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+        }
+
+        .resource-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        #inventory-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .inventory-slot {
+            width: 60px;
+            height: 60px;
+            background: rgba(22, 27, 51, 0.9);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        .inventory-slot:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 8px 25px rgba(0, 217, 255, 0.4);
+        }
+
+        .inventory-slot.selected {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .slot-count {
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .slot-number {
+            position: absolute;
+            top: 2px;
+            left: 6px;
+            font-size: 10px;
+            font-family: 'Orbitron', monospace;
+            color: var(--text-dim);
+        }
+
+        /* Menus */
+        .menu-panel {
+            position: absolute;
+            background: rgba(22, 27, 51, 0.95);
+            border: 3px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+            pointer-events: all;
+            display: none;
+        }
+
+        .menu-panel.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #crafting-menu {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #building-menu {
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            width: 350px;
+        }
+
+        .menu-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .menu-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .menu-close:hover {
+            background: #ff5588;
+            transform: rotate(90deg);
+        }
+
+        .craft-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .craft-item {
+            background: rgba(31, 39, 71, 0.8);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .craft-item:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(31, 39, 71, 1);
+            transform: translateX(5px);
+        }
+
+        .craft-item.unavailable {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .craft-item.unavailable:hover {
+            transform: none;
+        }
+
+        .craft-name {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--accent-green);
+        }
+
+        .craft-cost {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin: 4px 0;
+        }
+
+        .craft-cost.insufficient {
+            color: var(--danger);
+        }
+
+        #notifications {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            width: 300px;
+        }
+
+        .notification {
+            background: rgba(22, 27, 51, 0.95);
+            border-left: 4px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            animation: notifSlide 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification.warning { border-left-color: var(--warning); }
+        .notification.danger { border-left-color: var(--danger); }
+
+        @keyframes notifSlide {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        #day-night {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 27, 51, 0.85);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 25px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+
+        #minimap {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 180px;
+            height: 180px;
+            background: rgba(10, 14, 39, 0.9);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(10, 14, 39, 0.95);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            max-width: 250px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 50% 50%, rgba(184, 77, 255, 0.2) 0%, transparent 70%),
+                var(--bg-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        #start-screen.hidden {
+            display: none;
+        }
+
+        .game-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 72px;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 40px rgba(0, 217, 255, 0.5);
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .game-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            margin-bottom: 50px;
+            letter-spacing: 4px;
+        }
+
+        #death-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        #death-screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .death-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 60px;
+            font-weight: 900;
+            color: var(--danger);
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 51, 102, 0.8);
+        }
+
+        .stats-summary {
+            background: rgba(22, 27, 51, 0.8);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            min-width: 400px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 16px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        #controls-help {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(22, 27, 51, 0.85);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 12px;
+            line-height: 1.6;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-line {
+            margin: 4px 0;
+        }
+
+        .key {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-right: 8px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="hud">
+            <div id="top-bar">
+                <div class="stat-group">
+                    <div class="stat-bar">
+                        <div class="stat-label">Salud</div>
+                        <div class="bar-container">
+                            <div class="bar-fill health-bar" id="health-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">Energía</div>
+                        <div class="bar-container">
+                            <div class="bar-fill energy-bar" id="energy-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">Hambre</div>
+                        <div class="bar-container">
+                            <div class="bar-fill hunger-bar" id="hunger-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">Oxígeno</div>
+                        <div class="bar-container">
+                            <div class="bar-fill oxygen-bar" id="oxygen-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resources">
+                    <div class="resource-item">
+                        <span class="resource-icon">🪨</span>
+                        <span id="stone-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">🪵</span>
+                        <span id="wood-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">⚡</span>
+                        <span id="crystal-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">🧪</span>
+                        <span id="fiber-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">⚙️</span>
+                        <span id="metal-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="day-night">
+                <span id="day-counter">Día 1</span> - 
+                <span id="time-display">12:00</span>
+            </div>
+
+            <div id="inventory-bar"></div>
+
+            <div id="notifications"></div>
+
+            <div id="controls-help">
+                <div class="control-line"><span class="key">WASD</span> Mover</div>
+                <div class="control-line"><span class="key">E</span> Recoger/Interactuar</div>
+                <div class="control-line"><span class="key">C</span> Craftear</div>
+                <div class="control-line"><span class="key">B</span> Construir</div>
+                <div class="control-line"><span class="key">1-8</span> Seleccionar item</div>
+                <div class="control-line"><span class="key">Click</span> Usar item</div>
+                <div class="control-line"><span class="key">ESC</span> Cerrar menú</div>
+            </div>
+        </div>
+
+        <div id="crafting-menu" class="menu-panel">
+            <button class="menu-close" onclick="game.closeCrafting()">×</button>
+            <h2 class="menu-title">⚒️ Craftear</h2>
+            <div class="craft-grid" id="craft-grid"></div>
+        </div>
+
+        <div id="building-menu" class="menu-panel">
+            <button class="menu-close" onclick="game.closeBuilding()">×</button>
+            <h2 class="menu-title">🏗️ Construir</h2>
+            <div class="craft-grid" id="building-grid"></div>
+        </div>
+
+        <div id="start-screen">
+            <h1 class="game-title">AETHER STRANDED</h1>
+            <p class="game-subtitle">MODO SUPERVIVENCIA</p>
+            <button class="btn" onclick="game.startGame()">INICIAR JUEGO</button>
+            <div style="margin-top: 30px; text-align: center; max-width: 500px; line-height: 1.8;">
+                <p style="color: var(--text-dim);">
+                    Has quedado varado en el planeta Aether-7. Sobrevive recolectando recursos,
+                    construyendo refugios y defendiéndote de criaturas hostiles. El día y la noche
+                    afectan tu supervivencia. ¿Cuánto tiempo podrás resistir?
+                </p>
+            </div>
+        </div>
+
+        <div id="death-screen">
+            <h1 class="death-title">⚠️ FALLECISTE ⚠️</h1>
+            <div class="stats-summary">
+                <div class="stat-row">
+                    <span>Días sobrevividos:</span>
+                    <span id="final-days">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Recursos recolectados:</span>
+                    <span id="final-resources">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Estructuras construidas:</span>
+                    <span id="final-structures">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Enemigos derrotados:</span>
+                    <span id="final-enemies">0</span>
+                </div>
+            </div>
+            <button class="btn" onclick="location.reload()">REINTENTAR</button>
+        </div>
+
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        const game = {
+            canvas: null,
+            ctx: null,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            running: false,
+            
+            // Player
+            player: {
+                x: 400,
+                y: 300,
+                vx: 0,
+                vy: 0,
+                speed: 3,
+                size: 16,
+                health: 100,
+                maxHealth: 100,
+                energy: 100,
+                maxEnergy: 100,
+                hunger: 100,
+                maxHunger: 100,
+                oxygen: 100,
+                maxOxygen: 100,
+                inventory: [],
+                selectedSlot: 0
+            },
+
+            // Resources
+            resources: {
+                stone: 0,
+                wood: 0,
+                crystal: 0,
+                fiber: 0,
+                metal: 0
+            },
+
+            // World
+            camera: { x: 0, y: 0 },
+            worldSize: 3000,
+            tiles: [],
+            resourceNodes: [],
+            enemies: [],
+            structures: [],
+            particles: [],
+
+            // Time
+            dayNightCycle: 0,
+            dayLength: 1200, // frames por día
+            currentDay: 1,
+
+            // Stats
+            stats: {
+                resourcesCollected: 0,
+                structuresBuilt: 0,
+                enemiesKilled: 0
+            },
+
+            // Input
+            keys: {},
+            mouse: { x: 0, y: 0, down: false },
+
+            // Crafting recipes
+            recipes: {
+                'Hacha de Piedra': { stone: 3, wood: 2, result: '🪓' },
+                'Pico de Piedra': { stone: 5, wood: 2, result: '⛏️' },
+                'Lanza': { wood: 4, fiber: 2, result: '🔱' },
+                'Antorcha': { wood: 2, fiber: 1, result: '🔥' },
+                'Kit Médico': { fiber: 5, crystal: 2, result: '💉' },
+                'Ración de Comida': { fiber: 3, wood: 1, result: '🍖' },
+                'Tanque de O2': { metal: 4, crystal: 3, result: '🫁' },
+                'Escudo': { stone: 6, metal: 4, result: '🛡️' },
+                'Espada': { metal: 8, crystal: 3, result: '⚔️' },
+                'Arco': { wood: 6, fiber: 4, result: '🏹' },
+                'Armadura': { metal: 10, fiber: 5, result: '🦺' },
+                'Generador': { metal: 15, crystal: 10, result: '⚡' }
+            },
+
+            buildingRecipes: {
+                'Fogata': { stone: 5, wood: 5, result: '🔥', type: 'fire' },
+                'Muro': { stone: 8, result: '🧱', type: 'wall' },
+                'Puerta': { wood: 6, metal: 2, result: '🚪', type: 'door' },
+                'Cama': { wood: 10, fiber: 8, result: '🛏️', type: 'bed' },
+                'Workbench': { wood: 15, stone: 10, result: '🔨', type: 'workbench' },
+                'Almacén': { wood: 20, metal: 10, result: '📦', type: 'storage' },
+                'Torre': { stone: 25, metal: 15, result: '🗼', type: 'tower' },
+                'Generador Solar': { metal: 30, crystal: 20, result: '☀️', type: 'solar' }
+            },
+
+            init() {
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                // Initialize inventory
+                for (let i = 0; i < 8; i++) {
+                    this.player.inventory.push(null);
+                }
+
+                this.setupEventListeners();
+                this.generateWorld();
+                this.renderInventory();
+                this.updateCraftingMenu();
+            },
+
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+
+                    if (e.key.toLowerCase() === 'c') {
+                        this.toggleCrafting();
+                    } else if (e.key.toLowerCase() === 'b') {
+                        this.toggleBuilding();
+                    } else if (e.key.toLowerCase() === 'e') {
+                        this.interact();
+                    } else if (e.key === 'Escape') {
+                        this.closeCrafting();
+                        this.closeBuilding();
+                    }
+
+                    // Number keys for inventory
+                    const num = parseInt(e.key);
+                    if (num >= 1 && num <= 8) {
+                        this.player.selectedSlot = num - 1;
+                        this.renderInventory();
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                this.canvas.addEventListener('mousedown', () => {
+                    this.mouse.down = true;
+                    this.useSelectedItem();
+                });
+
+                this.canvas.addEventListener('mouseup', () => {
+                    this.mouse.down = false;
+                });
+
+                window.addEventListener('resize', () => {
+                    this.width = window.innerWidth;
+                    this.height = window.innerHeight;
+                    this.canvas.width = this.width;
+                    this.canvas.height = this.height;
+                });
+            },
+
+            generateWorld() {
+                // Generate terrain
+                for (let x = 0; x < this.worldSize; x += 50) {
+                    for (let y = 0; y < this.worldSize; y += 50) {
+                        const biome = this.getBiome(x, y);
+                        this.tiles.push({ x, y, biome });
+                    }
+                }
+
+                // Generate resource nodes
+                for (let i = 0; i < 200; i++) {
+                    const x = Math.random() * this.worldSize;
+                    const y = Math.random() * this.worldSize;
+                    const type = this.getResourceType(x, y);
+                    this.resourceNodes.push({
+                        x, y,
+                        type,
+                        amount: 3 + Math.floor(Math.random() * 5),
+                        size: 20 + Math.random() * 15
+                    });
+                }
+
+                // Generate initial enemies
+                this.spawnEnemies(5);
+            },
+
+            getBiome(x, y) {
+                const noise = Math.sin(x * 0.01) * Math.cos(y * 0.01);
+                if (noise > 0.3) return 'crystal';
+                if (noise > 0) return 'forest';
+                if (noise > -0.3) return 'stone';
+                return 'toxic';
+            },
+
+            getResourceType(x, y) {
+                const biome = this.getBiome(x, y);
+                const rand = Math.random();
+                
+                if (biome === 'crystal') {
+                    return rand > 0.3 ? 'crystal' : 'metal';
+                } else if (biome === 'forest') {
+                    return rand > 0.4 ? 'wood' : 'fiber';
+                } else if (biome === 'stone') {
+                    return rand > 0.5 ? 'stone' : 'metal';
+                } else {
+                    return rand > 0.6 ? 'fiber' : 'crystal';
+                }
+            },
+
+            spawnEnemies(count) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 400 + Math.random() * 800;
+                    const x = this.player.x + Math.cos(angle) * distance;
+                    const y = this.player.y + Math.sin(angle) * distance;
+
+                    this.enemies.push({
+                        x, y,
+                        vx: 0, vy: 0,
+                        health: 30 + Math.random() * 50,
+                        maxHealth: 30 + Math.random() * 50,
+                        speed: 0.5 + Math.random() * 1,
+                        size: 18 + Math.random() * 10,
+                        type: Math.random() > 0.5 ? 'aggressive' : 'passive',
+                        aggroRange: 200 + Math.random() * 200,
+                        lastAttack: 0
+                    });
+                }
+            },
+
+            startGame() {
+                document.getElementById('start-screen').classList.add('hidden');
+                this.running = true;
+                this.gameLoop();
+            },
+
+            gameLoop() {
+                if (!this.running) return;
+
+                this.update();
+                this.render();
+
+                requestAnimationFrame(() => this.gameLoop());
+            },
+
+            update() {
+                // Player movement
+                this.player.vx = 0;
+                this.player.vy = 0;
+
+                if (this.keys['w']) this.player.vy = -this.player.speed;
+                if (this.keys['s']) this.player.vy = this.player.speed;
+                if (this.keys['a']) this.player.vx = -this.player.speed;
+                if (this.keys['d']) this.player.vx = this.player.speed;
+
+                // Normalize diagonal movement
+                if (this.player.vx !== 0 && this.player.vy !== 0) {
+                    this.player.vx *= 0.707;
+                    this.player.vy *= 0.707;
+                }
+
+                this.player.x += this.player.vx;
+                this.player.y += this.player.vy;
+
+                // Keep player in world bounds
+                this.player.x = Math.max(50, Math.min(this.worldSize - 50, this.player.x));
+                this.player.y = Math.max(50, Math.min(this.worldSize - 50, this.player.y));
+
+                // Camera follows player
+                this.camera.x = this.player.x - this.width / 2;
+                this.camera.y = this.player.y - this.height / 2;
+
+                // Day/night cycle
+                this.dayNightCycle++;
+                if (this.dayNightCycle >= this.dayLength) {
+                    this.dayNightCycle = 0;
+                    this.currentDay++;
+                    this.notify('Día ' + this.currentDay, 'success');
+                    this.spawnEnemies(2 + this.currentDay);
+                }
+
+                // Update stats based on time
+                if (Math.random() < 0.01) {
+                    this.player.hunger = Math.max(0, this.player.hunger - 0.5);
+                    this.player.energy = Math.max(0, this.player.energy - 0.3);
+                    
+                    // Night drains oxygen faster
+                    if (this.isNight()) {
+                        this.player.oxygen = Math.max(0, this.player.oxygen - 0.8);
+                    } else {
+                        this.player.oxygen = Math.min(this.player.maxOxygen, this.player.oxygen + 0.2);
+                    }
+                }
+
+                // Hunger and oxygen damage
+                if (this.player.hunger <= 0 || this.player.oxygen <= 0) {
+                    this.player.health -= 0.1;
+                }
+
+                // Regenerate near structures
+                const nearStructure = this.structures.some(s => 
+                    this.distance(this.player, s) < 100 && (s.type === 'fire' || s.type === 'bed')
+                );
+                
+                if (nearStructure) {
+                    this.player.health = Math.min(this.player.maxHealth, this.player.health + 0.1);
+                    this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + 0.2);
+                }
+
+                // Update enemies
+                this.updateEnemies();
+
+                // Update particles
+                this.particles = this.particles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life--;
+                    return p.life > 0;
+                });
+
+                // Update UI
+                this.updateUI();
+
+                // Check death
+                if (this.player.health <= 0) {
+                    this.gameOver();
+                }
+            },
+
+            updateEnemies() {
+                this.enemies.forEach((enemy, index) => {
+                    const dist = this.distance(this.player, enemy);
+
+                    // AI behavior
+                    if (enemy.type === 'aggressive' || (enemy.type === 'passive' && enemy.health < enemy.maxHealth)) {
+                        if (dist < enemy.aggroRange) {
+                            // Chase player
+                            const angle = Math.atan2(this.player.y - enemy.y, this.player.x - enemy.x);
+                            enemy.vx = Math.cos(angle) * enemy.speed;
+                            enemy.vy = Math.sin(angle) * enemy.speed;
+
+                            // Attack player
+                            if (dist < 40 && Date.now() - enemy.lastAttack > 1000) {
+                                this.player.health -= 5 + Math.random() * 10;
+                                enemy.lastAttack = Date.now();
+                                this.notify('¡Ataque enemigo!', 'danger');
+                            }
+                        } else {
+                            enemy.vx *= 0.9;
+                            enemy.vy *= 0.9;
+                        }
+                    } else {
+                        // Wander
+                        if (Math.random() < 0.02) {
+                            const angle = Math.random() * Math.PI * 2;
+                            enemy.vx = Math.cos(angle) * enemy.speed * 0.5;
+                            enemy.vy = Math.sin(angle) * enemy.speed * 0.5;
+                        }
+                        enemy.vx *= 0.98;
+                        enemy.vy *= 0.98;
+                    }
+
+                    enemy.x += enemy.vx;
+                    enemy.y += enemy.vy;
+
+                    // Keep in bounds
+                    enemy.x = Math.max(0, Math.min(this.worldSize, enemy.x));
+                    enemy.y = Math.max(0, Math.min(this.worldSize, enemy.y));
+
+                    // Remove dead enemies
+                    if (enemy.health <= 0) {
+                        this.enemies.splice(index, 1);
+                        this.stats.enemiesKilled++;
+                        this.notify('Enemigo eliminado', 'success');
+                        
+                        // Drop loot
+                        if (Math.random() < 0.3) {
+                            this.resourceNodes.push({
+                                x: enemy.x,
+                                y: enemy.y,
+                                type: ['metal', 'crystal', 'fiber'][Math.floor(Math.random() * 3)],
+                                amount: 2,
+                                size: 15
+                            });
+                        }
+                    }
+                });
+
+                // Spawn more enemies at night
+                if (this.isNight() && Math.random() < 0.002) {
+                    this.spawnEnemies(1);
+                }
+            },
+
+            useSelectedItem() {
+                const item = this.player.inventory[this.player.selectedSlot];
+                if (!item) return;
+
+                const worldX = this.mouse.x + this.camera.x;
+                const worldY = this.mouse.y + this.camera.y;
+
+                if (item.icon === '🔱' || item.icon === '⚔️' || item.icon === '🏹') {
+                    // Weapon attack
+                    this.enemies.forEach(enemy => {
+                        const dist = this.distance({ x: worldX, y: worldY }, enemy);
+                        if (dist < 80) {
+                            const damage = item.icon === '🏹' ? 25 : item.icon === '⚔️' ? 30 : 15;
+                            enemy.health -= damage;
+                            this.createParticles(enemy.x, enemy.y, '#ff3366', 5);
+                        }
+                    });
+                } else if (item.icon === '💉') {
+                    // Med kit
+                    this.player.health = Math.min(this.player.maxHealth, this.player.health + 50);
+                    this.removeFromInventory(this.player.selectedSlot);
+                    this.notify('Salud restaurada', 'success');
+                } else if (item.icon === '🍖') {
+                    // Food
+                    this.player.hunger = Math.min(this.player.maxHunger, this.player.hunger + 40);
+                    this.removeFromInventory(this.player.selectedSlot);
+                    this.notify('Hambre satisfecha', 'success');
+                } else if (item.icon === '🫁') {
+                    // Oxygen
+                    this.player.oxygen = Math.min(this.player.maxOxygen, this.player.oxygen + 50);
+                    this.removeFromInventory(this.player.selectedSlot);
+                    this.notify('Oxígeno recargado', 'success');
+                } else if (item.icon === '🔥') {
+                    // Place torch
+                    this.structures.push({
+                        x: worldX,
+                        y: worldY,
+                        type: 'torch',
+                        icon: '🔥',
+                        radius: 150
+                    });
+                    this.removeFromInventory(this.player.selectedSlot);
+                }
+            },
+
+            interact() {
+                // Collect nearby resources
+                this.resourceNodes.forEach((node, index) => {
+                    const dist = this.distance(this.player, node);
+                    if (dist < 50) {
+                        this.resources[node.type]++;
+                        node.amount--;
+                        this.stats.resourcesCollected++;
+                        this.createParticles(node.x, node.y, this.getResourceColor(node.type), 3);
+
+                        if (node.amount <= 0) {
+                            this.resourceNodes.splice(index, 1);
+                        }
+
+                        this.updateResourceDisplay();
+                    }
+                });
+            },
+
+            getResourceColor(type) {
+                const colors = {
+                    stone: '#888888',
+                    wood: '#8B4513',
+                    crystal: '#00d9ff',
+                    fiber: '#00ff88',
+                    metal: '#ffaa00'
+                };
+                return colors[type] || '#ffffff';
+            },
+
+            craft(recipeName) {
+                const recipe = this.recipes[recipeName];
+                if (!recipe) return;
+
+                // Check if player has resources
+                for (let resource in recipe) {
+                    if (resource === 'result') continue;
+                    if (this.resources[resource] < recipe[resource]) {
+                        this.notify('Recursos insuficientes', 'danger');
+                        return;
+                    }
+                }
+
+                // Consume resources
+                for (let resource in recipe) {
+                    if (resource === 'result') continue;
+                    this.resources[resource] -= recipe[resource];
+                }
+
+                // Add to inventory
+                this.addToInventory({
+                    icon: recipe.result,
+                    name: recipeName
+                });
+
+                this.notify('Crafteado: ' + recipeName, 'success');
+                this.updateResourceDisplay();
+                this.updateCraftingMenu();
+            },
+
+            build(buildingName) {
+                const recipe = this.buildingRecipes[buildingName];
+                if (!recipe) return;
+
+                // Check resources
+                for (let resource in recipe) {
+                    if (resource === 'result' || resource === 'type') continue;
+                    if (this.resources[resource] < recipe[resource]) {
+                        this.notify('Recursos insuficientes', 'danger');
+                        return;
+                    }
+                }
+
+                // Consume resources
+                for (let resource in recipe) {
+                    if (resource === 'result' || resource === 'type') continue;
+                    this.resources[resource] -= recipe[resource];
+                }
+
+                // Place structure near player
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 60;
+                
+                this.structures.push({
+                    x: this.player.x + Math.cos(angle) * distance,
+                    y: this.player.y + Math.sin(angle) * distance,
+                    type: recipe.type,
+                    icon: recipe.result,
+                    name: buildingName
+                });
+
+                this.stats.structuresBuilt++;
+                this.notify('Construido: ' + buildingName, 'success');
+                this.updateResourceDisplay();
+                this.updateCraftingMenu();
+            },
+
+            addToInventory(item) {
+                // Find empty slot
+                for (let i = 0; i < this.player.inventory.length; i++) {
+                    if (!this.player.inventory[i]) {
+                        this.player.inventory[i] = { ...item, count: 1 };
+                        this.renderInventory();
+                        return;
+                    }
+                }
+                this.notify('Inventario lleno', 'warning');
+            },
+
+            removeFromInventory(slot) {
+                this.player.inventory[slot] = null;
+                this.renderInventory();
+            },
+
+            renderInventory() {
+                const bar = document.getElementById('inventory-bar');
+                bar.innerHTML = '';
+
+                this.player.inventory.forEach((item, index) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'inventory-slot';
+                    if (index === this.player.selectedSlot) {
+                        slot.classList.add('selected');
+                    }
+
+                    const number = document.createElement('div');
+                    number.className = 'slot-number';
+                    number.textContent = index + 1;
+                    slot.appendChild(number);
+
+                    if (item) {
+                        slot.textContent = item.icon;
+                        slot.appendChild(number);
+                        
+                        if (item.count > 1) {
+                            const count = document.createElement('div');
+                            count.className = 'slot-count';
+                            count.textContent = item.count;
+                            slot.appendChild(count);
+                        }
+                    } else {
+                        slot.appendChild(number);
+                    }
+
+                    slot.onclick = () => {
+                        this.player.selectedSlot = index;
+                        this.renderInventory();
+                    };
+
+                    bar.appendChild(slot);
+                });
+            },
+
+            toggleCrafting() {
+                const menu = document.getElementById('crafting-menu');
+                menu.classList.toggle('active');
+                if (menu.classList.contains('active')) {
+                    this.updateCraftingMenu();
+                }
+            },
+
+            closeCrafting() {
+                document.getElementById('crafting-menu').classList.remove('active');
+            },
+
+            toggleBuilding() {
+                const menu = document.getElementById('building-menu');
+                menu.classList.toggle('active');
+                if (menu.classList.contains('active')) {
+                    this.updateBuildingMenu();
+                }
+            },
+
+            closeBuilding() {
+                document.getElementById('building-menu').classList.remove('active');
+            },
+
+            updateCraftingMenu() {
+                const grid = document.getElementById('craft-grid');
+                grid.innerHTML = '';
+
+                for (let name in this.recipes) {
+                    const recipe = this.recipes[name];
+                    const item = document.createElement('div');
+                    item.className = 'craft-item';
+
+                    let canCraft = true;
+                    let costHTML = '';
+
+                    for (let resource in recipe) {
+                        if (resource === 'result') continue;
+                        const has = this.resources[resource];
+                        const needs = recipe[resource];
+                        const sufficient = has >= needs;
+                        if (!sufficient) canCraft = false;
+
+                        costHTML += `<div class="craft-cost ${sufficient ? '' : 'insufficient'}">
+                            ${this.getResourceIcon(resource)} ${has}/${needs}
+                        </div>`;
+                    }
+
+                    if (!canCraft) {
+                        item.classList.add('unavailable');
+                    }
+
+                    item.innerHTML = `
+                        <div class="craft-name">${recipe.result} ${name}</div>
+                        ${costHTML}
+                    `;
+
+                    if (canCraft) {
+                        item.onclick = () => this.craft(name);
+                    }
+
+                    grid.appendChild(item);
+                }
+            },
+
+            updateBuildingMenu() {
+                const grid = document.getElementById('building-grid');
+                grid.innerHTML = '';
+
+                for (let name in this.buildingRecipes) {
+                    const recipe = this.buildingRecipes[name];
+                    const item = document.createElement('div');
+                    item.className = 'craft-item';
+
+                    let canCraft = true;
+                    let costHTML = '';
+
+                    for (let resource in recipe) {
+                        if (resource === 'result' || resource === 'type') continue;
+                        const has = this.resources[resource];
+                        const needs = recipe[resource];
+                        const sufficient = has >= needs;
+                        if (!sufficient) canCraft = false;
+
+                        costHTML += `<div class="craft-cost ${sufficient ? '' : 'insufficient'}">
+                            ${this.getResourceIcon(resource)} ${has}/${needs}
+                        </div>`;
+                    }
+
+                    if (!canCraft) {
+                        item.classList.add('unavailable');
+                    }
+
+                    item.innerHTML = `
+                        <div class="craft-name">${recipe.result} ${name}</div>
+                        ${costHTML}
+                    `;
+
+                    if (canCraft) {
+                        item.onclick = () => this.build(name);
+                    }
+
+                    grid.appendChild(item);
+                }
+            },
+
+            getResourceIcon(type) {
+                const icons = {
+                    stone: '🪨',
+                    wood: '🪵',
+                    crystal: '⚡',
+                    fiber: '🧪',
+                    metal: '⚙️'
+                };
+                return icons[type] || '?';
+            },
+
+            updateResourceDisplay() {
+                document.getElementById('stone-count').textContent = this.resources.stone;
+                document.getElementById('wood-count').textContent = this.resources.wood;
+                document.getElementById('crystal-count').textContent = this.resources.crystal;
+                document.getElementById('fiber-count').textContent = this.resources.fiber;
+                document.getElementById('metal-count').textContent = this.resources.metal;
+            },
+
+            updateUI() {
+                // Health bars
+                document.getElementById('health-bar').style.width = (this.player.health / this.player.maxHealth * 100) + '%';
+                document.getElementById('energy-bar').style.width = (this.player.energy / this.player.maxEnergy * 100) + '%';
+                document.getElementById('hunger-bar').style.width = (this.player.hunger / this.player.maxHunger * 100) + '%';
+                document.getElementById('oxygen-bar').style.width = (this.player.oxygen / this.player.maxOxygen * 100) + '%';
+
+                // Day counter
+                document.getElementById('day-counter').textContent = 'Día ' + this.currentDay;
+                
+                // Time display
+                const timeOfDay = this.dayNightCycle / this.dayLength * 24;
+                const hours = Math.floor(timeOfDay);
+                const minutes = Math.floor((timeOfDay - hours) * 60);
+                document.getElementById('time-display').textContent = 
+                    String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+            },
+
+            render() {
+                const ctx = this.ctx;
+                
+                // Clear
+                ctx.fillStyle = this.isNight() ? '#0a0e27' : '#1a1e3a';
+                ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw world
+                this.renderTiles();
+                this.renderResourceNodes();
+                this.renderStructures();
+                this.renderEnemies();
+                this.renderPlayer();
+                this.renderParticles();
+
+                // Night overlay
+                if (this.isNight()) {
+                    ctx.fillStyle = 'rgba(0, 0, 20, 0.5)';
+                    ctx.fillRect(0, 0, this.width, this.height);
+
+                    // Light sources
+                    this.structures.forEach(s => {
+                        if (s.type === 'fire' || s.type === 'torch' || s.type === 'solar') {
+                            const gradient = ctx.createRadialGradient(
+                                s.x - this.camera.x, s.y - this.camera.y, 0,
+                                s.x - this.camera.x, s.y - this.camera.y, s.radius || 120
+                            );
+                            gradient.addColorStop(0, 'rgba(255, 200, 100, 0.4)');
+                            gradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, this.width, this.height);
+                        }
+                    });
+                }
+            },
+
+            renderTiles() {
+                const ctx = this.ctx;
+                const startX = Math.floor(this.camera.x / 50) * 50;
+                const startY = Math.floor(this.camera.y / 50) * 50;
+                const endX = startX + this.width + 100;
+                const endY = startY + this.height + 100;
+
+                for (let x = startX; x < endX; x += 50) {
+                    for (let y = startY; y < endY; y += 50) {
+                        const biome = this.getBiome(x, y);
+                        let color;
+                        
+                        switch(biome) {
+                            case 'crystal': color = '#2a3f5f'; break;
+                            case 'forest': color = '#1a3a2a'; break;
+                            case 'stone': color = '#3a3a4a'; break;
+                            case 'toxic': color = '#3a2a4a'; break;
+                        }
+
+                        ctx.fillStyle = color;
+                        ctx.fillRect(
+                            x - this.camera.x,
+                            y - this.camera.y,
+                            50, 50
+                        );
+
+                        // Grid lines
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                        ctx.strokeRect(
+                            x - this.camera.x,
+                            y - this.camera.y,
+                            50, 50
+                        );
+                    }
+                }
+            },
+
+            renderResourceNodes() {
+                const ctx = this.ctx;
+                this.resourceNodes.forEach(node => {
+                    const screenX = node.x - this.camera.x;
+                    const screenY = node.y - this.camera.y;
+
+                    if (screenX < -50 || screenX > this.width + 50 || 
+                        screenY < -50 || screenY > this.height + 50) return;
+
+                    ctx.fillStyle = this.getResourceColor(node.type);
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, node.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Outline
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Icon
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(this.getResourceIcon(node.type), screenX, screenY);
+                });
+            },
+
+            renderStructures() {
+                const ctx = this.ctx;
+                this.structures.forEach(structure => {
+                    const screenX = structure.x - this.camera.x;
+                    const screenY = structure.y - this.camera.y;
+
+                    if (screenX < -50 || screenX > this.width + 50 || 
+                        screenY < -50 || screenY > this.height + 50) return;
+
+                    // Base
+                    ctx.fillStyle = 'rgba(100, 100, 120, 0.5)';
+                    ctx.fillRect(screenX - 20, screenY - 20, 40, 40);
+
+                    // Icon
+                    ctx.font = '32px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(structure.icon, screenX, screenY);
+                });
+            },
+
+            renderEnemies() {
+                const ctx = this.ctx;
+                this.enemies.forEach(enemy => {
+                    const screenX = enemy.x - this.camera.x;
+                    const screenY = enemy.y - this.camera.y;
+
+                    if (screenX < -100 || screenX > this.width + 100 || 
+                        screenY < -100 || screenY > this.height + 100) return;
+
+                    // Body
+                    ctx.fillStyle = enemy.type === 'aggressive' ? '#ff3366' : '#ffaa00';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, enemy.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Eyes
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(screenX - 6, screenY - 4, 3, 0, Math.PI * 2);
+                    ctx.arc(screenX + 6, screenY - 4, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Health bar
+                    const barWidth = enemy.size * 2;
+                    const barHeight = 4;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(screenX - barWidth/2, screenY - enemy.size - 10, barWidth, barHeight);
+                    
+                    ctx.fillStyle = '#00ff88';
+                    ctx.fillRect(
+                        screenX - barWidth/2, 
+                        screenY - enemy.size - 10, 
+                        barWidth * (enemy.health / enemy.maxHealth), 
+                        barHeight
+                    );
+                });
+            },
+
+            renderPlayer() {
+                const ctx = this.ctx;
+                const screenX = this.player.x - this.camera.x;
+                const screenY = this.player.y - this.camera.y;
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(screenX, screenY + this.player.size, this.player.size, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Body
+                ctx.fillStyle = '#00d9ff';
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, this.player.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Helmet
+                ctx.fillStyle = '#1a3a5a';
+                ctx.beginPath();
+                ctx.arc(screenX, screenY - 3, this.player.size - 4, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                // Visor
+                ctx.fillStyle = '#00ff88';
+                ctx.fillRect(screenX - 8, screenY - 4, 16, 4);
+
+                // Direction indicator
+                const angle = Math.atan2(
+                    this.mouse.y - screenY,
+                    this.mouse.x - screenX
+                );
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY);
+                ctx.lineTo(
+                    screenX + Math.cos(angle) * (this.player.size + 8),
+                    screenY + Math.sin(angle) * (this.player.size + 8)
+                );
+                ctx.stroke();
+            },
+
+            renderParticles() {
+                const ctx = this.ctx;
+                this.particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life / 30;
+                    ctx.beginPath();
+                    ctx.arc(p.x - this.camera.x, p.y - this.camera.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                });
+            },
+
+            createParticles(x, y, color, count) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 3;
+                    
+                    this.particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        color,
+                        size: 3 + Math.random() * 4,
+                        life: 30
+                    });
+                }
+            },
+
+            isNight() {
+                const timeOfDay = this.dayNightCycle / this.dayLength;
+                return timeOfDay < 0.25 || timeOfDay > 0.75;
+            },
+
+            distance(a, b) {
+                return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+            },
+
+            notify(message, type = 'success') {
+                const container = document.getElementById('notifications');
+                const notif = document.createElement('div');
+                notif.className = `notification ${type}`;
+                notif.textContent = message;
+                container.appendChild(notif);
+
+                setTimeout(() => {
+                    notif.style.opacity = '0';
+                    setTimeout(() => notif.remove(), 300);
+                }, 3000);
+            },
+
+            gameOver() {
+                this.running = false;
+                
+                document.getElementById('final-days').textContent = this.currentDay;
+                document.getElementById('final-resources').textContent = this.stats.resourcesCollected;
+                document.getElementById('final-structures').textContent = this.stats.structuresBuilt;
+                document.getElementById('final-enemies').textContent = this.stats.enemiesKilled;
+                
+                document.getElementById('death-screen').classList.add('active');
+            }
+        };
+
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            game.init();
+        });
+    </script>
+</body>
+</html>
