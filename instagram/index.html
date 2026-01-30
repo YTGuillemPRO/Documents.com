@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ig-primary-background: #ffffff;
+            --ig-secondary-background: #fafafa;
+            --ig-primary-text: #262626;
+            --ig-secondary-text: #8e8e8e;
+            --ig-border: #dbdbdb;
+            --ig-blue: #0095f6;
+            --ig-blue-hover: #1877f2;
+            --ig-error: #ed4956;
+            --ig-like: #ff3040;
+            --ig-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--ig-secondary-background);
+            color: var(--ig-primary-text);
+            line-height: 1.5;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--ig-primary-background);
+            border-bottom: 1px solid var(--ig-border);
+            z-index: 100;
+            padding: 8px 20px;
+        }
+
+        .header-container {
+            max-width: 975px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Montserrat', cursive;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .search-bar {
+            position: relative;
+            flex: 0 0 268px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 16px 8px 36px;
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--ig-secondary-background);
+            outline: none;
+        }
+
+        .search-input:focus {
+            background: var(--ig-primary-background);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ig-secondary-text);
+            font-size: 16px;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 22px;
+            align-items: center;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            position: relative;
+            background: none;
+            border: none;
+            color: var(--ig-primary-text);
+        }
+
+        .nav-icon:hover {
+            opacity: 0.6;
+        }
+
+        .nav-icon.active {
+            font-weight: bold;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 6px;
+            background: var(--ig-error);
+            border-radius: 50%;
+        }
+
+        .profile-pic {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .profile-pic:hover {
+            border-color: var(--ig-primary-text);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 935px;
+            margin: 72px auto 0;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: 1fr 319px;
+            gap: 30px;
+        }
+
+        /* Stories */
+        .stories-container {
+            background: var(--ig-primary-background);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            padding: 16px 0;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .stories-scroll {
+            display: flex;
+            gap: 16px;
+            padding: 0 18px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .stories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .story-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            min-width: 66px;
+        }
+
+        .story-ring {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            padding: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-ring.viewed {
+            background: var(--ig-border);
+        }
+
+        .story-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--ig-primary-background);
+            object-fit: cover;
+        }
+
+        .story-username {
+            font-size: 12px;
+            color: var(--ig-primary-text);
+            max-width: 66px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .add-story-icon {
+            position: relative;
+        }
+
+        .add-story-icon::after {
+            content: '+';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--ig-blue);
+            color: white;
+            border-radius: 50%;
+            border: 3px solid var(--ig-primary-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Post Card */
+        .post-card {
+            background: var(--ig-primary-background);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+        }
+
+        .post-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .post-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-username {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ig-primary-text);
+        }
+
+        .post-location {
+            font-size: 12px;
+            color: var(--ig-primary-text);
+        }
+
+        .post-options {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--ig-primary-text);
+        }
+
+        .post-image-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+        }
+
+        .post-image {
+            width: 100%;
+            display: block;
+        }
+
+        .post-carousel-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+
+        .carousel-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+        }
+
+        .carousel-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .carousel-dot.active {
+            background: var(--ig-blue);
+        }
+
+        .post-actions {
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .post-actions-left {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--ig-primary-text);
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.6;
+        }
+
+        .action-btn.liked {
+            color: var(--ig-like);
+            animation: likeAnimation 0.4s ease;
+        }
+
+        @keyframes likeAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .post-likes {
+            padding: 0 16px;
+            margin-bottom: 8px;
+        }
+
+        .likes-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .post-caption {
+            padding: 0 16px;
+            margin-bottom: 4px;
+        }
+
+        .caption-username {
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+        .caption-text {
+            font-size: 14px;
+            color: var(--ig-primary-text);
+        }
+
+        .view-comments {
+            padding: 0 16px;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: var(--ig-secondary-text);
+            cursor: pointer;
+        }
+
+        .view-comments:hover {
+            color: var(--ig-primary-text);
+        }
+
+        .post-timestamp {
+            padding: 0 16px;
+            margin-bottom: 12px;
+            font-size: 10px;
+            color: var(--ig-secondary-text);
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .post-comment-section {
+            border-top: 1px solid var(--ig-border);
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .comment-emoji {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 8px;
+        }
+
+        .comment-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .comment-input::placeholder {
+            color: var(--ig-secondary-text);
+        }
+
+        .comment-post-btn {
+            background: none;
+            border: none;
+            color: var(--ig-blue);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .comment-post-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .comment-post-btn:hover {
+            color: var(--ig-blue-hover);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 84px;
+            height: fit-content;
+        }
+
+        .user-profile-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .user-profile-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+
+        .user-profile-info {
+            flex: 1;
+        }
+
+        .user-profile-username {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ig-primary-text);
+        }
+
+        .user-profile-name {
+            font-size: 14px;
+            color: var(--ig-secondary-text);
+        }
+
+        .switch-btn {
+            background: none;
+            border: none;
+            color: var(--ig-blue);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .suggestions-section {
+            margin-top: 24px;
+        }
+
+        .suggestions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .suggestions-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ig-secondary-text);
+        }
+
+        .see-all-btn {
+            background: none;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ig-primary-text);
+            cursor: pointer;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .suggestion-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+
+        .suggestion-info {
+            flex: 1;
+        }
+
+        .suggestion-username {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ig-primary-text);
+        }
+
+        .suggestion-reason {
+            font-size: 12px;
+            color: var(--ig-secondary-text);
+        }
+
+        .follow-btn {
+            background: none;
+            border: none;
+            color: var(--ig-blue);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .footer-links {
+            margin-top: 24px;
+            font-size: 11px;
+            color: var(--ig-secondary-text);
+            line-height: 1.8;
+        }
+
+        .footer-links a {
+            color: var(--ig-secondary-text);
+            text-decoration: none;
+            margin-right: 8px;
+        }
+
+        /* Create Post Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--ig-primary-background);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--ig-border);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--ig-primary-text);
+            position: absolute;
+            left: 16px;
+        }
+
+        .modal-share {
+            background: none;
+            border: none;
+            color: var(--ig-blue);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .upload-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ig-secondary-background);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-content {
+            text-align: center;
+        }
+
+        .upload-icon {
+            font-size: 96px;
+            margin-bottom: 16px;
+        }
+
+        .upload-title {
+            font-size: 22px;
+            font-weight: 300;
+            margin-bottom: 16px;
+        }
+
+        .upload-btn {
+            background: var(--ig-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .upload-btn:hover {
+            background: var(--ig-blue-hover);
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .caption-section {
+            width: 340px;
+            border-left: 1px solid var(--ig-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .caption-user-info {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .caption-textarea {
+            flex: 1;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .caption-textarea::placeholder {
+            color: var(--ig-secondary-text);
+        }
+
+        .caption-options {
+            padding: 16px;
+            border-top: 1px solid var(--ig-border);
+        }
+
+        .caption-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            font-size: 16px;
+        }
+
+        .caption-input-small {
+            border: none;
+            outline: none;
+            text-align: right;
+            color: var(--ig-secondary-text);
+            font-size: 16px;
+        }
+
+        /* Bottom Navigation (Mobile) */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--ig-primary-background);
+            border-top: 1px solid var(--ig-border);
+            padding: 8px 0;
+            z-index: 100;
+        }
+
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-bar {
+                display: none;
+            }
+
+            .nav-icons {
+                gap: 16px;
+            }
+
+            .bottom-nav {
+                display: block;
+            }
+
+            .main-container {
+                margin-top: 60px;
+                padding: 0;
+            }
+
+            .stories-container,
+            .post-card {
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .caption-section {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--ig-border);
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--ig-border);
+            border-radius: 50%;
+            border-top-color: var(--ig-primary-text);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Sample Data
+        const sampleStories = [
+            { id: 1, username: 'tu_historia', avatar: 'https://i.pravatar.cc/150?img=1', viewed: false, isOwn: true },
+            { id: 2, username: 'maria_garcia', avatar: 'https://i.pravatar.cc/150?img=5', viewed: false },
+            { id: 3, username: 'juan_martinez', avatar: 'https://i.pravatar.cc/150?img=12', viewed: false },
+            { id: 4, username: 'ana_lopez', avatar: 'https://i.pravatar.cc/150?img=20', viewed: true },
+            { id: 5, username: 'carlos_ruiz', avatar: 'https://i.pravatar.cc/150?img=33', viewed: false },
+            { id: 6, username: 'laura_sanchez', avatar: 'https://i.pravatar.cc/150?img=45', viewed: true },
+            { id: 7, username: 'pedro_gomez', avatar: 'https://i.pravatar.cc/150?img=60', viewed: false },
+        ];
+
+        const samplePosts = [
+            {
+                id: 1,
+                username: 'maria_garcia',
+                avatar: 'https://i.pravatar.cc/150?img=5',
+                location: 'Barcelona, España',
+                images: ['https://picsum.photos/800/800?random=1'],
+                likes: 2847,
+                caption: '¡Increíble atardecer en la playa! 🌅 No hay nada mejor que terminar el día así.',
+                comments: 156,
+                timestamp: 'Hace 2 horas',
+                liked: false,
+                saved: false
+            },
+            {
+                id: 2,
+                username: 'juan_martinez',
+                avatar: 'https://i.pravatar.cc/150?img=12',
+                location: 'Madrid, España',
+                images: [
+                    'https://picsum.photos/800/800?random=2',
+                    'https://picsum.photos/800/800?random=3',
+                    'https://picsum.photos/800/800?random=4'
+                ],
+                likes: 4521,
+                caption: 'Explorando la ciudad 🏙️✨ #Madrid #Travel',
+                comments: 234,
+                timestamp: 'Hace 5 horas',
+                liked: false,
+                saved: false
+            },
+            {
+                id: 3,
+                username: 'ana_lopez',
+                avatar: 'https://i.pravatar.cc/150?img=20',
+                location: 'Valencia, España',
+                images: ['https://picsum.photos/800/800?random=5'],
+                likes: 1893,
+                caption: 'Café y buenos momentos ☕️💫',
+                comments: 89,
+                timestamp: 'Hace 8 horas',
+                liked: false,
+                saved: false
+            }
+        ];
+
+        const sampleSuggestions = [
+            { id: 1, username: 'sofia_torres', avatar: 'https://i.pravatar.cc/150?img=25', reason: 'Seguido por maria_garcia', following: false },
+            { id: 2, username: 'diego_fernandez', avatar: 'https://i.pravatar.cc/150?img=30', reason: 'Seguido por juan_martinez', following: false },
+            { id: 3, username: 'elena_rodriguez', avatar: 'https://i.pravatar.cc/150?img=35', reason: 'Nuevo en Instagram', following: false },
+            { id: 4, username: 'miguel_lopez', avatar: 'https://i.pravatar.cc/150?img=40', reason: 'Seguido por ana_lopez', following: false },
+            { id: 5, username: 'carmen_diaz', avatar: 'https://i.pravatar.cc/150?img=50', reason: 'Popular en tu área', following: false },
+        ];
+
+        // Header Component
+        function Header({ onCreatePost }) {
+            return (
+                <div className="header">
+                    <div className="header-container">
+                        <div className="logo">Instagram</div>
+                        <div className="search-bar">
+                            <span className="search-icon">🔍</span>
+                            <input type="text" className="search-input" placeholder="Buscar" />
+                        </div>
+                        <div className="nav-icons">
+                            <button className="nav-icon active">🏠</button>
+                            <button className="nav-icon">💬</button>
+                            <button className="nav-icon" onClick={onCreatePost}>➕</button>
+                            <button className="nav-icon">🧭</button>
+                            <button className="nav-icon">
+                                ❤️
+                                <span className="notification-dot"></span>
+                            </button>
+                            <img src="https://i.pravatar.cc/150?img=1" className="profile-pic" alt="Profile" />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Stories Component
+        function Stories({ stories }) {
+            return (
+                <div className="stories-container">
+                    <div className="stories-scroll">
+                        {stories.map(story => (
+                            <div key={story.id} className="story-item">
+                                <div className={`story-ring ${story.viewed ? 'viewed' : ''}`}>
+                                    <img src={story.avatar} className="story-avatar" alt={story.username} />
+                                    {story.isOwn && <div className="add-story-icon"></div>}
+                                </div>
+                                <div className="story-username">{story.username}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // Post Component
+        function Post({ post, onLike, onSave }) {
+            const [currentImageIndex, setCurrentImageIndex] = useState(0);
+            const [commentText, setCommentText] = useState('');
+
+            const nextImage = () => {
+                setCurrentImageIndex((prev) => (prev + 1) % post.images.length);
+            };
+
+            const prevImage = () => {
+                setCurrentImageIndex((prev) => (prev - 1 + post.images.length) % post.images.length);
+            };
+
+            return (
+                <div className="post-card">
+                    <div className="post-header">
+                        <div className="post-user-info">
+                            <img src={post.avatar} className="post-avatar" alt={post.username} />
+                            <div className="post-user-details">
+                                <div className="post-username">{post.username}</div>
+                                {post.location && <div className="post-location">{post.location}</div>}
+                            </div>
+                        </div>
+                        <button className="post-options">⋯</button>
+                    </div>
+
+                    <div className="post-image-container">
+                        <img src={post.images[currentImageIndex]} className="post-image" alt="Post" />
+                        {post.images.length > 1 && (
+                            <>
+                                <div className="post-carousel-controls">
+                                    {currentImageIndex > 0 && (
+                                        <button className="carousel-btn" onClick={prevImage}>‹</button>
+                                    )}
+                                    {currentImageIndex < post.images.length - 1 && (
+                                        <button className="carousel-btn" onClick={nextImage}>›</button>
+                                    )}
+                                </div>
+                                <div className="carousel-indicators">
+                                    {post.images.map((_, index) => (
+                                        <div key={index} className={`carousel-dot ${index === currentImageIndex ? 'active' : ''}`}></div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="post-actions">
+                        <div className="post-actions-left">
+                            <button className={`action-btn ${post.liked ? 'liked' : ''}`} onClick={() => onLike(post.id)}>
+                                {post.liked ? '❤️' : '🤍'}
+                            </button>
+                            <button className="action-btn">💬</button>
+                            <button className="action-btn">📤</button>
+                        </div>
+                        <button className={`action-btn ${post.saved ? 'saved' : ''}`} onClick={() => onSave(post.id)}>
+                            {post.saved ? '🔖' : '🏷️'}
+                        </button>
+                    </div>
+
+                    <div className="post-likes">
+                        <span className="likes-text">{post.likes.toLocaleString()} Me gusta</span>
+                    </div>
+
+                    <div className="post-caption">
+                        <span className="caption-username">{post.username}</span>
+                        <span className="caption-text">{post.caption}</span>
+                    </div>
+
+                    {post.comments > 0 && (
+                        <div className="view-comments">Ver los {post.comments} comentarios</div>
+                    )}
+
+                    <div className="post-timestamp">{post.timestamp}</div>
+
+                    <div className="post-comment-section">
+                        <button className="comment-emoji">😊</button>
+                        <input 
+                            type="text" 
+                            className="comment-input" 
+                            placeholder="Añade un comentario..."
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                        />
+                        <button className={`comment-post-btn ${commentText.trim() ? 'active' : ''}`}>
+                            Publicar
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ suggestions, onFollow }) {
+            return (
+                <div className="sidebar">
+                    <div className="user-profile-card">
+                        <img src="https://i.pravatar.cc/150?img=1" className="user-profile-avatar" alt="User" />
+                        <div className="user-profile-info">
+                            <div className="user-profile-username">tu_usuario</div>
+                            <div className="user-profile-name">Tu Nombre</div>
+                        </div>
+                        <button className="switch-btn">Cambiar</button>
+                    </div>
+
+                    <div className="suggestions-section">
+                        <div className="suggestions-header">
+                            <div className="suggestions-title">Sugerencias para ti</div>
+                            <button className="see-all-btn">Ver todo</button>
+                        </div>
+
+                        {suggestions.map(suggestion => (
+                            <div key={suggestion.id} className="suggestion-item">
+                                <img src={suggestion.avatar} className="suggestion-avatar" alt={suggestion.username} />
+                                <div className="suggestion-info">
+                                    <div className="suggestion-username">{suggestion.username}</div>
+                                    <div className="suggestion-reason">{suggestion.reason}</div>
+                                </div>
+                                <button className="follow-btn" onClick={() => onFollow(suggestion.id)}>
+                                    {suggestion.following ? 'Siguiendo' : 'Seguir'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="footer-links">
+                        <div>Información · Ayuda · Prensa · API · Empleo</div>
+                        <div>Privacidad · Condiciones · Ubicaciones · Idioma</div>
+                        <div style={{ marginTop: '16px' }}>© 2024 INSTAGRAM CLONE</div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Create Post Modal
+        function CreatePostModal({ isOpen, onClose }) {
+            const [selectedFile, setSelectedFile] = useState(null);
+            const [previewUrl, setPreviewUrl] = useState(null);
+            const [caption, setCaption] = useState('');
+            const [location, setLocation] = useState('');
+
+            const handleFileSelect = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setSelectedFile(file);
+                    const url = URL.createObjectURL(file);
+                    setPreviewUrl(url);
+                }
+            };
+
+            const handleShare = () => {
+                // Here you would handle the actual post creation
+                console.log('Creating post:', { caption, location, image: previewUrl });
+                onClose();
+                resetModal();
+            };
+
+            const resetModal = () => {
+                setSelectedFile(null);
+                setPreviewUrl(null);
+                setCaption('');
+                setLocation('');
+            };
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="modal-overlay active" onClick={(e) => e.target.className.includes('modal-overlay') && onClose()}>
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <button className="modal-close" onClick={onClose}>✕</button>
+                            <div className="modal-title">Crear nueva publicación</div>
+                            {previewUrl && (
+                                <button className="modal-share" onClick={handleShare}>Compartir</button>
+                            )}
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="upload-section">
+                                {!previewUrl ? (
+                                    <div className="upload-content">
+                                        <div className="upload-icon">📸</div>
+                                        <div className="upload-title">Arrastra las fotos y los videos aquí</div>
+                                        <input 
+                                            type="file" 
+                                            id="file-upload" 
+                                            accept="image/*" 
+                                            style={{ display: 'none' }}
+                                            onChange={handleFileSelect}
+                                        />
+                                        <label htmlFor="file-upload">
+                                            <button className="upload-btn" onClick={() => document.getElementById('file-upload').click()}>
+                                                Seleccionar del ordenador
+                                            </button>
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <img src={previewUrl} className="preview-image" alt="Preview" />
+                                )}
+                            </div>
+
+                            {previewUrl && (
+                                <div className="caption-section">
+                                    <div className="caption-user-info">
+                                        <img src="https://i.pravatar.cc/150?img=1" className="post-avatar" alt="User" />
+                                        <div className="post-username">tu_usuario</div>
+                                    </div>
+
+                                    <textarea 
+                                        className="caption-textarea" 
+                                        placeholder="Escribe un pie de foto..."
+                                        value={caption}
+                                        onChange={(e) => setCaption(e.target.value)}
+                                    />
+
+                                    <div className="caption-options">
+                                        <div className="caption-option">
+                                            <span>Añadir ubicación</span>
+                                            <input 
+                                                type="text" 
+                                                className="caption-input-small"
+                                                value={location}
+                                                onChange={(e) => setLocation(e.target.value)}
+                                                placeholder="Ubicación"
+                                            />
+                                        </div>
+                                        <div className="caption-option">
+                                            <span>Accesibilidad</span>
+                                            <span style={{ color: 'var(--ig-secondary-text)' }}>›</span>
+                                        </div>
+                                        <div className="caption-option">
+                                            <span>Configuración avanzada</span>
+                                            <span style={{ color: 'var(--ig-secondary-text)' }}>›</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Bottom Navigation
+        function BottomNav() {
+            return (
+                <div className="bottom-nav">
+                    <div className="bottom-nav-container">
+                        <button className="nav-icon active">🏠</button>
+                        <button className="nav-icon">🔍</button>
+                        <button className="nav-icon">🎬</button>
+                        <button className="nav-icon">🛍️</button>
+                        <img src="https://i.pravatar.cc/150?img=1" className="profile-pic" alt="Profile" />
+                    </div>
+                </div>
+            );
+        }
+
+        // Main App Component
+        function App() {
+            const [posts, setPosts] = useState(samplePosts);
+            const [stories, setStories] = useState(sampleStories);
+            const [suggestions, setSuggestions] = useState(sampleSuggestions);
+            const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+            const handleLike = (postId) => {
+                setPosts(posts.map(post => {
+                    if (post.id === postId) {
+                        return {
+                            ...post,
+                            liked: !post.liked,
+                            likes: post.liked ? post.likes - 1 : post.likes + 1
+                        };
+                    }
+                    return post;
+                }));
+            };
+
+            const handleSave = (postId) => {
+                setPosts(posts.map(post => {
+                    if (post.id === postId) {
+                        return { ...post, saved: !post.saved };
+                    }
+                    return post;
+                }));
+            };
+
+            const handleFollow = (suggestionId) => {
+                setSuggestions(suggestions.map(suggestion => {
+                    if (suggestion.id === suggestionId) {
+                        return { ...suggestion, following: !suggestion.following };
+                    }
+                    return suggestion;
+                }));
+            };
+
+            return (
+                <>
+                    <Header onCreatePost={() => setIsCreateModalOpen(true)} />
+                    
+                    <div className="main-container">
+                        <main>
+                            <Stories stories={stories} />
+                            
+                            {posts.map(post => (
+                                <Post 
+                                    key={post.id} 
+                                    post={post}
+                                    onLike={handleLike}
+                                    onSave={handleSave}
+                                />
+                            ))}
+                        </main>
+
+                        <Sidebar suggestions={suggestions} onFollow={handleFollow} />
+                    </div>
+
+                    <BottomNav />
+
+                    <CreatePostModal 
+                        isOpen={isCreateModalOpen}
+                        onClose={() => setIsCreateModalOpen(false)}
+                    />
+                </>
+            );
+        }
+
+        // Render App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
