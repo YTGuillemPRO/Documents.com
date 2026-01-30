@@ -1,1 +1,38 @@
+body {
+  background: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  color: #ff9800;
+}
+
+#sequencer {
+  display: grid;
+  grid-template-columns: repeat(16, 40px);
+  gap: 5px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  background: #333;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.step.active {
+  background: #ff9800;
+}
+
+#controls button {
+  font-size: 18px;
+  margin: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
 
