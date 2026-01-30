@@ -26,18 +26,20 @@ h1 {
 
 #piano-roll {
   display: flex;
-  height: 400px;
+  height: 640px; /* 🔥 FUERZA ALTURA */
   overflow-x: auto;
   border-top: 2px solid #222;
 }
 
+/* TECLAS */
 #keys {
   width: 80px;
   background: #111;
+  display: grid;
+  grid-template-rows: repeat(16, 40px);
 }
 
 .key {
-  height: 40px;
   border-bottom: 1px solid #222;
   display: flex;
   align-items: center;
@@ -49,14 +51,14 @@ h1 {
   background: #000;
 }
 
+/* GRID PRINCIPAL */
 #grid {
   display: grid;
   grid-template-columns: repeat(32, 40px);
+  grid-template-rows: repeat(16, 40px); /* 🔥 CLAVE */
 }
 
 .cell {
-  width: 40px;
-  height: 40px;
   border: 1px solid #222;
   cursor: pointer;
 }
