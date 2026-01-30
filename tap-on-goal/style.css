@@ -1,31 +1,47 @@
-body, html { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background: #000; }
-#ui-container {
-    position: fixed; width: 100%; height: 100%;
-    pointer-events: none; z-index: 10;
-}
-.hud-icon {
-    position: absolute; top: 10px; background: rgba(255,255,255,0.8);
-    border-radius: 15px; padding: 10px; pointer-events: auto;
-}
-#lives-cont { left: 15px; text-align: center; width: 60px; }
-#pause-btn { right: 15px; cursor: pointer; }
+body, html { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background: #f3e1f9; }
 
+/* HUD Superior */
+#ui-layer {
+    position: fixed; top: 0; left: 0; width: 100%; padding: 20px;
+    display: flex; justify-content: space-between; pointer-events: none; z-index: 100;
+}
+.hud-box {
+    background: white; border-radius: 15px; padding: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); pointer-events: auto;
+}
+.icon { font-size: 30px; line-height: 1; }
+.value { font-weight: bold; font-size: 22px; color: #555; }
+
+/* Botón Tienda */
+#shop-btn {
+    position: fixed; top: 120px; left: 20px;
+    background: #eee; border: 1px solid #ccc; padding: 5px 10px;
+    border-radius: 5px; cursor: pointer; z-index: 100;
+}
+
+/* Pantalla de Inicio */
 #startScreen {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.2);
-    display: flex; flex-direction: column; justify-content: flex-end;
-    align-items: center; z-index: 20; padding-bottom: 100px;
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; justify-content: center; align-items: flex-end;
+    padding-bottom: 15%; cursor: pointer;
+    background: rgba(255, 255, 255, 0.1); /* Semi-transparente para ver el juego detrás */
 }
-#start-img { width: 300px; }
 
-/* Tienda arriba derecha */
-#shop-toggle {
-    position: absolute; top: 80px; right: 15px;
-    background: #ffdb4d; border: none; padding: 8px;
-    border-radius: 5px; cursor: pointer; pointer-events: auto;
+/* El cartel de START manual para evitar enlaces rotos */
+.start-banner {
+    background: white; padding: 10px; border: 10px solid #444;
+    display: flex; flex-direction: column; align-items: center;
 }
-.hidden { display: none !important; }
-#shopMenu {
-    position: absolute; top: 120px; right: 15px;
-    background: white; padding: 10px; border-radius: 8px;
-    pointer-events: auto; width: 150px;
+.start-text {
+    font-size: 80px; font-weight: 900; color: #ff69b4;
+    font-style: italic; letter-spacing: -5px; line-height: 0.8;
+}
+.checkers {
+    width: 100%; height: 20px;
+    background-image: linear-gradient(45deg, #444 25%, transparent 25%), 
+                      linear-gradient(-45deg, #444 25%, transparent 25%), 
+                      linear-gradient(45deg, transparent 75%, #444 75%), 
+                      linear-gradient(-45deg, transparent 75%, #444 75%);
+    background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
