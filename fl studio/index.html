@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>FL Studio Web 🎶</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>FL Studio Web – Piano Roll</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>🎹 FL Studio Web</h1>
 
-<div id="controls">
+<div id="top-bar">
   <button id="play">▶ Play</button>
   <button id="stop">⏹ Stop</button>
+
+  <label>
+    BPM
+    <input type="number" id="bpm" value="120" min="60" max="200">
+  </label>
 </div>
 
-<div id="sequencer"></div>
+<div id="piano-roll">
+  <div id="keys"></div>
+  <div id="grid"></div>
+</div>
 
 <script src="script.js"></script>
 </body>
 </html>
-
