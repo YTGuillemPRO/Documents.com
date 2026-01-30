@@ -2,27 +2,28 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tap On Goal</title>
+    <title>Tap On Goal 3D</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="ui-container">
-        <div id="lives-cont" class="hud-icon">
-            <div style="color: #a020f0; font-size: 24px;">⚽</div>
-            <div id="lives-txt" style="font-size: 20px; font-weight: bold;">3</div>
+    <div id="ui-layer">
+        <div class="hud-box">
+            <span class="icon" style="color: #a020f0;">⚽</span>
+            <span id="lives-txt" class="value">3</span>
         </div>
-        <div id="pause-btn" class="hud-icon" style="color: #a020f0; font-size: 24px;">⏸</div>
-        
-        <button id="shop-toggle" onclick="document.getElementById('shopMenu').classList.toggle('hidden')">🛒 TIENDA</button>
-        <div id="shopMenu" class="hidden">
-            <div onclick="game.buySkin(0xff0000, 50)">🔴 Roja (50)</div>
-            <div onclick="game.buySkin(0x0000ff, 100)">🔵 Azul (100)</div>
+        <div class="hud-box" style="cursor: pointer;">
+            <span class="icon" style="color: #a020f0;">⏸</span>
         </div>
     </div>
 
+    <button id="shop-btn" onclick="toggleShop()">🛒 TIENDA</button>
+
     <div id="startScreen" onclick="game.tap()">
-        <img id="start-img" src="https://i.imgur.com/vHqY7pG.png" alt="START">
+        <div class="start-banner">
+            <div class="checkers"></div>
+            <div class="start-text">START</div>
+            <div class="checkers"></div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
