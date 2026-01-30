@@ -7,144 +7,121 @@ class Game {
         this.obstacles = [];
     }
 
-    startLevel(n) {
-        // Limpiar
-        while(this.scene.children.length > 3) this.scene.remove(this.scene.children[this.scene.children.length-1]);
+    startLevel() {
+        // Limpiar escena (mantener luces)
+        this.obstacles.forEach(o => this.scene.remove(o));
+        if(this.ground) this.scene.remove(this.ground);
+        if(this.stands) this.scene.remove(this.stands);
+        
         this.obstacles = [];
-        this.isShooting = false;
         this.moving = false;
+        this.isShooting = false;
 
-        const lvl = levels[n] || levels[0];
-        const len = lvl.length * 5;
+        const trackLen = 100;
 
-        // Suelo Rosa con cuadros y líneas
-        const groundGeo = new THREE.PlaneGeometry(10, len + 20);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0xffa0cb });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.z = -len / 2;
-        this.scene.add(ground);
+        // Suelo de cuadros (rosa claro / rosa oscuro)
+        const groundGeo = new THREE.PlaneGeometry(10, trackLen + 20);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0xffb6c1 });
+        this.ground = new THREE.Mesh(groundGeo, groundMat);
+        this.ground.rotation.x = -Math.PI / 2;
+        this.ground.position.z = -trackLen / 2;
+        this.scene.add(this.ground);
 
-        // Gradas y Gente (Bloques negros y amarillos como en la imagen)
-        this.createStands(len);
-
-        // Línea de Tiro "SHOOT!"
-        this.createShootZone(len);
+        // Gradas grises
+        this.createWorld(trackLen);
 
         // Obstáculos Amarillos
-        for(let i=0; i<lvl.obstacles; i++) {
-            const obs = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1.5), new THREE.MeshStandardMaterial({color: 0xffd700}));
-            obs.position.set((Math.random()-0.5)*7, 0.5, -(Math.random()*(len-15)+10));
+        for(let i=0; i<15; i++) {
+            const obs = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 2), new THREE.MeshStandardMaterial({color: 0xffd700}));
+            obs.position.set(i % 2 === 0 ? -2 : 2, 0.5, -i * 6 - 10);
             this.scene.add(obs);
             this.obstacles.push(obs);
         }
 
-        // Portería
-        this.createGoal(len);
+        // Portería al final
+        this.createGoal(trackLen);
 
         this.ball.position.set(0, 0.5, 0);
+        this.dir.set(1, 0, -1).normalize();
         this.updateUI();
     }
 
-    createStands(len) {
-        const standGeo = new THREE.BoxGeometry(2, 4, len + 20);
-        const standMat = new THREE.MeshStandardMaterial({color: 0xcccccc});
+    createWorld(len) {
+        this.stands = new THREE.Group();
+        const wallGeo = new THREE.BoxGeometry(2, 5, len + 20);
+        const wallMat = new THREE.MeshStandardMaterial({color: 0xcccccc});
         
-        const left = new THREE.Mesh(standGeo, standMat);
-        left.position.set(-6, 1, -len/2);
-        this.scene.add(left);
+        const leftWall = new THREE.Mesh(wallGeo, wallMat);
+        leftWall.position.set(-6, 2, -len/2);
+        this.stands.add(leftWall);
 
-        const right = left.clone();
-        right.position.x = 6;
-        this.scene.add(right);
+        const rightWall = leftWall.clone();
+        rightWall.position.x = 6;
+        this.stands.add(rightWall);
 
-        // Gente simplificada (puntos negros y amarillos)
-        for(let z=0; z>-len; z-=4) {
-            const person = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.5), new THREE.MeshStandardMaterial({color: Math.random() > 0.5 ? 0x000000 : 0xffcc00}));
-            person.position.set(-5.5, 3.2, z);
-            this.scene.add(person);
+        // "Gente" en las gradas (cubos pequeños)
+        for(let z=0; z>-len; z-=3) {
+            const person = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.6), new THREE.MeshStandardMaterial({color: Math.random() > 0.5 ? 0x333333 : 0xffcc00}));
+            person.position.set(-5.5, 4.5, z);
+            this.stands.add(person);
         }
-    }
-
-    createShootZone(len) {
-        const loader = new THREE.TextureLoader();
-        // Aquí podrías cargar una imagen que diga SHOOT!
-        const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshStandardMaterial({color: 0xff69b4, transparent: true, opacity: 0.5}));
-        zone.rotation.x = -Math.PI/2;
-        zone.position.set(0, 0.02, -len + 5);
-        this.scene.add(zone);
+        this.scene.add(this.stands);
     }
 
     createGoal(len) {
-        this.goal = new THREE.Group();
-        const frame = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 0.2), new THREE.MeshStandardMaterial({color: 0xffffff, wireframe: true}));
-        this.goal.add(frame);
-        this.goal.position.set(0, 1.5, -len);
-        this.scene.add(this.goal);
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(4, 2.5, 0.5), new THREE.MeshStandardMaterial({color: 0xffffff, wireframe: true}));
+        frame.position.set(0, 1.25, -len);
+        this.scene.add(frame);
+        this.goalPos = -len;
     }
 
     tap() {
         if (!this.moving) {
             this.moving = true;
-            document.getElementById("startScreen").classList.add("hidden");
+            document.getElementById("startScreen").style.display = "none";
             return;
         }
-
-        if (this.ball.position.z < - (levels[this.level].length * 5 - 8)) {
-            // Modo Disparo: va directo a portería
-            this.isShooting = true;
-            this.dir.set(0, 0.2, -1).normalize();
-        } else {
-            // ZigZag diagonal
-            this.dir.x *= -1;
-        }
+        // Cambio de dirección en zigzag
+        this.dir.x *= -1;
     }
 
     update(dt) {
         if (!this.moving) return;
-        
-        const speed = this.isShooting ? 25 : 10;
-        this.ball.position.addScaledVector(this.dir, speed * dt);
-        this.ball.rotation.x -= 10 * dt;
 
-        // Colisión con obstáculos
-        this.obstacles.forEach(o => {
-            if (this.ball.position.distanceTo(o.position) < 1.5) this.fail();
-        });
+        this.ball.position.addScaledVector(this.dir, 12 * dt);
+        this.ball.rotation.x -= 15 * dt;
 
-        // Gol
-        if (this.ball.position.z <= this.goal.position.z) {
-            this.win();
+        // Si llega cerca del final, entra en zona "SHOOT"
+        if (this.ball.position.z < this.goalPos + 10) {
+            this.dir.set(0, 0, -1.5).normalize(); // Va recto a portería
         }
 
-        // Salirse del camino
-        if (Math.abs(this.ball.position.x) > 5) this.fail();
+        // Colisión
+        this.obstacles.forEach(o => {
+            if (this.ball.position.distanceTo(o.position) < 1.8) this.fail();
+        });
+
+        if (this.ball.position.z <= this.goalPos) this.win();
+        if (Math.abs(this.ball.position.x) > 4.8) this.fail();
     }
 
     fail() {
         this.lives--;
-        if (this.lives <= 0) { this.level = 0; this.lives = 3; }
-        this.startLevel(this.level);
-        document.getElementById("startScreen").classList.remove("hidden");
+        this.moving = false;
+        if(this.lives <= 0) { this.lives = 3; this.level = 0; }
+        document.getElementById("startScreen").style.display = "flex";
+        this.startLevel();
     }
 
     win() {
-        this.coins += 50;
+        this.coins += 100;
         this.level++;
-        this.startLevel(this.level);
-        document.getElementById("startScreen").classList.remove("hidden");
-    }
-
-    buySkin(col, price) {
-        if(this.coins >= price) {
-            this.coins -= price;
-            this.ball.material.color.setHex(col);
-            this.updateUI();
-        }
+        this.moving = false;
+        document.getElementById("startScreen").style.display = "flex";
+        this.startLevel();
     }
 
     updateUI() {
         document.getElementById("lives-txt").innerText = this.lives;
-        document.getElementById("info").innerText = `NIVEL ${this.level + 1} | 💰 ${this.coins}`;
     }
 }
