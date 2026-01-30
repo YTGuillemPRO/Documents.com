@@ -1,42 +1,33 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap On Goal 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tap On Goal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="info">NIVEL 1 | 💰 0 | ❤️ 3</div>
-    
-    <div id="startScreen">
-        <h1>TAP TO PLAY</h1>
-        <p>Esquiva lo amarillo y dispara en lo verde</p>
+    <div id="ui-container">
+        <div id="lives-cont" class="hud-icon">
+            <div style="color: #a020f0; font-size: 24px;">⚽</div>
+            <div id="lives-txt" style="font-size: 20px; font-weight: bold;">3</div>
+        </div>
+        <div id="pause-btn" class="hud-icon" style="color: #a020f0; font-size: 24px;">⏸</div>
+        
+        <button id="shop-toggle" onclick="document.getElementById('shopMenu').classList.toggle('hidden')">🛒 TIENDA</button>
+        <div id="shopMenu" class="hidden">
+            <div onclick="game.buySkin(0xff0000, 50)">🔴 Roja (50)</div>
+            <div onclick="game.buySkin(0x0000ff, 100)">🔵 Azul (100)</div>
+        </div>
     </div>
 
-    <div id="shopWrapper">
-        <button id="shopBtn" onclick="toggleShop()">🛒 TIENDA</button>
-        <div id="shopMenu" class="hidden">
-            <h3>SKINS</h3>
-            <div class="item" onclick="game.buySkin(0xffffff, 0)">⚪ Blanca (Gratis)</div>
-            <div class="item" onclick="game.buySkin(0xff0000, 100)">🔴 Roja (100)</div>
-            <div class="item" onclick="game.buySkin(0x00ff00, 250)">🟢 Verde (250)</div>
-            <div class="item" onclick="game.buySkin(0xffff00, 500)">🟡 Oro (500)</div>
-            <div class="item" onclick="game.buySkin(0x000000, 1000)">⚫ Negra (1000)</div>
-        </div>
+    <div id="startScreen" onclick="game.tap()">
+        <img id="start-img" src="https://i.imgur.com/vHqY7pG.png" alt="START">
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
     <script src="js/levels.js"></script>
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>
-
-    <script>
-        function toggleShop() {
-            const menu = document.getElementById('shopMenu');
-            menu.classList.toggle('hidden');
-        }
-    </script>
 </body>
 </html>
