@@ -1,196 +1,150 @@
 class Game {
-  constructor(scene, ball, camera, info) {
-    this.scene = scene;
-    this.ball = ball;
-    this.camera = camera;
-    this.info = info;
-
-    this.level = 0;
-    this.coins = parseInt(localStorage.getItem("coins")) || 0;
-    this.attempts = 3;
-
-    this.moving = false;
-    this.isShootingZone = false;
-    this.hasShot = false;
-
-    this.dir = new THREE.Vector3(1, 0, -1).normalize();
-
-    this.obstacles = [];
-    this.goalDir = 1;
-
-    this.startLevel(this.level);
-  }
-
-  startLevel(i) {
-    [...this.obstacles, this.goal, this.goalkeeper, this.floor, this.goalZone]
-      .forEach(o => o && this.scene.remove(o));
-
-    this.obstacles = [];
-    this.moving = false;
-    this.isShootingZone = false;
-    this.hasShot = false;
-
-    const lvl = levels[i] || levels[0];
-    const trackLength = lvl.length * 5;
-    const trackWidth = 14;
-
-    // Suelo
-    this.floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(trackWidth, trackLength),
-      new THREE.MeshStandardMaterial({ color: 0x9b59b6 })
-    );
-    this.floor.rotation.x = -Math.PI / 2;
-    this.floor.position.z = -trackLength / 2;
-    this.scene.add(this.floor);
-
-    // Zona verde (tiro)
-    this.goalZone = new THREE.Mesh(
-      new THREE.PlaneGeometry(trackWidth, 8),
-      new THREE.MeshStandardMaterial({ color: 0x2ecc71 })
-    );
-    this.goalZone.rotation.x = -Math.PI / 2;
-    this.goalZone.position.z = -trackLength - 4;
-    this.scene.add(this.goalZone);
-
-    // Portería
-    this.goal = new THREE.Mesh(
-      new THREE.BoxGeometry(6, 3, 0.6),
-      new THREE.MeshStandardMaterial({ wireframe: true })
-    );
-    this.goal.position.set(0, 1.5, -trackLength - 9);
-    this.scene.add(this.goal);
-
-    // Portero
-    this.goalkeeper = new THREE.Mesh(
-      new THREE.BoxGeometry(1.2, 1.8, 0.6),
-      new THREE.MeshStandardMaterial({ color: 0x333333 })
-    );
-    this.goalkeeper.position.set(0, 0.9, -trackLength - 8.4);
-    this.scene.add(this.goalkeeper);
-
-    // Obstáculos (más separados)
-    for (let i = 0; i < lvl.obstacles; i++) {
-      const obs = new THREE.Mesh(
-        new THREE.BoxGeometry(2.8, 0.8, 1.5),
-        new THREE.MeshStandardMaterial({ color: 0xffdb4d })
-      );
-
-      obs.position.set(
-        (Math.random() - 0.5) * (trackWidth - 3),
-        0.4,
-        -(i * 6 + 8)
-      );
-
-      this.scene.add(obs);
-      this.obstacles.push(obs);
+    constructor(scene, ball, camera) {
+        this.scene = scene; this.ball = ball; this.camera = camera;
+        this.level = 0; this.coins = 0; this.lives = 3;
+        this.moving = false; this.isShooting = false;
+        this.dir = new THREE.Vector3(1, 0, -1).normalize();
+        this.obstacles = [];
     }
 
-    this.ball.position.set(0, 0.5, 0);
-    this.dir.set(1, 0, -1).normalize();
-    this.updateUI();
-  }
+    startLevel(n) {
+        // Limpiar
+        while(this.scene.children.length > 3) this.scene.remove(this.scene.children[this.scene.children.length-1]);
+        this.obstacles = [];
+        this.isShooting = false;
+        this.moving = false;
 
-  startRun() {
-    this.moving = true;
-  }
+        const lvl = levels[n] || levels[0];
+        const len = lvl.length * 5;
 
-  tap(e) {
-    if (!this.moving) return;
-    if (e.target.closest('#shopWrapper')) return;
+        // Suelo Rosa con cuadros y líneas
+        const groundGeo = new THREE.PlaneGeometry(10, len + 20);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0xffa0cb });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.z = -len / 2;
+        this.scene.add(ground);
 
-    // Antes del tiro → zig zag
-    if (!this.isShootingZone) {
-      this.dir.x *= -1;
-      return;
+        // Gradas y Gente (Bloques negros y amarillos como en la imagen)
+        this.createStands(len);
+
+        // Línea de Tiro "SHOOT!"
+        this.createShootZone(len);
+
+        // Obstáculos Amarillos
+        for(let i=0; i<lvl.obstacles; i++) {
+            const obs = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1.5), new THREE.MeshStandardMaterial({color: 0xffd700}));
+            obs.position.set((Math.random()-0.5)*7, 0.5, -(Math.random()*(len-15)+10));
+            this.scene.add(obs);
+            this.obstacles.push(obs);
+        }
+
+        // Portería
+        this.createGoal(len);
+
+        this.ball.position.set(0, 0.5, 0);
+        this.updateUI();
     }
 
-    // Tiro recto
-    if (!this.hasShot) {
-      this.hasShot = true;
-      this.dir.set(
-        this.ball.position.x * -0.4, // apunta a portería
-        0,
-        -1
-      ).normalize();
-    }
-  }
+    createStands(len) {
+        const standGeo = new THREE.BoxGeometry(2, 4, len + 20);
+        const standMat = new THREE.MeshStandardMaterial({color: 0xcccccc});
+        
+        const left = new THREE.Mesh(standGeo, standMat);
+        left.position.set(-6, 1, -len/2);
+        this.scene.add(left);
 
-  update(dt) {
-    if (!this.moving) return;
+        const right = left.clone();
+        right.position.x = 6;
+        this.scene.add(right);
 
-    const lvl = levels[this.level];
-    const speed = this.hasShot ? lvl.speed * 2 : lvl.speed;
-
-    this.ball.position.addScaledVector(this.dir, speed * dt);
-
-    // Entrar en zona verde
-    if (!this.isShootingZone &&
-        this.ball.position.z < this.goalZone.position.z + 4) {
-      this.isShootingZone = true;
-      this.dir.set(0, 0, -1);
+        // Gente simplificada (puntos negros y amarillos)
+        for(let z=0; z>-len; z-=4) {
+            const person = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.5), new THREE.MeshStandardMaterial({color: Math.random() > 0.5 ? 0x000000 : 0xffcc00}));
+            person.position.set(-5.5, 3.2, z);
+            this.scene.add(person);
+        }
     }
 
-    // Movimiento portero
-    this.goalkeeper.position.x += this.goalDir * dt * lvl.goalkeeperSpeed;
-    if (Math.abs(this.goalkeeper.position.x) > 2.5) this.goalDir *= -1;
-
-    // Colisiones
-    if (this.hit(this.obstacles)) this.fail();
-    if (this.hit([this.goalkeeper])) this.fail();
-    if (this.hit([this.goal])) this.nextLevel();
-    if (Math.abs(this.ball.position.x) > 7) this.fail();
-  }
-
-  hit(arr) {
-    const sphere = new THREE.Sphere(this.ball.position, 0.4);
-    return arr.some(o =>
-      new THREE.Box3().setFromObject(o).intersectsSphere(sphere)
-    );
-  }
-
-  fail() {
-    this.attempts--;
-    this.moving = false;
-
-    if (this.attempts <= 0) {
-      alert("GAME OVER");
-      this.level = 0;
-      this.attempts = 3;
+    createShootZone(len) {
+        const loader = new THREE.TextureLoader();
+        // Aquí podrías cargar una imagen que diga SHOOT!
+        const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshStandardMaterial({color: 0xff69b4, transparent: true, opacity: 0.5}));
+        zone.rotation.x = -Math.PI/2;
+        zone.position.set(0, 0.02, -len + 5);
+        this.scene.add(zone);
     }
 
-    document.getElementById("startScreen").style.display = "flex";
-    this.startLevel(this.level);
-  }
+    createGoal(len) {
+        this.goal = new THREE.Group();
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 0.2), new THREE.MeshStandardMaterial({color: 0xffffff, wireframe: true}));
+        this.goal.add(frame);
+        this.goal.position.set(0, 1.5, -len);
+        this.scene.add(this.goal);
+    }
 
-  nextLevel() {
-    const reward = levels[this.level].reward;
-    this.coins += reward;
-    localStorage.setItem("coins", this.coins);
+    tap() {
+        if (!this.moving) {
+            this.moving = true;
+            document.getElementById("startScreen").classList.add("hidden");
+            return;
+        }
 
-    alert(`⚽ ¡GOL! +${reward} monedas`);
+        if (this.ball.position.z < - (levels[this.level].length * 5 - 8)) {
+            // Modo Disparo: va directo a portería
+            this.isShooting = true;
+            this.dir.set(0, 0.2, -1).normalize();
+        } else {
+            // ZigZag diagonal
+            this.dir.x *= -1;
+        }
+    }
 
-    this.level++;
-    this.moving = false;
-    document.getElementById("startScreen").style.display = "flex";
-    this.startLevel(this.level);
-  }
+    update(dt) {
+        if (!this.moving) return;
+        
+        const speed = this.isShooting ? 25 : 10;
+        this.ball.position.addScaledVector(this.dir, speed * dt);
+        this.ball.rotation.x -= 10 * dt;
 
-  updateCamera() {
-    const target = this.ball.position.clone().add(new THREE.Vector3(0, 7, 10));
-    this.camera.position.lerp(target, 0.1);
-    this.camera.lookAt(this.ball.position);
-  }
+        // Colisión con obstáculos
+        this.obstacles.forEach(o => {
+            if (this.ball.position.distanceTo(o.position) < 1.5) this.fail();
+        });
 
-  updateUI() {
-    this.info.innerHTML =
-      `NIVEL ${this.level + 1} | 💰 ${this.coins} | ❤️ ${this.attempts}`;
-  }
+        // Gol
+        if (this.ball.position.z <= this.goal.position.z) {
+            this.win();
+        }
 
-  buySkin(color, price) {
-    if (this.coins < price) return alert("No tienes monedas");
-    this.coins -= price;
-    this.ball.material.color.setHex(color);
-    localStorage.setItem("coins", this.coins);
-    this.updateUI();
-  }
+        // Salirse del camino
+        if (Math.abs(this.ball.position.x) > 5) this.fail();
+    }
+
+    fail() {
+        this.lives--;
+        if (this.lives <= 0) { this.level = 0; this.lives = 3; }
+        this.startLevel(this.level);
+        document.getElementById("startScreen").classList.remove("hidden");
+    }
+
+    win() {
+        this.coins += 50;
+        this.level++;
+        this.startLevel(this.level);
+        document.getElementById("startScreen").classList.remove("hidden");
+    }
+
+    buySkin(col, price) {
+        if(this.coins >= price) {
+            this.coins -= price;
+            this.ball.material.color.setHex(col);
+            this.updateUI();
+        }
+    }
+
+    updateUI() {
+        document.getElementById("lives-txt").innerText = this.lives;
+        document.getElementById("info").innerText = `NIVEL ${this.level + 1} | 💰 ${this.coins}`;
+    }
 }
