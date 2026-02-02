@@ -1,29 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>TerraForge3D</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    #ui {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      color: white;
-      font-family: monospace;
-    }
-    button { margin: 2px; }
-  </style>
+<meta charset="UTF-8">
+<title>FrontierBuild3D</title>
+<style>
+body { margin:0; overflow:hidden; background:black; }
+#ui {
+  position:fixed; top:10px; left:10px;
+  color:white; font-family:monospace;
+}
+</style>
 </head>
 <body>
-  <div id="ui">
-    <div id="stats"></div>
-    <button onclick="buildFarm()">🌱 Granja</button>
-    <button onclick="buildWall()">🧱 Muralla</button>
-    <button onclick="expand()">🌍 Expandir</button>
-  </div>
+<div id="ui">
+  <div id="stats"></div>
+  <div>1 = Granja | 2 = Muralla | Click = Construir</div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="game.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
