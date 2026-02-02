@@ -6,15 +6,23 @@
 <style>
 body { margin:0; overflow:hidden; background:black; }
 #ui {
-  position:fixed; top:10px; left:10px;
-  color:white; font-family:monospace;
+  position:fixed;
+  top:10px;
+  left:10px;
+  color:white;
+  font-family:monospace;
+  background:rgba(0,0,0,0.4);
+  padding:8px;
 }
 </style>
 </head>
 <body>
+
 <div id="ui">
   <div id="stats"></div>
-  <div>1 = Granja | 2 = Muralla | Click = Construir</div>
+  <div>WASD mover · Mouse mirar</div>
+  <div>1 Granja · 2 Muralla</div>
+  <div>Click construir · G tiempo</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
