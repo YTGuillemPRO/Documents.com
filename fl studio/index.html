@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>FL Studio Web – Piano Roll</title>
+  <meta charset="UTF-8" />
+  <title>Mini FL Studio Web</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>🎵 Mini FL Studio</h1>
 
-<h1>🎹 FL Studio Web</h1>
+  <div class="controls">
+    <button id="play">▶ Play</button>
+    <button id="stop">⏹ Stop</button>
+    <label>
+      BPM:
+      <input type="number" id="bpm" value="120" min="60" max="200">
+    </label>
+  </div>
 
-<div id="top-bar">
-  <button id="play">▶ Play</button>
-  <button id="stop">⏹ Stop</button>
+  <div class="sequencer">
+    <div class="row">
+      <span>Kick</span>
+      <div class="steps" data-sound="kick"></div>
+    </div>
+    <div class="row">
+      <span>Snare</span>
+      <div class="steps" data-sound="snare"></div>
+    </div>
+    <div class="row">
+      <span>Hi‑Hat</span>
+      <div class="steps" data-sound="hihat"></div>
+    </div>
+  </div>
 
-  <label>
-    BPM
-    <input type="number" id="bpm" value="120" min="60" max="200">
-  </label>
-</div>
-
-<div id="piano-roll">
-  <div id="keys"></div>
-  <div id="grid"></div>
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
