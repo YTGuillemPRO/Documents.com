@@ -2,22 +2,16 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Web Kart 3D</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      font-family: Arial;
-    }
-  </style>
+  <title>Mario Kart Web</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="ui">WASD: Conducir | ESPACIO: Derrape</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="main.js"></script>
+<div id="hud">
+  <div id="speed">Speed: 0</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
