@@ -70,3 +70,57 @@ document.getElementById('stop').onclick = () => {
   clearInterval(interval);
   currentStep = 0;
 };
+function playPiano(freq) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = freq;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioCtx.currentTime + 1
+  );
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 1);
+}
+
+// Click con mouse
+document.querySelectorAll('.key').forEach(key => {
+  key.addEventListener('mousedown', () => {
+    key.classList.add('active');
+    playPiano(key.dataset.note);
+  });
+
+  key.addEventListener('mouseup', () => {
+    key.classList.remove('active');
+  });
+});
+
+// Teclado del PC
+const keyMap = {
+  a: 261.63,
+  w: 277.18,
+  s: 293.66,
+  e: 311.13,
+  d: 329.63,
+  f: 349.23,
+  t: 369.99,
+  g: 392.00,
+  y: 415.30,
+  h: 440.00,
+  u: 466.16,
+  j: 493.88,
+  k: 523.25
+};
+
+document.addEventListener('keydown', e => {
+  if (keyMap[e.key]) {
+    playPiano(keyMap[e.key]);
+  }
+});
