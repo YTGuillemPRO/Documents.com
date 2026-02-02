@@ -1,6 +1,6 @@
 // ESCENA
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x6ec6ff);
 
 // CÁMARA
 const camera = new THREE.PerspectiveCamera(
@@ -16,94 +16,69 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // LUCES
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
 sun.position.set(10, 20, 10);
 scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-// PISTA
-const track = new THREE.Mesh(
-  new THREE.RingGeometry(20, 30, 64),
-  new THREE.MeshStandardMaterial({ color: 0x444444 })
+// SUELO / PISTA
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshToonMaterial({ color: 0x555555 })
 );
-track.rotation.x = -Math.PI / 2;
-scene.add(track);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
 
 // KART
-const kart = new THREE.Group();
-
-// Cuerpo
-const body = new THREE.Mesh(
-  new THREE.BoxGeometry(2, 0.8, 3),
-  new THREE.MeshStandardMaterial({ color: 0xff0000 })
+const kart = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 0.5, 2),
+  new THREE.MeshToonMaterial({ color: 0xff0000 })
 );
-body.position.y = 0.6;
-kart.add(body);
-
-// Ruedas
-const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16);
-const wheelMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-
-[-0.9, 0.9].forEach(x => {
-  [-1.2, 1.2].forEach(z => {
-    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-    wheel.rotation.z = Math.PI / 2;
-    wheel.position.set(x, 0.4, z);
-    kart.add(wheel);
-  });
-});
-
+kart.position.y = 0.25;
 scene.add(kart);
 
 // CONTROLES
-let speed = 0;
-let angle = 0;
-let drifting = false;
 const keys = {};
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
 
-document.addEventListener("keydown", e => {
-  keys[e.key.toLowerCase()] = true;
-  if (e.code === "Space") drifting = true;
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-  if (e.code === "Space") drifting = false;
-});
-
-// CÁMARA SEGUIDORA
-function updateCamera() {
-  const offset = new THREE.Vector3(
-    Math.sin(angle) * -8,
-    5,
-    Math.cos(angle) * -8
-  );
-  camera.position.copy(kart.position).add(offset);
-  camera.lookAt(kart.position);
-}
-
-// FÍSICA SIMPLE
-function updateKart() {
-  if (keys["w"]) speed += 0.02;
-  if (keys["s"]) speed -= 0.02;
-
-  speed *= 0.98;
-  speed = THREE.MathUtils.clamp(speed, -0.5, 1);
-
-  let turnSpeed = drifting ? 0.04 : 0.025;
-  if (keys["a"]) angle += turnSpeed;
-  if (keys["d"]) angle -= turnSpeed;
-
-  kart.rotation.y = angle;
-  kart.position.x += Math.sin(angle) * speed;
-  kart.position.z += Math.cos(angle) * speed;
-}
+// FÍSICA ARCADE
+let speed = 0;
+const maxSpeed = 0.8;
+const accel = 0.02;
+const friction = 0.98;
+const turnSpeed = 0.04;
 
 // LOOP
 function animate() {
   requestAnimationFrame(animate);
-  updateKart();
-  updateCamera();
+
+  // ACELERAR / FRENAR
+  if (keys["w"]) speed = Math.min(speed + accel, maxSpeed);
+  if (keys["s"]) speed = Math.max(speed - accel, -maxSpeed / 2);
+  speed *= friction;
+
+  // GIRAR
+  if (keys["a"]) kart.rotation.y += turnSpeed * speed;
+  if (keys["d"]) kart.rotation.y -= turnSpeed * speed;
+
+  // MOVER
+  kart.position.x -= Math.sin(kart.rotation.y) * speed;
+  kart.position.z -= Math.cos(kart.rotation.y) * speed;
+
+  // CÁMARA SEGUIMIENTO
+  const camOffset = new THREE.Vector3(
+    Math.sin(kart.rotation.y) * 5,
+    4,
+    Math.cos(kart.rotation.y) * 5
+  );
+  camera.position.copy(kart.position).add(camOffset);
+  camera.lookAt(kart.position);
+
+  // HUD
+  document.getElementById("speed").innerText =
+    "Speed: " + Math.abs(speed).toFixed(2);
+
   renderer.render(scene, camera);
 }
 
