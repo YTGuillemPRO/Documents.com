@@ -1,85 +1,123 @@
 // === ESCENA ===
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
-camera.position.set(5, 6, 8);
-camera.lookAt(0, 0, 0);
-
 // === LUZ ===
-scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 
 // === SUELO ===
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 20),
+  new THREE.PlaneGeometry(50, 50),
   new THREE.MeshStandardMaterial({ color: 0x228822 })
 );
-ground.rotation.x = -Math.PI / 2;
+ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// === ESTADO DEL JUEGO ===
-let food = 0;
-let wood = 50;
-let territory = 1;
-let farms = 0;
-let walls = 0;
-
-// === BASE ===
-const base = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshStandardMaterial({ color: 0x8888ff })
+// === JUGADOR ===
+const player = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.3, 1),
+  new THREE.MeshStandardMaterial({ color: 0x3399ff })
 );
-base.position.y = 0.5;
-scene.add(base);
+player.position.y = 1;
+scene.add(player);
 
-// === CONSTRUCCIÓN ===
-function buildFarm() {
+camera.position.set(0, 4, 6);
+
+// === RAYCAST ===
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// === ESTADO ===
+let wood = 50;
+let food = 0;
+let selected = "farm";
+let building = false;
+
+// === PREVIEW ===
+const previewMat = new THREE.MeshStandardMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 0.5
+});
+
+let preview = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 0.3, 1),
+  previewMat
+);
+preview.visible = false;
+scene.add(preview);
+
+// === INPUT ===
+window.addEventListener("mousemove", e => {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+});
+
+window.addEventListener("keydown", e => {
+  if (e.key === "1") selected = "farm";
+  if (e.key === "2") selected = "wall";
+});
+
+window.addEventListener("click", () => {
+  if (building) return;
+  startBuild();
+});
+
+// === CONSTRUCCIÓN CON TIEMPO ===
+function startBuild() {
   if (wood < 10) return;
-  wood -= 10;
-  farms++;
+  building = true;
 
-  const farm = new THREE.Mesh(
-    new THREE.BoxGeometry(0.6, 0.3, 0.6),
-    new THREE.MeshStandardMaterial({ color: 0x55ff55 })
-  );
-  farm.position.set(Math.random()*4-2, 0.15, Math.random()*4-2);
-  scene.add(farm);
-}
+  setTimeout(() => {
+    const mat = new THREE.MeshStandardMaterial({
+      color: selected === "farm" ? 0x55ff55 : 0x777777
+    });
 
-function buildWall() {
-  if (wood < 15) return;
-  wood -= 15;
-  walls++;
+    const mesh = new THREE.Mesh(
+      selected === "farm"
+        ? new THREE.BoxGeometry(1, 0.3, 1)
+        : new THREE.BoxGeometry(1, 0.8, 0.2),
+      mat
+    );
 
-  const wall = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 0.5, 0.2),
-    new THREE.MeshStandardMaterial({ color: 0x777777 })
-  );
-  wall.position.set(Math.random()*6-3, 0.25, Math.random()*6-3);
-  scene.add(wall);
-}
+    mesh.position.copy(preview.position);
+    mesh.position.y += selected === "farm" ? 0.15 : 0.4;
+    scene.add(mesh);
 
-function expand() {
-  if (walls >= territory) {
-    territory++;
-    ground.scale.set(territory, 1, territory);
-  }
+    wood -= 10;
+    if (selected === "farm") food += 5;
+
+    building = false;
+  }, 1500); // ⏳ tiempo de construcción
 }
 
 // === LOOP ===
-function update() {
-  food += farms * 0.01;
-  document.getElementById("stats").innerText =
-    `🍖 Comida: ${food.toFixed(1)}
-🌲 Madera: ${wood}
-🌍 Territorio: ${territory}`;
-}
-
 function animate() {
   requestAnimationFrame(animate);
-  update();
+
+  // cámara sigue al jugador
+  camera.position.x = player.position.x;
+  camera.lookAt(player.position);
+
+  // raycast al suelo
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObject(ground);
+
+  if (hits.length) {
+    preview.visible = true;
+    preview.position.copy(hits[0].point);
+    preview.position.y = 0.01;
+  }
+
+  document.getElementById("stats").innerText =
+`🌲 Madera: ${wood}
+🍖 Comida: ${food}
+🏗️ Construyendo: ${building ? "sí" : "no"}
+🔧 Seleccionado: ${selected}`;
+
   renderer.render(scene, camera);
 }
 
