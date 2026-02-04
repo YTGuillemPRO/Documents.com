@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mini Soccer 2P</title>
+<style>
+body {
+  margin: 0;
+  background: #2e7d32;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: white;
+}
+canvas {
+  background: linear-gradient(#4caf50, #388e3c);
+  display: block;
+  margin: auto;
+  border: 4px solid white;
+}
+</style>
+</head>
+
+<body>
+<h2>⚽ MINI SOCCER 2 PLAYER</h2>
+<p>WASD + Espacio vs Flechas + Enter</p>
+
+<canvas id="game" width="800" height="420"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const keys = {};
+
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+let scoreL = 0;
+let scoreR = 0;
+
+const gravity = 0.5;
+
+class Player {
+  constructor(x, color, controls) {
+    this.x = x;
+    this.y = 320;
+    this.vx = 0;
+    this.vy = 0;
+    this.r = 22;
+    this.color = color;
+    this.controls = controls;
+    this.onGround = true;
+  }
+
+  update() {
+    if (keys[this.controls.left]) this.vx = -3;
+    else if (keys[this.controls.right]) this.vx = 3;
+    else this.vx *= 0.8;
+
+    if (keys[this.controls.jump] && this.onGround) {
+      this.vy = -10;
+      this.onGround = false;
+    }
+
+    this.vy += gravity;
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.y > 320) {
+      this.y = 320;
+      this.vy = 0;
+      this.onGround = true;
+    }
+
+    this.x = Math.max(this.r, Math.min(800 - this.r, this.x));
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+const ball = {
+  x: 400,
+  y: 200,
+  vx: 0,
+  vy: 0,
+  r: 12
+};
+
+function updateBall() {
+  ball.vy += gravity;
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  if (ball.y > 350) {
+    ball.y = 350;
+    ball.vy *= -0.7;
+  }
+
+  if (ball.x < ball.r || ball.x > 800 - ball.r) {
+    ball.vx *= -0.8;
+  }
+}
+
+function collide(player) {
+  const dx = ball.x - player.x;
+  const dy = ball.y - player.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < ball.r + player.r) {
+    const angle = Math.atan2(dy, dx);
+    ball.vx = Math.cos(angle) * 6;
+    ball.vy = Math.sin(angle) * 6;
+  }
+}
+
+function goalCheck() {
+  if (ball.x < 20 && ball.y > 260) {
+    scoreR++;
+    reset();
+  }
+  if (ball.x > 780 && ball.y > 260) {
+    scoreL++;
+    reset();
+  }
+}
+
+function reset() {
+  ball.x = 400;
+  ball.y = 200;
+  ball.vx = ball.vy = 0;
+}
+
+const p1 = new Player(200, "#2196f3", {
+  left: "a", right: "d", jump: "w"
+});
+const p2 = new Player(600, "#f44336", {
+  left: "ArrowLeft", right: "ArrowRight", jump: "ArrowUp"
+});
+
+function drawField() {
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(0, 350, 800, 5);
+
+  ctx.strokeRect(0, 260, 15, 90);
+  ctx.strokeRect(785, 260, 15, 90);
+
+  ctx.beginPath();
+  ctx.arc(400, 350, 60, Math.PI, 0);
+  ctx.stroke();
+}
+
+function loop() {
+  ctx.clearRect(0,0,800,420);
+  drawField();
+
+  p1.update();
+  p2.update();
+  updateBall();
+  collide(p1);
+  collide(p2);
+  goalCheck();
+
+  p1.draw();
+  p2.draw();
+
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillText(`${scoreL}  -  ${scoreR}`, 380, 30);
+
+  if (scoreL === 5 || scoreR === 5) {
+    ctx.font = "40px Arial";
+    ctx.fillText(
+      scoreL === 5 ? "PLAYER 1 WINS ⚽" : "PLAYER 2 WINS ⚽",
+      230, 200
+    );
+    return;
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
