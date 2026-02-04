@@ -4,36 +4,34 @@
 <meta charset="UTF-8">
 <title>Mini Soccer 2P</title>
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(#2e7d32, #1b5e20);
-  font-family: Arial, sans-serif;
-  text-align: center;
-  color: white;
+body{
+  margin:0;
+  background:radial-gradient(#2e7d32,#1b5e20);
+  font-family:Arial,sans-serif;
+  text-align:center;
+  color:white;
 }
-canvas {
-  display: block;
-  margin: auto;
-  border: 5px solid white;
-  background: repeating-linear-gradient(
+canvas{
+  display:block;
+  margin:auto;
+  border:5px solid white;
+  background:repeating-linear-gradient(
     90deg,
-    #4caf50,
-    #4caf50 40px,
-    #43a047 40px,
-    #43a047 80px
+    #4caf50,#4caf50 40px,
+    #43a047 40px,#43a047 80px
   );
 }
-button {
-  padding: 15px 30px;
-  font-size: 20px;
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  background: #ffeb3b;
-  font-weight: bold;
+button{
+  padding:15px 30px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#ffeb3b;
+  font-weight:bold;
 }
-#menu {
-  margin-top: 100px;
+#menu{
+  margin-top:120px;
 }
 </style>
 </head>
@@ -47,177 +45,192 @@ button {
   <button onclick="startGame()">JUGAR</button>
 </div>
 
-<canvas id="game" width="800" height="420" style="display:none;"></canvas>
+<canvas id="game" width="800" height="420" style="display:none"></canvas>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-const keys = {};
-let gameRunning = false;
+/* ================= CONFIG ================= */
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const keys={};
+let gameRunning=false;
 
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+document.addEventListener("keydown",e=>keys[e.key]=true);
+document.addEventListener("keyup",e=>keys[e.key]=false);
 
-let scoreL = 0, scoreR = 0;
-const gravity = 0.5;
+let scoreL=0, scoreR=0;
+const gravity=0.5;
 
-function startGame() {
-  document.getElementById("menu").style.display = "none";
-  canvas.style.display = "block";
-  scoreL = scoreR = 0;
-  gameRunning = true;
+/* ================= START ================= */
+function startGame(){
+  document.getElementById("menu").style.display="none";
+  canvas.style.display="block";
+  scoreL=scoreR=0;
+  gameRunning=true;
   loop();
 }
 
-class Player {
-  constructor(x, color, controls) {
-    this.x = x;
-    this.y = 320;
-    this.vx = 0;
-    this.vy = 0;
-    this.r = 24;
-    this.color = color;
-    this.controls = controls;
-    this.onGround = true;
-    this.legPhase = 0;
+/* ================= PLAYER ================= */
+class Player{
+  constructor(x,color,controls){
+    this.x=x;
+    this.y=320;
+    this.vx=0;
+    this.vy=0;
+    this.r=24;
+    this.color=color;
+    this.controls=controls;
+    this.onGround=true;
+    this.leg=0;
   }
 
-  update() {
-    if (keys[this.controls.left]) {
-      this.vx = -3.5;
-      this.legPhase += 0.3;
-    } else if (keys[this.controls.right]) {
-      this.vx = 3.5;
-      this.legPhase += 0.3;
-    } else {
-      this.vx *= 0.8;
+  update(){
+    if(keys[this.controls.left]){
+      this.vx=-3.5; this.leg+=0.3;
+    }else if(keys[this.controls.right]){
+      this.vx=3.5; this.leg+=0.3;
+    }else this.vx*=0.8;
+
+    if(keys[this.controls.jump] && this.onGround){
+      this.vy=-11;
+      this.onGround=false;
     }
 
-    if (keys[this.controls.jump] && this.onGround) {
-      this.vy = -11;
-      this.onGround = false;
+    this.vy+=gravity;
+    this.x+=this.vx;
+    this.y+=this.vy;
+
+    if(this.y>320){
+      this.y=320;
+      this.vy=0;
+      this.onGround=true;
     }
 
-    this.vy += gravity;
-    this.x += this.vx;
-    this.y += this.vy;
-
-    if (this.y > 320) {
-      this.y = 320;
-      this.vy = 0;
-      this.onGround = true;
-    }
-
-    this.x = Math.max(this.r, Math.min(800 - this.r, this.x));
+    this.x=Math.max(this.r,Math.min(800-this.r,this.x));
   }
 
-  draw() {
-    // piernas animadas
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 4;
+  draw(){
+    // piernas
+    ctx.strokeStyle="#000";
+    ctx.lineWidth=4;
     ctx.beginPath();
-    ctx.moveTo(this.x, this.y + 20);
-    ctx.lineTo(this.x + Math.sin(this.legPhase) * 10, this.y + 35);
-    ctx.moveTo(this.x, this.y + 20);
-    ctx.lineTo(this.x - Math.sin(this.legPhase) * 10, this.y + 35);
+    ctx.moveTo(this.x,this.y+20);
+    ctx.lineTo(this.x+Math.sin(this.leg)*10,this.y+35);
+    ctx.moveTo(this.x,this.y+20);
+    ctx.lineTo(this.x-Math.sin(this.leg)*10,this.y+35);
     ctx.stroke();
 
     // cuerpo
-    ctx.fillStyle = this.color;
+    ctx.fillStyle=this.color;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
     ctx.fill();
 
     // ojos
-    ctx.fillStyle = "white";
+    ctx.fillStyle="white";
     ctx.beginPath();
-    ctx.arc(this.x - 6, this.y - 5, 4, 0, Math.PI * 2);
-    ctx.arc(this.x + 6, this.y - 5, 4, 0, Math.PI * 2);
+    ctx.arc(this.x-6,this.y-5,4,0,Math.PI*2);
+    ctx.arc(this.x+6,this.y-5,4,0,Math.PI*2);
     ctx.fill();
   }
 }
 
-const ball = {
-  x: 400, y: 200, vx: 0, vy: 0, r: 10, rot: 0
+/* ================= BALL ================= */
+const ball={
+  x:400,y:200,vx:0,vy:0,r:10,rot:0
 };
 
-function updateBall() {
-  ball.vy += gravity;
-  ball.x += ball.vx;
-  ball.y += ball.vy;
-  ball.rot += ball.vx * 0.1;
+function updateBall(){
+  ball.vy+=gravity;
+  ball.x+=ball.vx;
+  ball.y+=ball.vy;
+  ball.rot+=ball.vx*0.1;
 
-  if (ball.y > 350) {
-    ball.y = 350;
-    ball.vy *= -0.7;
+  if(ball.y>350){
+    ball.y=350;
+    ball.vy*=-0.7;
+  }
+  if(ball.x<ball.r||ball.x>800-ball.r){
+    ball.vx*=-0.85;
   }
 
-  if (ball.x < ball.r || ball.x > 800 - ball.r) {
-    ball.vx *= -0.85;
-  }
-
-  ball.vx *= 0.99;
+  // límite velocidad
+  const max=12;
+  ball.vx=Math.max(-max,Math.min(max,ball.vx));
+  ball.vy=Math.max(-max,Math.min(max,ball.vy));
 }
 
-function drawBall() {
+function drawBall(){
   ctx.save();
-  ctx.translate(ball.x, ball.y);
+  ctx.translate(ball.x,ball.y);
   ctx.rotate(ball.rot);
-  ctx.fillStyle = "white";
+  ctx.fillStyle="white";
   ctx.beginPath();
-  ctx.arc(0, 0, ball.r, 0, Math.PI * 2);
+  ctx.arc(0,0,ball.r,0,Math.PI*2);
   ctx.fill();
-  ctx.strokeStyle = "#ddd";
+  ctx.strokeStyle="#ddd";
   ctx.beginPath();
-  ctx.moveTo(-ball.r, 0);
-  ctx.lineTo(ball.r, 0);
+  ctx.moveTo(-ball.r,0);
+  ctx.lineTo(ball.r,0);
   ctx.stroke();
   ctx.restore();
 }
 
-function collide(player) {
-  const dx = ball.x - player.x;
-  const dy = ball.y - player.y;
-  const dist = Math.hypot(dx, dy);
-  if (dist < ball.r + player.r) {
-    const angle = Math.atan2(dy, dx);
-    const power = 7;
-    ball.vx = Math.cos(angle) * power;
-    ball.vy = Math.sin(angle) * power;
+/* ======= SOLID COLLISION (NO PASA POR DEBAJO) ======= */
+function collide(player){
+  const left=player.x-player.r;
+  const right=player.x+player.r;
+  const top=player.y-player.r;
+  const bottom=player.y+player.r+12;
+
+  if(
+    ball.x+ball.r>left &&
+    ball.x-ball.r<right &&
+    ball.y+ball.r>top &&
+    ball.y-ball.r<bottom
+  ){
+    const mid=(left+right)/2;
+    const dx=ball.x-mid;
+    ball.vx=dx*0.25;
+    ball.vy=-Math.abs(ball.vy)-4;
+    ball.y=top-ball.r;
   }
 }
 
-function drawField() {
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(0, 350, 800, 5);
-  ctx.strokeRect(0, 260, 20, 90);
-  ctx.strokeRect(780, 260, 20, 90);
+/* ================= FIELD ================= */
+function drawField(){
+  ctx.strokeStyle="white";
+  ctx.lineWidth=3;
+  ctx.strokeRect(0,350,800,5);
+  ctx.strokeRect(0,260,20,90);
+  ctx.strokeRect(780,260,20,90);
 }
 
-function goalCheck() {
-  if (ball.x < 20 && ball.y > 260) {
-    scoreR++; reset();
+/* ================= GOALS ================= */
+function goalCheck(){
+  if(ball.x<20 && ball.y>260){
+    scoreR++; resetBall();
   }
-  if (ball.x > 780 && ball.y > 260) {
-    scoreL++; reset();
+  if(ball.x>780 && ball.y>260){
+    scoreL++; resetBall();
   }
 }
 
-function reset() {
-  ball.x = 400;
-  ball.y = 200;
-  ball.vx = ball.vy = 0;
+function resetBall(){
+  ball.x=400; ball.y=200;
+  ball.vx=ball.vy=0;
 }
 
-const p1 = new Player(200, "#2196f3", { left:"a", right:"d", jump:"w" });
-const p2 = new Player(600, "#f44336", { left:"ArrowLeft", right:"ArrowRight", jump:"ArrowUp" });
+/* ================= PLAYERS ================= */
+const p1=new Player(200,"#2196f3",{left:"a",right:"d",jump:"w"});
+const p2=new Player(600,"#f44336",{left:"ArrowLeft",right:"ArrowRight",jump:"ArrowUp"});
 
-function loop() {
-  if (!gameRunning) return;
+/* ================= LOOP ================= */
+function loop(){
+  if(!gameRunning) return;
+
   ctx.clearRect(0,0,800,420);
-
   drawField();
+
   p1.update(); p2.update();
   updateBall();
   collide(p1); collide(p2);
@@ -225,18 +238,18 @@ function loop() {
 
   p1.draw(); p2.draw(); drawBall();
 
-  ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
-  ctx.fillText(`${scoreL}  -  ${scoreR}`, 370, 30);
+  ctx.fillStyle="white";
+  ctx.font="20px Arial";
+  ctx.fillText(`${scoreL}  -  ${scoreR}`,370,30);
 
-  if (scoreL === 5 || scoreR === 5) {
-    ctx.font = "42px Arial Black";
+  if(scoreL===5||scoreR===5){
+    ctx.font="42px Arial Black";
     ctx.fillText(
-      scoreL === 5 ? "PLAYER 1 WINS ⚽" : "PLAYER 2 WINS ⚽",
-      220, 200
+      scoreL===5?"PLAYER 1 WINS ⚽":"PLAYER 2 WINS ⚽",
+      220,200
     );
-    gameRunning = false;
-    setTimeout(() => location.reload(), 3000);
+    gameRunning=false;
+    setTimeout(()=>location.reload(),3000);
     return;
   }
 
