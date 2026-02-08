@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatSpace - Tu Servidor de Chat</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #16161f;
+            --bg-tertiary: #1d1d28;
+            --bg-chat: #12121b;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #ff006e;
+            --accent-gradient: linear-gradient(135deg, #00d9ff 0%, #ff006e 100%);
+            --text-primary: #ffffff;
+            --text-secondary: #a8a8b8;
+            --text-muted: #6b6b7b;
+            --border-color: #2a2a35;
+            --hover-bg: #232330;
+            --online-color: #00ff88;
+            --shadow: 0 4px 20px rgba(0, 217, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Sidebar de Servidores */
+        .servers-sidebar {
+            width: 72px;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 8px;
+            border-right: 1px solid var(--border-color);
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        .servers-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .servers-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .servers-sidebar::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .server-icon:hover {
+            border-radius: 35%;
+            background: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .server-icon.active {
+            border-radius: 35%;
+            background: var(--accent-gradient);
+        }
+        
+        .server-icon.active::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            width: 4px;
+            height: 40px;
+            background: var(--accent-primary);
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .server-divider {
+            width: 32px;
+            height: 2px;
+            background: var(--border-color);
+            margin: 4px 0;
+        }
+        
+        .add-server {
+            background: var(--bg-tertiary);
+            color: var(--online-color);
+            font-size: 32px;
+            line-height: 1;
+        }
+        
+        .add-server:hover {
+            background: var(--online-color);
+            color: var(--bg-primary);
+        }
+        
+        /* Sidebar de Canales */
+        .channels-sidebar {
+            width: 240px;
+            background: var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .server-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .server-header:hover {
+            background: var(--hover-bg);
+        }
+        
+        .channels-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .channels-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .channels-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .channels-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .channel-category {
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .category-header:hover {
+            color: var(--text-secondary);
+        }
+        
+        .category-arrow {
+            margin-right: 4px;
+            transition: transform 0.2s;
+        }
+        
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 8px 8px 24px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .channel-item:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+        
+        .channel-item.active {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            position: relative;
+        }
+        
+        .channel-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .channel-icon {
+            margin-right: 8px;
+            font-size: 18px;
+            color: var(--text-muted);
+        }
+        
+        .channel-item.active .channel-icon {
+            color: var(--accent-primary);
+        }
+        
+        .user-area {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: var(--online-color);
+            border: 2px solid var(--bg-secondary);
+            border-radius: 50%;
+        }
+        
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-status {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .user-action-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+        
+        .user-action-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+        
+        /* Área Principal de Chat */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-chat);
+        }
+        
+        .chat-header {
+            height: 56px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+            background: var(--bg-secondary);
+        }
+        
+        .channel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .channel-hash {
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+        
+        .channel-description {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid var(--border-color);
+        }
+        
+        .chat-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .chat-action-btn {
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s;
+            font-size: 20px;
+        }
+        
+        .chat-action-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .messages-container::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 6px;
+            border: 3px solid var(--bg-chat);
+        }
+        
+        .message {
+            display: flex;
+            gap: 16px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.1s;
+            animation: messageIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message:hover {
+            background: var(--hover-bg);
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .message-author {
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        
+        .message-author:hover {
+            text-decoration: underline;
+        }
+        
+        .message-timestamp {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .message-text {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        
+        .message-input-container {
+            padding: 20px;
+            background: var(--bg-chat);
+        }
+        
+        .message-input-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .message-input-wrapper:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.1);
+        }
+        
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .input-action-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            font-size: 18px;
+        }
+        
+        .input-action-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+        
+        .send-btn {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+        
+        .send-btn:hover {
+            background: var(--accent-secondary);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        /* Sidebar de Miembros */
+        .members-sidebar {
+            width: 240px;
+            background: var(--bg-tertiary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .members-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .members-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .members-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .members-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .members-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .members-category {
+            margin-bottom: 8px;
+        }
+        
+        .members-category-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px;
+        }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 10px;
+        }
+        
+        .member-item:hover {
+            background: var(--hover-bg);
+        }
+        
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .member-avatar .status-indicator {
+            width: 10px;
+            height: 10px;
+        }
+        
+        .member-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .member-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .member-activity {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Welcome Message */
+        .welcome-message {
+            padding: 20px;
+            margin: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-primary);
+        }
+        
+        .welcome-message h3 {
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+        
+        .welcome-message p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Animaciones */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 16px;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+            margin-left: 8px;
+        }
+        
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar de Servidores -->
+        <div class="servers-sidebar">
+            <div class="server-icon active" data-server="0">CS</div>
+            <div class="server-icon" data-server="1">GM</div>
+            <div class="server-icon" data-server="2">🎮</div>
+            <div class="server-icon" data-server="3">🎨</div>
+            <div class="server-divider"></div>
+            <div class="server-icon add-server">+</div>
+        </div>
+
+        <!-- Sidebar de Canales -->
+        <div class="channels-sidebar">
+            <div class="server-header">
+                <span>ChatSpace</span>
+                <span style="font-size: 12px;">▼</span>
+            </div>
+            <div class="channels-list">
+                <div class="channel-category">
+                    <div class="category-header">
+                        <span class="category-arrow">▼</span>
+                        Canales de Texto
+                    </div>
+                    <div class="channel-item active" data-channel="general">
+                        <span class="channel-icon">#</span>
+                        <span>general</span>
+                    </div>
+                    <div class="channel-item" data-channel="random">
+                        <span class="channel-icon">#</span>
+                        <span>random</span>
+                    </div>
+                    <div class="channel-item" data-channel="proyectos">
+                        <span class="channel-icon">#</span>
+                        <span>proyectos</span>
+                    </div>
+                    <div class="channel-item" data-channel="ayuda">
+                        <span class="channel-icon">#</span>
+                        <span>ayuda</span>
+                    </div>
+                </div>
+                <div class="channel-category">
+                    <div class="category-header">
+                        <span class="category-arrow">▼</span>
+                        Canales de Voz
+                    </div>
+                    <div class="channel-item" data-channel="lobby">
+                        <span class="channel-icon">🔊</span>
+                        <span>Lobby</span>
+                    </div>
+                    <div class="channel-item" data-channel="sala-1">
+                        <span class="channel-icon">🔊</span>
+                        <span>Sala 1</span>
+                    </div>
+                    <div class="channel-item" data-channel="musica">
+                        <span class="channel-icon">🎵</span>
+                        <span>Música</span>
+                    </div>
+                </div>
+            </div>
+            <div class="user-area">
+                <div class="user-avatar">
+                    TU
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Tu Usuario</div>
+                    <div class="user-status">En línea</div>
+                </div>
+                <div class="user-actions">
+                    <div class="user-action-btn">🎤</div>
+                    <div class="user-action-btn">⚙️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área Principal de Chat -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="channel-title">
+                    <span class="channel-hash">#</span>
+                    <span id="current-channel-name">general</span>
+                </div>
+                <div class="channel-description">Canal principal de conversación</div>
+                <div class="chat-actions">
+                    <span class="chat-action-btn">🔔</span>
+                    <span class="chat-action-btn">📌</span>
+                    <span class="chat-action-btn">👥</span>
+                    <span class="chat-action-btn">🔍</span>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messages">
+                <div class="welcome-message">
+                    <h3>¡Bienvenido a #general! 👋</h3>
+                    <p>Este es el comienzo del canal #general. Aquí puedes charlar con todos los miembros del servidor. ¡Sé amable y diviértete!</p>
+                </div>
+            </div>
+            
+            <div class="message-input-container">
+                <div class="message-input-wrapper">
+                    <input 
+                        type="text" 
+                        class="message-input" 
+                        id="messageInput"
+                        placeholder="Enviar mensaje a #general"
+                        autocomplete="off"
+                    />
+                    <div class="input-actions">
+                        <button class="input-action-btn">😊</button>
+                        <button class="input-action-btn">📎</button>
+                        <button class="input-action-btn send-btn" id="sendBtn">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar de Miembros -->
+        <div class="members-sidebar">
+            <div class="members-header">Miembros — 8</div>
+            <div class="members-list">
+                <div class="members-category">
+                    <div class="members-category-title">En Línea — 5</div>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            AD
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Admin</div>
+                            <div class="member-activity">Configurando el servidor</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            MG
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Moderador</div>
+                            <div class="member-activity">Jugando...</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            TU
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Tu Usuario</div>
+                            <div class="member-activity">En línea</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            JD
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">JuanDev</div>
+                            <div class="member-activity">Programando</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            LC
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">LunaCreativa</div>
+                            <div class="member-activity">Diseñando</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="members-category">
+                    <div class="members-category-title">Ausentes — 3</div>
+                    <div class="member-item">
+                        <div class="member-avatar" style="opacity: 0.6;">
+                            MX
+                            <div class="status-indicator" style="background: #ffa500;"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name" style="opacity: 0.7;">MaxGamer</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar" style="opacity: 0.6;">
+                            SB
+                            <div class="status-indicator" style="background: #ffa500;"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name" style="opacity: 0.7;">SofiaBlue</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar" style="opacity: 0.6;">
+                            RT
+                            <div class="status-indicator" style="background: #ffa500;"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name" style="opacity: 0.7;">RobertoTech</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de ejemplo
+        const users = [
+            { name: 'Admin', avatar: 'AD', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            { name: 'Moderador', avatar: 'MG', color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+            { name: 'JuanDev', avatar: 'JD', color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+            { name: 'LunaCreativa', avatar: 'LC', color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
+            { name: 'MaxGamer', avatar: 'MX', color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+        ];
+
+        const sampleMessages = [
+            { author: 'Admin', text: '¡Bienvenidos a todos al servidor! 🎉', avatar: 'AD', color: users[0].color },
+            { author: 'Moderador', text: 'Recuerden leer las reglas del servidor 📜', avatar: 'MG', color: users[1].color },
+            { author: 'JuanDev', text: 'Hola a todos! Estoy emocionado de estar aquí', avatar: 'JD', color: users[2].color },
+            { author: 'LunaCreativa', text: '¿Alguien quiere colaborar en un proyecto?', avatar: 'LC', color: users[3].color },
+            { author: 'MaxGamer', text: '¿Alguien para jugar más tarde? 🎮', avatar: 'MX', color: users[4].color },
+        ];
+
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Agregar mensajes de ejemplo al inicio
+        setTimeout(() => {
+            sampleMessages.forEach((msg, index) => {
+                setTimeout(() => addMessage(msg.author, msg.text, msg.avatar, msg.color), index * 1000);
+            });
+        }, 500);
+
+        function addMessage(author, text, avatar, color) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar" style="background: ${color}">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author">${author}</span>
+                        <span class="message-timestamp">${time}</span>
+                    </div>
+                    <div class="message-text">${text}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (text) {
+                addMessage('Tu Usuario', text, 'TU', 'linear-gradient(135deg, #00d9ff 0%, #ff006e 100%)');
+                messageInput.value = '';
+                
+                // Simular respuesta
+                setTimeout(() => {
+                    showTypingIndicator();
+                    setTimeout(() => {
+                        removeTypingIndicator();
+                        const randomUser = users[Math.floor(Math.random() * users.length)];
+                        const responses = [
+                            'Interesante punto de vista 🤔',
+                            '¡Totalmente de acuerdo! 👍',
+                            'No había pensado en eso',
+                            '¿Alguien más opina lo mismo?',
+                            'Gracias por compartir 😊'
+                        ];
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        addMessage(randomUser.name, randomResponse, randomUser.avatar, randomUser.color);
+                    }, 2000);
+                }, 1000);
+            }
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                Alguien está escribiendo
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Cambio de canales
+        const channelItems = document.querySelectorAll('.channel-item');
+        const currentChannelName = document.getElementById('current-channel-name');
+        
+        channelItems.forEach(item => {
+            item.addEventListener('click', () => {
+                channelItems.forEach(ch => ch.classList.remove('active'));
+                item.classList.add('active');
+                const channelName = item.dataset.channel;
+                currentChannelName.textContent = channelName;
+                messageInput.placeholder = `Enviar mensaje a #${channelName}`;
+                
+                // Limpiar mensajes y agregar nuevo mensaje de bienvenida
+                messagesContainer.innerHTML = `
+                    <div class="welcome-message">
+                        <h3>¡Bienvenido a #${channelName}! 👋</h3>
+                        <p>Este es el comienzo del canal #${channelName}.</p>
+                    </div>
+                `;
+            });
+        });
+
+        // Cambio de servidores
+        const serverIcons = document.querySelectorAll('.server-icon');
+        serverIcons.forEach(icon => {
+            if (!icon.classList.contains('add-server')) {
+                icon.addEventListener('click', () => {
+                    serverIcons.forEach(s => s.classList.remove('active'));
+                    icon.classList.add('active');
+                });
+            }
+        });
+
+        // Botón de agregar servidor
+        document.querySelector('.add-server').addEventListener('click', () => {
+            alert('¡Función de agregar servidor! Aquí podrías crear o unirte a un nuevo servidor.');
+        });
+    </script>
+</body>
+</html>
