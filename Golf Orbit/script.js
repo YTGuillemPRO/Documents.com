@@ -1,43 +1,43 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+const ground = 340;
+const gravity = 0.35;
+
 let cameraX = 0;
 let distance = 0;
 
-// POWER BAR
-let power = 0;
+// BARRA AUTOMÁTICA
+let power = 5;
 let powerDir = 1;
-let powerActive = true;
+let canShoot = true;
 
 const ball = {
     x: 80,
-    y: 330,
+    y: ground,
     r: 8,
     vx: 0,
     vy: 0,
     moving: false
 };
 
-const gravity = 0.35;
-const ground = 340;
-
 // CLICK = DISPARO
 canvas.addEventListener("click", () => {
-    if (!ball.moving && powerActive) {
-        ball.vx = power * 0.9;
-        ball.vy = -power * 0.75;
+    if (!ball.moving && canShoot) {
+        ball.vx = power * 1.1;
+        ball.vy = -power * 0.9;
         ball.moving = true;
-        powerActive = false;
+        canShoot = false;
     }
 });
 
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // BARRA DE POTENCIA AUTOMÁTICA
-    if (powerActive) {
-        power += powerDir * 0.6;
-        if (power > 40 || power < 5) powerDir *= -1;
+    // BARRA DE PODER (SOLO CUANDO SE PUEDE DISPARAR)
+    if (canShoot) {
+        power += powerDir * 0.7;
+        if (power >= 40 || power <= 5) powerDir *= -1;
     }
 
     // FÍSICA
@@ -55,13 +55,16 @@ function update() {
             ball.vx *= 0.85;
         }
 
-        // STOP
+        // DETENERSE
         if (Math.abs(ball.vx) < 0.2 && Math.abs(ball.vy) < 0.2) {
             ball.moving = false;
-            powerActive = true;
-            power = 0;
+            ball.vx = 0;
+            ball.vy = 0;
+            canShoot = true;
+            power = 5;
         }
 
+        // CÁMARA
         cameraX = ball.x - 150;
     }
 
@@ -77,7 +80,7 @@ function update() {
 
 function drawWorld() {
     ctx.fillStyle = "#4caf50";
-    ctx.fillRect(-cameraX, ground + 8, 6000, 100);
+    ctx.fillRect(-cameraX, ground + 8, 8000, 100);
 }
 
 function drawBall() {
@@ -88,11 +91,13 @@ function drawBall() {
 }
 
 function drawPowerBar() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(20, 20, 200, 18);
+    if (!canShoot) return;
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(20, 20, 200, 16);
 
     ctx.fillStyle = "orange";
-    ctx.fillRect(20, 20, power * 5, 18);
+    ctx.fillRect(20, 20, power * 5, 16);
 }
 
 update();
