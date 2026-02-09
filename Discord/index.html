@@ -704,7 +704,7 @@
         <!-- Sidebar de Servidores -->
         <div class="servers-sidebar">
             <div class="server-icon active" data-server="0">CS</div>
-            <div class="server-icon" data-server="1">GM</div>
+            <div class="server-icon" data-server="1">Actualizacions</div>
             <div class="server-icon" data-server="2">🎮</div>
             <div class="server-icon" data-server="3">🎨</div>
             <div class="server-divider"></div>
@@ -928,18 +928,7 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
-
-        // Agregar mensajes de ejemplo al inicio
-        setTimeout(() => {
-            sampleMessages.forEach((msg, index) => {
-                setTimeout(() => addMessage(msg.author, msg.text, msg.avatar, msg.color), index * 1000);
-            });
-        }, 500);
-
-        function addMessage(author, text, avatar, color) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            
+        
             const now = new Date();
             const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             
@@ -1051,6 +1040,84 @@
         document.querySelector('.add-server').addEventListener('click', () => {
             alert('¡Función de agregar servidor! Aquí podrías crear o unirte a un nuevo servidor.');
         });
+        /* ===== LOGIN ===== */
+
+function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (!email || !password) {
+    alert('Completa todos los campos');
+    return;
+  }
+
+  localStorage.setItem('chatUser', JSON.stringify({ email }));
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.querySelector('.user-name').textContent = email;
+
+  loadMessages();
+}
+
+window.addEventListener('load', () => {
+  const user = JSON.parse(localStorage.getItem('chatUser'));
+
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.querySelector('.user-name').textContent = user.email;
+    loadMessages();
+  }
+});
+
+        function addMessage(author, text, avatar, color, save = true) {
+  const messagesContainer = document.getElementById('messages');
+
+  const time = new Date().toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message';
+
+  messageDiv.innerHTML = `
+    <div class="message-avatar" style="background:${color}">${avatar}</div>
+    <div class="message-content">
+      <div class="message-header">
+        <span class="message-author">${author}</span>
+        <span class="message-timestamp">${time}</span>
+      </div>
+      <div class="message-text">${text}</div>
+    </div>
+  `;
+
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  if (save) {
+    const stored = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    stored.push({ author, text, avatar, color, time });
+    localStorage.setItem('chatMessages', JSON.stringify(stored));
+  }
+}
+function loadMessages() {
+  const messagesContainer = document.getElementById('messages');
+  const stored = JSON.parse(localStorage.getItem('chatMessages')) || [];
+
+  messagesContainer.innerHTML = '';
+
+  stored.forEach(msg => {
+    addMessage(
+      msg.author,
+      msg.text,
+      msg.avatar,
+      msg.color,
+      false
+    );
+  });
+}
+addMessage('Tu Usuario', text, 'TU', 'linear-gradient(135deg,#00d9ff,#ff006e)');
+
     </script>
 </body>
 </html>
