@@ -14,9 +14,37 @@
     section { padding:20px;border-bottom:1px solid #eee;background:white; }
     a { text-decoration:none;color:#0366d6;font-size:1.2rem; }
     #dots-menu { cursor:pointer;margin:0 15px;font-size:24px;color:white; }
+
+    /* ESTILO DEL BOTÓN FLOTANTE DE DISCORD */
+    #discord-floating-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #5865F2; /* Color oficial de Discord */
+      color: white;
+      padding: 12px 20px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transition: transform 0.2s, background-color 0.2s;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    #discord-floating-btn:hover {
+      background-color: #4752c4;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
+
+<a href="https://discord.gg/YGVcHmu4" target="_blank" id="discord-floating-btn">
+  Discord para saber actualizaciones
+</a>
 
 <div id="auth-container">
   <div id="user-logged-out" class="login-box">
@@ -31,7 +59,6 @@
     <button id="btn-logout">Cerrar Sesión</button>
   </div>
 </div>
-
 
   <section><a href="juego1/index.html">Pets and Money</a></section>
   <section><a href="juego2/index.html">No cliques el Botón</a></section>
