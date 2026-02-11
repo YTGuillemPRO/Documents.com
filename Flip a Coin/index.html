@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Clicker - Idle Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            height: 100vh;
+        }
+
+        .game-area {
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(74, 222, 128, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #1e4d2b 0%, #2d5f3f 50%, #1a3d2a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle, rgba(255, 215, 0, 0.1) 1px, transparent 1px),
+                radial-gradient(circle, rgba(74, 222, 128, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px, 80px 80px;
+            background-position: 0 0, 40px 40px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .money-display {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-size: 3.5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4ade80, #22c55e, #16a34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(74, 222, 128, 0.6));
+            z-index: 100;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 2px;
+        }
+
+        .coin {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #5c2e0a;
+            text-shadow: 
+                0 1px 0 #d4956f,
+                0 2px 3px rgba(0, 0, 0, 0.5);
+            background: 
+                radial-gradient(circle at 30% 30%, #f4b384 0%, #d4956f 20%, #b87333 60%, #8b4513 100%);
+            border: 5px solid #8b4513;
+            box-shadow: 
+                0 8px 15px rgba(0, 0, 0, 0.5),
+                0 3px 0 #5c2e0a,
+                inset 0 -3px 8px rgba(0, 0, 0, 0.3),
+                inset 0 3px 8px rgba(255, 255, 255, 0.3);
+            transform-style: preserve-3d;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .coin::before {
+            content: '¢';
+            position: absolute;
+            font-size: 1em;
+            font-weight: 900;
+            color: #5c2e0a;
+            text-shadow: 
+                0 1px 0 rgba(212, 149, 111, 0.8),
+                0 0 10px rgba(212, 149, 111, 0.5);
+        }
+
+        .coin::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 30%;
+            height: 30%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(3px);
+        }
+
+        .coin:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 
+                0 12px 25px rgba(184, 115, 51, 0.6),
+                0 3px 0 #5c2e0a,
+                inset 0 -3px 8px rgba(0, 0, 0, 0.3),
+                inset 0 3px 8px rgba(255, 255, 255, 0.3),
+                0 0 30px rgba(184, 115, 51, 0.5);
+        }
+
+        .coin.clicked {
+            animation: coinClickFlip 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+        }
+
+        @keyframes coinClickFlip {
+            0% { 
+                transform: scale(1) rotateY(0deg);
+            }
+            50% { 
+                transform: scale(1.3) rotateY(180deg);
+            }
+            100% { 
+                transform: scale(1) rotateY(360deg);
+            }
+        }
+
+        @keyframes coinMove1 {
+            0% { left: 10%; top: 20%; transform: rotate(0deg); }
+            25% { left: 80%; top: 15%; transform: rotate(90deg); }
+            50% { left: 75%; top: 70%; transform: rotate(180deg); }
+            75% { left: 15%; top: 75%; transform: rotate(270deg); }
+            100% { left: 10%; top: 20%; transform: rotate(360deg); }
+        }
+
+        @keyframes coinMove2 {
+            0% { left: 70%; top: 30%; transform: rotate(0deg); }
+            25% { left: 20%; top: 25%; transform: rotate(-90deg); }
+            50% { left: 15%; top: 65%; transform: rotate(-180deg); }
+            75% { left: 75%; top: 70%; transform: rotate(-270deg); }
+            100% { left: 70%; top: 30%; transform: rotate(-360deg); }
+        }
+
+        @keyframes coinMove3 {
+            0% { left: 40%; top: 15%; transform: rotate(0deg) scale(1); }
+            20% { left: 65%; top: 40%; transform: rotate(72deg) scale(1.1); }
+            40% { left: 55%; top: 75%; transform: rotate(144deg) scale(1); }
+            60% { left: 20%; top: 60%; transform: rotate(216deg) scale(1.1); }
+            80% { left: 25%; top: 25%; transform: rotate(288deg) scale(1); }
+            100% { left: 40%; top: 15%; transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes coinMove4 {
+            0% { left: 50%; top: 50%; transform: rotate(0deg); }
+            33% { left: 80%; top: 35%; transform: rotate(120deg); }
+            66% { left: 25%; top: 75%; transform: rotate(240deg); }
+            100% { left: 50%; top: 50%; transform: rotate(360deg); }
+        }
+
+        @keyframes coinMove5 {
+            0% { left: 30%; top: 70%; transform: rotate(0deg) translateX(0); }
+            25% { left: 60%; top: 20%; transform: rotate(90deg) translateX(20px); }
+            50% { left: 85%; top: 55%; transform: rotate(180deg) translateX(0); }
+            75% { left: 45%; top: 80%; transform: rotate(270deg) translateX(-20px); }
+            100% { left: 30%; top: 70%; transform: rotate(360deg) translateX(0); }
+        }
+
+        .click-effect {
+            position: absolute;
+            font-size: 2em;
+            font-weight: 800;
+            color: #4ade80;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 5px rgba(74, 222, 128, 0.8);
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        .shop-panel {
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid rgba(74, 222, 128, 0.2);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .shop-header {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 2px solid #2a2a2a;
+        }
+
+        .shop-title {
+            font-size: 2em;
+            font-weight: 800;
+            color: #4ade80;
+            letter-spacing: 8px;
+        }
+
+        .skill-tree-preview {
+            padding: 20px;
+            background: transparent;
+            border: none;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .skill-tree-preview::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .skill-tree-preview::-webkit-scrollbar-thumb {
+            background: #4ade80;
+            border-radius: 2px;
+        }
+
+        .skill-node {
+            min-width: 50px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: #2a2a2a;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .skill-node.unlocked {
+            background: #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+        }
+
+        .skill-node.locked {
+            opacity: 0.4;
+        }
+
+        .skill-node::after {
+            display: none;
+        }
+
+        .tree-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .tree-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #4ade80;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 0, 0, 0.5);
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #4ade80;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .skill-tree-cross {
+            display: grid;
+            grid-template-areas:
+                ". top top top ."
+                "left left center right right"
+                ". bottom bottom bottom .";
+            gap: 20px;
+            justify-items: center;
+            align-items: center;
+            min-width: 800px;
+        }
+
+        .tree-center { grid-area: center; }
+        .tree-top { grid-area: top; display: flex; gap: 20px; }
+        .tree-bottom { grid-area: bottom; display: flex; gap: 20px; }
+        .tree-left { grid-area: left; display: flex; gap: 20px; }
+        .tree-right { grid-area: right; display: flex; gap: 20px; }
+
+        .tree-skill {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #2a2a2a;
+            border: 3px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tree-skill.unlocked {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border-color: #4ade80;
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.6);
+        }
+
+        .tree-skill.locked {
+            opacity: 0.3;
+        }
+
+        .tree-skill:hover:not(.locked) {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(74, 222, 128, 0.8);
+        }
+
+        .tree-skill-name {
+            font-size: 0.4em;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .tree-skill-level {
+            font-size: 0.35em;
+            color: #ffd700;
+            position: absolute;
+            bottom: 5px;
+        }
+
+        .tree-connection {
+            width: 60px;
+            height: 4px;
+            background: #444;
+            position: absolute;
+        }
+
+        .tree-connection.unlocked {
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+        }
+
+        .tree-center .tree-connection-v {
+            width: 4px;
+            height: 60px;
+            background: #444;
+            position: absolute;
+        }
+
+        .tree-center .tree-connection-v.unlocked {
+            background: #4ade80;
+        }
+
+        .shop-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border-bottom: 2px solid #2a2a2a;
+        }
+
+        .shop-tab {
+            flex: 1;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .shop-tab:hover {
+            background: #252525;
+        }
+
+        .shop-tab.active {
+            background: #4ade80;
+            color: #000;
+            border-color: #4ade80;
+        }
+
+        .shop-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .shop-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .shop-content::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .shop-content::-webkit-scrollbar-thumb {
+            background: #4ade80;
+            border-radius: 4px;
+        }
+
+        .upgrade-item {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.8), rgba(42, 42, 42, 0.6));
+            border: 2px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upgrade-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .upgrade-item:hover::before {
+            left: 100%;
+        }
+
+        .upgrade-item:hover {
+            border-color: #4ade80;
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05));
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 
+                0 10px 30px rgba(74, 222, 128, 0.2),
+                inset 0 0 20px rgba(74, 222, 128, 0.05);
+        }
+
+        .upgrade-item.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .upgrade-item.locked:hover {
+            transform: none;
+            border-color: #2a2a2a;
+        }
+
+        .upgrade-icon {
+            width: 60px;
+            height: 60px;
+            background: #2a2a2a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            flex-shrink: 0;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .upgrade-item:hover .upgrade-icon {
+            background: #3a3a3a;
+        }
+
+        .upgrade-info {
+            flex: 1;
+        }
+
+        .upgrade-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-level {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .upgrade-price {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #4ade80;
+        }
+
+        .mission-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 26, 0.9));
+            backdrop-filter: blur(15px);
+            border: 2px solid #4ade80;
+            border-radius: 15px;
+            padding: 25px 35px;
+            min-width: 400px;
+            z-index: 100;
+            box-shadow: 
+                0 10px 40px rgba(74, 222, 128, 0.3),
+                inset 0 0 20px rgba(74, 222, 128, 0.05);
+        }
+
+        .mission-header {
+            font-size: 0.75em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .mission-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .mission-desc {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 12px;
+        }
+
+        .mission-reward {
+            font-size: 0.9em;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .mission-progress {
+            width: 100%;
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .mission-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .bottom-icons {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .bottom-icon {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 26, 0.9));
+            backdrop-filter: blur(10px);
+            border: 2px solid #2a2a2a;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .bottom-icon:hover {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.3));
+            border-color: #4ade80;
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 
+                0 10px 30px rgba(74, 222, 128, 0.4),
+                0 0 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .helper-cursor {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            pointer-events: none;
+            z-index: 50;
+            filter: drop-shadow(0 3px 8px rgba(255, 255, 255, 0.6));
+            transition: all 0.5s ease-in-out;
+        }
+
+        .helper-cursor svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .helper-cursor.clicking {
+            animation: cursorBounce 0.4s ease-out;
+        }
+
+        @keyframes cursorBounce {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.2) translateY(-10px); }
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-area" id="gameArea">
+            <div class="money-display">$<span id="money">0</span></div>
+            
+            <div class="bottom-icons">
+                <div class="bottom-icon" title="Gifts">🎁</div>
+                <div class="bottom-icon" title="Achievements">🏆</div>
+                <div class="bottom-icon" title="Premium">💎</div>
+            </div>
+
+            <div class="mission-panel">
+                <div class="mission-header">CURRENT MISSION</div>
+                <div class="mission-title" id="missionTitle">Earnings Goal</div>
+                <div class="mission-desc" id="missionDesc">Earn $4,000</div>
+                <div class="mission-reward">Reward: <span id="missionReward">+$500</span></div>
+                <div class="mission-progress">
+                    <div class="mission-progress-bar" id="missionProgress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="shop-panel">
+            <div class="shop-header">
+                <div class="shop-title">SHOP</div>
+            </div>
+
+            <div class="skill-tree-preview" id="skillTreePreview">
+                <!-- Skill nodes will be generated here -->
+            </div>
+
+            <div style="padding: 0 20px; margin-bottom: 15px;">
+                <div style="height: 3px; background: #4ade80; border-radius: 2px;"></div>
+            </div>
+
+            <div class="shop-tabs">
+                <div class="shop-tab active" data-tab="coins">🪙 Coins</div>
+                <div class="shop-tab" data-tab="perks">⚡ Perks</div>
+            </div>
+
+            <button class="tree-button" onclick="openSkillTree()">🌳 ÁRBOL DE MEJORAS</button>
+
+            <div class="shop-content">
+                <div class="tab-content active" id="coins">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Per Click</div>
+                            <div class="stat-value">$<span id="perClick">1</span></div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Per Second</div>
+                            <div class="stat-value">$<span id="perSecond">0</span></div>
+                        </div>
+                    </div>
+                    <div id="coinUpgrades"></div>
+                </div>
+
+                <div class="tab-content" id="perks">
+                    <div id="perkUpgrades"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="skillTreeModal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeSkillTree()">✕</div>
+            <h2 class="modal-title">🌳 Árbol de Mejoras 🌳</h2>
+            <div class="skill-tree-cross" id="skillTreeCross">
+                <!-- Tree will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const game = {
+            money: 0,
+            totalEarned: 0,
+            moneyPerClick: 1,
+            moneyPerSecond: 0,
+            coins: [],
+            upgrades: {},
+            mission: {
+                goal: 4000,
+                reward: 500,
+                progress: 0
+            }
+        };
+
+        const coinUpgrades = [
+            { id: 'cursor', name: 'Helper Cursor', icon: '👆', cost: 15, owned: 0, max: 100, income: 0.15 },
+            { id: 'classic', name: 'Classic Coin', icon: '🪙', cost: 100, owned: 0, max: 80, income: 1 },
+            { id: 'silver', name: 'Silver Coin', icon: '⚪', cost: 1100, owned: 0, max: 60, income: 8 },
+            { id: 'gold', name: 'Gold Coin', icon: '🟡', cost: 12000, owned: 0, max: 40, income: 47 },
+            { id: 'platinum', name: 'Platinum Coin', icon: '⚫', cost: 130000, owned: 0, max: 30, income: 260 },
+            { id: 'diamond', name: 'Diamond Coin', icon: '💎', cost: 1400000, owned: 0, max: 20, income: 1400 },
+            { id: 'ruby', name: 'Ruby Coin', icon: '🔴', cost: 20000000, owned: 0, max: 15, income: 7800 },
+            { id: 'emerald', name: 'Emerald Coin', icon: '🟢', cost: 330000000, owned: 0, max: 10, income: 44000 },
+            { id: 'sapphire', name: 'Sapphire Coin', icon: '🔵', cost: 5100000000, owned: 0, max: 8, income: 260000 },
+            { id: 'cosmic', name: 'Cosmic Coin', icon: '🌌', cost: 75000000000, owned: 0, max: 5, income: 1600000 }
+        ];
+
+        const perkUpgrades = [
+            { id: 'click1', name: 'Better Clicks I', desc: '+1 per click', icon: '👆', cost: 100, owned: 0, max: 100, effect: 'click', value: 1 },
+            { id: 'click2', name: 'Better Clicks II', desc: '+5 per click', icon: '✨', cost: 5000, owned: 0, max: 50, effect: 'click', value: 5 },
+            { id: 'click3', name: 'Better Clicks III', desc: '+25 per click', icon: '💫', cost: 100000, owned: 0, max: 30, effect: 'click', value: 25 },
+            { id: 'click4', name: 'Mega Clicks', desc: '+100 per click', icon: '💥', cost: 5000000, owned: 0, max: 15, effect: 'click', value: 100 },
+            { id: 'mult1', name: 'Multiplier I', desc: 'x2 to all income', icon: '📈', cost: 10000, owned: 0, max: 20, effect: 'mult', value: 2 },
+            { id: 'mult2', name: 'Multiplier II', desc: 'x3 to all income', icon: '🚀', cost: 100000, owned: 0, max: 10, effect: 'mult', value: 3 },
+            { id: 'mult3', name: 'Multiplier III', desc: 'x5 to all income', icon: '⚡', cost: 10000000, owned: 0, max: 5, effect: 'mult', value: 5 },
+            { id: 'auto', name: 'Auto Clicker', desc: '1 click per second', icon: '🔄', cost: 500, owned: 0, max: 1, effect: 'auto' },
+            { id: 'luck', name: 'Lucky Charm I', desc: '+10% income', icon: '🍀', cost: 25000, owned: 0, max: 20, effect: 'luck', value: 0.1 },
+            { id: 'luck2', name: 'Lucky Charm II', desc: '+25% income', icon: '🌟', cost: 500000, owned: 0, max: 10, effect: 'luck', value: 0.25 },
+            { id: 'crit', name: 'Critical Hit', desc: '5% chance x10', icon: '🎯', cost: 50000, owned: 0, max: 10, effect: 'crit', value: 0.05 },
+            { id: 'speed', name: 'Fast Production', desc: '+50% production speed', icon: '⚡', cost: 75000, owned: 0, max: 5, effect: 'speed', value: 0.5 }
+        ];
+
+        let helperCoinMap = new Map(); // Map each helper to its assigned coin
+
+        function spawnHelperCursor() {
+            const helper = document.createElement('div');
+            helper.className = 'helper-cursor';
+            
+            // Create VERY chubby/fat stick figure - BIGGER SIZE
+            helper.innerHTML = `
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Super chubby white stick figure - BIGGER -->
+                    
+                    <!-- Head - HUGE -->
+                    <circle cx="50" cy="20" r="18" fill="#ffffff" stroke="none"/>
+                    
+                    <!-- Body - SUPER THICK -->
+                    <line x1="50" y1="38" x2="50" y2="65" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+                    
+                    <!-- Arms - SUPER THICK and short -->
+                    <line x1="50" y1="48" x2="26" y2="54" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+                    <line x1="50" y1="48" x2="74" y2="54" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+                    
+                    <!-- Legs - SUPER THICK -->
+                    <line x1="50" y1="65" x2="34" y2="85" stroke="#ffffff" stroke-width="15" stroke-linecap="round"/>
+                    <line x1="50" y1="65" x2="66" y2="85" stroke="#ffffff" stroke-width="15" stroke-linecap="round"/>
+                </svg>
+            `;
+            
+            helper.style.left = Math.random() * (window.innerWidth - 500) + 'px';
+            helper.style.top = Math.random() * window.innerHeight + 'px';
+            document.getElementById('gameArea').appendChild(helper);
+            
+            // Find an available coin that no other helper is using
+            let assignedCoin = null;
+            const usedCoins = new Set(helperCoinMap.values());
+            
+            for (let coin of game.coins) {
+                if (!usedCoins.has(coin)) {
+                    assignedCoin = coin;
+                    break;
+                }
+            }
+            
+            // If all coins are taken, don't assign (helper will wait)
+            if (assignedCoin) {
+                helperCoinMap.set(helper, assignedCoin);
+            }
+            
+            // Make helper click its assigned coin periodically - WAIT 3.5s before first move
+            setTimeout(() => {
+                const clickInterval = setInterval(() => {
+                    // Get current assigned coin
+                    let coin = helperCoinMap.get(helper);
+                    
+                    // If no coin assigned or coin doesn't exist, try to find a free one
+                    if (!coin || !game.coins.includes(coin)) {
+                        const usedCoins = new Set(helperCoinMap.values());
+                        coin = game.coins.find(c => !usedCoins.has(c));
+                        
+                        if (coin) {
+                            helperCoinMap.set(helper, coin);
+                        } else {
+                            return; // No free coins, skip this cycle
+                        }
+                    }
+                    
+                    if (coin && game.coins.includes(coin)) {
+                        const rect = coin.getBoundingClientRect();
+                        
+                        // Move helper above its coin
+                        helper.style.left = (rect.left + 5) + 'px';
+                        helper.style.top = (rect.top - 50) + 'px';
+                        
+                        // Click after moving
+                        setTimeout(() => {
+                            helper.classList.add('clicking');
+                            
+                            // Generate income - HELPERS EARN MORE than Classic Coins
+                            // Classic Coin = 1.0/sec income
+                            // Helper earns MORE per click to be more valuable
+                            const helperValue = 1.5; // 50% more valuable than Classic Coin
+                            const earned = game.moneyPerClick * helperValue;
+                            game.money += earned;
+                            game.totalEarned += earned;
+                            updateDisplay();
+                            checkMission();
+                            
+                            setTimeout(() => {
+                                helper.classList.remove('clicking');
+                            }, 400);
+                        }, 500);
+                    }
+                }, 8000); // Click every 8 seconds
+            }, 3500); // Wait 3.5 seconds before starting
+            
+            return helper;
+        }
+
+        function spawnCoin() {
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            // Don't use emoji, pure CSS coin
+            
+            // Random static position
+            const maxWidth = window.innerWidth - 500; // Account for shop panel
+            const maxHeight = window.innerHeight - 100;
+            coin.style.left = Math.random() * maxWidth + 'px';
+            coin.style.top = Math.random() * maxHeight + 'px';
+            
+            coin.onclick = (e) => clickCoin(e, coin);
+            
+            document.getElementById('gameArea').appendChild(coin);
+            game.coins.push(coin);
+        }
+
+        function buyUpgrade(type, id) {
+            try {
+                const upgrade = type === 'coin' ? 
+                    coinUpgrades.find(u => u.id === id) : 
+                    perkUpgrades.find(u => u.id === id);
+
+                if (!upgrade) {
+                    const errorMsg = `FALLO: Mejora no encontrada\nTipo: ${type}\nID: ${id}`;
+                    console.error(errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // Verificar dinero suficiente
+                if (game.money < upgrade.cost) {
+                    const errorMsg = `FALLO: Dinero insuficiente\nMejora: ${upgrade.name}\nCosto: $${upgrade.cost}\nTienes: $${game.money}\nFaltan: $${upgrade.cost - game.money}`;
+                    console.error(errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // Verificar límite máximo
+                if (upgrade.owned >= upgrade.max) {
+                    const errorMsg = `FALLO: Límite máximo alcanzado\nMejora: ${upgrade.name}\nTienes: ${upgrade.owned}\nMáximo: ${upgrade.max}`;
+                    console.error(errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // Realizar compra
+                game.money -= upgrade.cost;
+                upgrade.owned++;
+
+                if (type === 'coin') {
+                    upgrade.cost = Math.floor(upgrade.cost * 1.15);
+                    
+                    // Spawn helper cursors when buying Helper Cursor upgrade
+                    if (upgrade.id === 'cursor') {
+                        spawnHelperCursor();
+                    } else {
+                        // Spawn a new coin for other coin upgrades
+                        spawnCoin();
+                    }
+                    
+                    calculateIncome();
+                } else {
+                    upgrade.cost = Math.floor(upgrade.cost * 1.5);
+                    applyPerkEffect(upgrade);
+                }
+
+                // Force immediate update
+                updateDisplay();
+                setTimeout(() => {
+                    renderUpgrades();
+                    renderSkillTree();
+                }, 10);
+
+            } catch (error) {
+                const errorMsg = `FALLO CRÍTICO en buyUpgrade:\n${error.message}\n\nStack:\n${error.stack}`;
+                console.error(errorMsg);
+                alert(errorMsg);
+            }
+        }
+
+        function clickCoin(e, coin) {
+            const earned = game.moneyPerClick;
+            game.money += earned;
+            game.totalEarned += earned;
+            
+            // Trigger spectacular click animation
+            coin.classList.add('clicked');
+            setTimeout(() => {
+                coin.classList.remove('clicked');
+            }, 600);
+            
+            // Click effect
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.textContent = '+$' + earned.toLocaleString();
+            effect.style.left = e.clientX + 'px';
+            effect.style.top = e.clientY + 'px';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 1000);
+
+            updateDisplay();
+            checkMission();
+        }
+
+        function applyPerkEffect(perk) {
+            if (perk.effect === 'click') {
+                game.moneyPerClick += perk.value;
+            } else if (perk.effect === 'auto' && perk.owned === 1) {
+                startAutoClicker();
+            }
+            calculateIncome();
+        }
+
+        function clickCoin(e, coin) {
+            let earned = game.moneyPerClick;
+            
+            // Check for critical hit
+            const critPerk = perkUpgrades.find(p => p.id === 'crit');
+            if (critPerk && critPerk.owned > 0) {
+                const critChance = critPerk.value * critPerk.owned;
+                if (Math.random() < critChance) {
+                    earned *= 10;
+                    // Show CRIT text
+                    const critText = document.createElement('div');
+                    critText.className = 'click-effect';
+                    critText.textContent = 'CRIT!';
+                    critText.style.left = e.clientX + 'px';
+                    critText.style.top = (e.clientY - 40) + 'px';
+                    critText.style.color = '#ff0000';
+                    document.body.appendChild(critText);
+                    setTimeout(() => critText.remove(), 1000);
+                }
+            }
+            
+            game.money += earned;
+            game.totalEarned += earned;
+            
+            // Trigger spectacular click animation
+            coin.classList.add('clicked');
+            setTimeout(() => {
+                coin.classList.remove('clicked');
+            }, 600);
+            
+            // Click effect
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.textContent = '+$' + earned.toLocaleString();
+            effect.style.left = e.clientX + 'px';
+            effect.style.top = e.clientY + 'px';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 1000);
+
+            updateDisplay();
+            checkMission();
+        }
+
+        function calculateIncome() {
+            let baseIncome = 0;
+            coinUpgrades.forEach(u => {
+                baseIncome += u.owned * u.income;
+            });
+
+            // Apply multipliers
+            let mult = 1;
+            const mult1 = perkUpgrades.find(p => p.id === 'mult1');
+            const mult2 = perkUpgrades.find(p => p.id === 'mult2');
+            if (mult1) mult *= Math.pow(mult1.value, mult1.owned);
+            if (mult2) mult *= Math.pow(mult2.value, mult2.owned);
+
+            // Apply luck
+            const luck = perkUpgrades.find(p => p.id === 'luck');
+            if (luck) mult *= (1 + luck.value * luck.owned);
+
+            game.moneyPerSecond = Math.floor(baseIncome * mult * 10) / 10;
+        }
+
+        function startAutoClicker() {
+            setInterval(() => {
+                if (game.coins.length > 0) {
+                    const coin = game.coins[Math.floor(Math.random() * game.coins.length)];
+                    const rect = coin.getBoundingClientRect();
+                    clickCoin({ clientX: rect.left + 30, clientY: rect.top + 30 }, coin);
+                }
+            }, 1000);
+        }
+
+        function checkMission() {
+            const progress = Math.min((game.totalEarned / game.mission.goal) * 100, 100);
+            document.getElementById('missionProgress').style.width = progress + '%';
+
+            if (game.totalEarned >= game.mission.goal) {
+                game.money += game.mission.reward;
+                game.mission.goal *= 2;
+                game.mission.reward *= 2;
+                game.totalEarned = 0;
+                
+                document.getElementById('missionDesc').textContent = 'Earn $' + game.mission.goal.toLocaleString();
+                document.getElementById('missionReward').textContent = '+$' + game.mission.reward.toLocaleString();
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('money').textContent = Math.floor(game.money).toLocaleString();
+            document.getElementById('perClick').textContent = game.moneyPerClick;
+            document.getElementById('perSecond').textContent = game.moneyPerSecond.toFixed(1);
+        }
+
+        function saveGame() {
+            // No saving - fresh start every time
+        }
+
+        function resetGame() {
+            // No reset needed since we don't save
+        }
+
+        function renderSkillTree() {
+            const container = document.getElementById('skillTreePreview');
+            container.innerHTML = '';
+            
+            // Show only coin upgrades in skill tree preview with their colors
+            const coinIcons = [
+                { upgrade: coinUpgrades[0], icon: '👆', bg: '#8b7355', unlockBg: '#d4a574' }, // Helper - brownish
+                { upgrade: coinUpgrades[1], icon: '🪙', bg: '#2a2a2a', unlockBg: '#8b7355' }, // Classic - brown
+                { upgrade: coinUpgrades[2], icon: '⚪', bg: '#2a2a2a', unlockBg: '#c0c0c0' }, // Silver
+                { upgrade: coinUpgrades[3], icon: '🟡', bg: '#2a2a2a', unlockBg: '#ffd700' }, // Gold
+                { upgrade: coinUpgrades[4], icon: '⚫', bg: '#2a2a2a', unlockBg: '#666666' }, // Platinum
+                { upgrade: coinUpgrades[5], icon: '💎', bg: '#2a2a2a', unlockBg: '#b9f2ff' }  // Diamond
+            ];
+            
+            coinIcons.forEach(item => {
+                const node = document.createElement('div');
+                const unlocked = item.upgrade.owned > 0;
+                node.className = 'skill-node' + (unlocked ? ' unlocked' : ' locked');
+                
+                // Set background color based on unlock status
+                if (unlocked) {
+                    node.style.background = item.unlockBg;
+                    node.style.boxShadow = `0 0 15px ${item.unlockBg}80`;
+                } else {
+                    node.style.background = item.bg;
+                    node.style.boxShadow = 'none';
+                }
+                
+                node.textContent = item.icon;
+                container.appendChild(node);
+            });
+        }
+
+        function openSkillTree() {
+            document.getElementById('skillTreeModal').classList.add('active');
+            renderSkillTreeCross();
+        }
+
+        function closeSkillTree() {
+            document.getElementById('skillTreeModal').classList.remove('active');
+        }
+
+        function renderSkillTreeCross() {
+            const container = document.getElementById('skillTreeCross');
+            container.innerHTML = '';
+
+            // Define tree structure in cross shape
+            const treeStructure = {
+                center: [
+                    { upgrade: coinUpgrades[0], name: 'Helper', icon: '👆' }
+                ],
+                top: [
+                    { upgrade: perkUpgrades.find(p => p.id === 'click1'), name: 'Clicks I', icon: '👆' },
+                    { upgrade: perkUpgrades.find(p => p.id === 'click2'), name: 'Clicks II', icon: '✨' }
+                ],
+                right: [
+                    { upgrade: coinUpgrades[1], name: 'Classic', icon: '🪙' },
+                    { upgrade: coinUpgrades[2], name: 'Silver', icon: '⚪' },
+                    { upgrade: coinUpgrades[3], name: 'Gold', icon: '🟡' }
+                ],
+                bottom: [
+                    { upgrade: perkUpgrades.find(p => p.id === 'mult1'), name: 'Mult I', icon: '📈' },
+                    { upgrade: perkUpgrades.find(p => p.id === 'mult2'), name: 'Mult II', icon: '🚀' }
+                ],
+                left: [
+                    { upgrade: perkUpgrades.find(p => p.id === 'auto'), name: 'Auto', icon: '⚡' },
+                    { upgrade: perkUpgrades.find(p => p.id === 'luck'), name: 'Luck', icon: '🍀' }
+                ]
+            };
+
+            Object.keys(treeStructure).forEach(position => {
+                const div = document.createElement('div');
+                div.className = `tree-${position}`;
+
+                treeStructure[position].forEach(skill => {
+                    if (skill.upgrade) {
+                        const node = document.createElement('div');
+                        const unlocked = skill.upgrade.owned > 0;
+                        node.className = 'tree-skill' + (unlocked ? ' unlocked' : ' locked');
+                        node.innerHTML = `
+                            <div>${skill.icon}</div>
+                            <div class="tree-skill-name">${skill.name}</div>
+                            <div class="tree-skill-level">${skill.upgrade.owned}/${skill.upgrade.max}</div>
+                        `;
+                        div.appendChild(node);
+                    }
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function renderUpgrades() {
+            try {
+                // Coin upgrades
+                const coinContainer = document.getElementById('coinUpgrades');
+                if (!coinContainer) {
+                    throw new Error('FALLO: No se encuentra el contenedor coinUpgrades');
+                }
+                
+                coinContainer.innerHTML = '';
+                coinUpgrades.forEach(upgrade => {
+                    const canAfford = game.money >= upgrade.cost;
+                    const atMax = upgrade.owned >= upgrade.max;
+                    const locked = !canAfford || atMax;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'upgrade-item' + (locked ? ' locked' : '');
+                    
+                    // Determine icon color based on upgrade type
+                    let iconBg = '#2a2a2a';
+                    if (upgrade.id === 'silver') iconBg = '#c0c0c0';
+                    else if (upgrade.id === 'gold') iconBg = '#ffd700';
+                    else if (upgrade.id === 'platinum') iconBg = '#666666';
+                    else if (upgrade.id === 'diamond') iconBg = '#b9f2ff';
+                    else if (upgrade.id === 'ruby') iconBg = '#e0115f';
+                    else if (upgrade.id === 'emerald') iconBg = '#50c878';
+                    else if (upgrade.id === 'sapphire') iconBg = '#0f52ba';
+                    else if (upgrade.id === 'cosmic') iconBg = '#4b0082';
+                    
+                    div.innerHTML = `
+                        <div class="upgrade-icon" style="background: ${iconBg};">${upgrade.icon}</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">${upgrade.name}</div>
+                            <div class="upgrade-level">${upgrade.owned}/${upgrade.max}</div>
+                            <div class="upgrade-price">$${upgrade.cost.toLocaleString()}</div>
+                        </div>
+                    `;
+                    
+                    // Always attach click handler, check inside
+                    div.onclick = () => {
+                        buyUpgrade('coin', upgrade.id);
+                    };
+                    
+                    coinContainer.appendChild(div);
+                });
+
+                // Perk upgrades
+                const perkContainer = document.getElementById('perkUpgrades');
+                if (!perkContainer) {
+                    throw new Error('FALLO: No se encuentra el contenedor perkUpgrades');
+                }
+                
+                perkContainer.innerHTML = '';
+                perkUpgrades.forEach(upgrade => {
+                    const canAfford = game.money >= upgrade.cost;
+                    const atMax = upgrade.owned >= upgrade.max;
+                    const locked = !canAfford || atMax;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'upgrade-item' + (locked ? ' locked' : '');
+                    div.innerHTML = `
+                        <div class="upgrade-icon">${upgrade.icon}</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">${upgrade.name}</div>
+                            <div class="upgrade-level">${upgrade.owned}/${upgrade.max}</div>
+                            <div style="font-size: 0.85em; color: #aaa; margin-bottom: 8px;">${upgrade.desc}</div>
+                            <div class="upgrade-price">$${upgrade.cost.toLocaleString()}</div>
+                        </div>
+                    `;
+                    
+                    // Always attach click handler, check inside
+                    div.onclick = () => {
+                        buyUpgrade('perk', upgrade.id);
+                    };
+                    
+                    perkContainer.appendChild(div);
+                });
+            } catch (error) {
+                const errorMsg = `FALLO en renderUpgrades:\n${error.message}\n\nStack:\n${error.stack}`;
+                console.error(errorMsg);
+                alert(errorMsg);
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.shop-tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            };
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeSkillTree();
+            }
+        });
+
+        // Passive income
+        setInterval(() => {
+            game.money += game.moneyPerSecond / 10;
+            game.totalEarned += game.moneyPerSecond / 10;
+            updateDisplay();
+            checkMission();
+        }, 100);
+
+        // No save/load - fresh start every time
+
+        // Initialize - always fresh start
+        spawnCoin();
+        updateDisplay();
+        renderUpgrades();
+        renderSkillTree();
+        checkMission();
+    </script>
+</body>
+</html>
