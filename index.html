@@ -15,35 +15,61 @@
     a { text-decoration:none;color:#0366d6;font-size:1.2rem; }
     #dots-menu { cursor:pointer;margin:0 15px;font-size:24px;color:white; }
 
-    /* ESTILO DEL BOTÓN FLOTANTE DE DISCORD */
+    /* --- NUEVO BOTÓN DISCORD COOL --- */
     #discord-floating-btn {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #5865F2; /* Color oficial de Discord */
+      bottom: 30px;
+      right: 30px;
+      background-color: #5865F2;
       color: white;
-      padding: 12px 20px;
-      border-radius: 50px;
+      padding: 15px 25px;
+      border-radius: 15px; /* Bordes redondeados modernos */
       text-decoration: none;
       font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      z-index: 9999;
-      transition: transform 0.2s, background-color 0.2s;
+      font-size: 18px;
+      z-index: 10000;
       display: flex;
       align-items: center;
-      font-size: 14px;
+      gap: 12px; /* Espacio entre logo y texto */
+      box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Logo de Discord (SVG para que no pierda calidad) */
+    .discord-icon {
+      width: 28px;
+      height: 28px;
+      fill: white;
     }
 
     #discord-floating-btn:hover {
-      background-color: #4752c4;
-      transform: scale(1.05);
+      transform: translateY(-5px) scale(1.05);
+      background-color: #4752C4;
+      box-shadow: 0 12px 30px rgba(88, 101, 242, 0.6);
+    }
+
+    #discord-floating-btn:active {
+      transform: translateY(0) scale(0.95);
+    }
+
+    /* Animación de entrada */
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    #discord-floating-btn {
+      animation: slideIn 0.8s ease-out;
     }
   </style>
 </head>
 <body>
 
 <a href="https://discord.gg/YGVcHmu4" target="_blank" id="discord-floating-btn">
-  Discord para saber actualizaciones
+  <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
+    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.21h0A105.73,105.73,0,0,0,32.47,96.36,77.7,77.7,0,0,0,39.2,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.73,11.1,105.33,105.33,0,0,0,32.05-16.15h0C130.46,50.45,121.48,26.72,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5.07-12.67,11.43-12.67S54,46,53.86,53,48.74,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.07-12.67,11.44-12.67S96.23,46,96.11,53,91,65.69,84.69,65.69Z"/>
+  </svg>
+  Discord para actualizaciones
 </a>
 
 <div id="auth-container">
@@ -106,7 +132,6 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ===== FIREBASE ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
   authDomain: "inici-de-sessio.firebaseapp.com",
@@ -117,18 +142,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* ✅ CLAVE: mantener sesión entre páginas */
 await setPersistence(auth, browserLocalPersistence);
 
-/* ===== DOM ===== */
 const loggedOut = document.getElementById("user-logged-out");
 const loggedIn = document.getElementById("user-logged-in");
 const welcomeMsg = document.getElementById("welcome-msg");
-
 const emailInput = document.getElementById("email");
 const passInput = document.getElementById("password");
 
-/* ===== LOGIN / REGISTER ===== */
 async function handleAuth(email, password) {
   try {
     await signInWithEmailAndPassword(auth, email, password);
@@ -154,19 +175,15 @@ document.getElementById("btn-logout").onclick = () => {
   signOut(auth);
 };
 
-/* ===== ESTADO DE SESIÓN ===== */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loggedOut.classList.add("hidden");
     loggedIn.classList.remove("hidden");
     welcomeMsg.textContent = "Conectado como: " + user.email;
-
-    /* ✅ CLAVE FINAL: sesión compartida con los juegos */
     localStorage.setItem("firebaseUser", JSON.stringify({
       uid: user.uid,
       email: user.email
     }));
-
   } else {
     loggedIn.classList.add("hidden");
     loggedOut.classList.remove("hidden");
@@ -174,7 +191,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-/* ===== AVISO ===== */
 setTimeout(() => {
   if (!confirm("⚠️ AVISO ⚠️\nEsta página es para jugar en casa.")) {
     window.location.href = "https://www.google.com";
