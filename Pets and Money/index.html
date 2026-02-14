@@ -357,21 +357,47 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // --- FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
-            authDomain: "inici-de-sessio.firebaseapp.com",
-            projectId: "inici-de-sessio",
-            storageBucket: "inici-de-sessio.firebasestorage.app",
-            messagingSenderId: "106046428749",
-            appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
-            databaseURL: "https://inici-de-sessio-default-rtdb.europe-west1.firebasedatabase.app"
-        };
+    // --- MOTOR DE CARGA CON SISTEMA ANTI-BLOQUEO ---
+        async function loadProgress() {
+            try {
+                const snapshot = await get(ref(db, userPath));
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    // Cargamos los datos de la nube
+                    money = data.money !== undefined ? data.money : 0;
+                    eggPrice = data.eggPrice || 10;
+                    specialEggPrice = data.specialEggPrice || 1000;
+                    rebirths = data.rebirths || 0;
+                    multiplier = data.multiplier || 1;
+                    inventory = data.inventory || [];
+                    discoveredIds = data.discoveredIds || [];
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const userId = "partida_pro_2026"; 
-        const userPath = 'users/' + userId;
+                    // COMPROBACIÓN DE SEGURIDAD:
+                    // Si el jugador tiene 0 dólares Y no tiene mascotas para generar dinero...
+                    if (money < 10 && inventory.length === 0) {
+                        money = 10; // Le regalamos lo justo para el primer huevo
+                        console.log(">> Sistema: Se han otorgado $10 iniciales por falta de recursos.");
+                    }
+
+                    updateUI();
+                    console.log(">> Partida cargada y verificada.");
+                } else {
+                    // Si la base de datos está totalmente vacía (:null)
+                    money = 10; 
+                    inventory = [];
+                    updateUI();
+                    await saveProgress();
+                    console.log(">> Partida nueva creada con saldo inicial de $10.");
+                }
+            } catch (error) {
+                console.error(">> Error crítico en la carga:", error);
+                // Fail-safe: si falla la red, al menos deja jugar con 10 monedas
+                money = 10;
+                updateUI();
+            }
+        }
 
         // --- DATA POOLS: LISTADO EXTENSO DE MASCOTAS ---
         const NORMAL_POOL = [
