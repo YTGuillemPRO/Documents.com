@@ -3,635 +3,610 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pets and money</title>
+    <title>Pet Clicker Premium - Sistema de Persistencia Firebase</title>
     <style>
-        /* CONFIGURACIÓN GLOBAL DEL DOCUMENTO */
-        :root {
-            --primary-color: #4caf50;
-            --secondary-color: #2196f3;
-            --danger-color: #f44336;
-            --background-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            --frame-bg: rgba(255, 255, 255, 0.98);
-        }
-
+        /* RESETEO DE ESTILOS BASE 
+           Aseguramos que el juego se vea igual en todos los navegadores
+        */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
+        /* FONDO ANIMADO Y CONTENEDOR 
+           Usamos un gradiente de 45 grados para un look moderno
+        */
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: var(--background-gradient);
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
             overflow: hidden;
+            color: #333;
         }
 
-        /* CONTENEDOR PRINCIPAL - FRAME DEL JUEGO */
-        #game-container {
-            width: 420px;
-            height: 720px;
-            background: var(--frame-bg);
+        /* EL FRAME PRINCIPAL (Nuestra ScreenGui) 
+           Diseño estilo móvil pero adaptable a PC
+        */
+        #game-frame {
+            width: 400px;
+            height: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 30px;
+            padding: 25px;
+            text-align: center;
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
             display: flex;
             flex-direction: column;
-            padding: 25px;
-            position: relative;
-            border: 4px solid #ffffff;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 15px;
+            border: 5px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
         }
 
         header h1 {
             font-size: 26px;
-            color: #2c3e50;
+            font-weight: 900;
+            color: #2d3436;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
         }
 
-        /* SISTEMA DE NAVEGACIÓN POR PESTAÑAS */
-        .navigation-bar {
+        /* SISTEMA DE PESTAÑAS (TABS) 
+        */
+        .tab-system {
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
         }
 
-        .nav-button {
+        .tab-btn {
             flex: 1;
             padding: 12px;
             border: none;
             border-radius: 15px;
-            background: #ecf0f1;
-            color: #7f8c8d;
-            font-weight: bold;
+            background: #dfe6e9;
+            color: #636e72;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.3s ease;
             font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .nav-button.active {
-            background: var(--primary-color);
+        .tab-btn.active {
+            background: #4caf50;
             color: white;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px);
         }
 
-        /* PANEL DE ESTADÍSTICAS */
+        /* ESTADÍSTICAS Y PANEL DE ECONOMÍA 
+        */
         .stats-panel {
-            background: #fdfdfd;
-            border: 2px solid #f1f1f1;
+            background: #ffffff;
             border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
         }
 
-        .stat-money {
-            font-size: 32px;
+        .money-label {
+            font-size: 30px;
             font-weight: 900;
-            color: #27ae60;
+            color: #2ecc71;
             display: block;
             margin-bottom: 5px;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
-        .stat-price {
-            color: #95a5a6;
-            font-size: 16px;
+        .price-label {
+            font-size: 14px;
+            color: #b2bec3;
             font-weight: 600;
+            text-transform: uppercase;
         }
 
-        /* SELECTOR DE TIPO DE HUEVO */
-        .egg-selector-container {
+        /* SELECTOR DE HUEVOS (EGG SELECTOR) 
+        */
+        .egg-type-bar {
             display: flex;
-            background: #eee;
+            background: #f1f2f6;
             border-radius: 15px;
-            padding: 5px;
+            padding: 6px;
+            gap: 6px;
             margin-bottom: 20px;
         }
 
-        .egg-option {
+        .egg-opt {
             flex: 1;
             padding: 10px;
-            text-align: center;
             border-radius: 12px;
+            border: none;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: 0.3s;
+            font-weight: 700;
+            font-size: 12px;
+            color: #7f8c8d;
+            background: transparent;
+            transition: 0.2s;
         }
 
-        .egg-option.active {
+        .egg-opt.active {
             background: white;
-            color: #333;
+            color: #2d3436;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* BOTONES DE ACCIÓN PRINCIPALES */
-        .main-action-btn {
+        /* BOTONES DE ACCIÓN (COMPRAR / REBIRTH) 
+        */
+        .btn-action {
             width: 100%;
             padding: 18px;
-            font-size: 18px;
-            font-weight: bold;
             border: none;
-            border-radius: 18px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 900;
             cursor: pointer;
             margin-bottom: 12px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        #buyEggBtn {
-            background: linear-gradient(to right, #f83600 0%, #f9d423 100%);
+        #buyBtn {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
             color: white;
-            box-shadow: 0 6px 20px rgba(248, 54, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
 
-        #buyEggBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(248, 54, 0, 0.4);
+        #buyBtn:active {
+            transform: scale(0.96);
         }
 
         #rebirthBtn {
-            background: #2980b9;
+            background: #0984e3;
             color: white;
-            font-size: 15px;
+            font-size: 14px;
+            box-shadow: 0 6px 15px rgba(9, 132, 227, 0.3);
         }
 
         #rebirthBtn:disabled {
-            background: #bdc3c7;
+            background: #b2bec3;
             cursor: not-allowed;
-            transform: none;
             box-shadow: none;
-        }
-
-        /* LISTADO DE MASCOTAS */
-        .inventory-title {
-            text-align: left;
-            font-size: 14px;
-            color: #34495e;
-            font-weight: bold;
-            margin-bottom: 10px;
-            padding-left: 5px;
-        }
-
-        #pet-list-display {
+            opacity: 0.7;
+        }/* SISTEMA DE INVENTARIO Y SCROLL */
+        #inventory {
             flex: 1;
             overflow-y: auto;
-            padding-right: 8px;
             margin-top: 10px;
+            padding-right: 8px;
+            scrollbar-width: thin;
         }
 
-        /* DISEÑO DE CADA MASCOTA */
-        .pet-item {
+        #inventory::-webkit-scrollbar { width: 6px; }
+        #inventory::-webkit-scrollbar-thumb { background: #dfe6e9; border-radius: 10px; }
+
+        /* CARTAS DE MASCOTAS (DISEÑO PREMIUM) */
+        .pet-card {
             background: #ffffff;
-            border: 1px solid #eee;
-            border-radius: 15px;
-            padding: 12px;
-            margin-bottom: 10px;
+            border-radius: 18px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            animation: slideIn 0.3s ease-out;
+            align-items: center;
+            border-left: 6px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .pet-info-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        /* COLORES DE RAREZA ORIGINALES (EXTENDIDOS) */
+        .rarity-common { border-color: #95a5a6; background: #f8f9fa; }
+        .rarity-uncommon { border-color: #2ecc71; background: #f0fff4; }
+        .rarity-rare { border-color: #3498db; background: #ebf8ff; }
+        .rarity-god { border-color: #9b59b6; background: #faf5ff; }
+        .rarity-secret { border-color: #f1c40f; background: #fffdf2; }
+        .rarity-og { border-color: #e91e63; background: #fff5f7; }
 
-        .pet-icon-circle {
-            width: 45px;
-            height: 45px;
-            background: #f9f9f9;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-        }
-
-        /* COLORES POR RAREZA */
-        .rarity-common { border-left: 6px solid #bdc3c7; }
-        .rarity-uncommon { border-left: 6px solid #2ecc71; }
-        .rarity-rare { border-left: 6px solid #3498db; }
-        .rarity-god { border-left: 6px solid #9b59b6; }
-        .rarity-secret { border-left: 6px solid #f1c40f; }
-        .rarity-og { border-left: 6px solid #e91e63; }
-     /* BOTÓN VENDER */
-        .sell-button {
-            background: #ffebee;
-            color: #c62828;
+        .sell-btn {
+            background: #ff7675;
+            color: white;
             border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .sell-button:hover {
-            background: #c62828;
-            color: white;
-        }
+        .sell-btn:hover { background: #d63031; }
 
         /* OVERLAY DE APERTURA (HATCHING) */
-        #hatch-overlay {
+        #hatch-screen {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             background: rgba(0,0,0,0.9);
-            border-radius: 26px;
+            border-radius: 25px;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 100;
             color: white;
-            text-align: center;
         }
 
-        .egg-animation {
-            width: 150px;
-            height: 200px;
-            background: radial-gradient(circle at 30% 30%, #fff, #ffeb3b);
+        .egg-sprite {
+            width: 140px;
+            height: 180px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #f1c40f);
             border-radius: 50% 50% 45% 45%;
-            border: 6px solid #fbc02d;
-            margin-bottom: 30px;
-            position: relative;
+            border: 6px solid #d4ac0d;
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.4);
+            margin-bottom: 25px;
         }
 
-        .shake { animation: eggShake 0.1s infinite; }
-
-        @keyframes eggShake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(3deg); }
-            75% { transform: rotate(-3deg); }
-            100% { transform: rotate(0deg); }
-        }
-
-        /* PANTALLA DE INDEX */
-        .index-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding-bottom: 20px;
-        }
-
-        .index-card {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 10px;
-            font-size: 11px;
-            opacity: 0.4;
-            filter: grayscale(1);
-        }
-
-        .index-card.discovered {
-            opacity: 1;
-            filter: grayscale(0);
-            border: 1px solid #ddd;
+        .shake { animation: shake 0.12s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-1px, -2px) rotate(-1deg); }
+            40% { transform: translate(-3px, 0px) rotate(1deg); }
+            60% { transform: translate(3px, 2px) rotate(0deg); }
+            80% { transform: translate(1px, -1px) rotate(1deg); }
+            100% { transform: translate(-1px, 2px) rotate(-1deg); }
         }
     </style>
 </head>
 <body>
 
-    <div id="hatch-overlay">
-        <div id="hatch-egg-visual" class="egg-animation"></div>
-        <div id="hatch-result" style="display:none;">
-            <div id="hatch-icon" style="font-size: 80px; margin-bottom: 10px;"></div>
-            <h2 id="hatch-name" style="font-size: 28px; text-transform: uppercase;"></h2>
-            <p id="hatch-rarity" style="font-weight: bold; letter-spacing: 2px; margin-bottom: 20px;"></p>
-            <button onclick="closeHatch()" class="main-action-btn" style="background: white; color: black; width: 200px;">COLECCIONAR</button>
+    <div id="hatch-screen">
+        <div id="egg-visual" class="egg-sprite"></div>
+        <div id="hatch-result" style="display:none; text-align:center;">
+            <div id="res-icon" style="font-size: 90px; margin-bottom: 15px;"></div>
+            <h2 id="res-name" style="font-size: 32px; text-transform: uppercase;"></h2>
+            <p id="res-rarity" style="font-weight: 900; letter-spacing: 2px; margin-bottom: 25px;"></p>
+            <button onclick="closeHatch()" class="btn-action" style="background:white; color:#333; width:220px;">CONFIRMAR</button>
         </div>
     </div>
 
-    <div id="game-container">
+    <div id="game-frame">
         <header>
-            <h1>Pets and Money</h1>
-            <p id="rebirth-counter" style="color: #7f8c8d; font-weight: bold; font-size: 12px;">REBIRTH: 0</p>
+            <h1>Pet Simulator</h1>
+            <div class="tab-system">
+                <button id="tabGame" class="tab-btn active" onclick="switchTab('game')">JUEGO</button>
+                <button id="tabIndex" class="tab-btn" onclick="switchTab('index')">COLECCIÓN</button>
+            </div>
         </header>
 
-        <div class="navigation-bar">
-            <button id="btn-tab-game" class="nav-button active" onclick="switchTab('game')">JUGAR</button>
-            <button id="btn-tab-index" class="nav-button" onclick="switchTab('index')">COLECCIÓN</button>
-        </div>
-
-        <div id="tab-game">
+        <div id="view-game">
             <div class="stats-panel">
-                <span class="stat-money">💰 $<span id="display-money">10</span></span>
-                <span class="stat-price">COSTO HUEVO: $<span id="display-price">10</span></span>
+                <span class="money-label">💰 $<span id="val-money">0</span></span>
+                <span class="price-label">COSTO ACTUAL: $<span id="val-price">10</span></span>
             </div>
 
-            <div class="egg-selector-container">
-                <div id="opt-normal" class="egg-option active" onclick="setEggType('normal')">HUEVO BÁSICO</div>
-                <div id="opt-special" class="egg-option" onclick="setEggType('special')">HUEVO ÉPICO</div>
+            <div class="egg-type-bar">
+                <button id="egg-n" class="egg-opt active" onclick="setEgg('normal')">HUEVO BÁSICO</button>
+                <button id="egg-s" class="egg-opt" onclick="setEgg('special')">HUEVO ÉPICO</button>
             </div>
 
-            <button id="buyEggBtn" class="main-action-btn" onclick="attemptPurchase()">ABRIR HUEVO</button>
-            <button id="rebirthBtn" class="main-action-btn" onclick="executeRebirth()" disabled>REALIZAR REBIRTH</button>
+            <button id="buyBtn" class="btn-action" onclick="buyEgg()">ABRIR HUEVO</button>
+            <button id="rebirthBtn" class="btn-action" onclick="doRebirth()" disabled>REALIZAR REBIRTH</button>
 
-            <p class="inventory-title">MIS MASCOTAS:</p>
-            <div id="pet-list-display"></div>
+            <div id="inventory"></div>
         </div>
 
-        <div id="tab-index" style="display:none;">
-            <div id="index-list-display" class="index-grid"></div>
+        <div id="view-index" style="display:none; flex:1; overflow-y:auto;">
+            <div id="index-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:5px;"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- MOTOR DE CARGA CON SISTEMA ANTI-BLOQUEO ---
-        async function loadProgress() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+            authDomain: "inici-de-sessio.firebaseapp.com",
+            projectId: "inici-de-sessio",
+            storageBucket: "inici-de-sessio.firebasestorage.app",
+            messagingSenderId: "106046428749",
+            appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+            databaseURL: "https://inici-de-sessio-default-rtdb.europe-west1.firebasedatabase.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const userRef = ref(db, 'users/save_slot_01');
+
+        // CATALOGO EXTENDIDO DE MASCOTAS
+        const POOL_NORMAL = [
+            { id: 101, n: 'Ratón', i: '🐭', r: 'common', e: 5 },
+            { id: 102, n: 'Perro', i: '🐶', r: 'common', e: 8 },
+            { id: 103, n: 'Gato', i: '🐱', r: 'common', e: 12 },
+            { id: 104, n: 'Conejo', i: '🐰', r: 'uncommon', e: 25 },
+            { id: 105, n: 'Zorro', i: '🦊', r: 'uncommon', e: 40 },
+            { id: 106, n: 'Ciervo', i: '🦌', r: 'uncommon', e: 55 },
+            { id: 107, n: 'Panda', i: '🐼', r: 'rare', e: 120 },
+            { id: 108, n: 'León', i: '🦁', r: 'rare', e: 200 },
+            { id: 109, n: 'Tiburón', i: '🦈', r: 'rare', e: 350 },
+            { id: 110, n: 'Dragón', i: '🐲', r: 'god', e: 800 },
+            { id: 111, n: 'Unicornio', i: '🦄', r: 'secret', e: 2500 }
+        ];
+
+        const POOL_SPECIAL = [
+            { id: 201, n: 'Ratón Pro', i: '🐭', r: 'uncommon', e: 150 },
+            { id: 202, n: 'Perro Robot', i: '🐶', r: 'rare', e: 400 },
+            { id: 203, n: 'Lobo Alfa', i: '🐺', r: 'rare', e: 650 },
+            { id: 204, n: 'Tigre Blanco', i: '🐯', r: 'rare', e: 900 },
+            { id: 205, n: 'Fénix', i: '🔥', r: 'god', e: 2000 },
+            { id: 206, n: 'Dragón Negro', i: '🐉', r: 'god', e: 4500 },
+            { id: 207, n: 'Kraken', i: '🐙', r: 'secret', e: 12000 },
+            { id: 208, n: 'Leviatán', i: '🐋', r: 'secret', e: 18000 },
+            { id: 209, n: 'T-Rex Antiguo', i: '🦖', r: 'og', e: 50000 }
+        ];// =====================================================================
+        // ESTADO GLOBAL DEL JUEGO (GAME STATE)
+        // =====================================================================
+        let money = 0;
+        let priceN = 10;
+        let priceS = 1000;
+        let rebirths = 0;
+        let multiplier = 1;
+        let currentEggType = 'normal';
+        let inventory = [];
+        let discoveredIds = [];
+
+        // =====================================================================
+        // NÚCLEO DE PERSISTENCIA (FIREBASE ENGINE)
+        // =====================================================================
+        async function saveData() {
             try {
-                const snapshot = await get(ref(db, userPath));
-                
+                // Preparamos el objeto de guardado con timestamp de seguridad
+                const payload = {
+                    money: money,
+                    priceN: priceN,
+                    priceS: priceS,
+                    rebirths: rebirths,
+                    multiplier: multiplier,
+                    inventory: inventory,
+                    discoveredIds: discoveredIds,
+                    lastSync: Date.now()
+                };
+                await set(userRef, payload);
+                console.log(">> [Sync] Progreso guardado exitosamente.");
+            } catch (error) {
+                console.error(">> [Error] Fallo en la sincronización:", error);
+            }
+        }
+
+        async function loadData() {
+            console.log(">> [Auth] Iniciando carga de datos del jugador...");
+            try {
+                const snapshot = await get(userRef);
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     
-                    // Cargamos los datos de la nube
-                    money = data.money !== undefined ? data.money : 0;
-                    eggPrice = data.eggPrice || 10;
-                    specialEggPrice = data.specialEggPrice || 1000;
+                    // Asignación de variables con valores por defecto (Defaulting)
+                    money = data.money ?? 10;
+                    priceN = data.priceN || 10;
+                    priceS = data.priceS || 1000;
                     rebirths = data.rebirths || 0;
                     multiplier = data.multiplier || 1;
                     inventory = data.inventory || [];
                     discoveredIds = data.discoveredIds || [];
 
-                    // COMPROBACIÓN DE SEGURIDAD:
-                    // Si el jugador tiene 0 dólares Y no tiene mascotas para generar dinero...
+                    // SISTEMA ANTI-BLOQUEO (Mínimo viable para jugar)
                     if (money < 10 && inventory.length === 0) {
-                        money = 10; // Le regalamos lo justo para el primer huevo
-                        console.log(">> Sistema: Se han otorgado $10 iniciales por falta de recursos.");
+                        money = 10;
+                        console.log(">> [Security] Jugador sin recursos detectado. Balance ajustado.");
                     }
-
-                    updateUI();
-                    console.log(">> Partida cargada y verificada.");
+                    
+                    renderUI();
                 } else {
-                    // Si la base de datos está totalmente vacía (:null)
-                    money = 10; 
-                    inventory = [];
-                    updateUI();
-                    await saveProgress();
-                    console.log(">> Partida nueva creada con saldo inicial de $10.");
+                    console.log(">> [Setup] No existe partida. Generando cuenta nueva...");
+                    money = 10;
+                    renderUI();
+                    await saveData();
                 }
-            } catch (error) {
-                console.error(">> Error crítico en la carga:", error);
-                // Fail-safe: si falla la red, al menos deja jugar con 10 monedas
-                money = 10;
-                updateUI();
-            }
-        }
-
-        // --- DATA POOLS: LISTADO EXTENSO DE MASCOTAS ---
-        const NORMAL_POOL = [
-            { id: 101, n: 'Ratón de Campo', i: '🐭', r: 'common', e: 5 },
-            { id: 102, n: 'Perro Fiel', i: '🐶', r: 'common', e: 8 },
-            { id: 103, n: 'Gato Callejero', i: '🐱', r: 'common', e: 12 },
-            { id: 104, n: 'Conejo Saltador', i: '🐰', r: 'uncommon', e: 25 },
-            { id: 105, n: 'Zorro Astuto', i: '🦊', r: 'uncommon', e: 45 },
-            { id: 106, n: 'Panda Dormilón', i: '🐼', r: 'rare', e: 110 },
-            { id: 107, n: 'León Valiente', i: '🦁', r: 'rare', e: 180 },
-            { id: 108, n: 'Dragón Bebé', i: '🐲', r: 'god', e: 450 },
-            { id: 109, n: 'Unicornio Mágico', i: '🦄', r: 'secret', e: 1200 }
-        ];
-
-        const SPECIAL_POOL = [
-            { id: 201, n: 'Ratón Dorado', i: '🐭', r: 'uncommon', e: 80 },
-            { id: 202, n: 'Perro Cyborg', i: '🐶', r: 'rare', e: 210 },
-            { id: 203, n: 'Lobo Alfa', i: '🐺', r: 'rare', e: 350 },
-            { id: 204, n: 'Tigre de Bengala', i: '🐯', r: 'god', e: 750 },
-            { id: 205, n: 'Fénix Ardiente', i: '🔥', r: 'god', e: 1100 },
-            { id: 206, n: 'Dragón Infernal', i: '🐉', r: 'secret', e: 3500 },
-            { id: 207, n: 'Kraken Junior', i: '🐙', r: 'secret', e: 5500 },
-            { id: 208, n: 'T-Rex Antiguo', i: '🦖', r: 'og', e: 12000 }
-        ];
-     // --- VARIABLES DE ESTADO DEL SISTEMA ---
-        let money = 0;
-        let eggPrice = 10;
-        let specialEggPrice = 1000;
-        let rebirths = 0;
-        let multiplier = 1;
-        let activeEgg = 'normal';
-        let inventory = [];
-        let discoveredIds = [];
-
-        // --- MOTOR DE PERSISTENCIA (FIREBASE) ---
-        async function saveProgress() {
-            try {
-                await set(ref(db, userPath), {
-                    money: money,
-                    eggPrice: eggPrice,
-                    specialEggPrice: specialEggPrice,
-                    rebirths: rebirths,
-                    multiplier: multiplier,
-                    inventory: inventory,
-                    discoveredIds: discoveredIds,
-                    lastUpdate: Date.now()
-                });
-                console.log(">> Datos sincronizados con Firebase");
             } catch (e) {
-                console.error(">> Error en la nube:", e);
+                console.error(">> [Critical] Error de conexión a la base de datos.");
+                money = 10; // Fail-safe
+                renderUI();
             }
         }
 
-async function loadProgress() {
-            const snapshot = await get(ref(db, userPath));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                // Si el dinero en la nube es 0, pero es un jugador viejo, se queda en 0
-                money = data.money !== undefined ? data.money : 10; 
-                eggPrice = data.eggPrice || 10;
-                specialEggPrice = data.specialEggPrice || 1000;
-                rebirths = data.rebirths || 0;
-                multiplier = data.multiplier || 1;
-                inventory = data.inventory || [];
-                discoveredIds = data.discoveredIds || [];
-                updateUI();
-            } else {
-                // SI ES UN JUGADOR TOTALMENTE NUEVO (No existe en Firebase)
-                money = 10; // <--- LE DAMOS SUS PRIMEROS 10 DÓLARES
-                updateUI();
-                saveProgress(); // Creamos su entrada en la nube
-                console.log(">> Nuevo jugador detectado: Regalo inicial de $10 entregado.");
-            }
-        }
-        // --- LÓGICA DE INTERFAZ (UI) ---
-        window.updateUI = function() {
-            document.getElementById('display-money').textContent = Math.floor(money).toLocaleString();
-            document.getElementById('display-price').textContent = (activeEgg === 'normal' ? eggPrice : specialEggPrice).toLocaleString();
-            document.getElementById('rebirth-counter').textContent = `REBIRTH: ${rebirths} (x${multiplier} Mult)`;
+        // =====================================================================
+        // MOTOR GRÁFICO (UI UPDATER)
+        // =====================================================================
+        window.renderUI = function() {
+            // Actualización de etiquetas de texto
+            document.getElementById('val-money').textContent = Math.floor(money).toLocaleString();
+            document.getElementById('val-price').textContent = (currentEggType === 'normal' ? priceN : priceS).toLocaleString();
             
-            const list = document.getElementById('pet-list-display');
-            list.innerHTML = '';
-
-            inventory.forEach((pet, index) => {
-                const item = document.createElement('div');
-                item.className = `pet-item rarity-${pet.r}`;
-                item.innerHTML = `
-                    <div class="pet-info-wrapper">
-                        <div class="pet-icon-circle">${pet.i}</div>
-                        <div>
-                            <div style="font-weight:bold">${pet.n}</div>
-                            <div style="font-size:10px; color:#666">+$${pet.e}/s</div>
-                        </div>
-                    </div>
-                    <button class="sell-button" onclick="sellPet(${index})">VENDER</button>
-                `;
-                list.appendChild(item);
-            });
-
             const rbBtn = document.getElementById('rebirthBtn');
             const rbCost = (rebirths + 1) * 1000000;
+            rbBtn.textContent = `⚡ REBIRTH LVL ${rebirths} (Cost: ${rbCost.toLocaleString()})`;
             rbBtn.disabled = money < rbCost;
-            if (!rbBtn.disabled) rbBtn.style.background = "#e67e22";
+
+            // Renderizado del Inventario dinámico
+            const container = document.getElementById('inventory');
+            container.innerHTML = '';
+
+            inventory.forEach((pet, index) => {
+                const card = document.createElement('div');
+                card.className = `pet-card rarity-${pet.r}`;
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:24px;">${pet.i}</span>
+                        <div>
+                            <div style="font-weight:900; font-size:14px;">${pet.n}</div>
+                            <div style="font-size:10px; color:#666;">Ganancia: $${pet.e}/seg</div>
+                        </div>
+                    </div>
+                    <button class="sell-btn" onclick="sellPet(${index})">VENDER</button>
+                `;
+                container.appendChild(card);
+            });
         };
 
-        // --- SISTEMA DE COMPRA Y APERTURA ---
-        window.setEggType = function(type) {
-            activeEgg = type;
-            document.getElementById('opt-normal').classList.toggle('active', type === 'normal');
-            document.getElementById('opt-special').classList.toggle('active', type === 'special');
-            updateUI();
+        // =====================================================================
+        // CONTROLADORES DE EVENTOS (EVENT HANDLERS)
+        // =====================================================================
+        window.setEgg = function(type) {
+            currentEggType = type;
+            document.getElementById('egg-n').classList.toggle('active', type === 'normal');
+            document.getElementById('egg-s').classList.toggle('active', type === 'special');
+            renderUI();
         };
 
-        window.attemptPurchase = function() {
-            const cost = (activeEgg === 'normal' ? eggPrice : specialEggPrice);
-            if (money < cost) return alert("¡No tienes suficiente dinero!");
-
-            money -= cost;
-            if (activeEgg === 'normal') eggPrice = Math.floor(eggPrice * 1.2);
-            else specialEggPrice = Math.floor(specialEggPrice * 1.3);
-
-            startHatchAnimation();
-        };
-
-        function startHatchAnimation() {
-            const overlay = document.getElementById('hatch-overlay');
-            const visual = document.getElementById('hatch-egg-visual');
-            const result = document.getElementById('hatch-result');
+        window.buyEgg = function() {
+            const cost = (currentEggType === 'normal' ? priceN : priceS);
             
+            if (money < cost) {
+                alert("¡Faltan $" + (cost - money).toLocaleString() + " para comprar este huevo!");
+                return;
+            }
+
+            // Deducción de dinero y escalado de precios
+            money -= cost;
+            if (currentEggType === 'normal') {
+                priceN = Math.floor(priceN * 1.25);
+            } else {
+                priceS = Math.floor(priceS * 1.35);
+            }
+
+            executeHatchSequence();
+        };
+
+        function executeHatchSequence() {
+            const overlay = document.getElementById('hatch-screen');
+            const visual = document.getElementById('egg-visual');
+            const result = document.getElementById('hatch-result');
+
             overlay.style.display = 'flex';
             visual.style.display = 'block';
             result.style.display = 'none';
             visual.classList.add('shake');
 
+            // Simulación de latencia de apertura
             setTimeout(() => {
                 visual.classList.remove('shake');
                 visual.style.display = 'none';
                 
-                const pool = (activeEgg === 'normal' ? NORMAL_POOL : SPECIAL_POOL);
-                const rolled = pool[Math.floor(Math.random() * pool.length)];
+                const pool = (currentEggType === 'normal' ? POOL_NORMAL : POOL_SPECIAL);
+                const roll = pool[Math.floor(Math.random() * pool.length)];
                 
-                inventory.push(rolled);
-                if (!discoveredIds.includes(rolled.id)) discoveredIds.push(rolled.id);
+                // Registro de descubrimiento y guardado
+                inventory.push(roll);
+                if (!discoveredIds.includes(roll.id)) discoveredIds.push(roll.id);
 
-                document.getElementById('hatch-icon').textContent = rolled.i;
-                document.getElementById('hatch-name').textContent = rolled.n;
-                document.getElementById('hatch-rarity').textContent = rolled.r.toUpperCase();
-                document.getElementById('hatch-rarity').style.color = getRarityColor(rolled.r);
+                document.getElementById('res-icon').textContent = roll.i;
+                document.getElementById('res-name').textContent = roll.n;
+                document.getElementById('res-rarity').textContent = roll.r.toUpperCase();
+                document.getElementById('res-rarity').style.color = getHex(roll.r);
                 
                 result.style.display = 'block';
-                updateUI();
-                saveProgress();
+                renderUI();
+                saveData();
             }, 1500);
         }
 
         window.closeHatch = function() {
-            document.getElementById('hatch-overlay').style.display = 'none';
+            document.getElementById('hatch-screen').style.display = 'none';
         };
 
-        function getRarityColor(r) {
-            const colors = { common: '#bdc3c7', uncommon: '#2ecc71', rare: '#3498db', god: '#9b59b6', secret: '#f1c40f', og: '#e91e63' };
-            return colors[r] || '#000';
+        function getHex(rarity) {
+            const colors = { common:'#7f8c8d', uncommon:'#2ecc71', rare:'#3498db', god:'#9b59b6', secret:'#f1c40f', og:'#e91e63' };
+            return colors[rarity] || '#000000';
         }
 
-        // --- ACCIONES SECUNDARIAS ---
-        window.sellPet = function(index) {
-            const pet = inventory[index];
-            money += (pet.e * 60); // Te da 1 minuto de ganancias producidas
-            inventory.splice(index, 1);
-            updateUI();
-            saveProgress();
+        window.sellPet = function(idx) {
+            const p = inventory[idx];
+            // Valor de venta: 30 segundos de producción
+            money += (p.e * 30);
+            inventory.splice(idx, 1);
+            renderUI();
+            saveData();
         };
 
-        window.executeRebirth = function() {
-            const rbCost = (rebirths + 1) * 1000000;
-            if (money < rbCost) return;
+        window.doRebirth = function() {
+            const cost = (rebirths + 1) * 1000000;
+            if (money >= cost) {
+                rebirths++;
+                multiplier *= 2;
+                money = 0;
+                inventory = [];
+                priceN = 10;
+                priceS = 1000;
+                renderUI();
+                saveData();
+                alert("¡REBIRTH REALIZADO! Ahora ganas x" + multiplier + " veces más.");
+            }
+        };
 
-            rebirths++;
-            multiplier *= 2;
-            money = 0;
-            inventory = [];
-            eggPrice = 10;
-            specialEggPrice = 1000;
+        window.switchTab = function(t) {
+            document.getElementById('view-game').style.display = (t === 'game' ? 'block' : 'none');
+            document.getElementById('view-index').style.display = (t === 'index' ? 'block' : 'none');
+            document.getElementById('tabGame').classList.toggle('active', t === 'game');
+            document.getElementById('tabIndex').classList.toggle('active', t === 'index');
+            if (t === 'index') updateIndex();
+        };
+
+        function updateIndex() {
+            const grid = document.getElementById('index-grid');
+            grid.innerHTML = '';
+            const allPets = [...POOL_NORMAL, ...POOL_SPECIAL];
             
-            updateUI();
-            saveProgress();
-            alert("¡REBIRTH COMPLETADO! Tu producción se ha duplicado.");
-        };
-
-        window.switchTab = function(tab) {
-            document.getElementById('tab-game').style.display = (tab === 'game' ? 'block' : 'none');
-            document.getElementById('tab-index').style.display = (tab === 'index' ? 'block' : 'none');
-            document.getElementById('btn-tab-game').classList.toggle('active', tab === 'game');
-            document.getElementById('btn-tab-index').classList.toggle('active', tab === 'index');
-            if (tab === 'index') renderIndex();
-        };
-
-        function renderIndex() {
-            const container = document.getElementById('index-list-display');
-            container.innerHTML = '';
-            const fullPool = [...NORMAL_POOL, ...SPECIAL_POOL];
-            
-            fullPool.forEach(p => {
+            allPets.forEach(p => {
                 const isFound = discoveredIds.includes(p.id);
-                const card = document.createElement('div');
-                card.className = `index-card ${isFound ? 'discovered' : ''}`;
-                card.innerHTML = `
-                    <div style="font-size:20px">${isFound ? p.i : '❓'}</div>
-                    <div style="font-weight:bold">${isFound ? p.n : '???'}</div>
-                    <div>${isFound ? p.r : 'Desconocido'}</div>
+                const item = document.createElement('div');
+                item.style.cssText = `background:#eee; border-radius:15px; padding:15px; text-align:center; opacity:${isFound ? '1' : '0.4'}; filter:${isFound ? 'none' : 'grayscale(1)'};`;
+                item.innerHTML = `
+                    <div style="font-size:30px">${isFound ? p.i : '❓'}</div>
+                    <div style="font-size:12px; font-weight:bold; margin-top:5px">${isFound ? p.n : '???'}</div>
                 `;
-                container.appendChild(card);
+                grid.appendChild(item);
             });
         }
 
-        // --- LOOP PRINCIPAL (DINERO PASIVO) ---
+        // =====================================================================
+        // SISTEMAS DE TIEMPO REAL (DAEMON LOOPS)
+        // =====================================================================
         setInterval(() => {
-            let totalPerSec = 0;
-            inventory.forEach(pet => { totalPerSec += pet.e; });
+            // Cálculo masivo de ingresos pasivos
+            let earningsPerSec = inventory.reduce((total, pet) => total + pet.e, 0);
             
-            if (totalPerSec > 0) {
-                money += (totalPerSec * multiplier);
-                document.getElementById('display-money').textContent = Math.floor(money).toLocaleString();
-                // Verificamos si ya puede pagar el rebirth sin redibujar toda la lista
+            if (earningsPerSec > 0) {
+                money += (earningsPerSec * multiplier);
+                // Actualización optimizada del marcador de dinero
+                document.getElementById('val-money').textContent = Math.floor(money).toLocaleString();
+                
+                // Lógica de validación de botón de rebirth por segundo
                 const rbCost = (rebirths + 1) * 1000000;
-                if (money >= rbCost) document.getElementById('rebirthBtn').disabled = false;
+                if (money >= rbCost) {
+                    document.getElementById('rebirthBtn').disabled = false;
+                }
             }
         }, 1000);
 
-        // Guardado automático cada 30 segundos por seguridad
-        setInterval(saveProgress, 30000);
+        // Guardado automático por intervalos de seguridad (cada 25 segundos)
+        setInterval(saveData, 25000);
 
-        // INICIO
-        loadProgress();
+        // INICIALIZACIÓN DE LA INSTANCIA DE JUEGO
+        loadData();
 
     </script>
 </body>
