@@ -333,7 +333,7 @@
         <div id="tab-game">
             <div class="stats-panel">
                 <span class="stat-money">💰 $<span id="display-money">10</span></span>
-                <span class="stat-price">COSTO HUEVO: $<span id="display-price">0</span></span>
+                <span class="stat-price">COSTO HUEVO: $<span id="display-price">10</span></span>
             </div>
 
             <div class="egg-selector-container">
@@ -425,11 +425,12 @@
             }
         }
 
-        async function loadProgress() {
+async function loadProgress() {
             const snapshot = await get(ref(db, userPath));
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                money = data.money || 0;
+                // Si el dinero en la nube es 0, pero es un jugador viejo, se queda en 0
+                money = data.money !== undefined ? data.money : 10; 
                 eggPrice = data.eggPrice || 10;
                 specialEggPrice = data.specialEggPrice || 1000;
                 rebirths = data.rebirths || 0;
@@ -437,10 +438,14 @@
                 inventory = data.inventory || [];
                 discoveredIds = data.discoveredIds || [];
                 updateUI();
-                console.log(">> Partida cargada correctamente");
+            } else {
+                // SI ES UN JUGADOR TOTALMENTE NUEVO (No existe en Firebase)
+                money = 10; // <--- LE DAMOS SUS PRIMEROS 10 DÓLARES
+                updateUI();
+                saveProgress(); // Creamos su entrada en la nube
+                console.log(">> Nuevo jugador detectado: Regalo inicial de $10 entregado.");
             }
         }
-
         // --- LÓGICA DE INTERFAZ (UI) ---
         window.updateUI = function() {
             document.getElementById('display-money').textContent = Math.floor(money).toLocaleString();
