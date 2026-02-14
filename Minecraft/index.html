@@ -1,0 +1,393 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { PointerLockControls, Sky } from '@react-three/drei';
+import * as THREE from 'three';
+
+// ============================================
+// CONFIGURACIÓN Y CONSTANTES
+// ============================================
+const BLOCK_TYPES = {
+  grass: { color: '#5caa3a', name: 'Grass' },
+  dirt: { color: '#8b6f47', name: 'Dirt' },
+  stone: { color: '#808080', name: 'Stone' },
+  wood: { color: '#9b6e3e', name: 'Wood' },
+  sand: { color: '#edc9af', name: 'Sand' },
+};
+
+const GRAVITY = -20;
+const PLAYER_HEIGHT = 1.7;
+const PLAYER_SPEED = 5;
+const JUMP_FORCE = 8;
+
+// ============================================
+// COMPONENTE: BLOQUE INDIVIDUAL
+// ============================================
+function Cube({ position, type, onRemove }) {
+  const meshRef = useRef();
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    document.body.style.cursor = hovered ? 'pointer' : 'auto';
+  }, [hovered]);
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={position}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (e.button === 0) {
+          onRemove();
+        }
+      }}
+    >
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial 
+        color={BLOCK_TYPES[type].color} 
+        opacity={hovered ? 0.8 : 1}
+        transparent={hovered}
+      />
+      {hovered && (
+        <lineSegments>
+          <edgesGeometry attach="geometry" args={[new THREE.BoxGeometry(1, 1, 1)]} />
+          <lineBasicMaterial attach="material" color="black" linewidth={2} />
+        </lineSegments>
+      )}
+    </mesh>
+  );
+}
+
+// ============================================
+// COMPONENTE: JUGADOR CON FÍSICA
+// ============================================
+function Player({ blocks, addBlock, selectedBlock }) {
+  const { camera, raycaster, scene, gl } = useThree();
+  const velocity = useRef(new THREE.Vector3());
+  const direction = useRef(new THREE.Vector3());
+  const moveState = useRef({ forward: false, backward: false, left: false, right: false, jump: false });
+  const canJump = useRef(true);
+  const isLocked = useRef(false);
+
+  useEffect(() => {
+    camera.position.set(0, PLAYER_HEIGHT + 10, 10);
+    
+    const handleKeyDown = (e) => {
+      switch(e.code) {
+        case 'KeyW': moveState.current.forward = true; break;
+        case 'KeyS': moveState.current.backward = true; break;
+        case 'KeyA': moveState.current.left = true; break;
+        case 'KeyD': moveState.current.right = true; break;
+        case 'Space': 
+          if (canJump.current) {
+            moveState.current.jump = true;
+          }
+          break;
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      switch(e.code) {
+        case 'KeyW': moveState.current.forward = false; break;
+        case 'KeyS': moveState.current.backward = false; break;
+        case 'KeyA': moveState.current.left = false; break;
+        case 'KeyD': moveState.current.right = false; break;
+      }
+    };
+
+    const handleClick = (e) => {
+      if (!isLocked.current) return;
+
+      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects.length > 0) {
+        const intersect = intersects[0];
+        
+        if (e.button === 0) {
+          // Click izquierdo - no hace nada (manejado en Cube)
+        } else if (e.button === 2) {
+          // Click derecho - Colocar bloque
+          e.preventDefault();
+          const normalVector = intersect.face.normal;
+          const newPosition = intersect.point.clone().add(normalVector.multiplyScalar(0.5));
+          
+          const blockPos = [
+            Math.round(newPosition.x),
+            Math.round(newPosition.y),
+            Math.round(newPosition.z)
+          ];
+          
+          addBlock(blockPos, selectedBlock);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    gl.domElement.addEventListener('mousedown', handleClick);
+    gl.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      gl.domElement.removeEventListener('mousedown', handleClick);
+    };
+  }, [camera, raycaster, scene, gl, addBlock, selectedBlock]);
+
+  useFrame((state, delta) => {
+    if (!isLocked.current) return;
+
+    const speed = PLAYER_SPEED;
+    
+    direction.current.set(0, 0, 0);
+    
+    if (moveState.current.forward) direction.current.z -= 1;
+    if (moveState.current.backward) direction.current.z += 1;
+    if (moveState.current.left) direction.current.x -= 1;
+    if (moveState.current.right) direction.current.x += 1;
+    
+    direction.current.normalize();
+    
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+    
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, camera.up).normalize();
+    
+    velocity.current.x = (forward.x * direction.current.z + right.x * direction.current.x) * speed;
+    velocity.current.z = (forward.z * direction.current.z + right.z * direction.current.x) * speed;
+    
+    // Gravedad
+    velocity.current.y += GRAVITY * delta;
+    
+    // Salto
+    if (moveState.current.jump && canJump.current) {
+      velocity.current.y = JUMP_FORCE;
+      canJump.current = false;
+      moveState.current.jump = false;
+    }
+    
+    // Actualizar posición
+    camera.position.x += velocity.current.x * delta;
+    camera.position.y += velocity.current.y * delta;
+    camera.position.z += velocity.current.z * delta;
+    
+    // Colisión simple con el suelo
+    const groundLevel = PLAYER_HEIGHT;
+    if (camera.position.y <= groundLevel) {
+      camera.position.y = groundLevel;
+      velocity.current.y = 0;
+      canJump.current = true;
+    }
+    
+    // Colisiones con bloques
+    blocks.forEach(block => {
+      const blockBox = new THREE.Box3(
+        new THREE.Vector3(block.position[0] - 0.5, block.position[1] - 0.5, block.position[2] - 0.5),
+        new THREE.Vector3(block.position[0] + 0.5, block.position[1] + 0.5, block.position[2] + 0.5)
+      );
+      
+      const playerBox = new THREE.Box3(
+        new THREE.Vector3(camera.position.x - 0.3, camera.position.y - PLAYER_HEIGHT, camera.position.z - 0.3),
+        new THREE.Vector3(camera.position.x + 0.3, camera.position.y, camera.position.z + 0.3)
+      );
+      
+      if (blockBox.intersectsBox(playerBox)) {
+        camera.position.y = block.position[1] + 0.5 + PLAYER_HEIGHT;
+        velocity.current.y = 0;
+        canJump.current = true;
+      }
+    });
+  });
+
+  return (
+    <PointerLockControls 
+      onLock={() => { isLocked.current = true; }}
+      onUnlock={() => { isLocked.current = false; }}
+    />
+  );
+}
+
+// ============================================
+// COMPONENTE: MUNDO (TERRENO)
+// ============================================
+function Ground({ addInitialBlocks }) {
+  useEffect(() => {
+    const initialBlocks = [];
+    
+    // Generar terreno base
+    for (let x = -10; x <= 10; x++) {
+      for (let z = -10; z <= 10; z++) {
+        const height = Math.floor(Math.random() * 3);
+        
+        for (let y = 0; y <= height; y++) {
+          const type = y === height ? 'grass' : y === height - 1 ? 'dirt' : 'stone';
+          initialBlocks.push({
+            id: `${x}-${y}-${z}`,
+            position: [x, y, z],
+            type
+          });
+        }
+      }
+    }
+    
+    // Añadir algunos árboles aleatorios
+    for (let i = 0; i < 10; i++) {
+      const x = Math.floor(Math.random() * 20) - 10;
+      const z = Math.floor(Math.random() * 20) - 10;
+      const height = 5;
+      
+      for (let y = 1; y <= height; y++) {
+        initialBlocks.push({
+          id: `tree-${x}-${y}-${z}`,
+          position: [x, y, z],
+          type: 'wood'
+        });
+      }
+    }
+    
+    addInitialBlocks(initialBlocks);
+  }, [addInitialBlocks]);
+
+  return null;
+}
+
+// ============================================
+// COMPONENTE: UI (CROSSHAIR Y SELECTOR)
+// ============================================
+function UI({ selectedBlock, onSelectBlock }) {
+  return (
+    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      {/* Crosshair */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        color: 'white',
+        fontSize: '30px',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        fontWeight: 'bold'
+      }}>
+        +
+      </div>
+      
+      {/* Instrucciones */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        color: 'white',
+        background: 'rgba(0,0,0,0.6)',
+        padding: '10px 20px',
+        borderRadius: '10px',
+        fontSize: '14px',
+        textAlign: 'center',
+        fontFamily: 'monospace'
+      }}>
+        <div>🖱️ Click para bloquear cursor</div>
+        <div>WASD: Mover | ESPACIO: Saltar</div>
+        <div>Click Izq: Minar | Click Der: Colocar</div>
+      </div>
+      
+      {/* Selector de bloques */}
+      <div style={{
+        position: 'absolute',
+        bottom: '30px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '10px',
+        pointerEvents: 'auto'
+      }}>
+        {Object.entries(BLOCK_TYPES).map(([key, block]) => (
+          <div
+            key={key}
+            onClick={() => onSelectBlock(key)}
+            style={{
+              width: '60px',
+              height: '60px',
+              backgroundColor: block.color,
+              border: selectedBlock === key ? '4px solid white' : '2px solid rgba(255,255,255,0.3)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              textShadow: '1px 1px 2px black',
+              transition: 'all 0.2s',
+              transform: selectedBlock === key ? 'scale(1.1)' : 'scale(1)'
+            }}
+          >
+            {block.name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
+export default function MinecraftClone() {
+  const [blocks, setBlocks] = useState([]);
+  const [selectedBlock, setSelectedBlock] = useState('grass');
+
+  const addInitialBlocks = (initialBlocks) => {
+    setBlocks(initialBlocks);
+  };
+
+  const removeBlock = (id) => {
+    setBlocks(prev => prev.filter(block => block.id !== id));
+  };
+
+  const addBlock = (position, type) => {
+    const id = `${position[0]}-${position[1]}-${position[2]}`;
+    
+    // Verificar que no exista ya un bloque en esa posición
+    if (blocks.some(block => block.id === id)) return;
+    
+    setBlocks(prev => [...prev, { id, position, type }]);
+  };
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', background: '#87CEEB' }}>
+      <Canvas camera={{ fov: 75, near: 0.1, far: 1000 }}>
+        <Sky sunPosition={[100, 100, 20]} />
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[10, 10, 5]} intensity={0.8} castShadow />
+        
+        <Ground addInitialBlocks={addInitialBlocks} />
+        
+        {blocks.map(block => (
+          <Cube
+            key={block.id}
+            position={block.position}
+            type={block.type}
+            onRemove={() => removeBlock(block.id)}
+          />
+        ))}
+        
+        <Player 
+          blocks={blocks} 
+          addBlock={addBlock}
+          selectedBlock={selectedBlock}
+        />
+      </Canvas>
+      
+      <UI selectedBlock={selectedBlock} onSelectBlock={setSelectedBlock} />
+    </div>
+  );
+}
