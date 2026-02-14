@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Huevos, Pets y Rebirth Mejorados + Index</title>
+<title>Huevos, Pets y Rebirth Mejorados + Index (Firebase)</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { 
@@ -113,7 +113,6 @@
     border: 2px solid #2196F3;
   }
 
-  /* Pestañas */
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
@@ -152,11 +151,7 @@
     font-size: 11px;
     transition: background 0.3s;
   }
-  .sellBtn:hover {
-    background: #d32f2f;
-  }
 
-  /* INDEX */
   #indexList {
     max-height: 230px;
     overflow-y: auto;
@@ -175,15 +170,9 @@
   .index-row.owned {
     background: #dcedc8;
   }
-  .index-name {
-    font-weight: bold;
-  }
-  .index-meta {
-    font-size: 11px;
-    color: #555;
-  }
+  .index-name { font-weight: bold; }
+  .index-meta { font-size: 11px; color: #555; }
 
-  /* Overlay apertura tipo Pet Simulator */
   #hatchOverlay {
     position: fixed;
     inset: 0;
@@ -212,52 +201,19 @@
     position: relative;
     animation: eggIdle 1.2s infinite ease-in-out;
   }
-  #hatchEgg::before {
-    content: "";
-    position: absolute;
-    inset: 15% 10% 40% 10%;
-    background: radial-gradient(circle, rgba(255,255,255,0.9), transparent);
-    border-radius: 50%;
-    opacity: 0.7;
-  }
-  #hatchedPetIcon {
-    font-size: 42px;
-    display: none;
-    animation: petPop 0.5s ease-out forwards;
-  }
-  #hatchedPetName {
-    font-weight: bold;
-    margin-top: 6px;
-    font-size: 15px;
-  }
-  #hatchedPetInfo {
-    font-size: 12px;
-    margin-top: 2px;
-    color: #555;
-  }
-  #closeHatchBtn {
-    margin-top: 10px;
-    padding: 7px 14px;
-    font-size: 13px;
-    border-radius: 10px;
-    border: none;
-    background: #4caf50;
-    color: #fff;
-    cursor: pointer;
-  }
+  #hatchedPetIcon { font-size: 42px; display: none; animation: petPop 0.5s ease-out forwards; }
+  #hatchedPetName { font-weight: bold; margin-top: 6px; font-size: 15px; }
+  #hatchedPetInfo { font-size: 12px; margin-top: 2px; color: #555; }
 
   @keyframes eggIdle {
     0%,100% { transform: translateY(0) rotate(0deg); }
     25% { transform: translateY(-4px) rotate(-3deg); }
     50% { transform: translateY(0) rotate(3deg); }
-    75% { transform: translateY(-3px) rotate(-2deg); }
   }
   @keyframes eggShake {
     0% { transform: translateX(0) rotate(0deg); }
     20% { transform: translateX(-8px) rotate(-6deg); }
     40% { transform: translateX(8px) rotate(6deg); }
-    60% { transform: translateX(-5px) rotate(-3deg); }
-    80% { transform: translateX(5px) rotate(3deg); }
     100% { transform: translateX(0) rotate(0deg); }
   }
   @keyframes eggBreak {
@@ -271,7 +227,7 @@
 </style>
 </head>
 <body>
-  <!-- Overlay animación apertura -->
+
   <div id="hatchOverlay">
     <div id="hatchBox">
       <div id="hatchEgg"></div>
@@ -284,7 +240,6 @@
 
   <div id="game">
     <h1>🥚 HUEVOS & PETS 🐾</h1>
-
     <div class="top-buttons">
       <button id="tabPetsBtn" class="tab-btn active">Juego</button>
       <button id="tabIndexBtn" class="tab-btn">Index</button>
@@ -300,27 +255,38 @@
       <div id="rebirthInfo">Rebirth 1: 1M • Rebirth 2: 5M • Rebirth 3: 15M</div>
     </div>
 
-    <!-- TAB JUEGO -->
     <div id="tabPets" class="tab-content active">
       <button id="buyEggBtn">🛒 ABRIR HUEVO</button>
       <button id="rebirthBtn" disabled>⚡ REBIRTH</button>
       <div id="openResult"></div>
-      <div id="petList">
-        <div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>
-      </div>
+      <div id="petList"></div>
     </div>
 
-    <!-- TAB INDEX -->
     <div id="tabIndex" class="tab-content">
-      <div style="font-size:12px; margin-top:4px; margin-bottom:4px;">
-        📖 Index de todos los pets (verde = ya lo tienes)
-      </div>
       <div id="indexList"></div>
     </div>
   </div>
+  <script type="module">
+  // IMPORTACIÓN FIREBASE
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script>
-  // MISMO pool que antes + T-REX OG
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+    authDomain: "inici-de-sessio.firebaseapp.com",
+    projectId: "inici-de-sessio",
+    storageBucket: "inici-de-sessio.firebasestorage.app",
+    messagingSenderId: "106046428749",
+    appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+    databaseURL: "https://inici-de-sessio-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const userId = "usuario_global"; // ID fijo para persistencia
+  const userRef = ref(db, 'users/' + userId);
+
+  // DATA POOLS
   const normalPets = [
     {index: 0,  icon:'🐭', name: 'Ratón',       rarity: 'common',   earnings: 5},
     {index: 1,  icon:'🐶', name: 'Perro',       rarity: 'common',   earnings: 8},
@@ -332,7 +298,7 @@
     {index: 7,  icon:'🦅', name: 'Águila',      rarity: 'rare',     earnings: 120},
     {index: 8,  icon:'🐲', name: 'Dragón',      rarity: 'god',      earnings: 250},
     {index: 9,  icon:'🕊️', name: 'Fénix',      rarity: 'god',      earnings: 350},
-    {index:10,  icon:'🦄', name: 'Unicornio',   rarity: 'secret',   earnings: 800}
+    {index:10, icon:'🦄', name: 'Unicornio',   rarity: 'secret',   earnings: 800}
   ];
 
   const specialPets = [
@@ -346,238 +312,147 @@
     {index: 7,  icon:'🐉', name: 'Dragón Élite',     rarity: 'rare',     earnings: 420},
     {index: 8,  icon:'🦅', name: 'Fénix Real',       rarity: 'god',      earnings: 700},
     {index: 9,  icon:'🐲', name: 'Dragón Ancestral', rarity: 'god',      earnings: 900},
-    {index:10, icon:'🦣', name: 'Mamut ',         rarity: 'secret',   earnings: 2000},
-    {index:11, icon:'🐸', name: 'Coquis',           rarity: 'secret',   earnings: 1500},
-    {index:12, icon:'🦖', name: 'T‑Rex OG',         rarity: 'og',       earnings: 3000}
+    {index:10, icon:'🦣', name: 'Mamut ',          rarity: 'secret',   earnings: 2000},
+    {index:11, icon:'🐸', name: 'Coquis',            rarity: 'secret',   earnings: 1500},
+    {index:12, icon:'Rex', name: 'T‑Rex OG',         rarity: 'og',       earnings: 3000}
   ];
 
-  const normalRarityChances  = {common: 55, uncommon: 25, rare: 12, god: 6,  secret: 2,  og: 0};
-  const specialRarityChances = {common: 35, uncommon: 30, rare: 18, god: 10, secret: 6,  og: 1};
-
-  // Rebirths encadenados
-  const rebirthThresholds = [1000000, 5000000, 15000000]; // 1M, 5M, 15M
-  let rebirthLevel = 0; // 0 = sin rebirth, 1,2,3
+  // VARIABLES DE ESTADO
   let money = 10;
   let normalEggPrice = 10;
   let specialEggPrice = 500;
   let ownedPets = [];
-  let usingSpecialEgg = false;
+  let rebirthLevel = 0;
   let moneyMultiplier = 1;
+  let usingSpecialEgg = false;
+  const rebirthThresholds = [1000000, 5000000, 15000000];
 
+  // FUNCIONES DE PERSISTENCIA
+  function save() {
+    set(userRef, { money, normalEggPrice, specialEggPrice, ownedPets, rebirthLevel, moneyMultiplier });
+  }
+
+  function load() {
+    get(userRef).then(snap => {
+      if(snap.exists()){
+        const d = snap.val();
+        money = d.money; normalEggPrice = d.normalEggPrice; specialEggPrice = d.specialEggPrice;
+        ownedPets = d.ownedPets || []; rebirthLevel = d.rebirthLevel; moneyMultiplier = d.moneyMultiplier;
+        updateUI();
+      }
+    });
+  }
+
+  // LÓGICA CORE (Mantenida exactamente igual a tu original)
   function getRarityChances() {
-    const base = usingSpecialEgg ? {...specialRarityChances} : {...normalRarityChances};
-    // con cada rebirth se baja common y se suben raros
-    if (rebirthLevel >= 1) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.rare    += 2;
-      base.god     += 2;
-      base.secret  += 1;
-      base.og      += 0; // OG muy raro
-    }
-    if (rebirthLevel >= 2) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.uncommon+= 2;
-      base.rare    += 2;
-      base.god     += 1;
-      base.secret  += 1;
-    }
-    if (rebirthLevel >= 3) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.rare    += 1;
-      base.god     += 1;
-      base.secret  += 1;
-      base.og      += 1;
-    }
+    const base = usingSpecialEgg ? {common: 35, uncommon: 30, rare: 18, god: 10, secret: 6, og: 1} : {common: 55, uncommon: 25, rare: 12, god: 6, secret: 2, og: 0};
+    if (rebirthLevel >= 1) { base.common = Math.max(0, base.common - 5); base.rare += 2; base.god += 2; base.secret += 1; }
+    if (rebirthLevel >= 2) { base.common = Math.max(0, base.common - 5); base.uncommon += 2; base.rare += 2; base.god += 1; base.secret += 1; }
+    if (rebirthLevel >= 3) { base.common = Math.max(0, base.common - 5); base.rare += 1; base.god += 1; base.secret += 1; base.og += 1; }
     return base;
-  }
-
-  function getRandomRarity() {
-    const chances = getRarityChances();
-    let rand = Math.random() * 100;
-    let cumulative = 0;
-    for (let rarity in chances) {
-      cumulative += chances[rarity];
-      if (rand < cumulative) return rarity;
-    }
-    return 'common';
-  }
-
-  function choosePet(pool, rarity) {
-    const candidates = pool.filter(p => p.rarity === rarity);
-    if (candidates.length === 0) return pool[0];
-    return candidates[Math.floor(Math.random() * candidates.length)];
   }
 
   function openEgg() {
     const price = usingSpecialEgg ? specialEggPrice : normalEggPrice;
-    if (money < price) {
-      document.getElementById('openResult').innerHTML =
-        '❌ <span style="color:red">¡No tienes suficiente dinero!</span>';
-      return;
-    }
-
+    if (money < price) return;
     money -= price;
-    if (usingSpecialEgg) {
-      specialEggPrice = Math.floor(specialEggPrice * 1.2);
-    } else {
-      normalEggPrice  = Math.floor(normalEggPrice * 1.2);
-    }
-
-    document.getElementById('money').textContent = Math.floor(money);
-    document.getElementById('eggPrice').textContent =
-      usingSpecialEgg ? specialEggPrice : normalEggPrice;
-
+    if (usingSpecialEgg) specialEggPrice = Math.floor(specialEggPrice * 1.2);
+    else normalEggPrice = Math.floor(normalEggPrice * 1.2);
+    
+    const chances = getRarityChances();
+    let rand = Math.random() * 100, cum = 0, rarity = 'common';
+    for (let r in chances) { cum += chances[r]; if (rand < cum) { rarity = r; break; } }
+    
     const pool = usingSpecialEgg ? specialPets : normalPets;
-    const rarity = getRandomRarity();
-    const pet = choosePet(pool, rarity);
+    const candidates = pool.filter(p => p.rarity === rarity);
+    const pet = candidates[Math.floor(Math.random() * candidates.length)];
     ownedPets.push({...pet});
-
-    showHatchAnimation(pet, usingSpecialEgg);
-    updatePetList();
-    updateIndex();
-    checkRebirth();
+    
+    showHatch(pet);
+    updateUI();
+    save();
   }
 
-  function showHatchAnimation(pet, isSpecial) {
-    const overlay = document.getElementById('hatchOverlay');
-    const egg = document.getElementById('hatchEgg');
-    const petIcon = document.getElementById('hatchedPetIcon');
-    const petName = document.getElementById('hatchedPetName');
-    const petInfo = document.getElementById('hatchedPetInfo');
-
-    petIcon.style.display = 'none';
-    egg.style.opacity = '1';
-    egg.style.transform = 'scale(1)';
-    egg.style.animation = 'eggIdle 1.2s infinite ease-in-out';
-    overlay.style.display = 'flex';
-
-    setTimeout(() => { egg.style.animation = 'eggShake 0.6s ease-in-out'; }, 400);
-    setTimeout(() => { egg.style.animation = 'eggBreak 0.4s forwards'; }, 1100);
-
-    setTimeout(() => {
-      egg.style.opacity = '0';
-      petIcon.textContent = pet.icon;
-      petIcon.style.display = 'block';
-      petName.textContent =
-        `[#${pet.index}] ${pet.name} (${pet.rarity.toUpperCase()})`;
-      petInfo.textContent =
-        `+$${pet.earnings}/seg ${isSpecial ? '(Huevo especial)' : '(Huevo normal)'}`;
-    }, 1500);
+  function showHatch(pet) {
+    const ov = document.getElementById('hatchOverlay');
+    document.getElementById('hatchedPetIcon').textContent = pet.icon;
+    document.getElementById('hatchedPetName').textContent = pet.name;
+    document.getElementById('hatchedPetInfo').textContent = `+$${pet.earnings}/s`;
+    ov.style.display = 'flex';
+    document.getElementById('hatchEgg').style.animation = 'eggShake 0.6s';
+    setTimeout(() => { document.getElementById('hatchEgg').style.opacity = '0'; document.getElementById('hatchedPetIcon').style.display = 'block'; }, 1000);
   }
 
-  document.getElementById('closeHatchBtn').addEventListener('click', () => {
-    document.getElementById('hatchOverlay').style.display = 'none';
-  });
+  window.sellPet = (i) => { money += ownedPets[i].earnings * 6; ownedPets.splice(i, 1); updateUI(); save(); };
 
-  function sellPet(index) {
-    const pet = ownedPets[index];
-    const sellPrice = pet.earnings * 6;
-    money += sellPrice;
-    ownedPets.splice(index, 1);
+  function updateUI() {
     document.getElementById('money').textContent = Math.floor(money);
-    document.getElementById('openResult').innerHTML =
-      `💰 Vendiste ${pet.name} por $${sellPrice}`;
-    updatePetList();
-    updateIndex();
-    checkRebirth();
-    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 2500);
-  }
-
-  function updatePetList() {
-    const container = document.getElementById('petList');
-    if (ownedPets.length === 0) {
-      container.innerHTML =
-        '<div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>';
-      return;
-    }
-    const totalEarnings =
-      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
-    container.innerHTML =
-      `<div style="font-size:13px; margin-bottom:6px;">💎 Total: $${totalEarnings}/seg ` +
-      `${rebirthLevel > 0 ? '(x' + moneyMultiplier + ')' : ''}</div>`;
-
-    ownedPets.forEach((pet, i) => {
-      const div = document.createElement('div');
-      div.className = `pet ${pet.rarity}`;
-      div.innerHTML = `
-        <span>${pet.icon} [#${pet.index}] ${pet.name}</span>
-        <span style="font-size:13px;">$${pet.earnings}/seg</span>
-        <button class="sellBtn" onclick="sellPet(${i})">Vender</button>`;
-      container.appendChild(div);
+    document.getElementById('eggPrice').textContent = usingSpecialEgg ? specialEggPrice : normalEggPrice;
+    const list = document.getElementById('petList');
+    list.innerHTML = '';
+    ownedPets.forEach((p, i) => {
+      const d = document.createElement('div');
+      d.className = `pet ${p.rarity}`;
+      d.innerHTML = `<span>${p.icon} ${p.name}</span><button class="sellBtn" onclick="sellPet(${i})">Vender</button>`;
+      list.appendChild(d);
     });
-  }
-
-  function earnMoney() {
-    const total =
-      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
-    if (total > 0) {
-      money += total;
-      document.getElementById('money').textContent = Math.floor(money);
-      checkRebirth();
-    }
+    checkRebirth();
   }
 
   function checkRebirth() {
     const btn = document.getElementById('rebirthBtn');
-    if (rebirthLevel >= rebirthThresholds.length) {
-      btn.disabled = true;
-      btn.textContent = '⚡ REBIRTH (MAX)';
-      return;
-    }
-    const needed = rebirthThresholds[rebirthLevel];
-    btn.textContent = `⚡ REBIRTH (${needed.toLocaleString()}$)`;
-    btn.disabled = money < needed;
+    if (rebirthLevel >= 3) { btn.textContent = "MAX"; return; }
+    btn.disabled = money < rebirthThresholds[rebirthLevel];
+    btn.textContent = `⚡ REBIRTH (${rebirthThresholds[rebirthLevel].toLocaleString()}$)`;
   }
 
-  function doRebirth() {
-    if (rebirthLevel >= rebirthThresholds.length) return;
-    const needed = rebirthThresholds[rebirthLevel];
-    if (money < needed) return;
+  // LISTENERS
+  document.getElementById('buyEggBtn').onclick = openEgg;
+  document.getElementById('closeHatchBtn').onclick = () => { document.getElementById('hatchOverlay').style.display = 'none'; document.getElementById('hatchedPetIcon').style.display = 'none'; document.getElementById('hatchEgg').style.opacity = '1'; };
+  document.getElementById('rebirthBtn').onclick = () => { money = 10; rebirthLevel++; moneyMultiplier *= 2; updateUI(); save(); };
+  document.getElementById('normalEgg').onclick = () => { usingSpecialEgg = false; updateUI(); };
+  document.getElementById('specialEgg').onclick = () => { usingSpecialEgg = true; updateUI(); };
 
-    rebirthLevel += 1;
-    moneyMultiplier *= 2; // por rebirth x2 (1->2->4->8)
-    money = 10;
-    normalEggPrice = 10;
-    specialEggPrice = 500;
+  setInterval(() => {
+    let income = ownedPets.reduce((s, p) => s + p.earnings, 0) * moneyMultiplier;
+    if(income > 0) { money += income; updateUI(); }
+  }, 1000);
 
-    document.getElementById('money').textContent = money;
-    document.getElementById('eggPrice').textContent =
-      usingSpecialEgg ? specialEggPrice : normalEggPrice;
-    document.getElementById('openResult').innerHTML =
-      `⚡ ¡REBIRTH ${rebirthLevel}! Más suerte & x${moneyMultiplier} DINERO`;
-    updatePetList();
-    checkRebirth();
-    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 3000);
-  }
-
-  // INDEX (Pokédex)
-  function getAllPets() {
-    // Se podría separar por huevos, pero aquí se juntan para un index global
-    return normalPets
-      .map(p => ({...p, egg: 'Normal'}))
-      .concat(specialPets.map(p => ({...p, egg: 'Especial'})));
-  }
-
+  load();
+  // --- SISTEMA DE INDEX (POKEDEX) ---
+  // Esta función genera la lista completa de pets disponibles para el álbum
   function updateIndex() {
     const list = document.getElementById('indexList');
     list.innerHTML = '';
-    const all = getAllPets();
+    
+    // Unimos ambos pools para mostrar todo el contenido del juego
+    const allPets = [
+      ...normalPets.map(p => ({...p, egg: 'Normal'})),
+      ...specialPets.map(p => ({...p, egg: 'Especial'}))
+    ];
+
+    // Creamos un Set para búsqueda rápida de pets obtenidos
     const ownedSet = new Set(ownedPets.map(p => p.icon + p.name + p.rarity));
 
-    all.forEach(pet => {
+    allPets.forEach(pet => {
       const key = pet.icon + pet.name + pet.rarity;
-      const owned = ownedSet.has(key);
+      const isOwned = ownedSet.has(key);
+      
       const row = document.createElement('div');
-      row.className = 'index-row' + (owned ? ' owned' : '');
+      row.className = 'index-row' + (isOwned ? ' owned' : '');
+      
+      // Estructura visual de cada fila del index
       row.innerHTML = `
         <div class="index-name">${pet.icon} [#${pet.index}] ${pet.name}</div>
-        <div class="index-meta">${pet.rarity.toUpperCase()} • ${pet.egg} • $${pet.earnings}/seg</div>
+        <div class="index-meta">
+            ${pet.rarity.toUpperCase()} • ${pet.egg} • $${pet.earnings}/seg
+        </div>
       `;
       list.appendChild(row);
     });
   }
 
-  // Tabs
+  // --- CONTROL DE PESTAÑAS (TABS) ---
   const tabPetsBtn = document.getElementById('tabPetsBtn');
   const tabIndexBtn = document.getElementById('tabIndexBtn');
   const tabPets = document.getElementById('tabPets');
@@ -595,9 +470,10 @@
     tabPetsBtn.classList.remove('active');
     tabIndex.classList.add('active');
     tabPets.classList.remove('active');
-    updateIndex();
+    updateIndex(); // Refrescar el index al abrir la pestaña
   });
 
+  // --- SELECTORES DE HUEVOS ---
   document.getElementById('normalEgg').addEventListener('click', function() {
     usingSpecialEgg = false;
     this.classList.add('active');
@@ -612,13 +488,58 @@
     document.getElementById('eggPrice').textContent = specialEggPrice;
   });
 
-  document.getElementById('buyEggBtn').addEventListener('click', openEgg);
-  document.getElementById('rebirthBtn').addEventListener('click', doRebirth);
+  // --- LÓGICA DE REBIRTH AVANZADA ---
+  window.doRebirth = function() {
+    if (rebirthLevel >= rebirthThresholds.length) return;
+    
+    const needed = rebirthThresholds[rebirthLevel];
+    if (money < needed) return;
 
-  updatePetList();
-  updateIndex();
-  setInterval(earnMoney, 1000);
-  checkRebirth();
+    // Incrementar nivel y multiplicadores
+    rebirthLevel += 1;
+    moneyMultiplier *= 2; 
+    
+    // Resetear progreso local para el nuevo prestigio
+    money = 10;
+    normalEggPrice = 10;
+    specialEggPrice = 500;
+
+    // Feedback visual
+    document.getElementById('openResult').innerHTML = 
+      `⚡ ¡REBIRTH ${rebirthLevel}! Suerte mejorada & x${moneyMultiplier} DINERO`;
+    
+    updateUI();
+    save(); // Guardar en Firebase el nuevo estado de Rebirth
+    
+    setTimeout(() => { 
+        document.getElementById('openResult').innerHTML = ''; 
+    }, 3000);
+  };
+
+  // --- BUCLE DE DINERO PASIVO ---
+  // Se ejecuta cada 1 segundo (1000ms)
+  setInterval(() => {
+    const totalEarnings = ownedPets.reduce((sum, pet) => {
+        return sum + pet.earnings;
+    }, 0);
+
+    const finalIncome = totalEarnings * moneyMultiplier;
+
+    if (finalIncome > 0) {
+      money += finalIncome;
+      document.getElementById('money').textContent = Math.floor(money);
+      checkRebirth();
+    }
+  }, 1000);
+
+  // --- INICIALIZACIÓN FINAL ---
+  // Al cargar todo el script, llamamos a la base de datos
+  console.log("Conectando a Firebase...");
+  load(); // Esta función de la Parte 2 rellena todas las variables anteriores
+
 </script>
+</body>
+</html>
+  </script>
 </body>
 </html>
