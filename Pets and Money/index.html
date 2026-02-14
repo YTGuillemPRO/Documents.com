@@ -1,624 +1,607 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Huevos, Pets y Rebirth Mejorados + Index</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { 
-    font-family: Arial, sans-serif; 
-    height: 100vh; 
-    overflow: hidden; 
-    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-  }
-  #game { 
-    width: 390px; 
-    background: rgba(255,255,255,0.95); 
-    border-radius: 20px; 
-    padding: 18px; 
-    text-align: center; 
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    position: relative;
-    z-index: 1;
-  }
-  h1 { font-size: 22px; margin-bottom: 8px; color: #333; }
-  .top-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 6px;
-    font-size: 12px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    background: #e0e0e0;
-    font-weight: bold;
-  }
-  .tab-btn.active {
-    background: #4caf50;
-    color: #fff;
-  }
-  .stats { background: #f8f9fa; padding: 10px; border-radius: 15px; margin: 6px 0; }
-  .money { font-size: 22px; font-weight: bold; color: #4CAF50; }
-  .egg-price { font-size: 15px; color: #666; margin: 4px 0 6px; }
-  .egg-selector {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-  .egg-type-btn {
-    flex: 1;
-    padding: 6px 6px;
-    font-weight: bold;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    background-color: #ddd;
-    user-select: none;
-    transition: 0.3s;
-    font-size: 11px;
-  }
-  .egg-type-btn.active {
-    background-color: #4caf50;
-    color: white;
-    border-color: #4caf50;
-  }
-  button { 
-    width: 100%; 
-    padding: 12px; 
-    font-size: 15px; 
-    border: none; 
-    border-radius: 12px; 
-    cursor: pointer; 
-    margin: 5px 0; 
-    transition: all 0.3s; 
-  }
-  #buyEggBtn { 
-    background: linear-gradient(45deg, #ff6b6b, #feca57); 
-    color: white; 
-    font-weight: bold;
-  }
-  #buyEggBtn:hover { transform: scale(1.03); }
-  #rebirthBtn {
-    background: #2196F3;
-    color: white;
-    font-weight: bold;
-    font-size: 13px;
-  }
-  #rebirthBtn:disabled {
-    background: #90caf9;
-    cursor: not-allowed;
-  }
-  #rebirthInfo {
-    font-size: 11px;
-    color: #555;
-    margin-top: 2px;
-  }
-  #openResult { 
-    min-height: 32px; 
-    font-size: 13px; 
-    font-weight: bold; 
-    margin: 6px 0; 
-    padding: 6px; 
-    border-radius: 10px; 
-    background: #e3f2fd; 
-    border: 2px solid #2196F3;
-  }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Clicker Premium Edition - Firebase Sync</title>
+    <style>
+        /* CONFIGURACIÓN GLOBAL DEL DOCUMENTO */
+        :root {
+            --primary-color: #4caf50;
+            --secondary-color: #2196f3;
+            --danger-color: #f44336;
+            --background-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --frame-bg: rgba(255, 255, 255, 0.98);
+        }
 
-  /* Pestañas */
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
 
-  #petList { 
-    max-height: 210px; 
-    overflow-y: auto; 
-    margin-top: 6px; 
-    text-align: left;
-  }
-  .pet { 
-    margin: 4px 0; 
-    padding: 7px; 
-    border-radius: 10px; 
-    font-weight: bold;
-    background: #f0f0f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-  }
-  .common { background: #e0e0e0; color: #555; }
-  .uncommon { background: #c8e6c9; color: #2e7d32; }
-  .rare { background: #bbdefb; color: #1565c0; }
-  .god { background: #f3e5f5; color: #7b1fa2; }
-  .secret { background: #fff3e0; color: #ef6c00; }
-  .og { background: #ffe0f0; color: #c2185b; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--background-gradient);
+            overflow: hidden;
+        }
 
-  .sellBtn {
-    background: #ef5350;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 3px 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 11px;
-    transition: background 0.3s;
-  }
-  .sellBtn:hover {
-    background: #d32f2f;
-  }
+        /* CONTENEDOR PRINCIPAL - FRAME DEL JUEGO */
+        #game-container {
+            width: 420px;
+            height: 720px;
+            background: var(--frame-bg);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            position: relative;
+            border: 4px solid #ffffff;
+        }
 
-  /* INDEX */
-  #indexList {
-    max-height: 230px;
-    overflow-y: auto;
-    text-align: left;
-    margin-top: 8px;
-    font-size: 12px;
-  }
-  .index-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 6px;
-    border-radius: 8px;
-    margin-bottom: 3px;
-    background: #f5f5f5;
-  }
-  .index-row.owned {
-    background: #dcedc8;
-  }
-  .index-name {
-    font-weight: bold;
-  }
-  .index-meta {
-    font-size: 11px;
-    color: #555;
-  }
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
 
-  /* Overlay apertura tipo Pet Simulator */
-  #hatchOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-  }
-  #hatchBox {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 18px;
-    width: 260px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-    position: relative;
-  }
-  #hatchEgg {
-    width: 110px;
-    height: 145px;
-    margin: 0 auto 8px;
-    background: radial-gradient(circle at 30% 30%, #fff, #ffd54f);
-    border-radius: 50% 50% 45% 45%;
-    border: 4px solid #ffb300;
-    position: relative;
-    animation: eggIdle 1.2s infinite ease-in-out;
-  }
-  #hatchEgg::before {
-    content: "";
-    position: absolute;
-    inset: 15% 10% 40% 10%;
-    background: radial-gradient(circle, rgba(255,255,255,0.9), transparent);
-    border-radius: 50%;
-    opacity: 0.7;
-  }
-  #hatchedPetIcon {
-    font-size: 42px;
-    display: none;
-    animation: petPop 0.5s ease-out forwards;
-  }
-  #hatchedPetName {
-    font-weight: bold;
-    margin-top: 6px;
-    font-size: 15px;
-  }
-  #hatchedPetInfo {
-    font-size: 12px;
-    margin-top: 2px;
-    color: #555;
-  }
-  #closeHatchBtn {
-    margin-top: 10px;
-    padding: 7px 14px;
-    font-size: 13px;
-    border-radius: 10px;
-    border: none;
-    background: #4caf50;
-    color: #fff;
-    cursor: pointer;
-  }
+        header h1 {
+            font-size: 26px;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
 
-  @keyframes eggIdle {
-    0%,100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-4px) rotate(-3deg); }
-    50% { transform: translateY(0) rotate(3deg); }
-    75% { transform: translateY(-3px) rotate(-2deg); }
-  }
-  @keyframes eggShake {
-    0% { transform: translateX(0) rotate(0deg); }
-    20% { transform: translateX(-8px) rotate(-6deg); }
-    40% { transform: translateX(8px) rotate(6deg); }
-    60% { transform: translateX(-5px) rotate(-3deg); }
-    80% { transform: translateX(5px) rotate(3deg); }
-    100% { transform: translateX(0) rotate(0deg); }
-  }
-  @keyframes eggBreak {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.25); }
-  }
-  @keyframes petPop {
-    0% { transform: scale(0.3); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-</style>
+        /* SISTEMA DE NAVEGACIÓN POR PESTAÑAS */
+        .navigation-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 15px;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .nav-button.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* PANEL DE ESTADÍSTICAS */
+        .stats-panel {
+            background: #fdfdfd;
+            border: 2px solid #f1f1f1;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-money {
+            font-size: 32px;
+            font-weight: 900;
+            color: #27ae60;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-price {
+            color: #95a5a6;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* SELECTOR DE TIPO DE HUEVO */
+        .egg-selector-container {
+            display: flex;
+            background: #eee;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .egg-option {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .egg-option.active {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* BOTONES DE ACCIÓN PRINCIPALES */
+        .main-action-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+        }
+
+        #buyEggBtn {
+            background: linear-gradient(to right, #f83600 0%, #f9d423 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(248, 54, 0, 0.3);
+        }
+
+        #buyEggBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(248, 54, 0, 0.4);
+        }
+
+        #rebirthBtn {
+            background: #2980b9;
+            color: white;
+            font-size: 15px;
+        }
+
+        #rebirthBtn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* LISTADO DE MASCOTAS */
+        .inventory-title {
+            text-align: left;
+            font-size: 14px;
+            color: #34495e;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-left: 5px;
+        }
+
+        #pet-list-display {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-top: 10px;
+        }
+
+        /* DISEÑO DE CADA MASCOTA */
+        .pet-item {
+            background: #ffffff;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .pet-info-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pet-icon-circle {
+            width: 45px;
+            height: 45px;
+            background: #f9f9f9;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        /* COLORES POR RAREZA */
+        .rarity-common { border-left: 6px solid #bdc3c7; }
+        .rarity-uncommon { border-left: 6px solid #2ecc71; }
+        .rarity-rare { border-left: 6px solid #3498db; }
+        .rarity-god { border-left: 6px solid #9b59b6; }
+        .rarity-secret { border-left: 6px solid #f1c40f; }
+        .rarity-og { border-left: 6px solid #e91e63; }
+     /* BOTÓN VENDER */
+        .sell-button {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .sell-button:hover {
+            background: #c62828;
+            color: white;
+        }
+
+        /* OVERLAY DE APERTURA (HATCHING) */
+        #hatch-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            border-radius: 26px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        .egg-animation {
+            width: 150px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, #fff, #ffeb3b);
+            border-radius: 50% 50% 45% 45%;
+            border: 6px solid #fbc02d;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .shake { animation: eggShake 0.1s infinite; }
+
+        @keyframes eggShake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(3deg); }
+            75% { transform: rotate(-3deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* PANTALLA DE INDEX */
+        .index-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding-bottom: 20px;
+        }
+
+        .index-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 11px;
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+
+        .index-card.discovered {
+            opacity: 1;
+            filter: grayscale(0);
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
-  <!-- Overlay animación apertura -->
-  <div id="hatchOverlay">
-    <div id="hatchBox">
-      <div id="hatchEgg"></div>
-      <div id="hatchedPetIcon"></div>
-      <div id="hatchedPetName"></div>
-      <div id="hatchedPetInfo"></div>
-      <button id="closeHatchBtn">Cerrar</button>
-    </div>
-  </div>
 
-  <div id="game">
-    <h1>🥚 HUEVOS & PETS 🐾</h1>
-
-    <div class="top-buttons">
-      <button id="tabPetsBtn" class="tab-btn active">Juego</button>
-      <button id="tabIndexBtn" class="tab-btn">Index</button>
+    <div id="hatch-overlay">
+        <div id="hatch-egg-visual" class="egg-animation"></div>
+        <div id="hatch-result" style="display:none;">
+            <div id="hatch-icon" style="font-size: 80px; margin-bottom: 10px;"></div>
+            <h2 id="hatch-name" style="font-size: 28px; text-transform: uppercase;"></h2>
+            <p id="hatch-rarity" style="font-weight: bold; letter-spacing: 2px; margin-bottom: 20px;"></p>
+            <button onclick="closeHatch()" class="main-action-btn" style="background: white; color: black; width: 200px;">COLECCIONAR</button>
+        </div>
     </div>
 
-    <div class="stats">
-      <div class="money">💰 $<span id="money">10</span></div>
-      <div class="egg-price">🥚 Precio: $<span id="eggPrice">10</span></div>
-      <div class="egg-selector">
-        <div id="normalEgg" class="egg-type-btn active">Normal</div>
-        <div id="specialEgg" class="egg-type-btn">Especial</div>
-      </div>
-      <div id="rebirthInfo">Rebirth 1: 1M • Rebirth 2: 5M • Rebirth 3: 15M</div>
+    <div id="game-container">
+        <header>
+            <h1>PET SIMULATOR</h1>
+            <p id="rebirth-counter" style="color: #7f8c8d; font-weight: bold; font-size: 12px;">REBIRTH: 0</p>
+        </header>
+
+        <div class="navigation-bar">
+            <button id="btn-tab-game" class="nav-button active" onclick="switchTab('game')">JUGAR</button>
+            <button id="btn-tab-index" class="nav-button" onclick="switchTab('index')">COLECCIÓN</button>
+        </div>
+
+        <div id="tab-game">
+            <div class="stats-panel">
+                <span class="stat-money">💰 $<span id="display-money">0</span></span>
+                <span class="stat-price">COSTO HUEVO: $<span id="display-price">10</span></span>
+            </div>
+
+            <div class="egg-selector-container">
+                <div id="opt-normal" class="egg-option active" onclick="setEggType('normal')">HUEVO BÁSICO</div>
+                <div id="opt-special" class="egg-option" onclick="setEggType('special')">HUEVO ÉPICO</div>
+            </div>
+
+            <button id="buyEggBtn" class="main-action-btn" onclick="attemptPurchase()">ABRIR HUEVO</button>
+            <button id="rebirthBtn" class="main-action-btn" onclick="executeRebirth()" disabled>REALIZAR REBIRTH</button>
+
+            <p class="inventory-title">MIS MASCOTAS:</p>
+            <div id="pet-list-display"></div>
+        </div>
+
+        <div id="tab-index" style="display:none;">
+            <div id="index-list-display" class="index-grid"></div>
+        </div>
     </div>
 
-    <!-- TAB JUEGO -->
-    <div id="tabPets" class="tab-content active">
-      <button id="buyEggBtn">🛒 ABRIR HUEVO</button>
-      <button id="rebirthBtn" disabled>⚡ REBIRTH</button>
-      <div id="openResult"></div>
-      <div id="petList">
-        <div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>
-      </div>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <!-- TAB INDEX -->
-    <div id="tabIndex" class="tab-content">
-      <div style="font-size:12px; margin-top:4px; margin-bottom:4px;">
-        📖 Index de todos los pets (verde = ya lo tienes)
-      </div>
-      <div id="indexList"></div>
-    </div>
-  </div>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+            authDomain: "inici-de-sessio.firebaseapp.com",
+            projectId: "inici-de-sessio",
+            storageBucket: "inici-de-sessio.firebasestorage.app",
+            messagingSenderId: "106046428749",
+            appId: "1:106046428749:web:c555c61ff94f5f5691ee04",
+            databaseURL: "https://inici-de-sessio-default-rtdb.europe-west1.firebasedatabase.app"
+        };
 
-<script>
-  // MISMO pool que antes + T-REX OG
-  const normalPets = [
-    {index: 0,  icon:'🐭', name: 'Ratón',       rarity: 'common',   earnings: 5},
-    {index: 1,  icon:'🐶', name: 'Perro',       rarity: 'common',   earnings: 8},
-    {index: 2,  icon:'🐰', name: 'Conejo',      rarity: 'common',   earnings: 10},
-    {index: 3,  icon:'🐱', name: 'Gato',        rarity: 'uncommon', earnings: 18},
-    {index: 4,  icon:'🦊', name: 'Zorro',       rarity: 'uncommon', earnings: 25},
-    {index: 5,  icon:'🐼', name: 'Panda',       rarity: 'uncommon', earnings: 35},
-    {index: 6,  icon:'🦁', name: 'León',        rarity: 'rare',     earnings: 80},
-    {index: 7,  icon:'🦅', name: 'Águila',      rarity: 'rare',     earnings: 120},
-    {index: 8,  icon:'🐲', name: 'Dragón',      rarity: 'god',      earnings: 250},
-    {index: 9,  icon:'🕊️', name: 'Fénix',      rarity: 'god',      earnings: 350},
-    {index:10,  icon:'🦄', name: 'Unicornio',   rarity: 'secret',   earnings: 800}
-  ];
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const userId = "partida_pro_2026"; 
+        const userPath = 'users/' + userId;
 
-  const specialPets = [
-    {index: 0,  icon:'🐭', name: 'Ratón Dorado',     rarity: 'common',   earnings: 40},
-    {index: 1,  icon:'🐶', name: 'Perro Pro',        rarity: 'common',   earnings: 55},
-    {index: 2,  icon:'🐱', name: 'Gato Gamer',       rarity: 'common',   earnings: 70},
-    {index: 3,  icon:'🦊', name: 'Zorro Épico',      rarity: 'uncommon', earnings: 120},
-    {index: 4,  icon:'🐺', name: 'Lobo Alfa',        rarity: 'uncommon', earnings: 150},
-    {index: 5,  icon:'🐯', name: 'Tigre',            rarity: 'uncommon', earnings: 180},
-    {index: 6,  icon:'🦁', name: 'León Dorado',      rarity: 'rare',     earnings: 300},
-    {index: 7,  icon:'🐉', name: 'Dragón Élite',     rarity: 'rare',     earnings: 420},
-    {index: 8,  icon:'🦅', name: 'Fénix Real',       rarity: 'god',      earnings: 700},
-    {index: 9,  icon:'🐲', name: 'Dragón Ancestral', rarity: 'god',      earnings: 900},
-    {index:10, icon:'🦣', name: 'Mamut ',         rarity: 'secret',   earnings: 2000},
-    {index:11, icon:'🐸', name: 'Coquis',           rarity: 'secret',   earnings: 1500},
-    {index:12, icon:'🦖', name: 'T‑Rex OG',         rarity: 'og',       earnings: 3000}
-  ];
+        // --- DATA POOLS: LISTADO EXTENSO DE MASCOTAS ---
+        const NORMAL_POOL = [
+            { id: 101, n: 'Ratón de Campo', i: '🐭', r: 'common', e: 5 },
+            { id: 102, n: 'Perro Fiel', i: '🐶', r: 'common', e: 8 },
+            { id: 103, n: 'Gato Callejero', i: '🐱', r: 'common', e: 12 },
+            { id: 104, n: 'Conejo Saltador', i: '🐰', r: 'uncommon', e: 25 },
+            { id: 105, n: 'Zorro Astuto', i: '🦊', r: 'uncommon', e: 45 },
+            { id: 106, n: 'Panda Dormilón', i: '🐼', r: 'rare', e: 110 },
+            { id: 107, n: 'León Valiente', i: '🦁', r: 'rare', e: 180 },
+            { id: 108, n: 'Dragón Bebé', i: '🐲', r: 'god', e: 450 },
+            { id: 109, n: 'Unicornio Mágico', i: '🦄', r: 'secret', e: 1200 }
+        ];
 
-  const normalRarityChances  = {common: 55, uncommon: 25, rare: 12, god: 6,  secret: 2,  og: 0};
-  const specialRarityChances = {common: 35, uncommon: 30, rare: 18, god: 10, secret: 6,  og: 1};
+        const SPECIAL_POOL = [
+            { id: 201, n: 'Ratón Dorado', i: '🐭', r: 'uncommon', e: 80 },
+            { id: 202, n: 'Perro Cyborg', i: '🐶', r: 'rare', e: 210 },
+            { id: 203, n: 'Lobo Alfa', i: '🐺', r: 'rare', e: 350 },
+            { id: 204, n: 'Tigre de Bengala', i: '🐯', r: 'god', e: 750 },
+            { id: 205, n: 'Fénix Ardiente', i: '🔥', r: 'god', e: 1100 },
+            { id: 206, n: 'Dragón Infernal', i: '🐉', r: 'secret', e: 3500 },
+            { id: 207, n: 'Kraken Junior', i: '🐙', r: 'secret', e: 5500 },
+            { id: 208, n: 'T-Rex Antiguo', i: '🦖', r: 'og', e: 12000 }
+        ];
+     // --- VARIABLES DE ESTADO DEL SISTEMA ---
+        let money = 0;
+        let eggPrice = 10;
+        let specialEggPrice = 1000;
+        let rebirths = 0;
+        let multiplier = 1;
+        let activeEgg = 'normal';
+        let inventory = [];
+        let discoveredIds = [];
 
-  // Rebirths encadenados
-  const rebirthThresholds = [1000000, 5000000, 15000000]; // 1M, 5M, 15M
-  let rebirthLevel = 0; // 0 = sin rebirth, 1,2,3
-  let money = 10;
-  let normalEggPrice = 10;
-  let specialEggPrice = 500;
-  let ownedPets = [];
-  let usingSpecialEgg = false;
-  let moneyMultiplier = 1;
+        // --- MOTOR DE PERSISTENCIA (FIREBASE) ---
+        async function saveProgress() {
+            try {
+                await set(ref(db, userPath), {
+                    money: money,
+                    eggPrice: eggPrice,
+                    specialEggPrice: specialEggPrice,
+                    rebirths: rebirths,
+                    multiplier: multiplier,
+                    inventory: inventory,
+                    discoveredIds: discoveredIds,
+                    lastUpdate: Date.now()
+                });
+                console.log(">> Datos sincronizados con Firebase");
+            } catch (e) {
+                console.error(">> Error en la nube:", e);
+            }
+        }
 
-  function getRarityChances() {
-    const base = usingSpecialEgg ? {...specialRarityChances} : {...normalRarityChances};
-    // con cada rebirth se baja common y se suben raros
-    if (rebirthLevel >= 1) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.rare    += 2;
-      base.god     += 2;
-      base.secret  += 1;
-      base.og      += 0; // OG muy raro
-    }
-    if (rebirthLevel >= 2) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.uncommon+= 2;
-      base.rare    += 2;
-      base.god     += 1;
-      base.secret  += 1;
-    }
-    if (rebirthLevel >= 3) {
-      base.common  = Math.max(0, base.common  - 5);
-      base.rare    += 1;
-      base.god     += 1;
-      base.secret  += 1;
-      base.og      += 1;
-    }
-    return base;
-  }
+        async function loadProgress() {
+            const snapshot = await get(ref(db, userPath));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                money = data.money || 0;
+                eggPrice = data.eggPrice || 10;
+                specialEggPrice = data.specialEggPrice || 1000;
+                rebirths = data.rebirths || 0;
+                multiplier = data.multiplier || 1;
+                inventory = data.inventory || [];
+                discoveredIds = data.discoveredIds || [];
+                updateUI();
+                console.log(">> Partida cargada correctamente");
+            }
+        }
 
-  function getRandomRarity() {
-    const chances = getRarityChances();
-    let rand = Math.random() * 100;
-    let cumulative = 0;
-    for (let rarity in chances) {
-      cumulative += chances[rarity];
-      if (rand < cumulative) return rarity;
-    }
-    return 'common';
-  }
+        // --- LÓGICA DE INTERFAZ (UI) ---
+        window.updateUI = function() {
+            document.getElementById('display-money').textContent = Math.floor(money).toLocaleString();
+            document.getElementById('display-price').textContent = (activeEgg === 'normal' ? eggPrice : specialEggPrice).toLocaleString();
+            document.getElementById('rebirth-counter').textContent = `REBIRTH: ${rebirths} (x${multiplier} Mult)`;
+            
+            const list = document.getElementById('pet-list-display');
+            list.innerHTML = '';
 
-  function choosePet(pool, rarity) {
-    const candidates = pool.filter(p => p.rarity === rarity);
-    if (candidates.length === 0) return pool[0];
-    return candidates[Math.floor(Math.random() * candidates.length)];
-  }
+            inventory.forEach((pet, index) => {
+                const item = document.createElement('div');
+                item.className = `pet-item rarity-${pet.r}`;
+                item.innerHTML = `
+                    <div class="pet-info-wrapper">
+                        <div class="pet-icon-circle">${pet.i}</div>
+                        <div>
+                            <div style="font-weight:bold">${pet.n}</div>
+                            <div style="font-size:10px; color:#666">+$${pet.e}/s</div>
+                        </div>
+                    </div>
+                    <button class="sell-button" onclick="sellPet(${index})">VENDER</button>
+                `;
+                list.appendChild(item);
+            });
 
-  function openEgg() {
-    const price = usingSpecialEgg ? specialEggPrice : normalEggPrice;
-    if (money < price) {
-      document.getElementById('openResult').innerHTML =
-        '❌ <span style="color:red">¡No tienes suficiente dinero!</span>';
-      return;
-    }
+            const rbBtn = document.getElementById('rebirthBtn');
+            const rbCost = (rebirths + 1) * 1000000;
+            rbBtn.disabled = money < rbCost;
+            if (!rbBtn.disabled) rbBtn.style.background = "#e67e22";
+        };
 
-    money -= price;
-    if (usingSpecialEgg) {
-      specialEggPrice = Math.floor(specialEggPrice * 1.2);
-    } else {
-      normalEggPrice  = Math.floor(normalEggPrice * 1.2);
-    }
+        // --- SISTEMA DE COMPRA Y APERTURA ---
+        window.setEggType = function(type) {
+            activeEgg = type;
+            document.getElementById('opt-normal').classList.toggle('active', type === 'normal');
+            document.getElementById('opt-special').classList.toggle('active', type === 'special');
+            updateUI();
+        };
 
-    document.getElementById('money').textContent = Math.floor(money);
-    document.getElementById('eggPrice').textContent =
-      usingSpecialEgg ? specialEggPrice : normalEggPrice;
+        window.attemptPurchase = function() {
+            const cost = (activeEgg === 'normal' ? eggPrice : specialEggPrice);
+            if (money < cost) return alert("¡No tienes suficiente dinero!");
 
-    const pool = usingSpecialEgg ? specialPets : normalPets;
-    const rarity = getRandomRarity();
-    const pet = choosePet(pool, rarity);
-    ownedPets.push({...pet});
+            money -= cost;
+            if (activeEgg === 'normal') eggPrice = Math.floor(eggPrice * 1.2);
+            else specialEggPrice = Math.floor(specialEggPrice * 1.3);
 
-    showHatchAnimation(pet, usingSpecialEgg);
-    updatePetList();
-    updateIndex();
-    checkRebirth();
-  }
+            startHatchAnimation();
+        };
 
-  function showHatchAnimation(pet, isSpecial) {
-    const overlay = document.getElementById('hatchOverlay');
-    const egg = document.getElementById('hatchEgg');
-    const petIcon = document.getElementById('hatchedPetIcon');
-    const petName = document.getElementById('hatchedPetName');
-    const petInfo = document.getElementById('hatchedPetInfo');
+        function startHatchAnimation() {
+            const overlay = document.getElementById('hatch-overlay');
+            const visual = document.getElementById('hatch-egg-visual');
+            const result = document.getElementById('hatch-result');
+            
+            overlay.style.display = 'flex';
+            visual.style.display = 'block';
+            result.style.display = 'none';
+            visual.classList.add('shake');
 
-    petIcon.style.display = 'none';
-    egg.style.opacity = '1';
-    egg.style.transform = 'scale(1)';
-    egg.style.animation = 'eggIdle 1.2s infinite ease-in-out';
-    overlay.style.display = 'flex';
+            setTimeout(() => {
+                visual.classList.remove('shake');
+                visual.style.display = 'none';
+                
+                const pool = (activeEgg === 'normal' ? NORMAL_POOL : SPECIAL_POOL);
+                const rolled = pool[Math.floor(Math.random() * pool.length)];
+                
+                inventory.push(rolled);
+                if (!discoveredIds.includes(rolled.id)) discoveredIds.push(rolled.id);
 
-    setTimeout(() => { egg.style.animation = 'eggShake 0.6s ease-in-out'; }, 400);
-    setTimeout(() => { egg.style.animation = 'eggBreak 0.4s forwards'; }, 1100);
+                document.getElementById('hatch-icon').textContent = rolled.i;
+                document.getElementById('hatch-name').textContent = rolled.n;
+                document.getElementById('hatch-rarity').textContent = rolled.r.toUpperCase();
+                document.getElementById('hatch-rarity').style.color = getRarityColor(rolled.r);
+                
+                result.style.display = 'block';
+                updateUI();
+                saveProgress();
+            }, 1500);
+        }
 
-    setTimeout(() => {
-      egg.style.opacity = '0';
-      petIcon.textContent = pet.icon;
-      petIcon.style.display = 'block';
-      petName.textContent =
-        `[#${pet.index}] ${pet.name} (${pet.rarity.toUpperCase()})`;
-      petInfo.textContent =
-        `+$${pet.earnings}/seg ${isSpecial ? '(Huevo especial)' : '(Huevo normal)'}`;
-    }, 1500);
-  }
+        window.closeHatch = function() {
+            document.getElementById('hatch-overlay').style.display = 'none';
+        };
 
-  document.getElementById('closeHatchBtn').addEventListener('click', () => {
-    document.getElementById('hatchOverlay').style.display = 'none';
-  });
+        function getRarityColor(r) {
+            const colors = { common: '#bdc3c7', uncommon: '#2ecc71', rare: '#3498db', god: '#9b59b6', secret: '#f1c40f', og: '#e91e63' };
+            return colors[r] || '#000';
+        }
 
-  function sellPet(index) {
-    const pet = ownedPets[index];
-    const sellPrice = pet.earnings * 6;
-    money += sellPrice;
-    ownedPets.splice(index, 1);
-    document.getElementById('money').textContent = Math.floor(money);
-    document.getElementById('openResult').innerHTML =
-      `💰 Vendiste ${pet.name} por $${sellPrice}`;
-    updatePetList();
-    updateIndex();
-    checkRebirth();
-    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 2500);
-  }
+        // --- ACCIONES SECUNDARIAS ---
+        window.sellPet = function(index) {
+            const pet = inventory[index];
+            money += (pet.e * 60); // Te da 1 minuto de ganancias producidas
+            inventory.splice(index, 1);
+            updateUI();
+            saveProgress();
+        };
 
-  function updatePetList() {
-    const container = document.getElementById('petList');
-    if (ownedPets.length === 0) {
-      container.innerHTML =
-        '<div style="color:#999; font-style:italic;">¡Abre tu primer huevo!</div>';
-      return;
-    }
-    const totalEarnings =
-      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
-    container.innerHTML =
-      `<div style="font-size:13px; margin-bottom:6px;">💎 Total: $${totalEarnings}/seg ` +
-      `${rebirthLevel > 0 ? '(x' + moneyMultiplier + ')' : ''}</div>`;
+        window.executeRebirth = function() {
+            const rbCost = (rebirths + 1) * 1000000;
+            if (money < rbCost) return;
 
-    ownedPets.forEach((pet, i) => {
-      const div = document.createElement('div');
-      div.className = `pet ${pet.rarity}`;
-      div.innerHTML = `
-        <span>${pet.icon} [#${pet.index}] ${pet.name}</span>
-        <span style="font-size:13px;">$${pet.earnings}/seg</span>
-        <button class="sellBtn" onclick="sellPet(${i})">Vender</button>`;
-      container.appendChild(div);
-    });
-  }
+            rebirths++;
+            multiplier *= 2;
+            money = 0;
+            inventory = [];
+            eggPrice = 10;
+            specialEggPrice = 1000;
+            
+            updateUI();
+            saveProgress();
+            alert("¡REBIRTH COMPLETADO! Tu producción se ha duplicado.");
+        };
 
-  function earnMoney() {
-    const total =
-      ownedPets.reduce((sum, pet) => sum + pet.earnings, 0) * moneyMultiplier;
-    if (total > 0) {
-      money += total;
-      document.getElementById('money').textContent = Math.floor(money);
-      checkRebirth();
-    }
-  }
+        window.switchTab = function(tab) {
+            document.getElementById('tab-game').style.display = (tab === 'game' ? 'block' : 'none');
+            document.getElementById('tab-index').style.display = (tab === 'index' ? 'block' : 'none');
+            document.getElementById('btn-tab-game').classList.toggle('active', tab === 'game');
+            document.getElementById('btn-tab-index').classList.toggle('active', tab === 'index');
+            if (tab === 'index') renderIndex();
+        };
 
-  function checkRebirth() {
-    const btn = document.getElementById('rebirthBtn');
-    if (rebirthLevel >= rebirthThresholds.length) {
-      btn.disabled = true;
-      btn.textContent = '⚡ REBIRTH (MAX)';
-      return;
-    }
-    const needed = rebirthThresholds[rebirthLevel];
-    btn.textContent = `⚡ REBIRTH (${needed.toLocaleString()}$)`;
-    btn.disabled = money < needed;
-  }
+        function renderIndex() {
+            const container = document.getElementById('index-list-display');
+            container.innerHTML = '';
+            const fullPool = [...NORMAL_POOL, ...SPECIAL_POOL];
+            
+            fullPool.forEach(p => {
+                const isFound = discoveredIds.includes(p.id);
+                const card = document.createElement('div');
+                card.className = `index-card ${isFound ? 'discovered' : ''}`;
+                card.innerHTML = `
+                    <div style="font-size:20px">${isFound ? p.i : '❓'}</div>
+                    <div style="font-weight:bold">${isFound ? p.n : '???'}</div>
+                    <div>${isFound ? p.r : 'Desconocido'}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
 
-  function doRebirth() {
-    if (rebirthLevel >= rebirthThresholds.length) return;
-    const needed = rebirthThresholds[rebirthLevel];
-    if (money < needed) return;
+        // --- LOOP PRINCIPAL (DINERO PASIVO) ---
+        setInterval(() => {
+            let totalPerSec = 0;
+            inventory.forEach(pet => { totalPerSec += pet.e; });
+            
+            if (totalPerSec > 0) {
+                money += (totalPerSec * multiplier);
+                document.getElementById('display-money').textContent = Math.floor(money).toLocaleString();
+                // Verificamos si ya puede pagar el rebirth sin redibujar toda la lista
+                const rbCost = (rebirths + 1) * 1000000;
+                if (money >= rbCost) document.getElementById('rebirthBtn').disabled = false;
+            }
+        }, 1000);
 
-    rebirthLevel += 1;
-    moneyMultiplier *= 2; // por rebirth x2 (1->2->4->8)
-    money = 10;
-    normalEggPrice = 10;
-    specialEggPrice = 500;
+        // Guardado automático cada 30 segundos por seguridad
+        setInterval(saveProgress, 30000);
 
-    document.getElementById('money').textContent = money;
-    document.getElementById('eggPrice').textContent =
-      usingSpecialEgg ? specialEggPrice : normalEggPrice;
-    document.getElementById('openResult').innerHTML =
-      `⚡ ¡REBIRTH ${rebirthLevel}! Más suerte & x${moneyMultiplier} DINERO`;
-    updatePetList();
-    checkRebirth();
-    setTimeout(() => { document.getElementById('openResult').innerHTML = ''; }, 3000);
-  }
+        // INICIO
+        loadProgress();
 
-  // INDEX (Pokédex)
-  function getAllPets() {
-    // Se podría separar por huevos, pero aquí se juntan para un index global
-    return normalPets
-      .map(p => ({...p, egg: 'Normal'}))
-      .concat(specialPets.map(p => ({...p, egg: 'Especial'})));
-  }
-
-  function updateIndex() {
-    const list = document.getElementById('indexList');
-    list.innerHTML = '';
-    const all = getAllPets();
-    const ownedSet = new Set(ownedPets.map(p => p.icon + p.name + p.rarity));
-
-    all.forEach(pet => {
-      const key = pet.icon + pet.name + pet.rarity;
-      const owned = ownedSet.has(key);
-      const row = document.createElement('div');
-      row.className = 'index-row' + (owned ? ' owned' : '');
-      row.innerHTML = `
-        <div class="index-name">${pet.icon} [#${pet.index}] ${pet.name}</div>
-        <div class="index-meta">${pet.rarity.toUpperCase()} • ${pet.egg} • $${pet.earnings}/seg</div>
-      `;
-      list.appendChild(row);
-    });
-  }
-
-  // Tabs
-  const tabPetsBtn = document.getElementById('tabPetsBtn');
-  const tabIndexBtn = document.getElementById('tabIndexBtn');
-  const tabPets = document.getElementById('tabPets');
-  const tabIndex = document.getElementById('tabIndex');
-
-  tabPetsBtn.addEventListener('click', () => {
-    tabPetsBtn.classList.add('active');
-    tabIndexBtn.classList.remove('active');
-    tabPets.classList.add('active');
-    tabIndex.classList.remove('active');
-  });
-
-  tabIndexBtn.addEventListener('click', () => {
-    tabIndexBtn.classList.add('active');
-    tabPetsBtn.classList.remove('active');
-    tabIndex.classList.add('active');
-    tabPets.classList.remove('active');
-    updateIndex();
-  });
-
-  document.getElementById('normalEgg').addEventListener('click', function() {
-    usingSpecialEgg = false;
-    this.classList.add('active');
-    document.getElementById('specialEgg').classList.remove('active');
-    document.getElementById('eggPrice').textContent = normalEggPrice;
-  });
-
-  document.getElementById('specialEgg').addEventListener('click', function() {
-    usingSpecialEgg = true;
-    this.classList.add('active');
-    document.getElementById('normalEgg').classList.remove('active');
-    document.getElementById('eggPrice').textContent = specialEggPrice;
-  });
-
-  document.getElementById('buyEggBtn').addEventListener('click', openEgg);
-  document.getElementById('rebirthBtn').addEventListener('click', doRebirth);
-
-  updatePetList();
-  updateIndex();
-  setInterval(earnMoney, 1000);
-  checkRebirth();
-</script>
+    </script>
 </body>
 </html>
