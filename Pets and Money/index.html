@@ -1,630 +1,477 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pets and Money</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Simulator Ultra - Save System Edition</title>
     <style>
-        /* CONFIGURACIÓN DE VARIABLES CSS 
-           Mantiene la estética de degradados modernos
-        */
+        /* CONFIGURACIÓN VISUAL EXTENSA */
         :root {
-            --bg-dark: #0f172a;
-            --bg-accent: #1e293b;
-            --primary-glow: #00f2fe;
-            --secondary-glow: #4facfe;
-            --money-color: #4ade80;
-            --rebirth-color: #9333ea;
-            --text-main: #f8fafc;
-            --transition-speed: 0.3s;
+            --primary: #4f46e5;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.95);
         }
 
-        /* RESETEO DE ESTILOS BASE */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none; /* Evita que el usuario seleccione texto al hacer click */
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
             height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Evita scroll innecesario */
-        }
-
-        /* CONTENEDOR PRINCIPAL DEL JUEGO */
-        .game-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 400px; /* Area de juego y Tienda lateral */
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* AREA DE JUEGO (GAMEPLAY) 
-           Aquí es donde aparecen las monedas y efectos
-        */
-        .viewport {
-            position: relative;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             overflow: hidden;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             display: flex;
-            align-items: center;
             justify-content: center;
-            border-right: 2px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* PANEL DE ESTADÍSTICAS SUPERIOR */
-        .hud-top {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        .money-container {
-            background: rgba(15, 23, 42, 0.7);
-            padding: 20px 35px;
-            border-radius: 24px;
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .label-money {
-            font-size: 0.9rem;
-            color: var(--secondary-glow);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .value-money {
-            font-size: 4rem;
-            font-weight: 800;
-            color: var(--money-color);
-            text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
-            line-height: 1;
-        }
-
-        /* INDICADORES DE REBIRTH Y MULTIPLICADOR */
-        .stats-row {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-            pointer-events: auto;
-        }
-
-        .stat-badge {
-            padding: 8px 18px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: flex;
             align-items: center;
-            gap: 8px;
         }
 
-        .badge-mult {
-            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
-        }
-
-        .badge-rebirth {
-            background: linear-gradient(45deg, #9333ea 0%, #6366f1 100%);
-            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
-        }
-
-        /* BOTÓN DE REBIRTH CENTRALIZADO */
-        .rebirth-action-container {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1100;
-        }
-
-        .btn-rebirth {
-            padding: 20px 50px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: linear-gradient(45deg, #9333ea, #7c3aed);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            display: none; /* Se activa por JS */
-            transition: all var(--transition-speed);
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
-        }
-
-        .btn-rebirth:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.7);
-        }
-
-        .btn-rebirth:active {
-            transform: translateY(2px) scale(0.98);
-        }
-
-        .btn-rebirth.max-reached {
-            background: #475569 !important;
-            cursor: not-allowed;
-            display: block;
-            opacity: 0.8;
-            box-shadow: none;
-        }
-
-        .btn-rebirth.is-visible {
-            display: block;
-            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes bounceIn {
-            from { opacity: 0; transform: translateX(-50%) scale(0.3); }
-            to { opacity: 1; transform: translateX(-50%) scale(1); }
-        }
-
-        /* ESTILO DE LA MONEDA ORIGINAL REFINADO */
-        .coin-entity {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            cursor: pointer;
-            background: radial-gradient(circle at 30% 30%, #fcd34d 0%, #b45309 100%);
-            border: 6px solid #78350f;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            transition: transform 0.1s ease;
-        }
-
-        .coin-entity:hover {
-            filter: brightness(1.1);
-        }
-
-        .coin-entity:active {
-            transform: scale(0.85);
-        }
-
-        .coin-symbol {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #78350f;
-            text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.2);
-        }
-
-        /* EFECTOS DE CLICK (FLOTANTES) */
-        .click-popup {
-            position: absolute;
-            color: var(--money-color);
-            font-weight: 800;
-            font-size: 1.8rem;
-            pointer-events: none;
-            z-index: 2000;
-            animation: floatUpAndOut 0.8s ease-out forwards;
-        }
-
-        @keyframes floatUpAndOut {
-            0% { opacity: 0; transform: translateY(0) scale(0.5); }
-            20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-120px) scale(1); }
-        }/* PANEL LATERAL DE LA TIENDA (UI DE LA DERECHA) */
-        .sidebar-shop {
-            background: rgba(15, 23, 42, 0.98);
-            border-left: 2px solid rgba(255, 255, 255, 0.05);
+        #game-container {
+            width: 420px;
+            height: 720px;
+            background: var(--glass);
+            border-radius: 30px;
+            padding: 25px;
             display: flex;
             flex-direction: column;
-            z-index: 1200;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border: 4px solid rgba(255, 255, 255, 0.1);
         }
 
-        .shop-header-area {
-            padding: 40px 30px;
-            background: rgba(30, 41, 59, 0.5);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        h1 {
+            font-size: 24px;
             text-align: center;
-        }
-
-        .shop-header-area h2 {
-            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 15px;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--secondary-glow);
-            font-weight: 800;
+            letter-spacing: 2px;
         }
 
-        .items-list-container {
+        /* HUD DE ESTADÍSTICAS */
+        .stats-panel {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .money-display {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--success);
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
+        }
+
+        .rebirth-status {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* NAVEGACIÓN */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            background: #e2e8f0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ÁREA DE COMPRA */
+        .shop-area {
+            background: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .egg-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .egg-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .egg-btn.active {
+            border-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .main-action-btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            border: none;
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            color: white;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            margin-bottom: 8px;
+        }
+
+        .main-action-btn:active { transform: scale(0.96); }
+
+        .rebirth-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: #6366f1;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .rebirth-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* LISTA DE PETS */
+        .scroll-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--bg-accent) transparent;
+            padding-right: 5px;
         }
 
-        /* DISEÑO DE CADA ITEM DE LA TIENDA */
-        .shop-item-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        .pet-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 12px 15px;
+            background: #fff;
+            border-radius: 15px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .shop-item-card:hover:not(.is-locked) {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: var(--primary-glow);
-            transform: translateX(-5px);
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .shop-item-card:active:not(.is-locked) {
-            transform: scale(0.96);
-        }
+        .pet-info b { font-size: 14px; display: block; }
+        .pet-info span { font-size: 11px; color: #64748b; font-weight: bold; }
 
-        .shop-item-card.is-locked {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
+        .rarity-common { border-left: 5px solid #94a3b8; }
+        .rarity-uncommon { border-left: 5px solid #22c55e; }
+        .rarity-rare { border-left: 5px solid #3b82f6; }
+        .rarity-god { border-left: 5px solid #a855f7; }
+        .rarity-og { border-left: 5px solid #ef4444; background: #fff1f2; }
 
-        .item-details b {
-            display: block;
-            font-size: 1.1rem;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-
-        .item-details span {
-            font-size: 0.85rem;
-            color: var(--money-color);
-            font-weight: 600;
-        }
-
-        .item-stats-box {
-            text-align: right;
-        }
-
-        .item-level {
-            font-size: 0.75rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 6px;
-            color: var(--secondary-glow);
-        }
-
-        .item-power-gain {
-            display: block;
-            margin-top: 5px;
+        .sell-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
             font-weight: 800;
-            color: var(--primary-glow);
+            font-size: 10px;
+            cursor: pointer;
         }
 
-        /* PERSONALIZACIÓN DE LA BARRA DE DESPLAZAMIENTO */
-        .items-list-container::-webkit-scrollbar { width: 6px; }
-        .items-list-container::-webkit-scrollbar-thumb {
-            background: var(--bg-accent);
-            border-radius: 10px;
+        /* ANIMACIÓN DE APERTURA */
+        #hatch-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 30px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
         }
+
+        .egg-animation {
+            width: 120px;
+            height: 160px;
+            background: radial-gradient(circle at 30% 30%, #fff, #fbbf24);
+            border-radius: 50% 50% 45% 45%;
+            border: 6px solid #d97706;
+            margin-bottom: 20px;
+        }
+
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .revealed-pet { font-size: 80px; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <main class="viewport" id="gameWorld">
-            <div class="hud-top">
-                <div class="money-container">
-                    <p class="label-money">Balance Actual</p>
-                    <div class="value-money">$<span id="displayMoney">0</span></div>
-                    <div class="stats-row">
-                        <div class="stat-badge badge-mult">
-                            <span>🔥 Bonus:</span> <span id="displayMult">x1.0</span>
-                        </div>
-                        <div class="stat-badge badge-rebirth">
-                            <span>✨ Mundo:</span> <span id="displayRebirth">0</span>/5
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rebirth-action-container">
-                <button id="rebirthBtn" class="btn-rebirth" onclick="handleRebirthProcess()">
-                    Hacer Rebirth (Cargando...)
-                </button>
-            </div>
-        </main>
-
-        <aside class="sidebar-shop">
-            <div class="shop-header-area">
-                <h2>Mejoras</h2>
-            </div>
-            <div class="items-list-container" id="shopList">
-                </div>
-        </aside>
-    </div>
-
-    <script>
-        /**
-         * LÓGICA CORE DEL JUEGO
-         * El sistema utiliza un objeto central 'gameState' para manejar la persistencia
-         */
+    <div id="game-container">
+        <h1>Pet Simulator Save</h1>
         
-        // CONFIGURACIÓN DE LOS ITEMS (DATA DEFINITION)
-        let upgradeData = [
-            {
-                id: 'clicker_01',
-                name: 'Guante de Fuerza',
-                baseCost: 15,
-                cost: 15,
-                power: 1,
-                owned: 0,
-                type: 'click',
-                desc: 'Aumenta el dinero por cada click manual.'
-            },
-            {
-                id: 'auto_01',
-                name: 'Pequeño Minero',
-                baseCost: 100,
-                cost: 100,
-                power: 5,
-                owned: 0,
-                type: 'auto',
-                desc: 'Genera ingresos pasivos automáticamente.'
-            },
-            {
-                id: 'auto_02',
-                name: 'Taladro de Oro',
-                baseCost: 1500,
-                cost: 1500,
-                power: 45,
-                owned: 0,
-                type: 'auto',
-                desc: 'Maquinaria pesada para minería profunda.'
-            },
-            {
-                id: 'auto_03',
-                name: 'Fábrica de Monedas',
-                baseCost: 18000,
-                cost: 18000,
-                power: 250,
-                owned: 0,
-                type: 'auto',
-                desc: 'Producción industrial de capital.'
-            }
-        ];
+        <div class="stats-panel">
+            <div class="money-display">💰 $<span id="balance">10</span></div>
+            <div class="rebirth-status">REBIRTH: <span id="rb-level">0</span>/5 (Mult: x<span id="rb-mult">1</span>)</div>
+        </div>
 
-        // ESTADO GLOBAL DEL JUEGO
-        let gameState = {
-            money: 0,
-            totalMoneyCollected: 0,
-            multiplier: 1.0,
-            rebirthCount: 0,
-            maxRebirths: 5,
-            rebirthPrice: 25000, // Precio base para el primer rebirth
-            priceExponential: 6.5,
-            initialBonus: 10,     // <--- TU REQUISITO: Empieza con $10 al reiniciar
-            saveKey: 'UltimateClicker_State_v1'
-        };/** * SISTEMA DE PERSISTENCIA (LOCALSTORAGE)
-         * Maneja el guardado y carga automática del progreso.
-         */
-        function saveProgress() {
-            const dataToSave = {
-                game: gameState,
-                upgrades: upgradeData
-            };
-            localStorage.setItem(gameState.saveKey, JSON.stringify(dataToSave));
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('play')">JUEGO</button>
+            <button class="tab-btn" onclick="switchTab('index')">INDEX</button>
+        </div>
+
+        <div id="play-tab" class="tab-content active">
+            <div class="shop-area">
+                <div class="egg-selector">
+                    <button id="btn-normal" class="egg-btn active" onclick="setEggType(false)">Normal ($<span id="price-n">10</span>)</button>
+                    <button id="btn-special" class="egg-btn" onclick="setEggType(true)">Especial ($<span id="price-s">500</span>)</button>
+                </div>
+                <button class="main-action-btn" onclick="tryOpenEgg()">ABRIR HUEVO</button>
+                <button id="rebirth-action" class="rebirth-btn" onclick="attemptRebirth()" disabled>HACER REBIRTH</button>
+            </div>
+
+            <div class="scroll-container" id="pet-list-ui">
+                </div>
+        </div>
+
+        <div id="index-tab" class="tab-content" style="display:none">
+            <div class="scroll-container" id="index-list-ui"></div>
+        </div>
+
+        <div id="hatch-overlay">
+            <div class="egg-animation" id="egg-gfx"></div>
+            <div class="revealed-pet" id="pet-gfx">🐱</div>
+            <h2 id="pet-name-reveal"></h2>
+            <p id="pet-rarity-reveal"></p>
+            <button class="tab-btn" style="margin-top:20px; width:150px" onclick="closeHatch()">CONTINUAR</button>
+        </div>
+    </div><script>
+    // --- CONFIGURACIÓN DE DATOS ---
+    const petsData = {
+        normal: [
+            { icon: '🐭', name: 'Ratón', rarity: 'common', earnings: 5 },
+            { icon: '🐶', name: 'Perro', rarity: 'common', earnings: 8 },
+            { icon: '🐱', name: 'Gato', rarity: 'uncommon', earnings: 20 },
+            { icon: '🦊', name: 'Zorro', rarity: 'rare', earnings: 55 }
+        ],
+        special: [
+            { icon: '🦁', name: 'León Real', rarity: 'rare', earnings: 150 },
+            { icon: '🦄', name: 'Unicornio', rarity: 'god', earnings: 500 },
+            { icon: '🐲', name: 'Dragón', rarity: 'god', earnings: 1200 },
+            { icon: '🦖', name: 'T-Rex OG', rarity: 'og', earnings: 5000 }
+        ]
+    };
+
+    const rebirthCosts = [1000000, 10000000, 100000000, 500000000, 2000000000];
+
+    // --- ESTADO DEL JUEGO ---
+    let state = {
+        money: 10,
+        rebirths: 0,
+        multiplier: 1,
+        ownedPets: [],
+        discovered: [],
+        prices: { normal: 10, special: 500 }
+    };
+
+    let isSpecialEgg = false;
+
+    // --- SISTEMA DE GUARDADO (LOCALSTORAGE) ---
+    function saveGame() {
+        localStorage.setItem('PetSim_SaveData', JSON.stringify(state));
+    }
+
+    function loadGame() {
+        const saved = localStorage.getItem('PetSim_SaveData');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            state = { ...state, ...parsed };
         }
+        updateUI();
+    }
 
-        function loadProgress() {
-            const savedData = localStorage.getItem(gameState.saveKey);
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                gameState = parsed.game;
-                upgradeData = parsed.upgrades;
-                
-                // Regenerar entidades visuales según las mejoras automáticas poseídas
-                const autoCount = upgradeData.filter(u => u.type === 'auto').reduce((a, b) => a + b.owned, 0);
-                for(let i = 0; i < Math.min(autoCount, 15); i++) {
-                    createCoinEntity();
-                }
-            }
-            refreshUserInterface();
+    // --- LÓGICA DE INTERFAZ ---
+    function updateUI() {
+        document.getElementById('balance').innerText = Math.floor(state.money).toLocaleString();
+        document.getElementById('rb-level').innerText = state.rebirths;
+        document.getElementById('rb-mult').innerText = state.multiplier;
+        document.getElementById('price-n').innerText = state.prices.normal.toLocaleString();
+        document.getElementById('price-s').innerText = state.prices.special.toLocaleString();
+
+        const rbBtn = document.getElementById('rebirth-action');
+        if (state.rebirths >= 5) {
+            rbBtn.innerText = "NIVEL MÁXIMO";
+            rbBtn.disabled = true;
+        } else {
+            const cost = rebirthCosts[state.rebirths];
+            rbBtn.innerText = `REBIRTH ($${cost.toLocaleString()})`;
+            rbBtn.disabled = state.money < cost;
         }
+        renderPetList();
+    }
 
-        /**
-         * LÓGICA DE INTERFAZ DE USUARIO (UI)
-         * Actualiza los elementos del DOM basándose en el estado actual.
-         */
-        function refreshUserInterface() {
-            // Actualización de contadores principales
-            const moneyEl = document.getElementById('displayMoney');
-            moneyEl.innerText = Math.floor(gameState.money).toLocaleString();
-            
-            document.getElementById('displayMult').innerText = `x${gameState.multiplier.toFixed(1)}`;
-            document.getElementById('displayRebirth').innerText = gameState.rebirthCount;
+    function switchTab(tab) {
+        document.getElementById('play-tab').style.display = tab === 'play' ? 'block' : 'none';
+        document.getElementById('index-tab').style.display = tab === 'index' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        if(tab === 'index') renderIndex();
+    }
 
-            // Gestión del Botón de Rebirth (Límite 5)
-            const rbBtn = document.getElementById('rebirthBtn');
-            if (gameState.rebirthCount >= gameState.maxRebirths) {
-                rbBtn.classList.add('max-reached', 'is-visible');
-                rbBtn.innerText = "⭐ NIVEL MÁXIMO ALCANZADO";
-                rbBtn.onclick = null;
-            } else if (gameState.money >= gameState.rebirthPrice) {
-                rbBtn.classList.add('is-visible');
-                rbBtn.innerText = `REBIRTH A NIVEL ${gameState.rebirthCount + 1} (+$10 BONUS)`;
-            } else {
-                rbBtn.classList.remove('is-visible');
-            }
+    function setEggType(val) {
+        isSpecialEgg = val;
+        document.getElementById('btn-normal').classList.toggle('active', !val);
+        document.getElementById('btn-special').classList.toggle('active', val);
+    }
 
-            renderShopModule();
+    // --- MECÁNICAS DE JUEGO ---
+    function tryOpenEgg() {
+        const cost = isSpecialEgg ? state.prices.special : state.prices.normal;
+        if (state.money < cost) return alert("No tienes suficiente dinero");
+
+        state.money -= cost;
+        if (isSpecialEgg) state.prices.special = Math.floor(state.prices.special * 1.3);
+        else state.prices.normal = Math.floor(state.prices.normal * 1.25);
+
+        const pool = isSpecialEgg ? petsData.special : petsData.normal;
+        const pet = pool[Math.floor(Math.random() * pool.length)];
+        
+        state.ownedPets.push({ ...pet, id: Date.now() });
+        if (!state.discovered.includes(pet.name)) state.discovered.push(pet.name);
+
+        showHatch(pet);
+        saveGame();
+        updateUI();
+    }
+
+    function showHatch(pet) {
+        const overlay = document.getElementById('hatch-overlay');
+        const egg = document.getElementById('egg-gfx');
+        const petGfx = document.getElementById('pet-gfx');
+        
+        overlay.style.display = 'flex';
+        egg.style.display = 'block';
+        egg.classList.add('shake');
+        petGfx.style.display = 'none';
+
+        setTimeout(() => {
+            egg.classList.remove('shake');
+            egg.style.display = 'none';
+            petGfx.style.display = 'block';
+            petGfx.innerText = pet.icon;
+            document.getElementById('pet-name-reveal').innerText = pet.name;
+            document.getElementById('pet-rarity-reveal').innerText = pet.rarity.toUpperCase();
+        }, 1200);
+    }
+
+    function closeHatch() {
+        document.getElementById('hatch-overlay').style.display = 'none';
+    }
+
+    function sellPet(id) {
+        const idx = state.ownedPets.findIndex(p => p.id === id);
+        if (idx > -1) {
+            state.money += state.ownedPets[idx].earnings * 5;
+            state.ownedPets.splice(idx, 1);
+            saveGame();
+            updateUI();
         }
+    }
 
-        function renderShopModule() {
-            const list = document.getElementById('shopList');
-            list.innerHTML = ''; // Limpieza del contenedor para redibujar
-
-            upgradeData.forEach(item => {
-                const isLocked = gameState.money < item.cost;
-                const card = document.createElement('div');
-                card.className = `shop-item-card ${isLocked ? 'is-locked' : ''}`;
-                
-                card.innerHTML = `
-                    <div class="item-details">
-                        <b>${item.name}</b>
-                        <span>$${Math.floor(item.cost).toLocaleString()}</span>
-                    </div>
-                    <div class="item-stats-box">
-                        <span class="item-level">LVL ${item.owned}</span>
-                        <span class="item-power-gain">${item.type === 'click' ? '+' + item.power : '+' + item.power + '/s'}</span>
-                    </div>
-                `;
-
-                if (!isLocked) {
-                    card.onclick = () => executePurchase(item.id);
-                }
-                list.appendChild(card);
-            });
+    function attemptRebirth() {
+        const cost = rebirthCosts[state.rebirths];
+        if (state.money >= cost && state.rebirths < 5) {
+            state.rebirths++;
+            state.multiplier *= 3;
+            state.money = 10; // <--- REQUISITO: INICIO CON $10
+            state.ownedPets = [];
+            state.prices = { normal: 10, special: 500 };
+            saveGame();
+            updateUI();
+            alert("¡Rebirth exitoso! Tus ganancias se han triplicado.");
         }
+    }
 
-        /**
-         * MECÁNICAS DE COMPRA Y PROGRESO
-         */
-        function executePurchase(id) {
-            const item = upgradeData.find(u => u.id === id);
-            if (gameState.money >= item.cost) {
-                gameState.money -= item.cost;
-                item.owned++;
-                
-                // Escalado de precios (Curva de dificultad)
-                item.cost = Math.floor(item.baseCost * Math.pow(1.35, item.owned));
-                
-                // Efecto visual si es una mejora automática
-                if (item.type === 'auto' && document.querySelectorAll('.coin-entity').length < 15) {
-                    createCoinEntity();
-                }
+    function renderPetList() {
+        const cont = document.getElementById('pet-list-ui');
+        cont.innerHTML = '';
+        state.ownedPets.forEach(p => {
+            const div = document.createElement('div');
+            div.className = `pet-item rarity-${p.rarity}`;
+            div.innerHTML = `
+                <div class="pet-info">
+                    <b>${p.icon} ${p.name}</b>
+                    <span>+$${(p.earnings * state.multiplier).toFixed(1)}/s</span>
+                </div>
+                <button class="sell-btn" onclick="sellPet(${p.id})">VENDER</button>
+            `;
+            cont.appendChild(div);
+        });
+    }
 
-                refreshUserInterface();
-                saveProgress();
-            }
+    function renderIndex() {
+        const cont = document.getElementById('index-list-ui');
+        cont.innerHTML = '';
+        [...petsData.normal, ...petsData.special].forEach(p => {
+            const isFound = state.discovered.includes(p.name);
+            const div = document.createElement('div');
+            div.className = 'pet-item';
+            div.style.opacity = isFound ? '1' : '0.4';
+            div.innerHTML = `
+                <div class="pet-info">
+                    <b>${isFound ? p.icon : '❓'} ${p.name}</b>
+                    <span>${p.rarity.toUpperCase()}</span>
+                </div>
+            `;
+            cont.appendChild(div);
+        });
+    }
+
+    // --- BUCLE DE DINERO ---
+    setInterval(() => {
+        let income = 0;
+        state.ownedPets.forEach(p => income += p.earnings);
+        if (income > 0) {
+            state.money += (income * state.multiplier);
+            updateUI();
         }
+    }, 1000);
 
-        /**
-         * PROCESO DE REBIRTH (MECÁNICA SOLICITADA)
-         * Reinicia el progreso otorgando $10 y multiplicador acumulativo.
-         */
-        function handleRebirthProcess() {
-            if (gameState.rebirthCount >= gameState.maxRebirths) return;
-            if (gameState.money < gameState.rebirthPrice) return;
-
-            const confirmMsg = `¿Deseas renacer? Perderás tus edificios pero recibirás un Multiplicador de x${(gameState.multiplier + 1.5).toFixed(1)} y $10 iniciales.`;
-            
-            if (confirm(confirmMsg)) {
-                gameState.rebirthCount++;
-                gameState.multiplier += 1.5;
-                gameState.money = gameState.initialBonus; // <--- AQUÍ SE APLICAN LOS $10 SOLICITADOS
-                
-                // Escalamiento del siguiente objetivo de Rebirth
-                gameState.rebirthPrice *= gameState.priceExponential;
-
-                // Reseteo de mejoras compradas
-                upgradeData.forEach(u => {
-                    u.owned = 0;
-                    u.cost = u.baseCost;
-                });
-
-                // Limpieza de entidades visuales en el mapa
-                document.querySelectorAll('.coin-entity').forEach(e => e.remove());
-                createCoinEntity(); // Spawn de la moneda inicial
-
-                saveProgress();
-                refreshUserInterface();
-                alert("Has avanzado a un nuevo nivel de riqueza. ¡Aquí tienes $10 para empezar!");
-            }
-        }
-
-        /**
-         * SISTEMA DE ENTIDADES Y CLICKS
-         */
-        function createCoinEntity() {
-            const world = document.getElementById('gameWorld');
-            const coin = document.createElement('div');
-            coin.className = 'coin-entity';
-            coin.innerHTML = '<span class="coin-symbol">$</span>';
-            
-            // Posicionamiento aleatorio dentro del viewport
-            coin.style.left = (Math.random() * 70 + 15) + "%";
-            coin.style.top = (Math.random() * 70 + 15) + "%";
-
-            coin.onclick = (event) => {
-                // Cálculo de poder de click basado en mejoras y multiplicador
-                const baseClick = 1;
-                const upgradeBonus = upgradeData
-                    .filter(u => u.type === 'click')
-                    .reduce((total, u) => total + (u.owned * u.power), 0);
-                
-                const finalGain = (baseClick + upgradeBonus) * gameState.multiplier;
-                
-                gameState.money += finalGain;
-                createClickPopup(event, finalGain);
-                refreshUserInterface();
-                saveProgress();
-            };
-
-            world.appendChild(coin);
-        }
-
-        function createClickPopup(e, value) {
-            const popup = document.createElement('div');
-            popup.className = 'click-popup';
-            popup.innerText = `+$${Math.floor(value)}`;
-            popup.style.left = e.pageX + "px";
-            popup.style.top = e.pageY + "px";
-            
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 800);
-        }
-
-        /**
-         * BUCLE PRINCIPAL (TICK RATE)
-         * Procesa ingresos pasivos cada 100ms.
-         */
-        setInterval(() => {
-            const passiveIncome = upgradeData
-                .filter(u => u.type === 'auto')
-                .reduce((total, u) => total + (u.owned * u.power), 0);
-            
-            if (passiveIncome > 0) {
-                const tickGain = (passiveIncome * gameState.multiplier) / 10;
-                gameState.money += tickGain;
-                refreshUserInterface();
-            }
-        }, 100);
-
-        // INICIALIZACIÓN AL CARGAR LA VENTANA
-        window.onload = () => {
-            loadProgress();
-            // Si no hay monedas al iniciar, crear la principal
-            if (document.querySelectorAll('.coin-entity').length === 0) {
-                createCoinEntity();
-            }
-            console.log("Sistema Gold Clicker inicializado correctamente.");
-        };
-    </script>
+    // Inicio
+    window.onload = loadGame;
+</script>
 </body>
 </html>
