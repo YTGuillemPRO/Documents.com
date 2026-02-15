@@ -1370,6 +1370,65 @@
         renderUpgrades();
         renderSkillTree();
         checkMission();
+        // --- SISTEMA DE GUARDADO (LOCAL STORAGE) ---
+
+// 1. Función para Guardar
+function saveGame() {
+    const gameData = {
+        money: game.money,
+        totalEarned: game.totalEarned,
+        upgradesOwned: game.upgradesOwned,
+        lastTime: Date.now() // Guardamos la hora para el progreso offline (opcional)
+    };
+    
+    localStorage.setItem('coinClicker_Save', JSON.stringify(gameData));
+    console.log("Juego guardado...");
+    
+    // Feedback visual opcional: un pequeño destello en el contador
+    createFloatingText(100, 100, "💾 Guardado", "#ffffff");
+}
+
+// 2. Función para Cargar
+function loadGame() {
+    const savedData = localStorage.getItem('coinClicker_Save');
+    
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        
+        // Restaurar variables
+        game.money = data.money || 0;
+        game.totalEarned = data.totalEarned || 0;
+        game.upgradesOwned = data.upgradesOwned || {};
+        
+        // Asegurar que las mejoras nuevas que no existían en el guardado viejo se inicialicen a 0
+        upgradesConfig.forEach(u => {
+            if (game.upgradesOwned[u.id] === undefined) {
+                game.upgradesOwned[u.id] = 0;
+            }
+        });
+
+        console.log("Partida cargada con éxito.");
+        updateDisplay();
+    }
+}
+
+// 3. Función para Borrar Progreso (Por si quieres empezar de cero)
+function resetGame() {
+    if (confirm("¿Seguro que quieres borrar todo tu progreso?")) {
+        localStorage.removeItem('coinClicker_Save');
+        location.reload(); // Recarga la página para resetear todo
+    }
+}
+
+// --- ACTIVACIÓN ---
+
+// Cargamos al iniciar
+window.addEventListener('load', () => {
+    loadGame();
+    
+    // Iniciamos el auto-guardado cada 5 segundos
+    setInterval(saveGame, 5000);
+});
     </script>
 </body>
 </html>
