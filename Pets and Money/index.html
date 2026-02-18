@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pets and Money</title>
+<title>Pet Simulator Ultra - Compact Edition</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -74,15 +74,6 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .rebirth-info { 
-    font-size: 12px; 
-    background: linear-gradient(45deg, #8b5cf6, #a855f7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700; 
-    margin-top: 5px;
-  }
-
   .top-buttons { display: flex; gap: 8px; margin-bottom: 15px; }
   
   .tab-btn { 
@@ -141,31 +132,29 @@
     background: linear-gradient(45deg, #fbbf24, #f59e0b); 
     color: white; 
     box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5); 
-    border: 2px solid rgba(255,255,255,0.2);
   }
 
   #rebirthBtn { 
     background: linear-gradient(45deg, #8b5cf6, #a855f7); 
     color: white; 
     box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+    margin-bottom: 15px !important;
   }
 
-  /* BOTÓN REBIRTH DESHABILITADO */
   #rebirthBtn:disabled { 
-    background: rgba(107, 114, 128, 0.3) !important; 
+    background: rgba(107, 114, 128, 0.3); 
     opacity: 0.6; 
     cursor: not-allowed; 
     box-shadow: none;
-    border: 2px solid rgba(255,255,255,0.1);
   }
 
   #petList { 
     flex: 1; 
     overflow-y: auto; 
-    margin-top: 15px;
     padding-right: 10px;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.3) transparent;
+    min-height: 200px;
   }
 
   .pet { 
@@ -192,6 +181,13 @@
   .mythic { border-left: 6px solid #ef4444; background: rgba(239, 68, 68, 0.25); }
   .secret { border-left: 6px solid #fbbf24; background: rgba(251, 191, 36, 0.2); }
   .og { border-left: 6px solid #ff6b6b; background: rgba(255, 107, 107, 0.3); border: 2px solid rgba(255, 107, 107, 0.5); }
+
+  .no-pets {
+    color: rgba(255,255,255,0.5);
+    font-size: 16px;
+    padding: 40px 20px;
+    text-align: center;
+  }
 
   .sellBtn { 
     background: linear-gradient(45deg, #ef4444, #dc2626); 
@@ -288,7 +284,6 @@
 
   <div class="stats">
     <div class="money">💰 $<span id="money">10</span></div>
-    <div class="rebirth-info">Rebirth: <span id="rbLevel">0</span>/5 • x<span id="rbMult">1</span></div>
     
     <div class="egg-selector">
       <button id="normalBtn" class="egg-type-btn active" onclick="setEgg(false)">
@@ -302,9 +297,14 @@
 
   <div id="tabPets" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
     <button id="buyEggBtn" class="main-btn" onclick="openEgg()">🛒 ABRIR HUEVO</button>
-    <!-- BOTÓN REBIRTH DESHABILITADO PERMANENTEMENTE -->
-    <button id="rebirthBtn" class="main-btn" disabled>⚡ REBIRTH DESACTIVADO</button>
-    <div id="petList"></div>
+    
+    <button id="rebirthBtn" class="main-btn" onclick="doRebirth()" disabled style="margin-bottom: 15px;">
+      ⚡ REBIRTH (500K)
+    </button>
+    
+    <div id="petList">
+      <div class="no-pets">¡Abre tu primer huevo para ver tus pets aquí! 🥚</div>
+    </div>
   </div>
 
   <div id="tabIndex" style="display:none; overflow-y:auto; flex:1;">
@@ -347,9 +347,13 @@
     ]
   };
 
-  // ESTADO CON GUARDADO (SIN REBIRTH)
+  const rebirthCosts = [500000];
+
+  // ESTADO CON GUARDADO
   let state = {
     money: 10,
+    rb: 0,
+    mult: 1.0,
     pets: [],
     discovered: [],
     priceN: 10,
@@ -367,7 +371,8 @@
   function load() {
     const saved = localStorage.getItem('PetSimUltra');
     if(saved) {
-      state = JSON.parse(saved);
+      const loadedState = JSON.parse(saved);
+      state = loadedState;
     }
     updateUI();
   }
@@ -376,6 +381,12 @@
     document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
     document.getElementById('priceN').innerText = state.priceN.toLocaleString();
     document.getElementById('priceS').innerText = state.priceS.toLocaleString();
+    
+    const rbBtn = document.getElementById('rebirthBtn');
+    let cost = rebirthCosts[state.rb];
+    rbBtn.innerText = `⚡ REBIRTH ($${cost.toLocaleString()})`;
+    rbBtn.disabled = state.money < cost;
+    
     renderPets();
   }
 
@@ -420,20 +431,25 @@
         icon.style.display = 'block';
         icon.innerHTML = pet.icon;
         document.getElementById('hatchedPetName').innerText = pet.name;
-        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings).toLocaleString()}/s`;
+        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings * state.mult).toLocaleString()}/s`;
       }, 600);
     }, 1500);
   }
 
   function renderPets() {
     const list = document.getElementById('petList');
+    if(state.pets.length === 0) {
+      list.innerHTML = '<div class="no-pets">¡Abre tu primer huevo para ver tus pets aquí! 🥚</div>';
+      return;
+    }
+    
     list.innerHTML = '';
     state.pets.forEach(p => {
       const div = document.createElement('div');
       div.className = `pet ${p.rarity}`;
       div.innerHTML = `
         <span>${p.icon} ${p.name}</span>
-        <span>$${p.earnings.toLocaleString()}/s 
+        <span>$${(p.earnings * state.mult).toLocaleString()}/s 
           <button class="sellBtn" onclick="sellPet(${p.id})">V</button>
         </span>
       `;
@@ -449,6 +465,19 @@
       save();
       updateUI();
     }
+  }
+
+  function doRebirth() {
+    if(state.money < rebirthCosts[state.rb]) return;
+    state.rb++;
+    state.mult *= 1.8;
+    state.money = 10;
+    state.pets = [];
+    state.priceN = 10;
+    state.priceS = 500;
+    save();
+    updateUI();
+    alert("¡REBIRTH! x1.8 ganancias");
   }
 
   function switchTab(tab) {
@@ -482,9 +511,9 @@
   // GUARDADO AUTOMÁTICO CADA 10 SEGUNDOS
   setInterval(save, 10000);
 
-  // GANANCIAS POR SEGUNDO (SIN MULTIPLICADOR DE REBIRTH)
+  // GANANCIAS POR SEGUNDO
   setInterval(() => {
-    let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0);
+    let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0) * state.mult;
     if(totalIncome > 0) {
       state.money += totalIncome;
       updateUI();
