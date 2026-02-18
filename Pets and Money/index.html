@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Peta and Money</title>
+<title>Pets and Money</title>
 <style>
   /* RESET Y CONFIGURACIÓN BASE */
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,56 +12,92 @@
     font-family: 'Segoe UI', Arial, sans-serif; 
     height: 100vh; 
     overflow: hidden; 
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: radial-gradient(ellipse at center, #0a0a23 0%, #1a0033 30%, #000428 70%, #16213e 100%);
     display: flex; 
     justify-content: center; 
     align-items: center; 
     user-select: none;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
+    animation: bgShift 20s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @keyframes bgShift {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
   }
 
   /* CONTENEDOR PRINCIPAL XL */
   #game { 
     width: 650px; 
     height: 90vh;
-    background: rgba(255, 255, 255, 0.98); 
+    background: rgba(15, 23, 42, 0.95); 
+    backdrop-filter: blur(20px);
     border-radius: 35px; 
     padding: 35px; 
     text-align: center; 
-    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    box-shadow: 
+      0 40px 80px rgba(0,0,0,0.8),
+      0 0 0 1px rgba(255,255,255,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.1);
     position: relative;
     display: flex;
     flex-direction: column;
-    border: 4px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    overflow: hidden;
   }
 
   h1 { 
     font-size: 38px; 
     margin-bottom: 20px; 
-    color: #1e293b; 
+    background: linear-gradient(45deg, #fbbf24, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -1px;
     font-weight: 900;
+    text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
   }
 
   /* PANEL DE ESTADÍSTICAS */
   .stats { 
-    background: #f8fafc; 
+    background: rgba(248, 250, 252, 0.15); 
+    backdrop-filter: blur(10px);
     padding: 25px; 
     border-radius: 25px; 
     margin-bottom: 20px; 
-    border: 2px solid #e2e8f0;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 
+      inset 0 2px 4px rgba(0,0,0,0.3),
+      0 8px 25px rgba(0,0,0,0.2);
   }
 
   .money { 
     font-size: 50px; 
     font-weight: 900; 
-    color: #16a34a; 
-    text-shadow: 0 2px 4px rgba(22, 163, 74, 0.1);
+    background: linear-gradient(45deg, #10b981, #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
   }
 
   .rebirth-info { 
     font-size: 16px; 
-    color: #6366f1; 
+    background: linear-gradient(45deg, #8b5cf6, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     font-weight: 800; 
     margin-top: 8px;
     text-transform: uppercase;
@@ -75,17 +111,26 @@
     padding: 15px; 
     font-size: 18px; 
     border-radius: 18px; 
-    border: none; 
+    border: 2px solid rgba(255,255,255,0.1);
     cursor: pointer; 
-    background: #e2e8f0; 
+    background: rgba(226, 232, 240, 0.2); 
+    backdrop-filter: blur(10px);
     font-weight: 800;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: white;
+  }
+
+  .tab-btn:hover { 
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
   }
 
   .tab-btn.active { 
-    background: #4caf50; 
+    background: linear-gradient(45deg, #10b981, #059669); 
     color: #fff; 
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    transform: translateY(-3px);
   }
 
   /* SELECTOR DE HUEVOS */
@@ -96,18 +141,26 @@
     padding: 18px; 
     font-weight: 800; 
     border-radius: 20px; 
-    border: 3px solid transparent; 
+    border: 3px solid rgba(255,255,255,0.1); 
     cursor: pointer; 
-    background: #f1f5f9; 
+    background: rgba(241, 245, 249, 0.2); 
+    backdrop-filter: blur(10px);
     font-size: 15px;
-    transition: 0.2s;
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .egg-type-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
   }
 
   .egg-type-btn.active { 
-    background: #ffffff; 
-    border-color: #f59e0b; 
-    color: #d97706;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    background: rgba(255,255,255,0.25); 
+    border-color: #fbbf24; 
+    color: #fbbf24;
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3);
+    transform: translateY(-3px);
   }
 
   /* BOTONES DE ACCIÓN */
@@ -120,19 +173,58 @@
     cursor: pointer; 
     margin: 10px 0; 
     font-weight: 900; 
-    transition: transform 0.1s, box-shadow 0.2s; 
+    transition: all 0.2s ease; 
+    position: relative;
+    overflow: hidden;
+  }
+
+  button.main-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  button.main-btn:hover::before {
+    left: 100%;
   }
 
   #buyEggBtn { 
-    background: linear-gradient(45deg, #fbbf24, #f59e0b); 
+    background: linear-gradient(45deg, #fbbf24, #f59e0b, #ef4444); 
     color: white; 
-    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); 
+    box-shadow: 0 12px 35px rgba(251, 191, 36, 0.5); 
+    font-size: 24px;
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+
+  #buyEggBtn:hover { 
+    transform: scale(1.02) translateY(-3px);
+    box-shadow: 0 20px 45px rgba(251, 191, 36, 0.6);
   }
 
   #buyEggBtn:active { transform: scale(0.97); }
 
-  #rebirthBtn { background: #6366f1; color: white; }
-  #rebirthBtn:disabled { background: #cbd5e1; opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+  #rebirthBtn { 
+    background: linear-gradient(45deg, #8b5cf6, #a855f7, #ec4899); 
+    color: white; 
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.5);
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+
+  #rebirthBtn:hover:not(:disabled) { 
+    transform: scale(1.02) translateY(-3px);
+    box-shadow: 0 20px 45px rgba(139, 92, 246, 0.6);
+  }
+
+  #rebirthBtn:disabled { 
+    background: rgba(107, 114, 128, 0.3); 
+    opacity: 0.6; 
+    cursor: not-allowed; 
+    box-shadow: none;
+    border-color: rgba(255,255,255,0.1);
+  }
 
   /* LISTADO DE MASCOTAS */
   #petList { 
@@ -141,6 +233,7 @@
     margin-top: 20px; 
     padding-right: 15px;
     scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
   }
 
   .pet { 
@@ -152,18 +245,26 @@
     justify-content: space-between; 
     align-items: center; 
     font-size: 18px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .pet:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
   }
 
   .common { border-left: 8px solid #94a3b8; }
-  .uncommon { border-left: 8px solid #22c55e; background: #f0fdf4; }
-  .rare { border-left: 8px solid #3b82f6; background: #eff6ff; }
-  .god { border-left: 8px solid #a855f7; background: #faf5ff; }
-  .og { border-left: 8px solid #ef4444; background: #fff1f2; border: 2px solid #fb7185; }
+  .uncommon { border-left: 8px solid #22c55e; background: rgba(34, 197, 94, 0.2); }
+  .rare { border-left: 8px solid #3b82f6; background: rgba(59, 130, 246, 0.2); }
+  .god { border-left: 8px solid #a855f7; background: rgba(168, 85, 247, 0.25); }
+  .og { border-left: 8px solid #ef4444; background: rgba(239, 68, 68, 0.3); border: 2px solid rgba(251, 113, 133, 0.5); }
 
   .sellBtn { 
-    background: #ef4444; 
+    background: linear-gradient(45deg, #ef4444, #dc2626); 
     color: white; 
     border: none; 
     padding: 10px 18px; 
@@ -171,13 +272,20 @@
     cursor: pointer; 
     font-size: 13px;
     font-weight: 900;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
   }
 
-  /* OVERLAY DE APERTURA (ANIMACIÓN) */
+  .sellBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+  }
+
+  /* OVERLAY DE APERTURA */
   #hatchOverlay { 
     position: absolute; 
     inset: 0; 
     background: rgba(15, 23, 42, 0.98); 
+    backdrop-filter: blur(20px);
     display: none; 
     flex-direction: column;
     align-items: center; 
@@ -187,26 +295,30 @@
   }
 
   #hatchBox { 
-    background: white; 
+    background: rgba(255,255,255,0.1); 
+    backdrop-filter: blur(20px);
     border-radius: 45px; 
     padding: 50px; 
     width: 400px; 
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
   }
   
   #hatchEgg { 
     width: 160px; height: 210px; margin: 0 auto 30px; 
     background: radial-gradient(circle at 30% 30%, #fff, #fbbf24); 
     border-radius: 50% 50% 45% 45%; 
-    border: 8px solid #d97706;
+    border: 8px solid #f59e0b;
     position: relative;
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
   }
 
-  #hatchedPetIcon { font-size: 100px; display: none; margin-bottom: 20px; }
+  #hatchedPetIcon { font-size: 100px; display: none; margin-bottom: 20px; filter: drop-shadow(0 0 20px currentColor); }
   
   #closeHatchBtn { 
-    background: #1e293b; 
+    background: linear-gradient(45deg, #1e293b, #334155); 
     color: white; 
     border: none; 
     padding: 12px 30px; 
@@ -215,9 +327,15 @@
     font-weight: 800; 
     font-size: 15px; 
     margin-top: 25px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   }
 
-  /* KEYFRAMES DE ANIMACIÓN */
+  #closeHatchBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+
+  /* ANIMACIONES */
   @keyframes eggShake { 
     0%, 100% { transform: rotate(0); } 
     20% { transform: rotate(-15deg); } 
@@ -231,6 +349,21 @@
   }
   .shaking { animation: eggShake 0.4s infinite ease-in-out; }
   .breaking { animation: eggBreak 0.6s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+  #hatchedPetName { 
+    font-size:28px; 
+    color:#fbbf24; 
+    font-weight:900;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+    margin-bottom: 10px;
+  }
+
+  #hatchedPetInfo { 
+    color:#a1a1aa; 
+    margin-top:8px; 
+    font-weight:bold; 
+    font-size:18px;
+  }
 </style>
 </head><body>
 
@@ -238,8 +371,8 @@
   <div id="hatchBox">
     <div id="hatchEgg"></div>
     <div id="hatchedPetIcon"></div>
-    <h2 id="hatchedPetName" style="font-size:28px; color:#1e293b; font-weight:900;"></h2>
-    <p id="hatchedPetInfo" style="color:#64748b; margin-top:8px; font-weight:bold; font-size:18px;"></p>
+    <h2 id="hatchedPetName"></h2>
+    <p id="hatchedPetInfo"></p>
     <button id="closeHatchBtn">Continuar</button>
   </div>
 </div>
@@ -249,12 +382,12 @@
   
   <div class="top-buttons">
     <button id="tabPetsBtn" class="tab-btn active" onclick="switchTab('pets')">CENTRO DE JUEGO</button>
-    <button id="tabIndexBtn" class="tab-btn" onclick="switchTab('index')">COLECCIÓN (INDEX)</button>
+    <button id="tabIndexBtn" class="tab-btn" onclick="switchTab('index')">COLECCIÓN</button>
   </div>
 
   <div class="stats">
     <div class="money">💰 $<span id="money">10</span></div>
-    <div id="rebirthInfo" class="rebirth-info">Nivel Rebirth: <span id="rbLevel">0</span>/5 • Multiplicador: x<span id="rbMult">1</span></div>
+    <div class="rebirth-info">Nivel Rebirth: <span id="rbLevel">0</span>/5 • Multiplicador: x<span id="rbMult">1</span></div>
     
     <div class="egg-selector">
       <button id="normalBtn" class="egg-type-btn active" onclick="setEgg(false)">
@@ -266,20 +399,19 @@
     </div>
   </div>
 
-  <div id="tabPets" class="tab-content" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-    <button id="buyEggBtn" class="main-btn" onclick="openEgg()">🛒 ABRIR HUEVO</button>
+  <div id="tabPets" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+    <button id="buyEggBtn" class="main-btn" onclick="openEgg()">🛒 COMPRAR & ABRIR HUEVO</button>
     <button id="rebirthBtn" class="main-btn" onclick="doRebirth()" disabled>⚡ REALIZAR REBIRTH</button>
-    <div id="petList">
-    </div>
+    <div id="petList"></div>
   </div>
 
-  <div id="tabIndex" class="tab-content" style="display:none; overflow-y:auto; flex:1;">
+  <div id="tabIndex" style="display:none; overflow-y:auto; flex:1;">
     <div id="indexList" style="padding:10px;"></div>
   </div>
 </div>
 
 <script>
-  // CONFIGURACIÓN DE DATOS CORREGIDA
+  // CONFIGURACIÓN DE DATOS
   const petsConfig = {
     normal: [
       {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:5},
@@ -299,7 +431,6 @@
 
   const rebirthCosts = [1000000, 15000000, 100000000, 750000000, 3000000000];
   
-  // ESTADO GLOBAL
   let state = {
     money: 10,
     rb: 0,
@@ -312,8 +443,8 @@
 
   let isSpecial = false;
 
-  // FUNCIONES DE GUARDADO
   function save() { localStorage.setItem('PetSimPro_GlobalSave', JSON.stringify(state)); }
+  
   function load() {
     const data = localStorage.getItem('PetSimPro_GlobalSave');
     if(data) state = JSON.parse(data);
@@ -323,7 +454,7 @@
   function updateUI() {
     document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
     document.getElementById('rbLevel').innerText = state.rb;
-    document.getElementById('rbMult').innerText = state.mult;
+    document.getElementById('rbMult').innerText = state.mult.toLocaleString();
     document.getElementById('priceN').innerText = state.priceN.toLocaleString();
     document.getElementById('priceS').innerText = state.priceS.toLocaleString();
     
@@ -449,7 +580,7 @@
     });
   }
 
-  // CONFIGURAR BOTÓN CERRAR HATCH
+  // BOTÓN CERRAR HATCH
   document.getElementById('closeHatchBtn').onclick = function() {
     document.getElementById('hatchOverlay').style.display = 'none';
     document.getElementById('hatchEgg').className = '';
@@ -457,7 +588,7 @@
     document.getElementById('hatchedPetIcon').style.display = 'none';
   };
 
-  // BUCLE PRINCIPAL DE GANANCIAS
+  // GANANCIAS POR SEGUNDO
   setInterval(() => {
     let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0) * state.mult;
     if(totalIncome > 0) {
@@ -466,7 +597,7 @@
     }
   }, 1000);
 
-  // INICIALIZAR
+  // INICIO
   window.onload = function() {
     load();
   };
