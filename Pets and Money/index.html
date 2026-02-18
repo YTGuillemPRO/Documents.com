@@ -310,7 +310,7 @@
 </div>
 
 <script>
-  // SIN GUARDADO - SIEMPRE NUEVO JUEGO
+  // CONFIGURACIÓN COMPLETA
   const petsConfig = {
     normal: [
       {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:2},
@@ -346,7 +346,7 @@
 
   const rebirthCosts = [500000, 2000000, 8000000, 25000000, 75000000];
   
-  // SIEMPRE ESTADO INICIAL
+  // ESTADO CON GUARDADO
   let state = {
     money: 10,
     rb: 0,
@@ -358,6 +358,23 @@
   };
 
   let isSpecial = false;
+
+  // GUARDADO AUTOMÁTICO
+  function save() { 
+    localStorage.setItem('PetSimUltra', JSON.stringify(state)); 
+  }
+
+  // CARGAR PROGRESO
+  function load() {
+    const saved = localStorage.getItem('PetSimUltra');
+    if(saved) {
+      const loadedState = JSON.parse(saved);
+      // LIMITAR MULTIPLICADOR MÁXIMO
+      loadedState.mult = Math.min(loadedState.mult, 50);
+      state = loadedState;
+    }
+    updateUI();
+  }
 
   function updateUI() {
     document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
@@ -398,6 +415,7 @@
     
     if(!state.discovered.includes(pet.name)) state.discovered.push(pet.name);
     playHatchAnimation(pet);
+    save();
     updateUI();
   }
 
@@ -444,6 +462,7 @@
     if(idx !== -1) {
       state.money += state.pets[idx].earnings * 10;
       state.pets.splice(idx, 1);
+      save();
       updateUI();
     }
   }
@@ -452,12 +471,15 @@
     if(state.rb >= 5 || state.money < rebirthCosts[state.rb]) return;
     state.rb++;
     state.mult *= 1.8;
+    // LIMITAR MULTIPLICADOR MÁXIMO
+    state.mult = Math.min(state.mult, 50);
     state.money = 10;
     state.pets = [];
     state.priceN = 10;
     state.priceS = 500;
+    save();
     updateUI();
-    alert("¡REBIRTH! x1.8 ganancias");
+    alert("¡REBIRTH! x1.8 ganancias (Máx x50)");
   }
 
   function switchTab(tab) {
@@ -481,12 +503,16 @@
     });
   }
 
+  // EVENTOS
   document.getElementById('closeHatchBtn').onclick = function() {
     document.getElementById('hatchOverlay').style.display = 'none';
     document.getElementById('hatchEgg').className = '';
     document.getElementById('hatchEgg').style.display = 'block';
     document.getElementById('hatchedPetIcon').style.display = 'none';
   };
+
+  // GUARDADO AUTOMÁTICO CADA 10 SEGUNDOS
+  setInterval(save, 10000);
 
   // GANANCIAS POR SEGUNDO
   setInterval(() => {
@@ -497,20 +523,10 @@
     }
   }, 1000);
 
-  // SIEMPRE INICIO LIMPIO
+  // INICIO CON CARGA DE PROGRESO
   window.onload = function() { 
-    state = {
-      money: 10,
-      rb: 0,
-      mult: 1.0,
-      pets: [],
-      discovered: [],
-      priceN: 10,
-      priceS: 500
-    };
-    updateUI();
+    load(); 
   };
 </script>
 </body>
 </html>
-
