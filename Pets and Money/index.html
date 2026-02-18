@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pet Simulator Ultra - Compact Edition</title>
+<title>Pets and Money</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -150,11 +150,13 @@
     box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
   }
 
+  /* BOTÓN REBIRTH DESHABILITADO */
   #rebirthBtn:disabled { 
-    background: rgba(107, 114, 128, 0.3); 
+    background: rgba(107, 114, 128, 0.3) !important; 
     opacity: 0.6; 
     cursor: not-allowed; 
     box-shadow: none;
+    border: 2px solid rgba(255,255,255,0.1);
   }
 
   #petList { 
@@ -300,7 +302,8 @@
 
   <div id="tabPets" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
     <button id="buyEggBtn" class="main-btn" onclick="openEgg()">🛒 ABRIR HUEVO</button>
-    <button id="rebirthBtn" class="main-btn" onclick="doRebirth()" disabled>⚡ REBIRTH</button>
+    <!-- BOTÓN REBIRTH DESHABILITADO PERMANENTEMENTE -->
+    <button id="rebirthBtn" class="main-btn" disabled>⚡ REBIRTH DESACTIVADO</button>
     <div id="petList"></div>
   </div>
 
@@ -344,13 +347,9 @@
     ]
   };
 
-  const rebirthCosts = [500000, 2000000, 8000000, 25000000, 75000000];
-  
-  // ESTADO CON GUARDADO
+  // ESTADO CON GUARDADO (SIN REBIRTH)
   let state = {
     money: 10,
-    rb: 0,
-    mult: 1.0,
     pets: [],
     discovered: [],
     priceN: 10,
@@ -368,30 +367,15 @@
   function load() {
     const saved = localStorage.getItem('PetSimUltra');
     if(saved) {
-      const loadedState = JSON.parse(saved);
-      // LIMITAR MULTIPLICADOR MÁXIMO
-      loadedState.mult = Math.min(loadedState.mult, 50);
-      state = loadedState;
+      state = JSON.parse(saved);
     }
     updateUI();
   }
 
   function updateUI() {
     document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
-    document.getElementById('rbLevel').innerText = state.rb;
-    document.getElementById('rbMult').innerText = state.mult.toFixed(1);
     document.getElementById('priceN').innerText = state.priceN.toLocaleString();
     document.getElementById('priceS').innerText = state.priceS.toLocaleString();
-    
-    const rbBtn = document.getElementById('rebirthBtn');
-    if(state.rb >= 5) {
-      rbBtn.innerText = "⭐ MÁXIMO";
-      rbBtn.disabled = true;
-    } else {
-      let cost = rebirthCosts[state.rb];
-      rbBtn.innerText = `⚡ RB${state.rb+1} ($${cost.toLocaleString()})`;
-      rbBtn.disabled = state.money < cost;
-    }
     renderPets();
   }
 
@@ -436,7 +420,7 @@
         icon.style.display = 'block';
         icon.innerHTML = pet.icon;
         document.getElementById('hatchedPetName').innerText = pet.name;
-        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings * state.mult).toLocaleString()}/s`;
+        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings).toLocaleString()}/s`;
       }, 600);
     }, 1500);
   }
@@ -449,7 +433,7 @@
       div.className = `pet ${p.rarity}`;
       div.innerHTML = `
         <span>${p.icon} ${p.name}</span>
-        <span>$${(p.earnings * state.mult).toLocaleString()}/s 
+        <span>$${p.earnings.toLocaleString()}/s 
           <button class="sellBtn" onclick="sellPet(${p.id})">V</button>
         </span>
       `;
@@ -465,21 +449,6 @@
       save();
       updateUI();
     }
-  }
-
-  function doRebirth() {
-    if(state.rb >= 5 || state.money < rebirthCosts[state.rb]) return;
-    state.rb++;
-    state.mult *= 1.8;
-    // LIMITAR MULTIPLICADOR MÁXIMO
-    state.mult = Math.min(state.mult, 50);
-    state.money = 10;
-    state.pets = [];
-    state.priceN = 10;
-    state.priceS = 500;
-    save();
-    updateUI();
-    alert("¡REBIRTH! x1.8 ganancias (Máx x50)");
   }
 
   function switchTab(tab) {
@@ -507,16 +476,15 @@
   document.getElementById('closeHatchBtn').onclick = function() {
     document.getElementById('hatchOverlay').style.display = 'none';
     document.getElementById('hatchEgg').className = '';
-    document.getElementById('hatchEgg').style.display = 'block';
     document.getElementById('hatchedPetIcon').style.display = 'none';
   };
 
   // GUARDADO AUTOMÁTICO CADA 10 SEGUNDOS
   setInterval(save, 10000);
 
-  // GANANCIAS POR SEGUNDO
+  // GANANCIAS POR SEGUNDO (SIN MULTIPLICADOR DE REBIRTH)
   setInterval(() => {
-    let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0) * state.mult;
+    let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0);
     if(totalIncome > 0) {
       state.money += totalIncome;
       updateUI();
