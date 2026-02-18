@@ -1,136 +1,164 @@
 <script>
-  // CONFIGURACIÓN DE DATOS - TUS PETS EXACTOS
-  const petsConfig = {
-    normal: [
-      {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:5},
-      {icon:'🐶', name:'Perro Fiel', rarity:'common', earnings:12},
-      {icon:'🐱', name:'Gato Curioso', rarity:'common', earnings:15},
-      {icon:'🐰', name:'Conejo', rarity:'common', earnings:20},
-      {icon:'🐥', name:'Pollito', rarity:'common', earnings:25},
-      {icon:'🦊', name:'Zorro', rarity:'rare', earnings:80},
-      {icon:'🐻', name:'Oso', rarity:'rare', earnings:110},
-      {icon:'🐼', name:'Panda', rarity:'rare', earnings:150},
-      {icon:'🐨', name:'Koala', rarity:'rare', earnings:200},
-      {icon:'🐯', name:'Tigre', rarity:'epic', earnings:450},
-      {icon:'🦁', name:'León', rarity:'epic', earnings:600},
-      {icon:'🐺', name:'Lobo', rarity:'epic', earnings:800}
-    ],
-    special: [
-      {icon:'🦁', name:'León Majestuoso', rarity:'rare', earnings:200},
-      {icon:'🦄', name:'Unicornio Místico', rarity:'god', earnings:650},
-      {icon:'🐲', name:'Dragón Ancestral', rarity:'god', earnings:1500},
-      {icon:'🦖', name:'T-Rex OG', rarity:'og', earnings:6000},
-      {icon:'🦄', name:'Unicornio', rarity:'legendary', earnings:2500},
-      {icon:'🐲', name:'Dragón', rarity:'legendary', earnings:3500},
-      {icon:'🔱', name:'Poseidón', rarity:'mythic', earnings:8000},
-      {icon:'🔥', name:'Fénix', rarity:'mythic', earnings:12000},
-      {icon:'⚡', name:'Zeus', rarity:'mythic', earnings:18000},
-      {icon:'👾', name:'Glitch', rarity:'secret', earnings:50000},
-      {icon:'🌌', name:'Galaxia', rarity:'secret', earnings:100000},
-      {icon:'💎', name:'Diamante', rarity:'secret', earnings:250000},
-      {icon:'👁️', name:'Illuminati', rarity:'secret', earnings:500000},
-      {icon:'👑', name:'EL REY OG', rarity:'og', earnings:2000000}
-    ]
-  };
-
-  const rebirthCosts = [1000000, 15000000, 100000000, 750000000, 3000000000];
+(function() {
+  'use strict';
   
-  // ESTADO GLOBAL
-  let state = {
-    money: 10,
-    rb: 0,
-    mult: 1,
-    pets: [],
-    discovered: [],
-    priceN: 10,
-    priceS: 500
-  };
+  // ESPERAR A QUE TODO EL HTML ESTÉ CARGADO
+  window.addEventListener('DOMContentLoaded', function() {
+    initGame();
+  });
 
-  let isSpecial = false;
+  function initGame() {
+    // CONFIGURACIÓN DE DATOS - TUS PETS
+    window.petsConfig = {
+      normal: [
+        {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:5},
+        {icon:'🐶', name:'Perro Fiel', rarity:'common', earnings:12},
+        {icon:'🐱', name:'Gato Curioso', rarity:'common', earnings:15},
+        {icon:'🐰', name:'Conejo', rarity:'common', earnings:20},
+        {icon:'🐥', name:'Pollito', rarity:'common', earnings:25},
+        {icon:'🦊', name:'Zorro', rarity:'rare', earnings:80},
+        {icon:'🐻', name:'Oso', rarity:'rare', earnings:110},
+        {icon:'🐼', name:'Panda', rarity:'rare', earnings:150},
+        {icon:'🐨', name:'Koala', rarity:'rare', earnings:200},
+        {icon:'🐯', name:'Tigre', rarity:'epic', earnings:450},
+        {icon:'🦁', name:'León', rarity:'epic', earnings:600},
+        {icon:'🐺', name:'Lobo', rarity:'epic', earnings:800}
+      ],
+      special: [
+        {icon:'🦁', name:'León Majestuoso', rarity:'rare', earnings:200},
+        {icon:'🦄', name:'Unicornio Místico', rarity:'god', earnings:650},
+        {icon:'🐲', name:'Dragón Ancestral', rarity:'god', earnings:1500},
+        {icon:'🦖', name:'T-Rex OG', rarity:'og', earnings:6000},
+        {icon:'🦄', name:'Unicornio', rarity:'legendary', earnings:2500},
+        {icon:'🐲', name:'Dragón', rarity:'legendary', earnings:3500},
+        {icon:'🔱', name:'Poseidón', rarity:'mythic', earnings:8000},
+        {icon:'🔥', name:'Fénix', rarity:'mythic', earnings:12000},
+        {icon:'⚡', name:'Zeus', rarity:'mythic', earnings:18000},
+        {icon:'👾', name:'Glitch', rarity:'secret', earnings:50000},
+        {icon:'🌌', name:'Galaxia', rarity:'secret', earnings:100000},
+        {icon:'💎', name:'Diamante', rarity:'secret', earnings:250000},
+        {icon:'👁️', name:'Illuminati', rarity:'secret', earnings:500000},
+        {icon:'👑', name:'EL REY OG', rarity:'og', earnings:2000000}
+      ]
+    };
 
-  // INICIALIZAR AL CARGAR LA PÁGINA
-  function init() {
-    load();
-    // Event listeners para todos los botones
-    document.getElementById('closeHatchBtn').onclick = closeHatch;
-    document.getElementById('buyEggBtn').onclick = openEgg;
-    document.getElementById('rebirthBtn').onclick = doRebirth;
-    document.getElementById('normalBtn').onclick = () => setEgg(false);
-    document.getElementById('specialBtn').onclick = () => setEgg(true);
-    document.getElementById('tabPetsBtn').onclick = () => switchTab('pets');
-    document.getElementById('tabIndexBtn').onclick = () => switchTab('index');
-  }
-
-  // GUARDADO/LOAD
-  function save() { 
-    localStorage.setItem('PetSimPro_GlobalSave', JSON.stringify(state)); 
-  }
-
-  function load() {
-    const data = localStorage.getItem('PetSimPro_GlobalSave');
-    if (data) {
-      state = JSON.parse(data);
-    }
-    updateUI();
-  }
-
-  // ACTUALIZAR INTERFAZ
-  function updateUI() {
-    document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
-    document.getElementById('rbLevel').innerText = state.rb;
-    document.getElementById('rbMult').innerText = state.mult.toFixed(2);
-    document.getElementById('priceN').innerText = state.priceN.toLocaleString();
-    document.getElementById('priceS').innerText = state.priceS.toLocaleString();
+    window.rebirthCosts = [1000000, 15000000, 100000000, 750000000, 3000000000];
     
-    const rbBtn = document.getElementById('rebirthBtn');
-    if (state.rb >= 5) {
-      rbBtn.innerText = "⭐ MÁXIMO NIVEL ALCANZADO";
-      rbBtn.disabled = true;
-    } else {
-      let cost = rebirthCosts[state.rb];
-      rbBtn.innerText = `⚡ REBIRTH ${state.rb+1} ($${cost.toLocaleString()})`;
-      rbBtn.disabled = state.money < cost;
+    // ESTADO DEL JUEGO
+    window.state = {
+      money: 10,
+      rb: 0,
+      mult: 1,
+      pets: [],
+      discovered: [],
+      priceN: 10,
+      priceS: 500
+    };
+
+    window.isSpecial = false;
+
+    // CARGAR Y CONFIGURAR
+    loadGame();
+    setupEventListeners();
+    updateUI();
+    startIncomeLoop();
+  }
+
+  function loadGame() {
+    try {
+      const data = localStorage.getItem('PetSimPro_GlobalSave');
+      if (data) {
+        window.state = JSON.parse(data);
+      }
+    } catch(e) {
+      console.log('No se pudo cargar el guardado');
     }
-    renderPets();
   }
 
-  // SELECCIONAR TIPO DE HUEVO
-  function setEgg(special) { 
-    isSpecial = special; 
-    document.getElementById('normalBtn').classList.toggle('active', !special); 
-    document.getElementById('specialBtn').classList.toggle('active', special); 
+  function saveGame() {
+    localStorage.setItem('PetSimPro_GlobalSave', JSON.stringify(window.state));
   }
 
-  // ABRIR HUEVO (HATCH FUNCIONA)
-  function openEgg() {
-    let cost = isSpecial ? state.priceS : state.priceN;
-    if (state.money < cost) {
+  function updateUI() {
+    try {
+      const moneyEl = document.getElementById('money');
+      if (moneyEl) moneyEl.innerText = Math.floor(window.state.money).toLocaleString();
+      
+      const rbLevelEl = document.getElementById('rbLevel');
+      if (rbLevelEl) rbLevelEl.innerText = window.state.rb;
+      
+      const rbMultEl = document.getElementById('rbMult');
+      if (rbMultEl) rbMultEl.innerText = window.state.mult.toFixed(2);
+      
+      const priceNEl = document.getElementById('priceN');
+      if (priceNEl) priceNEl.innerText = window.state.priceN.toLocaleString();
+      
+      const priceSEl = document.getElementById('priceS');
+      if (priceSEl) priceSEl.innerText = window.state.priceS.toLocaleString();
+      
+      updateRebirthButton();
+      renderPets();
+    } catch(e) {}
+  }
+
+  function setupEventListeners() {
+    const elements = {
+      closeHatchBtn: document.getElementById('closeHatchBtn'),
+      buyEggBtn: document.getElementById('buyEggBtn'),
+      rebirthBtn: document.getElementById('rebirthBtn'),
+      normalBtn: document.getElementById('normalBtn'),
+      specialBtn: document.getElementById('specialBtn'),
+      tabPetsBtn: document.getElementById('tabPetsBtn'),
+      tabIndexBtn: document.getElementById('tabIndexBtn')
+    };
+
+    if (elements.closeHatchBtn) elements.closeHatchBtn.onclick = closeHatch;
+    if (elements.buyEggBtn) elements.buyEggBtn.onclick = openEgg;
+    if (elements.rebirthBtn) elements.rebirthBtn.onclick = doRebirth;
+    if (elements.normalBtn) elements.normalBtn.onclick = () => setEgg(false);
+    if (elements.specialBtn) elements.specialBtn.onclick = () => setEgg(true);
+    if (elements.tabPetsBtn) elements.tabPetsBtn.onclick = () => switchTab('pets');
+    if (elements.tabIndexBtn) elements.tabIndexBtn.onclick = () => switchTab('index');
+  }
+
+  function setEgg(special) {
+    window.isSpecial = special;
+    const normalBtn = document.getElementById('normalBtn');
+    const specialBtn = document.getElementById('specialBtn');
+    if (normalBtn) normalBtn.classList.toggle('active', !special);
+    if (specialBtn) specialBtn.classList.toggle('active', special);
+  }
+
+  window.openEgg = function() {
+    let cost = window.isSpecial ? window.state.priceS : window.state.priceN;
+    if (window.state.money < cost) {
       alert('¡No tienes suficiente dinero!');
       return;
     }
     
-    state.money -= cost;
-    if (isSpecial) state.priceS = Math.floor(state.priceS * 1.35);
-    else state.priceN = Math.floor(state.priceN * 1.28);
+    window.state.money -= cost;
+    if (window.isSpecial) window.state.priceS = Math.floor(window.state.priceS * 1.35);
+    else window.state.priceN = Math.floor(window.state.priceN * 1.28);
 
-    const pool = isSpecial ? petsConfig.special : petsConfig.normal;
+    const pool = window.isSpecial ? window.petsConfig.special : window.petsConfig.normal;
     const pet = pool[Math.floor(Math.random() * pool.length)];
-    state.pets.push({...pet, id: Date.now()});
+    window.state.pets.push({...pet, id: Date.now()});
     
-    if (!state.discovered.includes(pet.name)) {
-      state.discovered.push(pet.name);
+    if (!window.state.discovered.includes(pet.name)) {
+      window.state.discovered.push(pet.name);
     }
 
     playHatchAnimation(pet);
-    save();
+    saveGame();
     updateUI();
-  }
+  };
 
-  // ANIMACIÓN DEL HATCH
-  function playHatchAnimation(pet) {
+  window.playHatchAnimation = function(pet) {
     const overlay = document.getElementById('hatchOverlay');
     const egg = document.getElementById('hatchEgg');
     const icon = document.getElementById('hatchedPetIcon');
+    
+    if (!overlay || !egg || !icon) return;
     
     overlay.style.display = 'flex';
     egg.style.display = 'block';
@@ -143,34 +171,72 @@
         egg.style.display = 'none';
         icon.style.display = 'block';
         icon.innerText = pet.icon;
-        document.getElementById('hatchedPetName').innerText = pet.name;
-        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings * state.mult).toLocaleString()}/s`;
+        const nameEl = document.getElementById('hatchedPetName');
+        const infoEl = document.getElementById('hatchedPetInfo');
+        if (nameEl) nameEl.innerText = pet.name;
+        if (infoEl) infoEl.innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings * window.state.mult).toLocaleString()}/s`;
       }, 600);
     }, 1500);
-  }
+  };
 
-  // CERRAR HATCH
-  function closeHatch() {
+  window.closeHatch = function() {
     const overlay = document.getElementById('hatchOverlay');
     const egg = document.getElementById('hatchEgg');
     const icon = document.getElementById('hatchedPetIcon');
-    overlay.style.display = 'none';
-    egg.className = '';
-    egg.style.display = 'block';
-    icon.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (egg) {
+      egg.className = '';
+      egg.style.display = 'block';
+    }
+    if (icon) icon.style.display = 'none';
+  };
+
+  window.sellPet = function(id) {
+    let idx = window.state.pets.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    window.state.money += window.state.pets[idx].earnings * 15;
+    window.state.pets.splice(idx, 1);
+    saveGame();
+    updateUI();
+  };
+
+  // resto de funciones igual...
+  window.doRebirth = function() {
+    if (window.state.rb >= 5 || window.state.money < window.rebirthCosts[window.state.rb]) return;
+    window.state.rb++;
+    window.state.mult *= 4;
+    window.state.money = 10;
+    window.state.pets = [];
+    window.state.priceN = 10;
+    window.state.priceS = 500;
+    saveGame();
+    updateUI();
+    alert("¡REBIRTH COMPLETADO! Ganancias x4.");
+  };
+
+  function updateRebirthButton() {
+    const btn = document.getElementById('rebirthBtn');
+    if (!btn) return;
+    if (window.state.rb >= 5) {
+      btn.innerText = "⭐ MÁXIMO NIVEL ALCANZADO";
+      btn.disabled = true;
+    } else {
+      let cost = window.rebirthCosts[window.state.rb];
+      btn.innerText = `⚡ REBIRTH ${window.state.rb+1} ($${cost.toLocaleString()})`;
+      btn.disabled = window.state.money < cost;
+    }
   }
 
-  // MOSTRAR MASCOTAS
   function renderPets() {
     const list = document.getElementById('petList');
+    if (!list) return;
     list.innerHTML = '';
-    state.pets.forEach(p => {
+    window.state.pets.forEach(p => {
       const div = document.createElement('div');
       div.className = `pet ${p.rarity}`;
       div.innerHTML = `
         <span>${p.icon} ${p.name}</span>
-        <span>
-          $${(p.earnings * state.mult).toLocaleString()}/s 
+        <span>$${(p.earnings * window.state.mult).toLocaleString()}/s 
           <button class="sellBtn" onclick="sellPet(${p.id})">Vender</button>
         </span>
       `;
@@ -178,62 +244,15 @@
     });
   }
 
-  // VENDER MASCOTA
-  function sellPet(id) {
-    let idx = state.pets.findIndex(p => p.id === id);
-    if (idx === -1) return;
-    state.money += state.pets[idx].earnings * 15;
-    state.pets.splice(idx, 1);
-    save(); 
-    updateUI();
+  function startIncomeLoop() {
+    setInterval(() => {
+      let income = window.state.pets.reduce((total, pet) => total + pet.earnings, 0) * window.state.mult;
+      if (income > 0) {
+        window.state.money += income;
+        updateUI();
+      }
+    }, 1000);
   }
 
-  // REBIRTH
-  function doRebirth() {
-    if (state.rb >= 5 || state.money < rebirthCosts[state.rb]) return;
-    state.rb++;
-    state.mult *= 4;
-    state.money = 10;
-    state.pets = [];
-    state.priceN = 10;
-    state.priceS = 500;
-    save(); 
-    updateUI();
-    alert("¡REBIRTH COMPLETADO! Ganancias x4.");
-  }
-
-  // CAMBIAR PESTAÑAS
-  function switchTab(tab) {
-    document.getElementById('tabPets').style.display = tab === 'pets' ? 'flex' : 'none';
-    document.getElementById('tabIndex').style.display = tab === 'index' ? 'block' : 'none';
-    document.getElementById('tabPetsBtn').classList.toggle('active', tab === 'pets');
-    document.getElementById('tabIndexBtn').classList.toggle('active', tab === 'index');
-    if (tab === 'index') renderIndex();
-  }
-
-  // INDEX DE MASCOTAS
-  function renderIndex() {
-    const list = document.getElementById('indexList');
-    list.innerHTML = '';
-    [...petsConfig.normal, ...petsConfig.special].forEach(p => {
-      const discovered = state.discovered.includes(p.name);
-      const div = document.createElement('div');
-      div.className = `pet ${p.rarity}`;
-      div.style.opacity = discovered ? '1' : '0.4';
-      div.innerHTML = `<span>${discovered ? p.icon : '❓'} ${p.name}</span><span>${p.rarity.toUpperCase()}</span>`;
-      list.appendChild(div);
-    });
-  }
-
-  // BUCLE PRINCIPAL - GANANCIAS POR SEGUNDO
-  setInterval(() => {
-    let income = state.pets.reduce((total, pet) => total + pet.earnings, 0) * state.mult;
-    if (income > 0) {
-      state.money += income;
-      updateUI();
-    }
-  }, 1000);
-
-  // INICIAR CUANDO CARGA LA PÁGINA
-  window.addEventListener('load', init);
+})();
 </script>
