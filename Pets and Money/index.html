@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pets and Money</title>
+<title>Pet Simulator Ultra - Compact Edition</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -310,7 +310,7 @@
 </div>
 
 <script>
-  // TODAS LAS MASCOTAS CON GANANCIAS REDUCIDAS
+  // SIN GUARDADO - SIEMPRE NUEVO JUEGO
   const petsConfig = {
     normal: [
       {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:2},
@@ -346,10 +346,11 @@
 
   const rebirthCosts = [500000, 2000000, 8000000, 25000000, 75000000];
   
+  // SIEMPRE ESTADO INICIAL
   let state = {
     money: 10,
     rb: 0,
-    mult: 1,
+    mult: 1.0,
     pets: [],
     discovered: [],
     priceN: 10,
@@ -357,13 +358,6 @@
   };
 
   let isSpecial = false;
-
-  function save() { localStorage.setItem('PetSimCompact', JSON.stringify(state)); }
-  function load() {
-    const data = localStorage.getItem('PetSimCompact');
-    if(data) state = JSON.parse(data);
-    updateUI();
-  }
 
   function updateUI() {
     document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
@@ -395,8 +389,8 @@
     if(state.money < cost) { alert('¡Sin dinero!'); return; }
     state.money -= cost;
     
-    if(isSpecial) state.priceS = Math.floor(state.priceS * 1.25); // MENOS agresivo
-    else state.priceN = Math.floor(state.priceN * 1.15); // MENOS agresivo
+    if(isSpecial) state.priceS = Math.floor(state.priceS * 1.25);
+    else state.priceN = Math.floor(state.priceN * 1.15);
 
     const pool = isSpecial ? petsConfig.special : petsConfig.normal;
     const pet = pool[Math.floor(Math.random() * pool.length)];
@@ -404,7 +398,6 @@
     
     if(!state.discovered.includes(pet.name)) state.discovered.push(pet.name);
     playHatchAnimation(pet);
-    save();
     updateUI();
   }
 
@@ -449,9 +442,8 @@
   function sellPet(id) {
     let idx = state.pets.findIndex(p => p.id === id);
     if(idx !== -1) {
-      state.money += state.pets[idx].earnings * 10; // MENOS dinero por venta
+      state.money += state.pets[idx].earnings * 10;
       state.pets.splice(idx, 1);
-      save(); 
       updateUI();
     }
   }
@@ -459,12 +451,11 @@
   function doRebirth() {
     if(state.rb >= 5 || state.money < rebirthCosts[state.rb]) return;
     state.rb++;
-    state.mult *= 1.8; // REBIRTH MENOS potente (x1.8 en vez de x4)
+    state.mult *= 1.8;
     state.money = 10;
     state.pets = [];
     state.priceN = 10;
     state.priceS = 500;
-    save(); 
     updateUI();
     alert("¡REBIRTH! x1.8 ganancias");
   }
@@ -497,6 +488,7 @@
     document.getElementById('hatchedPetIcon').style.display = 'none';
   };
 
+  // GANANCIAS POR SEGUNDO
   setInterval(() => {
     let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0) * state.mult;
     if(totalIncome > 0) {
@@ -505,7 +497,20 @@
     }
   }, 1000);
 
-  window.onload = function() { load(); };
+  // SIEMPRE INICIO LIMPIO
+  window.onload = function() { 
+    state = {
+      money: 10,
+      rb: 0,
+      mult: 1.0,
+      pets: [],
+      discovered: [],
+      priceN: 10,
+      priceS: 500
+    };
+    updateUI();
+  };
 </script>
 </body>
 </html>
+
