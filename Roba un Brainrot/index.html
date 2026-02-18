@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Steal a Brainrot Game</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #222;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin: 10px;
+  }
+  #gameContainer {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    border: 3px solid #fff;
+    background-color: #444;
+    overflow: hidden;
+  }
+  .player, .item, .enemy {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .player {
+    background-color: #0f0;
+    border-radius: 50%;
+  }
+  .item {
+    background-color: #ff0;
+    border-radius: 50%;
+  }
+  .enemy {
+    background-color: #f00;
+    border-radius: 50%;
+  }
+  #score {
+    margin: 10px;
+    font-size: 20px;
+  }
+  #timer {
+    margin: 10px;
+    font-size: 20px;
+  }
+  #startBtn {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Steal a Brainrot</h1>
+<div id="score">Score: 0</div>
+<div id="timer">Time: 60</div>
+<button id="startBtn">Start Game</button>
+<div id="gameContainer" style="display:none;">
+  <div class="player" id="player">🤠</div>
+  <div class="item" id="item">🧠</div>
+  <!-- Enemies will be added dynamically -->
+</div>
+
+<script>
+const startBtn = document.getElementById('startBtn');
+const gameContainer = document.getElementById('gameContainer');
+const playerEl = document.getElementById('player');
+const itemEl = document.getElementById('item');
+const scoreEl = document.getElementById('score');
+const timerEl = document.getElementById('timer');
+
+let score = 0;
+let gameTime = 60; // seconds
+let gameInterval;
+let moveEnemiesInterval;
+let countdownInterval;
+
+const playerSpeed = 5;
+let playerPos = { x: 0, y: 0 };
+let keys = {};
+
+const enemiesCount = 3;
+let enemies = [];
+
+startBtn.addEventListener('click', startGame);
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+function startGame() {
+  startBtn.style.display = 'none';
+  gameContainer.style.display = 'block';
+
+  // Reset score and timer
+  score = 0;
+  scoreEl.textContent = 'Score: ' + score;
+  gameTime = 60;
+  timerEl.textContent = 'Time: ' + gameTime;
+
+  // Position player at center
+  playerPos.x = (gameContainer.clientWidth - playerEl.offsetWidth) / 2;
+  playerPos.y = (gameContainer.clientHeight - playerEl.offsetHeight) / 2;
+  updatePosition(playerEl, playerPos);
+
+  // Place item at random position
+  positionAtRandom(itemEl);
+
+  // Create enemies
+  enemies = [];
+  for(let i=0; i<enemiesCount; i++) {
+    const enemy = document.createElement('div');
+    enemy.className = 'enemy';
+    enemy.textContent = '👾';
+    gameContainer.appendChild(enemy);
+    positionAtRandom(enemy);
+    enemies.push({ el: enemy, pos: { x: 0, y: 0 } });
+  }
+
+  // Start game loops
+  document.getElementById('gameLoop') && clearInterval(document.getElementById('gameLoop'));
+  gameInterval = setInterval(updateGame, 20); // 50 FPS
+  moveEnemiesInterval = setInterval(moveEnemies, 1000);
+  countdownInterval = setInterval(updateTimer, 1000);
+}
+
+function updateGame() {
+  // Move player
+  if(keys['ArrowUp']) playerPos.y -= playerSpeed;
+  if(keys['ArrowDown']) playerPos.y += playerSpeed;
+  if(keys['ArrowLeft']) playerPos.x -= playerSpeed;
+  if(keys['ArrowRight']) playerPos.x += playerSpeed;
+
+  // Keep within bounds
+  playerPos.x = Math.max(0, Math.min(gameContainer.clientWidth - playerEl.offsetWidth, playerPos.x));
+  playerPos.y = Math.max(0, Math.min(gameContainer.clientHeight - playerEl.offsetHeight, playerPos.y));
+
+  updatePosition(playerEl, playerPos);
+
+  // Check collision with item
+  if(isColliding(playerEl, itemEl)) {
+    score++;
+    scoreEl.textContent = 'Score: ' + score;
+    positionAtRandom(itemEl);
+  }
+
+  // Check collision with enemies
+  for(let enemy of enemies) {
+    if(isColliding(playerEl, enemy.el)) {
+      // Reset player position
+      playerPos.x = (gameContainer.clientWidth - playerEl.offsetWidth) / 2;
+      playerPos.y = (gameContainer.clientHeight - playerEl.offsetHeight) / 2;
+      updatePosition(playerEl, playerPos);
+    }
+  }
+}
+
+function moveEnemies() {
+  enemies.forEach(enemy => {
+    // Move to random position
+    positionAtRandom(enemy.el);
+  });
+}
+
+function updatePosition(element, pos) {
+  element.style.left = pos.x + 'px';
+  element.style.top = pos.y + 'px';
+}
+
+function positionAtRandom(element) {
+  const maxX = gameContainer.clientWidth - element.offsetWidth;
+  const maxY = gameContainer.clientHeight - element.offsetHeight;
+  const randX = Math.random() * maxX;
+  const randY = Math.random() * maxY;
+  element.style.left = randX + 'px';
+  element.style.top = randY + 'px';
+}
+
+function isColliding(el1, el2) {
+  const rect1 = el1.getBoundingClientRect();
+  const rect2 = el2.getBoundingClientRect();
+  return !(
+    rect1.right < rect2.left ||
+    rect1.left > rect2.right ||
+    rect1.bottom < rect2.top ||
+    rect1.top > rect2.bottom
+  );
+}
+
+function updateTimer() {
+  gameTime--;
+  timerEl.textContent = 'Time: ' + gameTime;
+  if(gameTime <= 0) {
+    endGame();
+  }
+}
+
+function endGame() {
+  clearInterval(gameInterval);
+  clearInterval(moveEnemiesInterval);
+  clearInterval(countdownInterval);
+  alert('Game Over! Your score: ' + score);
+  startBtn.style.display = 'block';
+  gameContainer.style.display = 'none';
+  // Remove enemies
+  enemies.forEach(enemy => gameContainer.removeChild(enemy.el));
+  enemies = [];
+}
+</script>
+
+</body>
+</html>
