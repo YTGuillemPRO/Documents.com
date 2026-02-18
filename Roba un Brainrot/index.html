@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Roblox - Steal a Brainrot Clone</title>
+<title>Roblox - Plataformas y Salto</title>
 <style>
   body { margin: 0; overflow: hidden; }
   canvas { display: block; }
@@ -13,17 +13,17 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
 <script>
 let scene, camera, renderer;
-let player, item, enemies = [];
+let player, platforms = [], enemies = [], clock = new THREE.Clock();
 let keys = {};
-let clock = new THREE.Clock();
-let score = 0;
+let yVelocity = 0;
+let isOnGround = false;
 
 init();
 animate();
 
 function init() {
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 200);
   camera.position.set(0, 10, 20);
   camera.lookAt(0, 0, 0);
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,9 +32,7 @@ function init() {
 
   // Luz
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  dirLight.position.set(10, 20, 10);
-  scene.add(dirLight);
+  scene.add(new THREE.DirectionalLight(0xffffff, 0.8)).position.set(10,20,10);
 
   // Suelo
   const groundGeo = new THREE.PlaneGeometry(50, 50);
@@ -43,26 +41,39 @@ function init() {
   ground.rotation.x = -Math.PI/2;
   scene.add(ground);
 
+  // Plataforma
+  function createPlatform(x, y, z, w, h, d) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const plat = new THREE.Mesh(geo, mat);
+    plat.position.set(x, y, z);
+    scene.add(plat);
+    platforms.push(plat);
+  }
+  createPlatform(0, 0.5, 0, 10, 1, 10); // base
+  createPlatform(12, 3, 0, 4, 0.5, 4); // pasarela alta
+
   // Personaje
-  const playerGeo = new THREE.BoxGeometry(1, 2, 1);
-  const playerMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-  player = new THREE.Mesh(playerGeo, playerMat);
+  const pGeo = new THREE.BoxGeometry(1, 2, 1);
+  const pMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  player = new THREE.Mesh(pGeo, pMat);
   player.position.y = 1;
   scene.add(player);
 
   // Objeto para robar
-  const itemGeo = new THREE.SphereGeometry(0.5, 16, 16);
-  const itemMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-  item = new THREE.Mesh(itemGeo, itemMat);
-  positionAtRandom(item);
-  scene.add(item);
+  const objGeo = new THREE.SphereGeometry(0.4, 16, 16);
+  const objMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+  const obj = new THREE.Mesh(objGeo, objMat);
+  obj.position.set(8, 2.5, 0);
+  scene.add(obj);
+  window.objectToSteal = obj;
 
   // Enemigos
-  for (let i=0; i<4; i++) {
-    const enemyGeo = new THREE.BoxGeometry(1, 2, 1);
-    const enemyMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const enemy = new THREE.Mesh(enemyGeo, enemyMat);
-    positionAtRandom(enemy);
+  for(let i=0; i<2; i++) {
+    const eGeo = new THREE.BoxGeometry(1, 2, 1);
+    const eMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const enemy = new THREE.Mesh(eGeo, eMat);
+    enemy.position.set(Math.random()*20-10,1,Math.random()*20-10);
     scene.add(enemy);
     enemies.push({ mesh: enemy, dir: new THREE.Vector3(Math.random()*2-1, 0, Math.random()*2-1).normalize() });
   }
@@ -82,33 +93,56 @@ function animate() {
   const delta = clock.getDelta();
 
   // Movimiento jugador
-  const speed = 5;
-  if (keys['w']) player.position.z -= speed * delta;
-  if (keys['s']) player.position.z += speed * delta;
-  if (keys['a']) player.position.x -= speed * delta;
-  if (keys['d']) player.position.x += speed * delta;
-  // Limites
-  player.position.x = Math.max(-24, Math.min(24, player.position.x));
-  player.position.z = Math.max(-24, Math.min(24, player.position.z));
+  const speed = 8;
+  if(keys['w']) player.position.z -= speed * delta;
+  if(keys['s']) player.position.z += speed * delta;
+  if(keys['a']) player.position.x -= speed * delta;
+  if(keys['d']) player.position.x += speed * delta;
 
-  // Mover enemigos
-  enemies.forEach(e => {
-    e.mesh.position.add(e.dir.clone().multiplyScalar(2 * delta));
-    if (e.mesh.position.x > 23 || e.mesh.position.x < -23) e.dir.x *= -1;
-    if (e.mesh.position.z > 23 || e.mesh.position.z < -23) e.dir.z *= -1;
-  });
-
-  // Colisión con objeto
-  if (player.position.distanceTo(item.position) < 1.2) {
-    score++;
-    alert('¡Robaste el objeto! Puntos: ' + score);
-    positionAtRandom(item);
+  // Saltar
+  if(keys[' ']) {
+    if(isOnGround) {
+      yVelocity = 8; // fuerza de salto
+      isOnGround = false;
+    }
   }
 
-  // Colisión con enemigos
-  for (let e of enemies) {
-    if (player.position.distanceTo(e.mesh.position) < 1.5) {
-      alert('Te atraparon!');
+  // Gravedad
+  yVelocity -= 9.8 * delta;
+  player.position.y += yVelocity * delta;
+
+  // Comprobar colisiones con plataformas y suelo
+  isOnGround = false;
+  for(let plat of platforms) {
+    if(hitTest(player, plat)) {
+      player.position.y = plat.position.y + 1;
+      yVelocity = 0;
+      isOnGround = true;
+    }
+  }
+  if(player.position.y < 1) {
+    player.position.y = 1;
+    yVelocity = 0;
+    isOnGround = true;
+  }
+
+  // Movimiento enemigos
+  enemies.forEach(e => {
+    e.mesh.position.add(e.dir.clone().multiplyScalar(2 * delta));
+    if(e.mesh.position.x > 20 || e.mesh.position.x < -20) e.dir.x *= -1;
+    if(e.mesh.position.z > 20 || e.mesh.position.z < -20) e.dir.z *= -1;
+  });
+
+  // Robar objeto
+  if(hitTest(player, window.objectToSteal)) {
+    alert('¡Robaste el Brainrot!');
+    window.objectToSteal.position.set(Math.random()*20-10, 2.5, Math.random()*20-10);
+  }
+
+  // Enemigos atrapando
+  for(let e of enemies) {
+    if(hitTest(player, e.mesh)) {
+      alert('¡Te atraparon!');
       player.position.set(0,1,0);
     }
   }
@@ -116,15 +150,16 @@ function animate() {
   // Cámara sigue al jugador
   camera.position.x = player.position.x + 10;
   camera.position.z = player.position.z + 10;
+  camera.position.y = player.position.y + 5;
   camera.lookAt(player.position);
 
   renderer.render(scene, camera);
 }
 
-function positionAtRandom(obj) {
-  obj.position.x = Math.random() * 40 - 20;
-  obj.position.z = Math.random() * 40 - 20;
-  obj.position.y = 1;
+function hitTest(obj1, obj2) {
+  const box1 = new THREE.Box3().setFromObject(obj1);
+  const box2 = new THREE.Box3().setFromObject(obj2);
+  return box1.intersectsBox(box2);
 }
 </script>
 </body>
