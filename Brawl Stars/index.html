@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Arena Stars</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<style>
+body{margin:0;font-family:Arial Black, sans-serif;overflow:hidden;background:#1e90ff;}
+.screen{position:absolute;width:100%;height:100%;display:none;}
+.active{display:block;}
+#bg{position:absolute;width:100%;height:100%;background:radial-gradient(circle,#4facfe,#003366);}
+#topBar{position:absolute;top:10px;right:20px;color:white;font-size:18px;}
+#playBtn{
+    position:absolute;bottom:110px;left:50%;
+    transform:translateX(-50%);
+    background:#ffcc00;padding:20px 80px;
+    border-radius:20px;font-size:28px;
+    cursor:pointer;box-shadow:0 6px 0 #cc9900;
+}
+#playBtn:active{transform:translateX(-50%) translateY(6px);box-shadow:none;}
+#bottomBar{
+    position:absolute;bottom:0;width:100%;
+    background:#111;color:white;
+    display:flex;justify-content:space-around;
+    padding:15px 0;
+}
+.menuBtn{cursor:pointer;}
+.menuBtn:hover{color:#ffcc00;}
+.panel{
+    position:absolute;top:15%;left:50%;
+    transform:translateX(-50%);
+    width:80%;height:65%;
+    background:white;border-radius:20px;
+    padding:20px;overflow:auto;
+}
+.closeBtn{position:absolute;top:10px;right:20px;cursor:pointer;font-size:20px;}
+#character3D{position:absolute;top:15%;width:100%;height:50%;pointer-events:none;}
+.progressBar{
+    width:100%;height:25px;background:#ddd;
+    border-radius:15px;margin-top:10px;
+}
+.progressFill{
+    height:100%;background:#ffcc00;
+    width:0%;border-radius:15px;
+}
+.reward{background:#eee;padding:10px;margin:10px;border-radius:10px;}
+button{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<!-- LOBBY -->
+<div id="lobby" class="screen active">
+    <div id="character3D"></div>
+    <div id="topBar">
+        💰 <span id="coins">100</span> |
+        💎 <span id="gems">10</span>
+    </div>
+    <div id="playBtn">JUGAR</div>
+    <div id="bottomBar">
+        <div class="menuBtn" onclick="openScreen('shop')">🛒 TIENDA</div>
+        <div class="menuBtn" onclick="openScreen('brawlers')">👤 BRAWLERS</div>
+        <div class="menuBtn" onclick="openScreen('pass')">🎟 PASS</div>
+    </div>
+</div>
+
+<!-- SHOP -->
+<div id="shop" class="screen">
+    <div class="panel">
+        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
+        <h2>Tienda</h2>
+        <p>Compra 50 monedas por 5 gemas</p>
+        <button onclick="buyCoins()">Comprar</button>
+    </div>
+</div>
+
+<!-- BRAWLERS -->
+<div id="brawlers" class="screen">
+    <div class="panel">
+        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
+        <h2>Brawlers</h2>
+        <p>Personaje actual: <span id="currentBrawler">Boxer</span></p>
+        <button onclick="changeBrawler()">Cambiar color</button>
+    </div>
+</div>
+
+<!-- BATTLE PASS -->
+<div id="pass" class="screen">
+    <div class="panel">
+        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
+        <h2>Battle Pass</h2>
+        <p>Nivel: <span id="passLevel">1</span></p>
+        <div class="progressBar">
+            <div id="progressFill" class="progressFill"></div>
+        </div>
+        <div class="reward">
+            Recompensa: +20 monedas
+            <button onclick="claimReward()">Reclamar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* DATOS */
+let coins=parseInt(localStorage.getItem("coins"))||100;
+let gems=parseInt(localStorage.getItem("gems"))||10;
+let passXP=parseInt(localStorage.getItem("passXP"))||0;
+let passLevel=parseInt(localStorage.getItem("passLevel"))||1;
+
+function save(){
+    localStorage.setItem("coins",coins);
+    localStorage.setItem("gems",gems);
+    localStorage.setItem("passXP",passXP);
+    localStorage.setItem("passLevel",passLevel);
+}
+
+function updateUI(){
+    document.getElementById("coins").textContent=coins;
+    document.getElementById("gems").textContent=gems;
+    document.getElementById("passLevel").textContent=passLevel;
+    document.getElementById("progressFill").style.width=(passXP%100)+"%";
+}
+updateUI();
+
+/* CAMBIO DE PANTALLAS */
+function openScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* TIENDA */
+function buyCoins(){
+    if(gems>=5){
+        gems-=5;
+        coins+=50;
+        save();updateUI();
+        alert("Compraste 50 monedas!");
+    } else alert("No tienes gemas suficientes");
+}
+
+/* BRAWLER */
+let colorIndex=0;
+function changeBrawler(){
+    colorIndex++;
+    body.material.color.setHex(Math.random()*0xffffff);
+}
+
+/* PASS */
+function claimReward(){
+    if(passXP>=100){
+        coins+=20;
+        passXP=0;
+        passLevel++;
+        save();updateUI();
+        alert("Recompensa reclamada!");
+    } else alert("Necesitas 100 XP");
+}
+
+/* JUGAR */
+document.getElementById("playBtn").onclick=function(){
+    passXP+=20;
+    save();updateUI();
+    alert("Jugaste una partida! +20 XP");
+};
+
+/* THREE PERSONAJE */
+let scene=new THREE.Scene();
+let camera=new THREE.PerspectiveCamera(75,window.innerWidth/(window.innerHeight*0.5),0.1,1000);
+let renderer=new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(window.innerWidth,window.innerHeight*0.5);
+document.getElementById("character3D").appendChild(renderer.domElement);
+camera.position.z=6;
+let light=new THREE.DirectionalLight(0xffffff,1);
+light.position.set(5,10,7);
+scene.add(light);
+let body=new THREE.Mesh(
+    new THREE.BoxGeometry(2,3,1.5),
+    new THREE.MeshPhongMaterial({color:0xff6600})
+);
+scene.add(body);
+function animate(){
+    requestAnimationFrame(animate);
+    body.rotation.y+=0.01;
+    body.position.y=Math.sin(Date.now()*0.003)*0.2;
+    renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
