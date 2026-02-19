@@ -1,192 +1,284 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Arena Stars</title>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<style>
-body{margin:0;font-family:Arial Black, sans-serif;overflow:hidden;background:#1e90ff;}
-.screen{position:absolute;width:100%;height:100%;display:none;}
-.active{display:block;}
-#bg{position:absolute;width:100%;height:100%;background:radial-gradient(circle,#4facfe,#003366);}
-#topBar{position:absolute;top:10px;right:20px;color:white;font-size:18px;}
-#playBtn{
-    position:absolute;bottom:110px;left:50%;
-    transform:translateX(-50%);
-    background:#ffcc00;padding:20px 80px;
-    border-radius:20px;font-size:28px;
-    cursor:pointer;box-shadow:0 6px 0 #cc9900;
-}
-#playBtn:active{transform:translateX(-50%) translateY(6px);box-shadow:none;}
-#bottomBar{
-    position:absolute;bottom:0;width:100%;
-    background:#111;color:white;
-    display:flex;justify-content:space-around;
-    padding:15px 0;
-}
-.menuBtn{cursor:pointer;}
-.menuBtn:hover{color:#ffcc00;}
-.panel{
-    position:absolute;top:15%;left:50%;
-    transform:translateX(-50%);
-    width:80%;height:65%;
-    background:white;border-radius:20px;
-    padding:20px;overflow:auto;
-}
-.closeBtn{position:absolute;top:10px;right:20px;cursor:pointer;font-size:20px;}
-#character3D{position:absolute;top:15%;width:100%;height:50%;pointer-events:none;}
-.progressBar{
-    width:100%;height:25px;background:#ddd;
-    border-radius:15px;margin-top:10px;
-}
-.progressFill{
-    height:100%;background:#ffcc00;
-    width:0%;border-radius:15px;
-}
-.reward{background:#eee;padding:10px;margin:10px;border-radius:10px;}
-button{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;}
-</style>
+    <meta charset="UTF-8">
+    <title>Brawl Stars Web 3D</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #000; }
+        canvas { display: block; }
+
+        /* UI CAPA SUPERIOR */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; /* Deja pasar clicks al canvas si es necesario */
+            z-index: 10;
+        }
+
+        .clickable { pointer-events: auto; cursor: pointer; }
+
+        /* LOBBY */
+        #top-bar {
+            position: absolute; top: 20px; right: 20px;
+            display: flex; gap: 20px; color: white; font-size: 24px;
+            text-shadow: 2px 2px #000;
+        }
+
+        #play-btn {
+            position: absolute; bottom: 120px; left: 50%;
+            transform: translateX(-50%);
+            background: #ffcc00; padding: 20px 80px;
+            border-radius: 20px; font-size: 40px;
+            border: 5px solid #000; box-shadow: 0 8px 0 #cc9900;
+        }
+
+        #bottom-menu {
+            position: absolute; bottom: 0; width: 100%;
+            height: 80px; background: rgba(0,0,0,0.8);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 4px solid #444;
+        }
+
+        .menu-item { color: white; font-size: 18px; }
+
+        /* BATTLE PASS MODAL */
+        #pass-modal {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; height: 70%;
+            background: linear-gradient(45deg, #1a1a1a, #333);
+            border: 5px solid #ffcc00; border-radius: 30px;
+            display: none; flex-direction: column; align-items: center;
+            padding: 20px; color: white;
+        }
+
+        .pass-row {
+            display: flex; overflow-x: auto; width: 100%;
+            gap: 20px; padding: 40px 0;
+        }
+
+        .tier-card {
+            min-width: 150px; height: 200px; background: #444;
+            border-radius: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; border: 3px solid #666;
+        }
+
+        /* HUD BATALLA */
+        #battle-hud {
+            position: absolute; top: 20px; left: 20px;
+            display: none;
+        }
+
+        #hp-bar {
+            width: 300px; height: 30px; background: #000;
+            border: 3px solid #fff; border-radius: 15px; overflow: hidden;
+        }
+
+        #hp-fill { width: 100%; height: 100%; background: #ff3333; }
+    </style>
 </head>
 <body>
 
-<div id="bg"></div>
-
-<!-- LOBBY -->
-<div id="lobby" class="screen active">
-    <div id="character3D"></div>
-    <div id="topBar">
-        💰 <span id="coins">100</span> |
-        💎 <span id="gems">10</span>
-    </div>
-    <div id="playBtn">JUGAR</div>
-    <div id="bottomBar">
-        <div class="menuBtn" onclick="openScreen('shop')">🛒 TIENDA</div>
-        <div class="menuBtn" onclick="openScreen('brawlers')">👤 BRAWLERS</div>
-        <div class="menuBtn" onclick="openScreen('pass')">🎟 PASS</div>
-    </div>
-</div>
-
-<!-- SHOP -->
-<div id="shop" class="screen">
-    <div class="panel">
-        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
-        <h2>Tienda</h2>
-        <p>Compra 50 monedas por 5 gemas</p>
-        <button onclick="buyCoins()">Comprar</button>
-    </div>
-</div>
-
-<!-- BRAWLERS -->
-<div id="brawlers" class="screen">
-    <div class="panel">
-        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
-        <h2>Brawlers</h2>
-        <p>Personaje actual: <span id="currentBrawler">Boxer</span></p>
-        <button onclick="changeBrawler()">Cambiar color</button>
-    </div>
-</div>
-
-<!-- BATTLE PASS -->
-<div id="pass" class="screen">
-    <div class="panel">
-        <div class="closeBtn" onclick="openScreen('lobby')">❌</div>
-        <h2>Battle Pass</h2>
-        <p>Nivel: <span id="passLevel">1</span></p>
-        <div class="progressBar">
-            <div id="progressFill" class="progressFill"></div>
+    <div id="ui-layer">
+        <!-- LOBBY -->
+        <div id="lobby-ui" style="display: block;">
+            <div id="top-bar">
+                <div style="color: #ffcc00;">💰 <span id="coins-val">0</span></div>
+                <div style="color: #00ffff;">💎 <span id="gems-val">0</span></div>
+            </div>
+            <div id="play-btn" class="clickable" onclick="startBattle()">¡JUGAR!</div>
+            <div id="bottom-menu" class="clickable">
+                <div class="menu-item" onclick="togglePass(true)">🎟 BRAWL PASS</div>
+                <div class="menu-item" onclick="alert('Tienda pronto')">🛒 TIENDA</div>
+                <div class="menu-item" onclick="location.reload()">🏠 INICIO</div>
+            </div>
         </div>
-        <div class="reward">
-            Recompensa: +20 monedas
-            <button onclick="claimReward()">Reclamar</button>
+
+        <!-- BATTLE PASS -->
+        <div id="pass-modal" class="clickable">
+            <h1 style="margin: 0; color: #ffcc00;">BRAWL PASS</h1>
+            <div class="pass-row" id="pass-list"></div>
+            <button onclick="togglePass(false)" style="padding: 10px 40px; cursor: pointer;">CERRAR</button>
+        </div>
+
+        <!-- HUD -->
+        <div id="battle-hud">
+            <div id="hp-bar"><div id="hp-fill"></div></div>
+            <h2 style="color: white; text-shadow: 2px 2px #000;">ENEMIGOS: <span id="enemy-count">0</span></h2>
         </div>
     </div>
-</div>
 
-<script>
-/* DATOS */
-let coins=parseInt(localStorage.getItem("coins"))||100;
-let gems=parseInt(localStorage.getItem("gems"))||10;
-let passXP=parseInt(localStorage.getItem("passXP"))||0;
-let passLevel=parseInt(localStorage.getItem("passLevel"))||1;
+    <script>
+        // --- CONFIGURACIÓN INICIAL ---
+        let coins = parseInt(localStorage.getItem("coins")) || 0;
+        let gems = parseInt(localStorage.getItem("gems")) || 0;
+        let xp = parseInt(localStorage.getItem("xp")) || 0;
 
-function save(){
-    localStorage.setItem("coins",coins);
-    localStorage.setItem("gems",gems);
-    localStorage.setItem("passXP",passXP);
-    localStorage.setItem("passLevel",passLevel);
-}
+        function updateUI() {
+            document.getElementById("coins-val").innerText = coins;
+            document.getElementById("gems-val").innerText = gems;
+        }
+        updateUI();
 
-function updateUI(){
-    document.getElementById("coins").textContent=coins;
-    document.getElementById("gems").textContent=gems;
-    document.getElementById("passLevel").textContent=passLevel;
-    document.getElementById("progressFill").style.width=(passXP%100)+"%";
-}
-updateUI();
+        // --- MOTOR 3D ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb); // Cielo azul claro
 
-/* CAMBIO DE PANTALLAS */
-function openScreen(id){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-/* TIENDA */
-function buyCoins(){
-    if(gems>=5){
-        gems-=5;
-        coins+=50;
-        save();updateUI();
-        alert("Compraste 50 monedas!");
-    } else alert("No tienes gemas suficientes");
-}
+        // LUZ (Muy importante para ver algo)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
 
-/* BRAWLER */
-let colorIndex=0;
-function changeBrawler(){
-    colorIndex++;
-    body.material.color.setHex(Math.random()*0xffffff);
-}
+        // SUELO
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(100, 100),
+            new THREE.MeshPhongMaterial({ color: 0x4caf50 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
 
-/* PASS */
-function claimReward(){
-    if(passXP>=100){
-        coins+=20;
-        passXP=0;
-        passLevel++;
-        save();updateUI();
-        alert("Recompensa reclamada!");
-    } else alert("Necesitas 100 XP");
-}
+        // JUGADOR
+        const player = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 2, 1),
+            new THREE.MeshPhongMaterial({ color: 0xffa500 })
+        );
+        player.position.y = 1;
+        scene.add(player);
 
-/* JUGAR */
-document.getElementById("playBtn").onclick=function(){
-    passXP+=20;
-    save();updateUI();
-    alert("Jugaste una partida! +20 XP");
-};
+        // --- LÓGICA DE JUEGO ---
+        let inBattle = false;
+        let enemies = [];
+        let bullets = [];
+        let hp = 100;
+        let keys = {};
 
-/* THREE PERSONAJE */
-let scene=new THREE.Scene();
-let camera=new THREE.PerspectiveCamera(75,window.innerWidth/(window.innerHeight*0.5),0.1,1000);
-let renderer=new THREE.WebGLRenderer({alpha:true});
-renderer.setSize(window.innerWidth,window.innerHeight*0.5);
-document.getElementById("character3D").appendChild(renderer.domElement);
-camera.position.z=6;
-let light=new THREE.DirectionalLight(0xffffff,1);
-light.position.set(5,10,7);
-scene.add(light);
-let body=new THREE.Mesh(
-    new THREE.BoxGeometry(2,3,1.5),
-    new THREE.MeshPhongMaterial({color:0xff6600})
-);
-scene.add(body);
-function animate(){
-    requestAnimationFrame(animate);
-    body.rotation.y+=0.01;
-    body.position.y=Math.sin(Date.now()*0.003)*0.2;
-    renderer.render(scene,camera);
-}
-animate();
-</script>
+        function startBattle() {
+            document.getElementById("lobby-ui").style.display = "none";
+            document.getElementById("battle-hud").style.display = "block";
+            inBattle = true;
+            hp = 100;
+            // Crear 5 enemigos
+            for(let i=0; i<5; i++) {
+                const en = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({color: 0xff0000}));
+                en.position.set(Math.random()*20-10, 0.5, Math.random()*20-10);
+                scene.add(en);
+                enemies.push(en);
+            }
+        }
+
+        function togglePass(show) {
+            const modal = document.getElementById("pass-modal");
+            modal.style.display = show ? "flex" : "none";
+            if(show) {
+                const list = document.getElementById("pass-list");
+                list.innerHTML = "";
+                for(let i=1; i<=10; i++) {
+                    const canClaim = xp >= i*100;
+                    list.innerHTML += `
+                        <div class="tier-card" style="border-color: ${canClaim?'#ffcc00':'#444'}">
+                            <h3>TIER ${i}</h3>
+                            <p>${i%2==0?'💎 10':'💰 50'}</p>
+                            ${canClaim ? `<button onclick="claim(${i})">RECLAMAR</button>` : '<small>BLOQUEADO</small>'}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function claim(i) {
+            if(i%2==0) gems += 10; else coins += 50;
+            localStorage.setItem("coins", coins);
+            localStorage.setItem("gems", gems);
+            updateUI();
+            alert("¡Recompensa obtenida!");
+            togglePass(true);
+        }
+
+        // --- CONTROLES ---
+        window.onkeydown = (e) => keys[e.key.toLowerCase()] = true;
+        window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
+        window.onmousedown = () => { if(inBattle) shoot(); };
+
+        function shoot() {
+            const b = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({color: 0xffff00}));
+            b.position.copy(player.position);
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(player.quaternion);
+            b.userData.dir = dir;
+            scene.add(b);
+            bullets.push(b);
+        }
+
+        // --- BUCLE DE RENDERIZADO ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!inBattle) {
+                // Vista Lobby
+                player.rotation.y += 0.01;
+                camera.position.set(0, 3, 6);
+                camera.lookAt(0, 1, 0);
+            } else {
+                // Movimiento Batalla
+                if(keys['w']) player.position.z -= 0.15;
+                if(keys['s']) player.position.z += 0.15;
+                if(keys['a']) player.position.x -= 0.15;
+                if(keys['d']) player.position.x += 0.15;
+
+                // Cámara estilo Brawl
+                camera.position.set(player.position.x, 10, player.position.z + 8);
+                camera.lookAt(player.position);
+
+                // Balas
+                bullets.forEach((b, i) => {
+                    b.position.add(b.userData.dir.clone().multiplyScalar(0.5));
+                    enemies.forEach((en, ei) => {
+                        if(b.position.distanceTo(en.position) < 1) {
+                            scene.remove(en); enemies.splice(ei, 1);
+                            scene.remove(b); bullets.splice(i, 1);
+                            coins += 10; updateUI();
+                        }
+                    });
+                });
+
+                // Enemigos
+                enemies.forEach(en => {
+                    let moveDir = new THREE.Vector3().subVectors(player.position, en.position).normalize();
+                    en.position.add(moveDir.multiplyScalar(0.05));
+                    if(en.position.distanceTo(player.position) < 1) {
+                        hp -= 0.5;
+                        document.getElementById("hp-fill").style.width = hp + "%";
+                    }
+                });
+
+                document.getElementById("enemy-count").innerText = enemies.length;
+
+                if(hp <= 0 || enemies.length === 0) {
+                    alert(hp <= 0 ? "¡DERROTA!" : "¡VICTORIA! +100 XP");
+                    if(hp > 0) { xp += 100; localStorage.setItem("xp", xp); }
+                    location.reload();
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Ajuste de ventana
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        animate();
+    </script>
 </body>
 </html>
