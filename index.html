@@ -109,7 +109,7 @@
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // db = getFirestore(app) // asegúrate de tener Firestore inicializado
-
+const BANNED_EMAILS = ["bcarrere@ietemple.cat", "gvarela@ietemple.cat"];
 const bannedRef = doc(db, "bannedUsers", user.email);
 const bannedSnap = await getDoc(bannedRef);
 
