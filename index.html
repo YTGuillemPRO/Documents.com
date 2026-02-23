@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Juegoss - sHome</title>
+  <title>Juegos - Home</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f6f8fa; }
     #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; }
@@ -105,21 +105,89 @@
 <section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
 
 <script type="module">
-// 🔎 COMPROBAR BANEOS EN FIRESTORE
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// db = getFirestore(app) // asegúrate de tener Firestore inicializado
+// 🔥 CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "inici-de-sessio.firebaseapp.com",
+  projectId: "inici-de-sessio",
+  appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// 📌 ELEMENTOS
+const loggedOut = document.getElementById("user-logged-out");
+const loggedIn = document.getElementById("user-logged-in");
+const welcomeMsg = document.getElementById("welcome-msg");
+
+// 🔐 LOGIN EMAIL
+document.getElementById("btn-login-email").onclick = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  if (!email || !pass) {
+    alert("Introduce email y contraseña.");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (error) {
+    if (error.code === "auth/user-not-found") {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+};
+
+// 🔐 LOGIN GOOGLE
+document.getElementById("btn-login-google").onclick = async () => {
+  await signInWithPopup(auth, provider);
+};
+
+// 🚪 LOGOUT
+document.getElementById("btn-logout").onclick = () => signOut(auth);
+
+// 🔎 BANEOS
 const BANNED_EMAILS = ["bcarrere@ietemple.cat", "gvarela@ietemple.cat"];
-const bannedRef = doc(db, "bannedUsers", user.email);
-const bannedSnap = await getDoc(bannedRef);
 
-if (bannedSnap.exists()) {
-  const reason = bannedSnap.data().reason || "Cuenta suspendida.";
-  alert("Tu cuenta ha sido suspendida.\nMotivo: " + reason);
-  await signOut(auth);        // cierra sesión
-  window.location.href = "https://www.google.com"; // redirige
-  return;                     // corta el flujo
-}
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+
+    // ❌ Baneo por email
+    if (BANNED_EMAILS.includes(user.email)) {
+      alert("Tu cuenta ha sido suspendida.");
+      await signOut(auth);
+      window.location.href = "https://www.google.com";
+      return;
+    }
+
+    // ✅ Usuario permitido
+    loggedOut.classList.add("hidden");
+    loggedIn.classList.remove("hidden");
+    welcomeMsg.textContent = "Conectado como: " + user.email;
+
+  } else {
+    loggedIn.classList.add("hidden");
+    loggedOut.classList.remove("hidden");
+  }
+});
+</script>
 </script>
 
 </body>
