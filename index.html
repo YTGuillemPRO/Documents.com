@@ -68,23 +68,36 @@
   </svg>
   Discord para actualizaciones
 </a>
-const BANNED_EMAILS = ["gvarela@ietemple.cat", "bcarrere@ietemple.cat"];
+// 🔴 LISTA DE CORREOS BANEADOS
+const BANNED_EMAILS = [
+  "gvarela@ietemple.cat",
+  "bcarrere@ietemple.cat"
+];
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    // Si el correo está en la lista negra, lo echamos inmediatamente
+
+    // 🚫 SISTEMA DE BAN
     if (BANNED_EMAILS.includes(user.email)) {
       alert("Tu cuenta ha sido suspendida.");
-      signOut(auth);
+      await signOut(auth);
       return;
     }
 
+    // ✅ Usuario permitido
     loggedOut.classList.add("hidden");
     loggedIn.classList.remove("hidden");
     welcomeMsg.textContent = "Conectado como: " + user.email;
-    // ... resto de tu código
+
+    localStorage.setItem("firebaseUser", JSON.stringify({
+      uid: user.uid,
+      email: user.email
+    }));
+
   } else {
-    // ... lógica de logout
+    loggedIn.classList.add("hidden");
+    loggedOut.classList.remove("hidden");
+    localStorage.removeItem("firebaseUser");
   }
 });
 <div id="auth-container">
