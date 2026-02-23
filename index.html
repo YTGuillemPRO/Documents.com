@@ -105,7 +105,6 @@
 <section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
 
 <script type="module">
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
@@ -134,6 +133,9 @@ const loggedOut = document.getElementById("user-logged-out");
 const loggedIn = document.getElementById("user-logged-in");
 const welcomeMsg = document.getElementById("welcome-msg");
 
+// 🔐 Baneo por email
+const BANNED_EMAILS = ["bcarrere@ietemple.cat", "gvarela@ietemple.cat"];
+
 // 🔐 LOGIN EMAIL
 document.getElementById("btn-login-email").onclick = async () => {
   const email = document.getElementById("email").value;
@@ -148,24 +150,32 @@ document.getElementById("btn-login-email").onclick = async () => {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch (error) {
     if (error.code === "auth/user-not-found") {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        alert("No se pudo crear la cuenta: " + e.message);
+      }
     } else {
-      alert("Error: " + error.message);
+      alert("Error de login: " + error.message);
     }
   }
 };
 
 // 🔐 LOGIN GOOGLE
 document.getElementById("btn-login-google").onclick = async () => {
-  await signInWithPopup(auth, provider);
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    alert("Error login Google: " + error.message);
+  }
 };
 
 // 🚪 LOGOUT
-document.getElementById("btn-logout").onclick = () => signOut(auth);
+document.getElementById("btn-logout").onclick = async () => {
+  await signOut(auth);
+};
 
-// 🔎 BANEOS
-const BANNED_EMAILS = ["bcarrere@ietemple.cat", "gvarela@ietemple.cat"];
-
+// 🔎 CONTROL DE SESIÓN Y BANEOS
 onAuthStateChanged(auth, async (user) => {
   if (user) {
 
@@ -187,7 +197,6 @@ onAuthStateChanged(auth, async (user) => {
     loggedOut.classList.remove("hidden");
   }
 });
-</script>
 </script>
 
 </body>
