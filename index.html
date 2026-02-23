@@ -2,123 +2,43 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Juegos - Home</title>
+  <title>Juegoss - Home</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f6f8fa; }
     #auth-container { background: #24292e; color: white; padding: 15px; text-align: center; }
     .login-box { display: inline-flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
     .login-box input { padding: 8px; border-radius: 4px; border: none; }
-    
     #btn-login-email { background:#4caf50;color:white;padding:8px 15px;border-radius:5px;border:none;cursor:pointer;font-weight:bold; }
-    
-    /* ESTILO BOTÓN GOOGLE */
-    #btn-login-google { 
-        background: white; 
-        color: #444; 
-        padding: 8px 15px; 
-        border-radius: 5px; 
-        border: none; 
-        cursor: pointer; 
-        font-weight: bold; 
-        display: flex; 
-        align-items: center; 
-        gap: 8px;
-        transition: background 0.2s;
-    }
-    #btn-login-google:hover { background: #eeeeee; }
+    #btn-login-google { background: white; color: #444; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
     #btn-login-google img { width: 18px; height: 18px; }
-
     #btn-logout { background:#f44336;color:white;margin-left:10px;border:none;padding:5px 10px;border-radius:3px;cursor:pointer; }
     .hidden { display:none; }
     section { padding:20px;border-bottom:1px solid #eee;background:white; }
     a { text-decoration:none;color:#0366d6;font-size:1.2rem; }
-    #dots-menu { cursor:pointer;margin:0 15px;font-size:24px;color:white; }
-
-    /* --- BOTÓN DISCORD --- */
-    #discord-floating-btn {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background-color: #5865F2;
-      color: white;
-      padding: 15px 25px;
-      border-radius: 15px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 18px;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
-      transition: all 0.3s ease;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      animation: slideIn 0.8s ease-out;
-    }
-    .discord-icon { width: 28px; height: 28px; fill: white; }
-    #discord-floating-btn:hover { transform: translateY(-5px) scale(1.05); background-color: #4752C4; }
-    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
 </head>
 <body>
 
-<a href="https://discord.gg/YGVcHmu4" target="_blank" id="discord-floating-btn">
-  <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
-    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.21h0A105.73,105.73,0,0,0,32.47,96.36,77.7,77.7,0,0,0,39.2,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.73,11.1,105.33,105.33,0,0,0,32.05-16.15h0C130.46,50.45,121.48,26.72,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5.07-12.67,11.43-12.67S54,46,53.86,53,48.74,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.07-12.67,11.44-12.67S96.23,46,96.11,53,91,65.69,84.69,65.69Z"/>
-  </svg>
-  Discord para actualizaciones
-</a>
-// 🔴 LISTA DE CORREOS BANEADOS
-const BANNED_EMAILS = [
-  "gvarela@ietemple.cat",
-  "bcarrere@ietemple.cat"
-];
+<a href="https://discord.gg/YGVcHmu4" target="_blank">Discord para actualizaciones</a>
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-
-    // 🚫 SISTEMA DE BAN
-    if (BANNED_EMAILS.includes(user.email)) {
-      alert("Tu cuenta ha sido suspendida.");
-      await signOut(auth);
-      return;
-    }
-
-    // ✅ Usuario permitido
-    loggedOut.classList.add("hidden");
-    loggedIn.classList.remove("hidden");
-    welcomeMsg.textContent = "Conectado como: " + user.email;
-
-    localStorage.setItem("firebaseUser", JSON.stringify({
-      uid: user.uid,
-      email: user.email
-    }));
-
-  } else {
-    loggedIn.classList.add("hidden");
-    loggedOut.classList.remove("hidden");
-    localStorage.removeItem("firebaseUser");
-  }
-});
 <div id="auth-container">
   <div id="user-logged-out" class="login-box">
     <input type="email" id="email" placeholder="Correo">
     <input type="password" id="password" placeholder="Contraseña">
     <button id="btn-login-email">Entrar / Registrar</button>
-    
     <button id="btn-login-google">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Google
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+      Google
     </button>
   </div>
 
   <div id="user-logged-in" class="hidden">
     <span id="welcome-msg"></span>
-    <span id="dots-menu">⋮</span>
     <button id="btn-logout">Cerrar Sesión</button>
   </div>
 </div>
 
+<!-- TODOS TUS JUEGOS -->
 <section><a href="Pets and Money/index.html">Pets and Money</a></section>
 <section><a href="juego2/index.html">No cliques el Botón</a></section>
 <section><a href="Roba un Brainrot/index.html">Steal a Brainrot</a></section>
@@ -127,9 +47,9 @@ onAuthStateChanged(auth, async (user) => {
 <section><a href="juego7/index.html">La serpiente</a></section>
 <section><a href="juego8/index.html">Rocket League</a></section>
 <section><a href="juego9/index.html">Speed per click</a></section>
-<section><a href="Minecraft/index.html">Minecraft</a></section> 
-<section><a href="juego11/index.html">Obby Practica</a></section> 
-<section><a href="juego12/index.html">Geometry Dash</a></section> 
+<section><a href="Minecraft/index.html">Minecraft</a></section>
+<section><a href="juego11/index.html">Obby Practica</a></section>
+<section><a href="juego12/index.html">Geometry Dash</a></section>
 <section><a href="juego13/index.html">1 V 1 Arco</a></section>
 <section><a href="juego14/index.html">Fornite</a></section>
 <section><a href="call-of-duty/index.html">Call of Duty</a></section>
@@ -151,8 +71,8 @@ onAuthStateChanged(auth, async (user) => {
 <section><a href="Golf Orbit/index.html">Golf Orbit</a></section>
 <section><a href="Pixel Blade/index.html">Espada Pixel</a></section>
 <section><a href="Flip a Coin/index.html">Flip a Coin</a></section>
-  <section><a href="1001 Juegos/index.html">1001 Juegos</a></section>
-  <section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
+<section><a href="1001 Juegos/index.html">1001 Juegos</a></section>
+<section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -162,10 +82,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  setPersistence,
-  browserLocalPersistence,
-  GoogleAuthProvider, // Importar Proveedor
-  signInWithPopup    // Importar Popup
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -177,73 +95,54 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider(); // Instancia del proveedor
+const provider = new GoogleAuthProvider();
 
-await setPersistence(auth, browserLocalPersistence);
+// 🔴 LISTA DE BANEADOS
+const BANNED_EMAILS = [
+  "gvarela@ietemple.cat",
+  "bcarrere@ietemple.cat"
+];
 
 const loggedOut = document.getElementById("user-logged-out");
 const loggedIn = document.getElementById("user-logged-in");
 const welcomeMsg = document.getElementById("welcome-msg");
-const emailInput = document.getElementById("email");
-const passInput = document.getElementById("password");
 
-// FUNCIÓN PARA LOGIN CON CORREO
-async function handleAuth(email, password) {
+document.getElementById("btn-login-email").onclick = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (e) {
-    if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Cuenta creada y sesión iniciada");
-    } else {
-      alert(e.message);
-    }
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch {
+    await createUserWithEmailAndPassword(auth, email, pass);
   }
-}
-
-// LÓGICA BOTÓN EMAIL
-document.getElementById("btn-login-email").onclick = () => {
-  if (!emailInput.value || !passInput.value) {
-    alert("Rellena correo y contraseña");
-    return;
-  }
-  handleAuth(emailInput.value, passInput.value);
 };
 
-// LÓGICA BOTÓN GOOGLE
 document.getElementById("btn-login-google").onclick = async () => {
-    try {
-        await signInWithPopup(auth, provider);
-    } catch (e) {
-        alert("Error al conectar con Google: " + e.message);
-    }
+  await signInWithPopup(auth, provider);
 };
 
-document.getElementById("btn-logout").onclick = () => {
-  signOut(auth);
-};
+document.getElementById("btn-logout").onclick = () => signOut(auth);
 
-onAuthStateChanged(auth, (user) => {
+// 🔥 CONTROL DE SESIÓN + BAN
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+
+    if (BANNED_EMAILS.includes(user.email)) {
+      alert("Tu cuenta ha sido suspendida.");
+      await signOut(auth);
+      return;
+    }
+
     loggedOut.classList.add("hidden");
     loggedIn.classList.remove("hidden");
     welcomeMsg.textContent = "Conectado como: " + user.email;
-    localStorage.setItem("firebaseUser", JSON.stringify({
-      uid: user.uid,
-      email: user.email
-    }));
+
   } else {
     loggedIn.classList.add("hidden");
     loggedOut.classList.remove("hidden");
-    localStorage.removeItem("firebaseUser");
   }
 });
-
-setTimeout(() => {
-  if (!confirm("⚠️ AVISO ⚠️\nEsta página es para jugar en casa si estas en la escuela entras asumiendo tus propios riesgos.")) {
-    window.location.href = "https://www.google.com";
-  }
-}, 500);
 </script>
 
 </body>
