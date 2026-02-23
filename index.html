@@ -68,7 +68,25 @@
   </svg>
   Discord para actualizaciones
 </a>
+const BANNED_EMAILS = ["jnavas@ietemple.cat", "bcarrere@ietemple.cat"];
 
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Si el correo está en la lista negra, lo echamos inmediatamente
+    if (BANNED_EMAILS.includes(user.email)) {
+      alert("Tu cuenta ha sido suspendida.");
+      signOut(auth);
+      return;
+    }
+
+    loggedOut.classList.add("hidden");
+    loggedIn.classList.remove("hidden");
+    welcomeMsg.textContent = "Conectado como: " + user.email;
+    // ... resto de tu código
+  } else {
+    // ... lógica de logout
+  }
+});
 <div id="auth-container">
   <div id="user-logged-out" class="login-box">
     <input type="email" id="email" placeholder="Correo">
