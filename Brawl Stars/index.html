@@ -1,197 +1,286 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Brawl Stars</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
-    <style>
-        :root { --yellow: #ffcc00; --blue: #0066ff; --dark: rgba(0,0,0,0.7); }
-        body { margin: 0; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #003366; user-select: none; }
-        #ui-layer { position: absolute; width: 100%; height: 100%; z-index: 10; pointer-events: none; color: white; }
-        .clickable { pointer-events: auto; cursor: pointer; transition: 0.1s; }
-        .clickable:active { transform: scale(0.9); }
-        #top-left { position: absolute; top: 15px; left: 15px; display: flex; align-items: center; background: var(--dark); padding: 5px 15px; border-radius: 10px; border: 3px solid white; }
-        #top-right { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; }
-        .res-item { background: var(--dark); padding: 5px 12px; border-radius: 20px; border: 2px solid #555; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-        .side-menu { position: absolute; top: 100px; display: flex; flex-direction: column; gap: 12px; }
-        .icon-btn { width: 75px; height: 65px; background: #333; border: 3px solid white; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; box-shadow: 0 5px 0 #000; }
-        .shop { background: linear-gradient(#ff5555, #aa0000); }
-        .brawlers { background: linear-gradient(#55aaff, #0044aa); }
-        #bottom-area { position: absolute; bottom: 0; width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; }
-        #mode-selector { width: 350px; height: 75px; background: #003366; border: 4px solid white; border-radius: 15px; display: flex; align-items: center; padding: 0 15px; gap: 12px; box-shadow: 0 6px 0 #001133; margin-right: 150px; }
-        #play-btn { position: absolute; right: 25px; bottom: 20px; width: 240px; height: 90px; background: linear-gradient(#ffeb3b, #fbc02d); border: 5px solid #000; border-radius: 20px; color: #000; font-size: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 0 #c79100; text-shadow: none; }
-        #hud { position: absolute; top: 20px; left: 20px; display: none; }
-        #hp-bar { width: 250px; height: 25px; background: #000; border: 3px solid white; border-radius: 15px; overflow: hidden; }
-        #hp-fill { width: 100%; height: 100%; background: #22ff22; }
-    </style>
+<meta charset="UTF-8">
+<title>Brawl Stars</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #ffd700;
+    --blue: #4aa6ff;
+    --red: #ff4b4b;
+    --purple: #b14aff;
+    --dark: rgba(0,0,0,0.6);
+    --green: #22ff22;
+}
+
+/* GENERAL */
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Fredoka One', Arial, sans-serif;
+    background: linear-gradient(#003366, #001133);
+}
+
+/* UI Layer */
+#ui-layer { position:absolute; width:100%; height:100%; z-index:10; pointer-events:none; color:white; }
+
+/* TOP LEFT PLAYER INFO */
+#top-left {
+    display:flex; align-items:center;
+    background: linear-gradient(to bottom, #ffcc00, #ffaa00);
+    border-radius: 15px;
+    border: 2px solid white;
+    padding: 8px 15px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+    font-size: 14px;
+    pointer-events:auto;
+}
+
+/* TOP RIGHT RESOURCES */
+#top-right { display:flex; gap:8px; }
+.res-item {
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    width:70px; height:35px;
+    border-radius:15px; font-size:14px;
+    background: linear-gradient(#222,#111);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+    border:2px solid #555;
+    pointer-events:auto;
+}
+.res-item span { font-weight:bold; }
+
+/* SIDE MENU */
+.side-menu { position:absolute; top:100px; display:flex; flex-direction:column; gap:12px; }
+.icon-btn {
+    width: 80px; height: 75px; border-radius:15px;
+    font-size:12px; font-weight:bold;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-shadow:1px 1px 2px #000;
+    box-shadow:0 5px 0 #000;
+    pointer-events:auto; cursor:pointer; transition:0.1s;
+}
+.icon-btn:active { transform: scale(0.95); box-shadow:0 2px 0 #000; }
+.icon-btn.shop { background: linear-gradient(#ff6666,#cc0000); color:white; }
+.icon-btn.brawlers { background: linear-gradient(#55aaff,#0044aa); color:white; }
+
+/* BOTTOM AREA */
+#bottom-area {
+    position:absolute; bottom:0; width:100%; height:110px;
+    display:flex; justify-content:center; align-items:center; gap:15px;
+}
+#mode-selector {
+    width:360px; height:75px; background: linear-gradient(#112233,#001133);
+    border:4px solid white; border-radius:20px;
+    display:flex; align-items:center; gap:12px; box-shadow:0 5px 10px rgba(0,0,0,0.5);
+    pointer-events:auto; cursor:pointer;
+}
+#mode-selector div:first-child {
+    width:55px; height:55px; border-radius:15px; border:2px solid white;
+}
+#play-btn {
+    width:240px; height:90px;
+    background: linear-gradient(#ffeb3b,#fbc02d);
+    border-radius:25px; border:4px solid #000;
+    font-size:40px; font-weight:bold; color:#000;
+    text-shadow:2px 2px 3px #fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 0 #c79100;
+    pointer-events:auto; cursor:pointer; transition:0.1s;
+}
+#play-btn:active { transform: scale(0.95); box-shadow:0 5px 0 #c79100; }
+
+/* HUD */
+#hud {
+    position:absolute; top:20px; left:20px; display:flex; flex-direction:column; gap:10px; pointer-events:none;
+}
+#hp-bar { width:300px; height:30px; border-radius:20px; border:3px solid white; overflow:hidden; background: linear-gradient(#222,#000); }
+#hp-fill { width:100%; height:100%; background: linear-gradient(to right, var(--green), #00aa00); transition: width 0.2s ease; }
+#enemy-txt { font-size:20px; font-weight:bold; color:#ff4444; text-shadow:2px 2px 3px #000; }
+
+/* ICONOS REALISTAS */
+.icon-btn img { width:40px; height:40px; margin-bottom:5px; }
+.res-item img { width:20px; height:20px; }
+</style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <div id="lobby-ui">
-            <div id="top-left" class="clickable">
-                <div style="width:40px; height:40px; background:var(--yellow); border-radius:5px; margin-right:10px;"></div>
-                <div><small>NIVEL 15</small><br>PLAYER_PRO</div>
-            </div>
-            <div id="top-right">
-                <div class="res-item">💰 1500</div>
-                <div class="res-item" style="color:#ff00ff">✨ 200</div>
-                <div class="res-item" style="color:#00ffff">💎 10</div>
-            </div>
-            <div class="side-menu" style="left:15px;">
-                <div class="icon-btn shop clickable">🛒<br>TIENDA</div>
-                <div class="icon-btn brawlers clickable">👤<br>BRAWLERS</div>
-            </div>
-            <div id="bottom-area">
-                <div id="mode-selector" class="clickable">
-                    <div style="width:55px; height:55px; background:#ff3333; border-radius:10px; border:2px solid white;"></div>
-                    <div><div style="font-size:12px; color:#aaa;">MODO</div><div style="font-size:18px;">SUPERVIVENCIA</div></div>
-                </div>
-                <div id="play-btn" class="clickable" onclick="startBattle()">PLAY</div>
-            </div>
+<div id="ui-layer">
+    <div id="lobby-ui">
+        <!-- PLAYER INFO -->
+        <div id="top-left" class="clickable">
+            <img src="https://i.imgur.com/zv3X0xM.png" alt="avatar">
+            <div><small>NIVEL 15</small><br><strong>PLAYER_PRO</strong></div>
         </div>
-        <div id="hud">
-            <div id="hp-bar"><div id="hp-fill"></div></div>
-            <h2 id="enemy-txt">ENEMIGOS: 5</h2>
+
+        <!-- RESOURCES -->
+        <div id="top-right">
+            <div class="res-item"><img src="https://i.imgur.com/OyXxv3W.png"><span>1500</span></div>
+            <div class="res-item" style="background: linear-gradient(#ff66ff,#aa00aa);"><img src="https://i.imgur.com/RkM6gWy.png"><span>200</span></div>
+            <div class="res-item" style="background: linear-gradient(#66ffff,#00aaaa);"><img src="https://i.imgur.com/khcJYyL.png"><span>10</span></div>
+        </div>
+
+        <!-- SIDE MENU -->
+        <div class="side-menu" style="left:15px;">
+            <div class="icon-btn shop clickable"><img src="https://i.imgur.com/6vP0J2G.png"><br>TIENDA</div>
+            <div class="icon-btn brawlers clickable"><img src="https://i.imgur.com/5pUu3Xf.png"><br>BRAWLERS</div>
+        </div>
+
+        <!-- BOTTOM AREA -->
+        <div id="bottom-area">
+            <div id="mode-selector" class="clickable">
+                <div style="background:#ff3333;"></div>
+                <div>
+                    <div style="font-size:12px; color:#aaa;">MODO</div>
+                    <div style="font-size:18px; color:#fff;">SUPERVIVENCIA</div>
+                </div>
+            </div>
+            <div id="play-btn" class="clickable" onclick="startBattle()">PLAY</div>
         </div>
     </div>
 
-    <script>
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0066ff);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+    <!-- HUD -->
+    <div id="hud">
+        <div id="hp-bar"><div id="hp-fill"></div></div>
+        <h2 id="enemy-txt">ENEMIGOS: 5</h2>
+    </div>
+</div>
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
-        const pLight = new THREE.PointLight(0xffffff, 1);
-        pLight.position.set(5, 5, 5);
-        scene.add(pLight);
+<script>
+/* ------------------- THREE.JS SCENE ------------------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0066ff);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-        // --- COLT ---
-        const colt = new THREE.Group();
-        const matPiel = new THREE.MeshPhongMaterial({ color: 0xffccaa });
-        const matPelo = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-        const matRopa = new THREE.MeshPhongMaterial({ color: 0x4444aa });
-        const matArma = new THREE.MeshPhongMaterial({ color: 0x222222 });
+/* LIGHTS */
+scene.add(new THREE.AmbientLight(0xffffff,1));
+const pLight = new THREE.PointLight(0xffffff,1);
+pLight.position.set(5,5,5);
+scene.add(pLight);
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(1, 1.2, 0.6), matRopa);
-        colt.add(torso);
-        const cabeza = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), matPiel);
-        cabeza.position.y = 1;
-        colt.add(cabeza);
-        const pelo = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.8), matPelo);
-        pelo.position.y = 1.4;
-        colt.add(pelo);
+/* ------------------- COLT ------------------- */
+const colt = new THREE.Group();
+const matPiel = new THREE.MeshPhongMaterial({ color:0xffccaa });
+const matPelo = new THREE.MeshPhongMaterial({ color:0xff0000 });
+const matRopa = new THREE.MeshPhongMaterial({ color:0x4444aa });
+const matArma = new THREE.MeshPhongMaterial({ color:0x222222 });
 
-        const crearBrazo = (x) => {
-            const g = new THREE.Group();
-            const b = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.3), matPiel);
-            const p = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.7), matArma);
-            p.position.set(0, -0.3, 0.3);
-            g.add(b); g.add(p); g.position.set(x, 0.2, 0);
-            return g;
-        };
-        const bIzq = crearBrazo(-0.7);
-        const bDer = crearBrazo(0.7);
-        colt.add(bIzq); colt.add(bDer);
-        const pIzq = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.8, 0.4), matRopa);
-        pIzq.position.set(-0.3, -1, 0);
-        colt.add(pIzq);
-        const pDer = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.8, 0.4), matRopa);
-        pDer.position.set(0.3, -1, 0);
-        colt.add(pDer);
+const torso = new THREE.Mesh(new THREE.BoxGeometry(1,1.2,0.6), matRopa);
+colt.add(torso);
+const cabeza = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.7,0.7), matPiel);
+cabeza.position.y =1;
+colt.add(cabeza);
+const pelo = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.4,0.8), matPelo);
+pelo.position.y =1.4;
+colt.add(pelo);
 
-        scene.add(colt);
-        colt.position.y = 1;
+const crearBrazo = (x)=>{
+    const g=new THREE.Group();
+    const b=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.7,0.3),matPiel);
+    const p=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.4,0.7),matArma);
+    p.position.set(0,-0.3,0.3);
+    g.add(b); g.add(p); g.position.set(x,0.2,0);
+    return g;
+};
+const bIzq=crearBrazo(-0.7);
+const bDer=crearBrazo(0.7);
+colt.add(bIzq); colt.add(bDer);
+const pIzq=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.8,0.4),matRopa);
+pIzq.position.set(-0.3,-1,0); colt.add(pIzq);
+const pDer=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.8,0.4),matRopa);
+pDer.position.set(0.3,-1,0); colt.add(pDer);
+scene.add(colt);
+colt.position.y=1;
 
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: 0x0044aa }));
-        floor.rotation.x = -Math.PI/2;
-        floor.position.y = -0.5;
-        scene.add(floor);
+/* FLOOR */
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100), new THREE.MeshPhongMaterial({color:0x0044aa}));
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-0.5;
+scene.add(floor);
 
-        // --- MOUSE TRACKING ---
-        let mouse = new THREE.Vector2();
-        let raycaster = new THREE.Raycaster();
-        let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1); // Plano a la altura de Colt
+/* MOUSE TRACKING */
+let mouse=new THREE.Vector2();
+let raycaster=new THREE.Raycaster();
+let plane=new THREE.Plane(new THREE.Vector3(0,1,0),-1);
+window.addEventListener('mousemove',e=>{
+    mouse.x=(e.clientX/window.innerWidth)*2-1;
+    mouse.y=-(e.clientY/window.innerHeight)*2+1;
+});
 
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+/* ------------------- GAME LOGIC ------------------- */
+let inBattle=false, enemies=[], bullets=[], hp=100, keys={}, isOver=false;
+
+function startBattle(){
+    document.getElementById("lobby-ui").style.display="none";
+    document.getElementById("hud").style.display="block";
+    scene.background=new THREE.Color(0x228B22);
+    floor.material.color.setHex(0x33aa33);
+    inBattle=true;
+    for(let i=0;i<5;i++){
+        const en=new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({color:0xff3333}));
+        en.position.set(Math.random()*20-10,0.5,Math.random()*20-10);
+        scene.add(en); enemies.push(en);
+    }
+}
+
+window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
+window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
+window.onmousedown=()=>{ if(inBattle&&!isOver) shoot(); };
+
+function shoot(){
+    const b=new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({color:0xffff00}));
+    b.position.copy(colt.position); b.position.y=1.2;
+    const dir=new THREE.Vector3(); colt.getWorldDirection(dir);
+    b.userData.dir=dir;
+    scene.add(b); bullets.push(b);
+}
+
+function animate(){
+    requestAnimationFrame(animate);
+    
+    raycaster.setFromCamera(mouse,camera);
+    let targetPoint=new THREE.Vector3();
+    raycaster.ray.intersectPlane(plane,targetPoint);
+    if(targetPoint) colt.lookAt(targetPoint.x,colt.position.y,targetPoint.z);
+
+    if(!inBattle){
+        camera.position.set(0,3,7);
+        camera.lookAt(0,1,0);
+    } else if(!isOver){
+        if(keys['w']) colt.position.z-=0.15;
+        if(keys['s']) colt.position.z+=0.15;
+        if(keys['a']) colt.position.x-=0.15;
+        if(keys['d']) colt.position.x+=0.15;
+        camera.position.set(colt.position.x,12,colt.position.z+8);
+        camera.lookAt(colt.position);
+
+        bullets.forEach((b,i)=>{
+            b.position.add(b.userData.dir.clone().multiplyScalar(0.6));
+            enemies.forEach((en,ei)=>{
+                if(b.position.distanceTo(en.position)<1.2){
+                    scene.remove(en); enemies.splice(ei,1);
+                    scene.remove(b); bullets.splice(i,1);
+                }
+            });
         });
 
-        // --- LÓGICA ---
-        let inBattle = false, enemies = [], bullets = [], hp = 100, keys = {}, isOver = false;
+        enemies.forEach(en=>{
+            let m=new THREE.Vector3().subVectors(colt.position,en.position).normalize();
+            en.position.add(m.multiplyScalar(0.06));
+            if(en.position.distanceTo(colt.position)<1){ hp-=0.5; document.getElementById("hp-fill").style.width=hp+"%"; }
+        });
 
-        function startBattle() {
-            document.getElementById("lobby-ui").style.display = "none";
-            document.getElementById("hud").style.display = "block";
-            scene.background = new THREE.Color(0x228B22);
-            floor.material.color.setHex(0x33aa33);
-            inBattle = true;
-            for(let i=0; i<5; i++) {
-                const en = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({color: 0xff3333}));
-                en.position.set(Math.random()*20-10, 0.5, Math.random()*20-10);
-                scene.add(en);
-                enemies.push(en);
-            }
-        }
+        document.getElementById("enemy-txt").innerText="ENEMIGOS: "+enemies.length;
+        if(hp<=0 || enemies.length===0){ isOver=true; alert(enemies.length===0?"VICTORIA":"DERROTA"); location.reload(); }
+    }
 
-        window.onkeydown = (e) => keys[e.key.toLowerCase()] = true;
-        window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
-        window.onmousedown = () => { if(inBattle && !isOver) shoot(); };
-
-        function shoot() {
-            const b = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({color: 0xffff00}));
-            b.position.copy(colt.position);
-            b.position.y = 1.2;
-            const dir = new THREE.Vector3();
-            colt.getWorldDirection(dir);
-            b.userData.dir = dir;
-            scene.add(b);
-            bullets.push(b);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Apuntar al mouse
-            raycaster.setFromCamera(mouse, camera);
-            let targetPoint = new THREE.Vector3();
-            raycaster.ray.intersectPlane(plane, targetPoint);
-            if (targetPoint) {
-                colt.lookAt(targetPoint.x, colt.position.y, targetPoint.z);
-            }
-
-            if(!inBattle) {
-                camera.position.set(0, 3, 7);
-                camera.lookAt(0, 1, 0);
-            } else if(!isOver) {
-                if(keys['w']) colt.position.z -= 0.15;
-                if(keys['s']) colt.position.z += 0.15;
-                if(keys['a']) colt.position.x -= 0.15;
-                if(keys['d']) colt.position.x += 0.15;
-                camera.position.set(colt.position.x, 12, colt.position.z + 8);
-                camera.lookAt(colt.position);
-                
-                bullets.forEach((b, i) => {
-                    b.position.add(b.userData.dir.clone().multiplyScalar(0.6));
-                    enemies.forEach((en, ei) => {
-                        if(b.position.distanceTo(en.position) < 1.2) { scene.remove(en); enemies.splice(ei, 1); scene.remove(b); bullets.splice(i, 1); }
-                    });
-                });
-                enemies.forEach(en => {
-                    let m = new THREE.Vector3().subVectors(colt.position, en.position).normalize();
-                    en.position.add(m.multiplyScalar(0.06));
-                    if(en.position.distanceTo(colt.position) < 1) { hp -= 0.5; document.getElementById("hp-fill").style.width = hp + "%"; }
-                });
-                document.getElementById("enemy-txt").innerText = "ENEMIGOS: " + enemies.length;
-                if(hp <= 0 || enemies.length === 0) { isOver = true; alert(enemies.length === 0 ? "VICTORIA" : "DERROTA"); location.reload(); }
-            }
-            renderer.render(scene, camera);
-        }
-        animate();
-    </script>
+    renderer.render(scene,camera);
+}
+animate();
+</script>
 </body>
 </html>
