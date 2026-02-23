@@ -105,70 +105,21 @@
 <section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// 🔎 COMPROBAR BANEOS EN FIRESTORE
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
-  authDomain: "inici-de-sessio.firebaseapp.com",
-  projectId: "inici-de-sessio",
-  appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
-};
+// db = getFirestore(app) // asegúrate de tener Firestore inicializado
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const bannedRef = doc(db, "bannedUsers", user.email);
+const bannedSnap = await getDoc(bannedRef);
 
-const BANNED_EMAILS = ["gvarela@ietemple.cat", "bcarrere@ietemple.cat"];
-
-const loggedOut = document.getElementById("user-logged-out");
-const loggedIn = document.getElementById("user-logged-in");
-const welcomeMsg = document.getElementById("welcome-msg");
-
-document.getElementById("btn-login-email").onclick = async () => {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch {
-    await createUserWithEmailAndPassword(auth, email, pass);
-  }
-};
-
-document.getElementById("btn-login-google").onclick = async () => {
-  await signInWithPopup(auth, provider);
-};
-
-document.getElementById("btn-logout").onclick = () => signOut(auth);
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-
-    if (BANNED_EMAILS.includes(user.email)) {
-      alert("Tu cuenta ha sido suspendida.");
-      await signOut(auth);
-      window.location.href = "https://www.google.com"; // redirige
-      return;
-    }
-
-    loggedOut.classList.add("hidden");
-    loggedIn.classList.remove("hidden");
-    welcomeMsg.textContent = "Conectado como: " + user.email;
-
-  } else {
-    loggedIn.classList.add("hidden");
-    loggedOut.classList.remove("hidden");
-  }
-});
+if (bannedSnap.exists()) {
+  const reason = bannedSnap.data().reason || "Cuenta suspendida.";
+  alert("Tu cuenta ha sido suspendida.\nMotivo: " + reason);
+  await signOut(auth);        // cierra sesión
+  window.location.href = "https://www.google.com"; // redirige
+  return;                     // corta el flujo
+}
 </script>
 
 </body>
