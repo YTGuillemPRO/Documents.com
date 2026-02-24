@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>GTA VI - LEONIDA STATE PROTOTYPE</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Arial', sans-serif; }
+        
+        /* GUI ESTILO GTA 6 */
+        #gui {
+            position: absolute; bottom: 30px; left: 30px;
+            display: flex; align-items: flex-end; gap: 20px;
+            pointer-events: none;
+        }
+        #minimap {
+            width: 180px; height: 130px;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.8);
+            position: relative; overflow: hidden;
+        }
+        #player-dot {
+            width: 8px; height: 8px; background: white;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); border-radius: 50%;
+        }
+        #stats {
+            color: white; text-shadow: 2px 2px 2px #000;
+            font-weight: bold; font-size: 24px;
+        }
+        #money { color: #2ecc71; font-size: 32px; }
+        #location { color: #fff; font-size: 18px; text-transform: uppercase; opacity: 0.8; }
+        
+        #instructions {
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            color: #ff00ff; font-weight: bold; font-size: 18px;
+            text-shadow: 0 0 10px #000;
+        }
+        #alert {
+            position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+            color: white; background: rgba(255,0,0,0.7); padding: 10px 20px;
+            display: none; font-size: 24px; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="instructions">CLICK PARA EMPEZAR | WASD: MOVER | F: COCHE | E: ROBAR BANCO</div>
+<div id="alert">¡BANCO ROBADO! +$5000</div>
+
+<div id="gui">
+    <div id="minimap">
+        <div id="map-content" style="position: absolute; width: 1000px; height: 1000px;"></div>
+        <div id="player-dot"></div>
+    </div>
+    <div id="stats">
+        <div id="money">$1,250,400</div>
+        <div id="location">Vice City - Port Gellhorn</div>
+    </div>
+</div>
+
+<script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// --- ESCENA ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a0a2e); // Atardecer oscuro
+scene.fog = new THREE.FogExp2(0x1a0a2e, 0.01);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+// --- ILUMINACIÓN POTENTE ---
+const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambient);
+
+const sun = new THREE.DirectionalLight(0xffaa00, 2.5);
+sun.position.set(50, 100, 50);
+sun.castShadow = true;
+scene.add(sun);
+
+// Luces de ciudad (Neon)
+const neon1 = new THREE.PointLight(0x00ffff, 10, 100);
+neon1.position.set(20, 10, 20);
+scene.add(neon1);
+
+// --- CIUDAD Y BANCOS ---
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(2000, 2000),
+    new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const banks = [];
+function createBuilding(x, z, isBank = false) {
+    const h = isBank ? 15 : 20 + Math.random() * 40;
+    const geo = new THREE.BoxGeometry(10, h, 10);
+    const mat = new THREE.MeshStandardMaterial({ 
+        color: isBank ? 0xffd700 : 0x222222,
+        metalness: 0.8
+    });
+    const b = new THREE.Mesh(geo, mat);
+    b.position.set(x, h/2, z);
+    b.castShadow = true;
+    scene.add(b);
+    if(isBank) banks.push(b);
+}
+
+// Generar ciudad
+for(let i = -5; i < 5; i++) {
+    for(let j = -5; j < 5; j++) {
+        if(i === 0 && j === 0) continue;
+        createBuilding(i * 40, j * 40, Math.random() > 0.8);
+    }
+}
+
+// --- PERSONAJE ---
+const player = new THREE.Group();
+const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.5), new THREE.MeshStandardMaterial({color: 0xff4444}));
+pBody.position.y = 1.25;
+player.add(pBody);
+scene.add(player);
+
+// --- COCHE ---
+const car = new THREE.Group();
+const cBody = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1, 5), new THREE.MeshStandardMaterial({color: 0xffffff, metalness: 1}));
+cBody.position.y = 0.5;
+car.add(cBody);
+car.position.set(15, 0, 15);
+scene.add(car);
+
+// --- LÓGICA ---
+let inVehicle = false;
+let money = 1250400;
+let yaw = 0, pitch = 0;
+const keys = {};
+
+document.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if(e.code === 'KeyF') toggleCar();
+    if(e.code === 'KeyE') tryRob();
+});
+document.addEventListener('keyup', e => keys[e.code] = false);
+document.addEventListener('mousemove', e => {
+    if(document.pointerLockElement) {
+        yaw -= e.movementX * 0.002;
+        pitch = Math.max(-0.5, Math.min(0.5, pitch - e.movementY * 0.002));
+    }
+});
+document.addEventListener('mousedown', () => document.body.requestPointerLock());
+
+function toggleCar() {
+    const dist = player.position.distanceTo(car.position);
+    if(!inVehicle && dist < 6) {
+        inVehicle = true;
+        player.visible = false;
+    } else if(inVehicle) {
+        inVehicle = false;
+        player.visible = true;
+        player.position.set(car.position.x + 4, 0, car.position.z);
+    }
+}
+
+function tryRob() {
+    banks.forEach(b => {
+        if(player.position.distanceTo(b.position) < 15) {
+            money += 5000;
+            document.getElementById('money').innerText = "$" + money.toLocaleString();
+            const alert = document.getElementById('alert');
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 2000);
+        }
+    });
+}
+
+// --- LOOP ---
+function animate() {
+    requestAnimationFrame(animate);
+
+    if(!inVehicle) {
+        const dir = new THREE.Vector3();
+        if(keys['KeyW']) dir.z -= 1;
+        if(keys['KeyS']) dir.z += 1;
+        if(keys['KeyA']) dir.x -= 1;
+        if(keys['KeyD']) dir.x += 1;
+        
+        if(dir.length() > 0) {
+            dir.normalize().applyQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), yaw));
+            player.position.addScaledVector(dir, 0.2);
+            player.rotation.y = yaw;
+        }
+        
+        camera.position.set(
+            player.position.x + Math.sin(yaw) * 8,
+            player.position.y + 4 + pitch * 5,
+            player.position.z + Math.cos(yaw) * 8
+        );
+        camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+    } else {
+        if(keys['KeyW']) car.translateZ(0.4);
+        if(keys['KeyS']) car.translateZ(-0.2);
+        if(keys['KeyA']) car.rotation.y += 0.04;
+        if(keys['KeyD']) car.rotation.y -= 0.04;
+        
+        const camOffset = new THREE.Vector3(0, 5, -12).applyQuaternion(car.quaternion);
+        camera.position.lerp(car.position.clone().add(camOffset), 0.1);
+        camera.lookAt(car.position);
+    }
+
+    // ACTUALIZAR MINIMAPA
+    const mapX = -player.position.x / 2;
+    const mapZ = -player.position.z / 2;
+    document.getElementById('map-content').style.transform = `translate(${mapX + 90}px, ${mapZ + 65}px)`;
+
+    renderer.render(scene, camera);
+}
+
+animate();
+</script>
+</body>
+</html>
