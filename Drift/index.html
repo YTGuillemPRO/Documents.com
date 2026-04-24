@@ -3,217 +3,1983 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drift Masters Pro</title>
+    <title>🏎️ Drift King - Juego de Drift</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #87CEEB; }
-        #ui { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 3px 3px 0px #000; pointer-events: none; }
-        
-        /* Botón Garaje */
-        #openShop { position: absolute; bottom: 20px; right: 20px; padding: 15px 30px; background: #f1c40f; border: 4px solid #000; cursor: pointer; font-weight: bold; font-size: 18px; }
-        
-        /* Catálogo */
-        #catalog { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9); border: 5px solid #f1c40f; padding: 30px; 
-            color: white; display: none; text-align: center; border-radius: 20px; min-width: 300px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .car-option { border: 2px solid #555; padding: 15px; margin: 10px; cursor: pointer; transition: 0.3s; }
-        .car-option:hover { background: #333; border-color: #f1c40f; }
-        .close-btn { position: absolute; top: 10px; right: 10px; color: red; cursor: pointer; font-size: 20px; }
-        
-        #coins-display { color: #f1c40f; font-size: 24px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255,107,107,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px #ff6b6b); }
+            to { filter: drop-shadow(0 0 40px #48dbfb); }
+        }
+
+        /* Currency Display */
+        .currency-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .currency-item {
+            background: linear-gradient(145deg, #2d2d44, #1a1a2e);
+            padding: 10px 25px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .currency-item:hover {
+            transform: translateY(-3px);
+            border-color: #feca57;
+            box-shadow: 0 5px 20px rgba(254,202,87,0.3);
+        }
+
+        .currency-icon {
+            font-size: 1.5rem;
+        }
+
+        .currency-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #feca57;
+        }
+
+        /* Menu Principal */
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .menu-card {
+            background: linear-gradient(145deg, rgba(45,45,68,0.9), rgba(26,26,46,0.9));
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .menu-card:hover::before {
+            left: 100%;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #48dbfb;
+            box-shadow: 0 15px 40px rgba(72,219,251,0.3);
+        }
+
+        .menu-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #48dbfb;
+        }
+
+        .menu-card p {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+
+        .menu-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Game Area */
+        .game-area {
+            display: none;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            background: #222;
+            display: block;
+        }
+
+        /* HUD */
+        .hud {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-panel {
+            background: rgba(0,0,0,0.7);
+            padding: 15px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .score-display {
+            font-size: 1.8rem;
+            color: #feca57;
+            font-weight: bold;
+        }
+
+        .drift-display {
+            font-size: 1.5rem;
+            color: #ff6b6b;
+        }
+
+        .speed-display {
+            font-size: 1.3rem;
+            color: #48dbfb;
+        }
+
+        /* Drift Meter */
+        .drift-meter-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            pointer-events: none;
+        }
+
+        .drift-meter-label {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .drift-meter {
+            width: 100%;
+            height: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #ff6b6b;
+        }
+
+        .drift-meter-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            transition: width 0.1s;
+            border-radius: 8px;
+        }
+
+        /* Controls Info */
+        .controls-info {
+            position: absolute;
+            bottom: 80px;
+            right: 30px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .controls-info kbd {
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin: 0 3px;
+        }
+
+        /* Track Selection */
+        .track-selection {
+            display: none;
+        }
+
+        .track-selection.active {
+            display: block;
+        }
+
+        .tracks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .track-card {
+            background: linear-gradient(145deg, rgba(45,45,68,0.9), rgba(26,26,46,0.9));
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .track-card:hover {
+            transform: translateY(-5px);
+            border-color: #feca57;
+        }
+
+        .track-card.locked {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .track-preview {
+            height: 150px;
+            background: linear-gradient(45deg, #2d2d44, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-info {
+            padding: 20px;
+        }
+
+        .track-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .track-difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-easy { background: #2ecc71; }
+        .difficulty-medium { background: #f39c12; }
+        .difficulty-hard { background: #e74c3c; }
+
+        .track-reward {
+            color: #feca57;
+            font-size: 0.9rem;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        /* Shop */
+        .shop-section {
+            display: none;
+        }
+
+        .shop-section.active {
+            display: block;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .shop-item {
+            background: linear-gradient(145deg, rgba(45,45,68,0.9), rgba(26,26,46,0.9));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .shop-item:hover {
+            border-color: #48dbfb;
+        }
+
+        .shop-item.owned {
+            border-color: #2ecc71;
+            background: linear-gradient(145deg, rgba(46,204,113,0.2), rgba(26,26,46,0.9));
+        }
+
+        .item-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .item-price {
+            color: #feca57;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .buy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(238,90,36,0.4);
+        }
+
+        .buy-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .owned-badge {
+            background: #2ecc71;
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Garage/Car Selection */
+        .garage-section {
+            display: none;
+        }
+
+        .garage-section.active {
+            display: block;
+        }
+
+        .cars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .car-card {
+            background: linear-gradient(145deg, rgba(45,45,68,0.9), rgba(26,26,46,0.9));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .car-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .car-card.selected {
+            border-color: #feca57;
+            box-shadow: 0 0 30px rgba(254,202,87,0.3);
+        }
+
+        .car-emoji {
+            font-size: 5rem;
+            margin-bottom: 15px;
+        }
+
+        .car-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .car-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #48dbfb;
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: linear-gradient(45deg, #666, #444);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(45deg, #888, #666);
+        }
+
+        /* Game Over Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #2d2d44, #1a1a2e);
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 2px solid #48dbfb;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            color: #feca57;
+            margin-bottom: 20px;
+        }
+
+        .modal-stats {
+            margin: 20px 0;
+        }
+
+        .modal-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #48dbfb, #0abde3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #666, #444);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Mobile Controls */
+        .mobile-controls {
+            display: none;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            justify-content: space-between;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .controls-info {
+                display: none;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .control-btn:active {
+            background: rgba(72,219,251,0.5);
+        }
+
+        .drift-btn {
+            width: 100px;
+            border-radius: 30px;
+            background: rgba(255,107,107,0.3);
+            border-color: #ff6b6b;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 2rem;
+            color: #48dbfb;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        /* Achievements */
+        .achievements-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .achievement {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+
+        .achievement.unlocked {
+            opacity: 1;
+            border: 1px solid #feca57;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 10px;
+            }
+
+            .currency-bar {
+                gap: 15px;
+            }
+
+            .currency-item {
+                padding: 8px 15px;
+            }
+
+            .hud {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .hud-panel {
+                padding: 10px 15px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="game-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🏎️ DRIFT KING 🏎️</h1>
+            <div class="currency-bar">
+                <div class="currency-item">
+                    <span class="currency-icon">💰</span>
+                    <span class="currency-value" id="coinsDisplay">0</span>
+                </div>
+                <div class="currency-item">
+                    <span class="currency-icon">💎</span>
+                    <span class="currency-value" id="gemsDisplay">0</span>
+                </div>
+                <div class="currency-item">
+                    <span class="currency-icon">🏆</span>
+                    <span class="currency-value" id="totalScoreDisplay">0</span>
+                </div>
+            </div>
+        </header>
 
-    <div id="ui">
-        <div id="coins-display">💰 <span id="coinCount">0</span></div>
-        <div style="font-size: 12px;">DERrapa PARA GANAR MONEDAS</div>
+        <!-- Main Menu -->
+        <div id="mainMenu" class="main-menu">
+            <div class="menu-card" onclick="showSection('trackSelection')">
+                <span class="menu-icon">🏁</span>
+                <h3>CARRERA</h3>
+                <p>Selecciona una pista y comienza a derivar</p>
+            </div>
+            <div class="menu-card" onclick="showSection('garage')">
+                <span class="menu-icon">🚗</span>
+                <h3>GARAJE</h3>
+                <p>Elige tu vehículo favorito</p>
+            </div>
+            <div class="menu-card" onclick="showSection('shop')">
+                <span class="menu-icon">🛒</span>
+                <h3>TIENDA</h3>
+                <p>Compra coches y mejoras</p>
+            </div>
+            <div class="menu-card" onclick="showAchievements()">
+                <span class="menu-icon">🏅</span>
+                <h3>LOGROS</h3>
+                <p>Ve tus logros desbloqueados</p>
+            </div>
+        </div>
+
+        <!-- Track Selection -->
+        <div id="trackSelection" class="track-selection">
+            <h2 class="section-title">🛣️ SELECCIONAR PISTA</h2>
+            <p class="section-subtitle">Elige tu escenario de drift</p>
+            <div class="tracks-grid" id="tracksGrid"></div>
+            <button class="back-btn" onclick="showSection('mainMenu')">← Volver al Menú</button>
+        </div>
+
+        <!-- Garage -->
+        <div id="garage" class="garage-section">
+            <h2 class="section-title">🚗 GARAJE</h2>
+            <p class="section-subtitle">Selecciona tu vehículo</p>
+            <div class="cars-grid" id="carsGrid"></div>
+            <button class="back-btn" onclick="showSection('mainMenu')">← Volver al Menú</button>
+        </div>
+
+        <!-- Shop -->
+        <div id="shop" class="shop-section">
+            <h2 class="section-title">🛒 TIENDA</h2>
+            <p class="section-subtitle">Mejora tu experiencia de drift</p>
+            <div class="shop-grid" id="shopGrid"></div>
+            <button class="back-btn" onclick="showSection('mainMenu')">← Volver al Menú</button>
+        </div>
+
+        <!-- Game Area -->
+        <div id="gameArea" class="game-area">
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- HUD -->
+            <div class="hud">
+                <div class="hud-panel">
+                    <div class="score-display">Puntos: <span id="currentScore">0</span></div>
+                    <div class="drift-display">Drift: <span id="currentDrift">0</span>x</div>
+                </div>
+                <div class="hud-panel">
+                    <div class="speed-display">Velocidad: <span id="currentSpeed">0</span> km/h</div>
+                    <div style="color: #aaa; font-size: 0.9rem;">Tiempo: <span id="currentTime">60</span>s</div>
+                </div>
+            </div>
+
+            <!-- Drift Meter -->
+            <div class="drift-meter-container">
+                <div class="drift-meter-label">BARRA DE DRIFT</div>
+                <div class="drift-meter">
+                    <div class="drift-meter-fill" id="driftMeterFill"></div>
+                </div>
+            </div>
+
+            <!-- Controls Info -->
+            <div class="controls-info">
+                <strong>Controles:</strong><br>
+                <kbd>↑</kbd> Acelerar<br>
+                <kbd>↓</kbd> Frenar<br>
+                <kbd>←</kbd> <kbd>→</kbd> Girar<br>
+                <kbd>Espacio</kbd> Drift
+            </div>
+
+            <!-- Mobile Controls -->
+            <div class="mobile-controls">
+                <div class="control-group">
+                    <button class="control-btn" id="leftBtn">◀</button>
+                    <button class="control-btn" id="brakeBtn">▼</button>
+                </div>
+                <button class="control-btn drift-btn" id="driftBtn">DRIFT</button>
+                <div class="control-group">
+                    <button class="control-btn" id="accelBtn">▲</button>
+                    <button class="control-btn" id="rightBtn">▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameOverModal" class="modal">
+            <div class="modal-content">
+                <h2>🏁 ¡CARRERA TERMINADA!</h2>
+                <div class="modal-stats">
+                    <div class="modal-stat">
+                        <span>Puntuación:</span>
+                        <span id="finalScore" style="color: #feca57;">0</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span>Máximo Drift:</span>
+                        <span id="maxDrift" style="color: #ff6b6b;">0x</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span>Monedas Ganadas:</span>
+                        <span id="coinsEarned" style="color: #feca57;">+0 💰</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span>Gemas Ganadas:</span>
+                        <span id="gemsEarned" style="color: #48dbfb;">+0 💎</span>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-primary" onclick="restartGame()">🔄 Repetir</button>
+                    <button class="modal-btn btn-secondary" onclick="exitToMenu()">🏠 Menú</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Modal -->
+        <div id="achievementsModal" class="modal">
+            <div class="modal-content">
+                <h2>🏅 LOGROS</h2>
+                <div id="achievementsList" style="text-align: left; max-height: 400px; overflow-y: auto;"></div>
+                <button class="modal-btn btn-secondary" onclick="closeAchievements()" style="margin-top: 20px;">Cerrar</button>
+            </div>
+        </div>
     </div>
 
-    <button id="openShop" onclick="toggleCatalog(true)">🏎️ GARAJE / TIENDA</button>
-
-    <div id="catalog">
-        <span class="close-btn" onclick="toggleCatalog(false)">✖</span>
-        <h2>CATÁLOGO DE COCHES</h2>
-        <div class="car-option" onclick="selectCar('Básico', 0, 0x3498db)">
-            <h3>TURBO COMPACT</h3>
-            <p>Precio: GRATIS</p>
-        </div>
-        <div class="car-option" onclick="selectCar('Sport', 1000, 0xe74c3c)">
-            <h3>DRIFT MONSTER</h3>
-            <p>Precio: 1000 💰</p>
-        </div>
-        <p id="shopMsg" style="color: #f1c40f;"></p>
-    </div>
-
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-
-        // --- CONFIGURACIÓN ---
-        let coins = 0;
-        let currentCarColor = 0x3498db;
-        let stats = { accel: 0.007, max: 0.6, turn: 0.045 };
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
-        
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.body.appendChild(renderer.domElement);
-
-        // Luces
-        const sun = new THREE.DirectionalLight(0xffffff, 1.5);
-        sun.position.set(100, 100, 50);
-        sun.castShadow = true;
-        scene.add(sun);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-        // --- PISTA CON CURVAS REALISTAS ---
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(50, 0, 20),
-            new THREE.Vector3(80, 0, 80),
-            new THREE.Vector3(40, 0, 120),
-            new THREE.Vector3(-40, 0, 100),
-            new THREE.Vector3(-80, 0, 40),
-            new THREE.Vector3(-20, 0, -20),
-            new THREE.Vector3(0, 0, 0)
-        ]);
-
-        const trackGeo = new THREE.TubeGeometry(curve, 100, 8, 20, true);
-        const trackMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
-        const track = new THREE.Mesh(trackGeo, trackMat);
-        track.scale.set(1, 0.01, 1); // Aplastar el tubo para que sea una pista plana
-        scene.add(track);
-
-        // Suelo infinito
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({ color: 0x2ecc71 }));
-        ground.rotation.x = -Math.PI/2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // --- CREACIÓN DE COCHE COOL ---
-        function createCoolCar(color) {
-            const car = new THREE.Group();
-            // Chasis
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 3), new THREE.MeshPhongMaterial({ color }));
-            body.position.y = 0.4;
-            body.castShadow = true;
-            car.add(body);
-            // Alerón
-            const wing = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.1, 0.4), new THREE.MeshPhongMaterial({ color: 0x111111 }));
-            wing.position.set(0, 0.8, -1.3);
-            car.add(wing);
-            // Cabina
-            const glass = new THREE.Mesh(new THREE.BoxGeometry(1, 0.4, 1.2), new THREE.MeshPhongMaterial({ color: 0x222222, transparent: true, opacity: 0.7 }));
-            glass.position.set(0, 0.8, 0);
-            car.add(glass);
-            return car;
-        }
-
-        const playerCar = createCoolCar(0x3498db);
-        scene.add(playerCar);
-
-        const aiCar = createCoolCar(0xe74c3c);
-        scene.add(aiCar);
-
-        // --- SISTEMA DE HUMO ---
-        const particles = [];
-        function createSmoke(pos) {
-            const p = new THREE.Mesh(new THREE.SphereGeometry(0.2, 4, 4), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 }));
-            p.position.copy(pos);
-            scene.add(p);
-            particles.push({ mesh: p, life: 1.0 });
-        }
-
-        // --- LÓGICA ---
-        const keys = {};
-        window.onkeydown = (e) => keys[e.key.toLowerCase()] = true;
-        window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
-
-        let speed = 0, rotation = 0, drift = 0, aiProgress = 0;
-
-        // Funciones de Tienda
-        window.toggleCatalog = (show) => {
-            document.getElementById('catalog').style.display = show ? 'block' : 'none';
-        };
-
-        window.selectCar = (name, price, color) => {
-            if (coins >= price) {
-                if(price > 0) coins -= price;
-                currentCarColor = color;
-                playerCar.children[0].material.color.setHex(color);
-                if(name === 'Sport') stats = { accel: 0.012, max: 0.9, turn: 0.06 };
-                document.getElementById('shopMsg').innerText = "¡Coche seleccionado!";
-                document.getElementById('coinCount').innerText = Math.floor(coins);
-            } else {
-                document.getElementById('shopMsg').innerText = "¡Necesitas más monedas!";
+    <script>
+        // ==================== GAME DATA ====================
+        const tracks = [
+            {
+                id: 1,
+                name: "Circuito Básico",
+                emoji: "🛣️",
+                difficulty: "easy",
+                difficultyText: "Fácil",
+                reward: 100,
+                gemReward: 1,
+                timeLimit: 60,
+                unlocked: true,
+                color: "#2ecc71",
+                description: "Pista perfecta para principiantes"
+            },
+            {
+                id: 2,
+                name: "Puerto Nocturno",
+                emoji: "🌃",
+                difficulty: "medium",
+                difficultyText: "Medio",
+                reward: 200,
+                gemReward: 2,
+                timeLimit: 75,
+                unlocked: false,
+                price: 500,
+                color: "#f39c12",
+                description: "Contenedores y luces de neón"
+            },
+            {
+                id: 3,
+                name: "Montaña Japonesa",
+                emoji: "⛰️",
+                difficulty: "hard",
+                difficultyText: "Difícil",
+                reward: 350,
+                gemReward: 3,
+                timeLimit: 90,
+                unlocked: false,
+                price: 1000,
+                color: "#e74c3c",
+                description: "Carreteras de montaña peligrosas"
+            },
+            {
+                id: 4,
+                name: "Ciudad Futurista",
+                emoji: "🌆",
+                difficulty: "hard",
+                difficultyText: "Difícil",
+                reward: 500,
+                gemReward: 5,
+                timeLimit: 120,
+                unlocked: false,
+                price: 2000,
+                color: "#9b59b6",
+                description: "Edificios brillantes y curvas cerradas"
+            },
+            {
+                id: 5,
+                name: "Desierto Infinito",
+                emoji: "🏜️",
+                difficulty: "medium",
+                difficultyText: "Medio",
+                reward: 300,
+                gemReward: 3,
+                timeLimit: 90,
+                unlocked: false,
+                price: 1500,
+                color: "#e67e22",
+                description: "Dunas y amplios espacios para drift"
+            },
+            {
+                id: 6,
+                name: "Circuito Nórdico",
+                emoji: "❄️",
+                difficulty: "hard",
+                difficultyText: "Extremo",
+                reward: 600,
+                gemReward: 6,
+                timeLimit: 100,
+                unlocked: false,
+                price: 3000,
+                color: "#3498db",
+                description: "Hielo y nieve - máximo desafío"
             }
+        ];
+
+        const cars = [
+            {
+                id: 1,
+                name: "Starter GT",
+                emoji: "🚗",
+                speed: 5,
+                handling: 5,
+                drift: 5,
+                price: 0,
+                owned: true,
+                selected: true
+            },
+            {
+                id: 2,
+                name: "Turbo Beast",
+                emoji: "🏎️",
+                speed: 8,
+                handling: 6,
+                drift: 7,
+                price: 1000,
+                owned: false,
+                selected: false
+            },
+            {
+                id: 3,
+                name: "Drift Master",
+                emoji: "🚙",
+                speed: 6,
+                handling: 8,
+                drift: 9,
+                price: 2000,
+                owned: false,
+                selected: false
+            },
+            {
+                id: 4,
+                name: "Speed Demon",
+                emoji: "🚕",
+                speed: 10,
+                handling: 5,
+                drift: 6,
+                price: 3000,
+                owned: false,
+                selected: false
+            },
+            {
+                id: 5,
+                name: "Legend Racer",
+                emoji: "🚘",
+                speed: 9,
+                handling: 9,
+                drift: 10,
+                price: 5000,
+                owned: false,
+                selected: false
+            },
+            {
+                id: 6,
+                name: "Neon Phantom",
+                emoji: "✨",
+                speed: 10,
+                handling: 10,
+                drift: 10,
+                price: 10000,
+                owned: false,
+                selected: false
+            }
+        ];
+
+        const shopItems = [
+            {
+                id: 1,
+                name: "Nitro Boost x5",
+                emoji: "💨",
+                price: 200,
+                type: "consumable",
+                description: "+50% velocidad por 5 segundos"
+            },
+            {
+                id: 2,
+                name: "Doble Monedas",
+                emoji: "💰",
+                price: 500,
+                type: "upgrade",
+                description: "Gana el doble de monedas por carrera"
+            },
+            {
+                id: 3,
+                name: "Tiempo Extra +30s",
+                emoji: "⏱️",
+                price: 300,
+                type: "consumable",
+                description: "30 segundos adicionales"
+            },
+            {
+                id: 4,
+                name: "Paquete Gemas",
+                emoji: "💎",
+                price: 1000,
+                type: "currency",
+                description: "+10 gemas premium"
+            },
+            {
+                id: 5,
+                name: "Magnet de Puntos",
+                emoji: "🧲",
+                price: 750,
+                type: "upgrade",
+                description: "Atrae puntos cercanos"
+            },
+            {
+                id: 6,
+                name: "Super Drift",
+                emoji: "🔥",
+                price: 1500,
+                type: "upgrade",
+                description: "+25% multiplicador de drift"
+            }
+        ];
+
+        const achievements = [
+            { id: 1, name: "Primera Derivada", desc: "Completa tu primer drift", icon: "🎯", condition: () => gameStats.totalDrifts >= 1 },
+            { id: 2, name: "Velocista", desc: "Alcanza 200 km/h", icon: "⚡", condition: () => gameStats.maxSpeed >= 200 },
+            { id: 3, name: "Recolector", desc: "Acumula 1000 monedas", icon: "💰", condition: () => gameState.coins >= 1000 },
+            { id: 4, name: "Drift Master", desc: "Alcanza 10x de drift", icon: "🔥", condition: () => gameStats.maxDriftMultiplier >= 10 },
+            { id: 5, name: "Explorador", desc: "Desbloquea 3 pistas", icon: "🗺️", condition: () => tracks.filter(t => t.unlocked).length >= 3 },
+            { id: 6, name: "Coleccionista", desc: "Posee 3 coches", icon: "🚗", condition: () => cars.filter(c => c.owned).length >= 3 },
+            { id: 7, name: "Puntazo", desc: "Consigue 10000 puntos", icon: "🏆", condition: () => gameStats.highScore >= 10000 },
+            { id: 8, name: "Maratoniano", desc: "Juega 10 carreras", icon: "🎮", condition: () => gameStats.racesCompleted >= 10 }
+        ];
+
+        // ==================== GAME STATE ====================
+        let gameState = {
+            coins: 500,
+            gems: 5,
+            totalScore: 0,
+            ownedCars: [1],
+            selectedCar: 1,
+            unlockedTracks: [1],
+            purchasedItems: [],
+            achievements: []
         };
+
+        let gameStats = {
+            totalDrifts: 0,
+            maxSpeed: 0,
+            maxDriftMultiplier: 0,
+            highScore: 0,
+            racesCompleted: 0
+        };
+
+        // Load saved state
+        function loadGameState() {
+            const saved = localStorage.getItem('driftKingState');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                // Update cars and tracks based on saved state
+                cars.forEach(car => car.owned = gameState.ownedCars.includes(car.id));
+                cars.forEach(car => car.selected = car.id === gameState.selectedCar);
+                tracks.forEach(track => track.unlocked = gameState.unlockedTracks.includes(track.id));
+                
+                const savedStats = localStorage.getItem('driftKingStats');
+                if (savedStats) gameStats = JSON.parse(savedStats);
+            }
+            updateCurrencyDisplay();
+        }
+
+        function saveGameState() {
+            localStorage.setItem('driftKingState', JSON.stringify(gameState));
+            localStorage.setItem('driftKingStats', JSON.stringify(gameStats));
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function updateCurrencyDisplay() {
+            document.getElementById('coinsDisplay').textContent = gameState.coins.toLocaleString();
+            document.getElementById('gemsDisplay').textContent = gameState.gems.toLocaleString();
+            document.getElementById('totalScoreDisplay').textContent = gameState.totalScore.toLocaleString();
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.getElementById('mainMenu').parentElement.querySelectorAll('.main-menu, .track-selection, .garage-section, .shop-section, .game-area').forEach(el => {
+                el.classList.remove('active');
+                if (!el.classList.contains('game-area')) el.style.display = 'none';
+            });
+            
+            // Show target section
+            if (sectionId === 'mainMenu') {
+                document.getElementById('mainMenu').style.display = 'grid';
+            } else if (sectionId === 'trackSelection') {
+                document.getElementById('trackSelection').classList.add('active');
+                document.getElementById('trackSelection').style.display = 'block';
+                renderTracks();
+            } else if (sectionId === 'garage') {
+                document.getElementById('garage').classList.add('active');
+                document.getElementById('garage').style.display = 'block';
+                renderCars();
+            } else if (sectionId === 'shop') {
+                document.getElementById('shop').classList.add('active');
+                document.getElementById('shop').style.display = 'block';
+                renderShop();
+            } else if (sectionId === 'game') {
+                document.getElementById('gameArea').classList.add('active');
+                document.getElementById('gameArea').style.display = 'block';
+            }
+        }
+
+        function renderTracks() {
+            const grid = document.getElementById('tracksGrid');
+            grid.innerHTML = tracks.map(track => `
+                <div class="track-card ${!track.unlocked ? 'locked' : ''}" onclick="${track.unlocked ? `startRace(${track.id})` : `unlockTrack(${track.id})`}">
+                    <div class="track-preview" style="background: linear-gradient(135deg, ${track.color}33, ${track.color}11);">
+                        ${track.emoji}
+                        ${!track.unlocked ? `<div class="lock-overlay">🔒<br><small>${track.price} 💰</small></div>` : ''}
+                    </div>
+                    <div class="track-info">
+                        <div class="track-name">${track.name}</div>
+                        <span class="track-difficulty difficulty-${track.difficulty}">${track.difficultyText}</span>
+                        <div class="track-reward">🏆 ${track.reward} puntos | 💎 ${track.gemReward} gemas</div>
+                        <p style="color: #888; font-size: 0.85rem; margin-top: 8px;">${track.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCars() {
+            const grid = document.getElementById('carsGrid');
+            grid.innerHTML = cars.map(car => `
+                <div class="car-card ${car.selected ? 'selected' : ''} ${!car.owned ? '' : ''}" 
+                     onclick="${car.owned ? `selectCar(${car.id})` : `buyCar(${car.id})`}">
+                    <div class="car-emoji">${car.emoji}</div>
+                    <div class="car-name">${car.name}</div>
+                    ${!car.owned ? `<div class="item-price">${car.price} 💰</div>` : '<span style="color: #2ecc71;">✓ Poseído</span>'}
+                    <div class="car-stats">
+                        <div class="stat">
+                            <div class="stat-label">Velocidad</div>
+                            <div class="stat-value">${'★'.repeat(Math.ceil(car.speed/2))}${'☆'.repeat(5-Math.ceil(car.speed/2))}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Manejo</div>
+                            <div class="stat-value">${'★'.repeat(Math.ceil(car.handling/2))}${'☆'.repeat(5-Math.ceil(car.handling/2))}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Drift</div>
+                            <div class="stat-value">${'★'.repeat(Math.ceil(car.drift/2))}${'☆'.repeat(5-Math.ceil(car.drift/2))}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderShop() {
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = shopItems.map(item => `
+                <div class="shop-item ${gameState.purchasedItems.includes(item.id) ? 'owned' : ''}">
+                    <div class="item-icon">${item.emoji}</div>
+                    <div class="item-name">${item.name}</div>
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">${item.description}</p>
+                    ${gameState.purchasedItems.includes(item.id) 
+                        ? '<span class="owned-badge">✓ Comprado</span>' 
+                        : `<div class="item-price">${item.price} 💰</div>
+                           <button class="buy-btn" onclick="buyItem(${item.id})" ${gameState.coins < item.price ? 'disabled' : ''}>
+                               Comprar
+                           </button>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        function selectCar(carId) {
+            cars.forEach(c => c.selected = c.id === carId);
+            gameState.selectedCar = carId;
+            saveGameState();
+            renderCars();
+        }
+
+        function buyCar(carId) {
+            const car = cars.find(c => c.id === carId);
+            if (gameState.coins >= car.price && !car.owned) {
+                gameState.coins -= car.price;
+                car.owned = true;
+                gameState.ownedCars.push(carId);
+                saveGameState();
+                updateCurrencyDisplay();
+                renderCars();
+                showNotification(`¡Compraste ${car.name}! 🚗`);
+            } else {
+                showNotification('No tienes suficientes monedas 😢');
+            }
+        }
+
+        function unlockTrack(trackId) {
+            const track = tracks.find(t => t.id === trackId);
+            if (gameState.coins >= track.price && !track.unlocked) {
+                gameState.coins -= track.price;
+                track.unlocked = true;
+                gameState.unlockedTracks.push(trackId);
+                saveGameState();
+                updateCurrencyDisplay();
+                renderTracks();
+                showNotification(`¡Pista desbloqueada: ${track.name}! 🏁`);
+            } else if (track.unlocked) {
+                startRace(trackId);
+            } else {
+                showNotification(`Necesitas ${track.price} monetas 🔒`);
+            }
+        }
+
+        function buyItem(itemId) {
+            const item = shopItems.find(i => i.id === itemId);
+            if (gameState.coins >= item.price && !gameState.purchasedItems.includes(itemId)) {
+                gameState.coins -= item.price;
+                gameState.purchasedItems.push(itemId);
+                saveGameState();
+                updateCurrencyDisplay();
+                renderShop();
+                showNotification(`¡Compraste ${item.name}! 🛒`);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(45deg, #2ecc71, #27ae60);
+                color: white;
+                padding: 15px 30px;
+                border-radius: 30px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideDown 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2500);
+        }
+
+        // ==================== GAME ENGINE ====================
+        let canvas, ctx;
+        let gameRunning = false;
+        let currentTrack = null;
+        let currentCar = null;
+
+        // Car physics
+        let car = {
+            x: 0,
+            y: 0,
+            angle: 0,
+            velocity: 0,
+            angularVelocity: 0,
+            drifting: false,
+            driftAngle: 0,
+            driftTime: 0,
+            driftScore: 0
+        };
+
+        // Input state
+        let keys = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            space: false
+        };
+
+        // Game variables
+        let score = 0;
+        let driftMultiplier = 0;
+        let maxDriftThisGame = 0;
+        let gameTime = 0;
+        let gameTimeInterval;
+        let particles = [];
+        let tireMarks = [];
+
+        // Track elements
+        let obstacles = [];
+        let coins = [];
+        let boostPads = [];
+
+        function startRace(trackId) {
+            currentTrack = tracks.find(t => t.id === trackId);
+            currentCar = cars.find(c => c.id === gameState.selectedCar);
+            
+            showSection('game');
+            initGame();
+        }
+
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth * 2;
+            canvas.height = canvas.offsetHeight * 2;
+            ctx.scale(2, 2);
+
+            // Reset game state
+            score = 0;
+            driftMultiplier = 0;
+            maxDriftThisGame = 0;
+            gameTime = currentTrack.timeLimit;
+            particles = [];
+            tireMarks = [];
+
+            // Initialize car position
+            car = {
+                x: canvas.width / 4,
+                y: canvas.height / 4,
+                angle: 0,
+                velocity: 0,
+                angularVelocity: 0,
+                drifting: false,
+                driftAngle: 0,
+                driftTime: 0,
+                driftScore: 0
+            };
+
+            // Generate track elements
+            generateTrackElements();
+
+            // Start game loop
+            gameRunning = true;
+            gameLoop();
+
+            // Start timer
+            clearInterval(gameTimeInterval);
+            gameTimeInterval = setInterval(() => {
+                if (gameRunning) {
+                    gameTime--;
+                    document.getElementById('currentTime').textContent = gameTime;
+                    if (gameTime <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+
+            setupControls();
+        }
+
+        function generateTrackElements() {
+            obstacles = [];
+            coins = [];
+            boostPads = [];
+
+            const w = canvas.width / 2;
+            const h = canvas.height / 2;
+
+            // Generate obstacles based on track
+            for (let i = 0; i < 8 + currentTrack.id * 2; i++) {
+                obstacles.push({
+                    x: Math.random() * (w - 100) + 50,
+                    y: Math.random() * (h - 100) + 50,
+                    radius: 20 + Math.random() * 20,
+                    type: Math.random() > 0.5 ? 'barrel' : 'cone'
+                });
+            }
+
+            // Generate collectible coins
+            for (let i = 0; i < 15; i++) {
+                coins.push({
+                    x: Math.random() * (w - 60) + 30,
+                    y: Math.random() * (h - 60) + 30,
+                    collected: false,
+                    value: 10 + Math.floor(Math.random() * 20)
+                });
+            }
+
+            // Generate boost pads
+            for (let i = 0; i < 3; i++) {
+                boostPads.push({
+                    x: Math.random() * (w - 100) + 50,
+                    y: Math.random() * (h - 100) + 50,
+                    width: 60,
+                    height: 30,
+                    active: true
+                });
+            }
+        }
+
+        function setupControls() {
+            // Keyboard controls
+            document.onkeydown = (e) => {
+                if (e.key === 'ArrowUp' || e.key === 'w') keys.up = true;
+                if (e.key === 'ArrowDown' || e.key === 's') keys.down = true;
+                if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+                if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+                if (e.key === ' ') keys.space = true;
+            };
+
+            document.onkeyup = (e) => {
+                if (e.key === 'ArrowUp' || e.key === 'w') keys.up = false;
+                if (e.key === 'ArrowDown' || e.key === 's') keys.down = false;
+                if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+                if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+                if (e.key === ' ') keys.space = false;
+            };
+
+            // Mobile controls
+            const setupMobileBtn = (id, key) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+                    btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+                    btn.addEventListener('mousedown', () => keys[key] = true);
+                    btn.addEventListener('mouseup', () => keys[key] = false);
+                    btn.addEventListener('mouseleave', () => keys[key] = false);
+                }
+            };
+
+            setupMobileBtn('accelBtn', 'up');
+            setupMobileBtn('brakeBtn', 'down');
+            setupMobileBtn('leftBtn', 'left');
+            setupMobileBtn('rightBtn', 'right');
+            setupMobileBtn('driftBtn', 'space');
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
 
         function update() {
-            // Movimiento Jugador
-            if (keys['w'] || keys['arrowup']) speed += stats.accel;
-            if (keys['s'] || keys['arrowdown']) speed -= stats.accel;
-            speed *= 0.98;
+            const acceleration = 0.15 * (currentCar.speed / 5);
+            const friction = 0.98;
+            const turnSpeed = 0.05 * (currentCar.handling / 5);
+            const driftFactor = currentCar.drift / 10;
 
-            const isTurning = keys['a'] || keys['d'] || keys['arrowleft'] || keys['arrowright'];
-            if (Math.abs(speed) > 0.1) {
-                const turnDir = (keys['a'] || keys['arrowleft']) ? 1 : (keys['d'] || keys['arrowright']) ? -1 : 0;
-                rotation += turnDir * stats.turn * (speed / stats.max);
-                drift = THREE.MathUtils.lerp(drift, turnDir * 0.6, 0.1);
+            // Acceleration
+            if (keys.up) {
+                car.velocity += acceleration;
+            }
+            if (keys.down) {
+                car.velocity -= acceleration * 0.5;
+            }
 
-                if (turnDir !== 0 && Math.abs(speed) > 0.3) {
-                    coins += 1;
-                    document.getElementById('coinCount').innerText = Math.floor(coins);
-                    createSmoke(playerCar.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(playerCar.quaternion)));
+            // Apply friction
+            car.velocity *= friction;
+
+            // Speed limit
+            const maxSpeed = 8 + currentCar.speed;
+            car.velocity = Math.max(-maxSpeed/2, Math.min(maxSpeed, car.velocity));
+
+            // Steering
+            if (Math.abs(car.velocity) > 0.5) {
+                if (keys.left) {
+                    car.angularVelocity -= turnSpeed * Math.sign(car.velocity);
+                }
+                if (keys.right) {
+                    car.angularVelocity += turnSpeed * Math.sign(car.velocity);
+                }
+            }
+
+            // Drift mechanics
+            car.drifting = keys.space && Math.abs(car.velocity) > 2;
+            
+            if (car.drifting) {
+                car.driftTime++;
+                car.angularVelocity *= 1.1; // Enhanced turning while drifting
+                
+                // Calculate drift score
+                const driftIntensity = Math.abs(car.angularVelocity) * Math.abs(car.velocity);
+                driftMultiplier = Math.min(20, Math.floor(car.driftTime / 10) + 1);
+                
+                if (car.driftTime % 5 === 0) {
+                    score += driftMultiplier * 10;
+                    car.driftScore += driftMultiplier * 10;
+                    
+                    // Add particles
+                    for (let i = 0; i < 2; i++) {
+                        particles.push(createTireParticle());
+                    }
+                    
+                    // Add tire marks
+                    if (car.driftTime % 3 === 0) {
+                        tireMarks.push({ x: car.x, y: car.y, alpha: 1 });
+                    }
+                }
+
+                if (driftMultiplier > maxDriftThisGame) {
+                    maxDriftThisGame = driftMultiplier;
                 }
             } else {
-                drift = THREE.MathUtils.lerp(drift, 0, 0.1);
+                // End drift - add bonus
+                if (car.driftTime > 30) {
+                    const bonus = Math.floor(car.driftScore * driftMultiplier * 0.5);
+                    score += bonus;
+                    gameStats.totalDrifts++;
+                }
+                car.driftTime = 0;
+                car.driftScore = 0;
+                driftMultiplier = 0;
             }
 
-            playerCar.rotation.y = rotation;
-            playerCar.children[0].rotation.y = drift;
-            playerCar.position.x += Math.sin(rotation + drift * 0.5) * speed;
-            playerCar.position.z += Math.cos(rotation + drift * 0.5) * speed;
+            // Apply angular friction
+            car.angularVelocity *= 0.92;
 
-            // IA siguiendo la curva
-            aiProgress += 0.0015;
-            const aiPos = curve.getPointAt(aiProgress % 1);
-            aiCar.position.copy(aiPos);
-            const aiLook = curve.getPointAt((aiProgress + 0.01) % 1);
-            aiCar.lookAt(aiLook);
+            // Update angle
+            car.angle += car.angularVelocity;
 
-            // Partículas
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].life -= 0.03;
-                particles[i].mesh.material.opacity = particles[i].life;
-                particles[i].mesh.scale.multiplyScalar(1.05);
-                if (particles[i].life <= 0) {
-                    scene.remove(particles[i].mesh);
-                    particles.splice(i, 1);
+            // Update position
+            car.x += Math.cos(car.angle) * car.velocity;
+            car.y += Math.sin(car.angle) * car.velocity;
+
+            // Boundary collision
+            const w = canvas.width / 2;
+            const h = canvas.height / 2;
+            if (car.x < 30) { car.x = 30; car.velocity *= -0.5; }
+            if (car.x > w - 30) { car.x = w - 30; car.velocity *= -0.5; }
+            if (car.y < 30) { car.y = 30; car.velocity *= -0.5; }
+            if (car.y > h - 30) { car.y = h - 30; car.velocity *= -0.5; }
+
+            // Obstacle collision
+            obstacles.forEach(obs => {
+                const dx = car.x - obs.x;
+                const dy = car.y - obs.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < obs.radius + 20) {
+                    // Push back
+                    const pushAngle = Math.atan2(dy, dx);
+                    car.x = obs.x + Math.cos(pushAngle) * (obs.radius + 22);
+                    car.y = obs.y + Math.sin(pushAngle) * (obs.radius + 22);
+                    car.velocity *= -0.3;
+                    
+                    // Lose some score
+                    score = Math.max(0, score - 50);
+                }
+            });
+
+            // Coin collection
+            coins.forEach(coin => {
+                if (!coin.collected) {
+                    const dx = car.x - coin.x;
+                    const dy = car.y - coin.y;
+                    if (Math.sqrt(dx*dx + dy*dy) < 30) {
+                        coin.collected = true;
+                        score += coin.value;
+                        
+                        // Coin particle effect
+                        for (let i = 0; i < 5; i++) {
+                            particles.push({
+                                x: coin.x,
+                                y: coin.y,
+                                vx: (Math.random() - 0.5) * 4,
+                                vy: (Math.random() - 0.5) * 4,
+                                life: 30,
+                                color: '#feca57',
+                                size: 5
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Boost pad collision
+            boostPads.forEach(pad => {
+                if (pad.active &&
+                    car.x > pad.x - pad.width/2 && car.x < pad.x + pad.width/2 &&
+                    car.y > pad.y - pad.height/2 && car.y < pad.y + pad.height/2) {
+                    car.velocity *= 1.3;
+                    pad.active = false;
+                    setTimeout(() => pad.active = true, 3000);
+                }
+            });
+
+            // Update particles
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                return p.life > 0;
+            });
+
+            // Update tire marks fade
+            tireMarks = tireMarks.filter(mark => {
+                mark.alpha -= 0.002;
+                return mark.alpha > 0;
+            });
+
+            // Limit tire marks array
+            if (tireMarks.length > 500) {
+                tireMarks.splice(0, 100);
+            }
+
+            // Update stats
+            const speedKmh = Math.abs(Math.round(car.velocity * 20));
+            if (speedKmh > gameStats.maxSpeed) gameStats.maxSpeed = speedKmh;
+
+            // Update HUD
+            document.getElementById('currentScore').textContent = score.toLocaleString();
+            document.getElementById('currentDrift').textContent = driftMultiplier;
+            document.getElementById('currentSpeed').textContent = speedKmh;
+            document.getElementById('driftMeterFill').style.width = `${Math.min(100, driftMultiplier * 5)}%`;
+        }
+
+        function createTireParticle() {
+            const offset = 15;
+            return {
+                x: car.x - Math.cos(car.angle) * offset + (Math.random() - 0.5) * 10,
+                y: car.y - Math.sin(car.angle) * offset + (Math.random() - 0.5) * 10,
+                vx: (Math.random() - 0.5) * 3,
+                vy: (Math.random() - 0.5) * 3,
+                life: 40 + Math.random() * 20,
+                color: car.drifting ? '#333' : '#555',
+                size: 3 + Math.random() * 4
+            };
+        }
+
+        function render() {
+            const w = canvas.width / 2;
+            const h = canvas.height / 2;
+
+            // Clear canvas with track color
+            ctx.fillStyle = getTrackBackground();
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw track pattern
+            drawTrackPattern(w, h);
+
+            // Draw tire marks
+            tireMarks.forEach(mark => {
+                ctx.fillStyle = `rgba(30, 30, 30, ${mark.alpha * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(mark.x, mark.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw boost pads
+            boostPads.forEach(pad => {
+                ctx.fillStyle = pad.active ? 'rgba(72, 219, 251, 0.6)' : 'rgba(100, 100, 100, 0.3)';
+                ctx.fillRect(pad.x - pad.width/2, pad.y - pad.height/2, pad.width, pad.height);
+                ctx.strokeStyle = pad.active ? '#48dbfb' : '#666';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(pad.x - pad.width/2, pad.y - pad.height/2, pad.width, pad.height);
+                
+                if (pad.active) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('BOOST', pad.x, pad.y + 4);
+                }
+            });
+
+            // Draw coins
+            coins.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.fillStyle = '#feca57';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#f39c12';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#feca57';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('$', coin.x, coin.y + 3);
+                }
+            });
+
+            // Draw obstacles
+            obstacles.forEach(obs => {
+                if (obs.type === 'barrel') {
+                    // Barrel
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.beginPath();
+                    ctx.arc(obs.x, obs.y, obs.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#c0392b';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    // Stripes
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(obs.x - obs.radius, obs.y - 3, obs.radius * 2, 6);
+                } else {
+                    // Cone
+                    ctx.fillStyle = '#f39c12';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, obs.y - obs.radius);
+                    ctx.lineTo(obs.x + obs.radius * 0.7, obs.y + obs.radius * 0.6);
+                    ctx.lineTo(obs.x - obs.radius * 0.7, obs.y + obs.radius * 0.6);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(obs.x - obs.radius * 0.4, obs.y - obs.radius * 0.3, obs.radius * 0.8, obs.radius * 0.4);
+                }
+            });
+
+            // Draw particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life / 50;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // Draw car
+            drawCar();
+
+            // Draw drift indicator
+            if (car.drifting && driftMultiplier > 0) {
+                ctx.save();
+                ctx.translate(car.x, car.y - 50);
+                ctx.fillStyle = `hsl(${(driftMultiplier * 18) % 360}, 100%, 50%)`;
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.shadowBlur = 10;
+                ctx.fillText(`${driftMultiplier}x DRIFT!`, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function getTrackBackground() {
+            switch(currentTrack.id) {
+                case 1: return '#2d5a27'; // Green circuit
+                case 2: return '#1a1a2e'; // Night harbor
+                case 3: return '#4a3728'; // Mountain
+                case 4: return '#16213e'; // Futuristic city
+                case 5: return '#c2956e'; // Desert
+                case 6: return '#a8d8ea'; // Snow
+                default: return '#333';
+            }
+        }
+
+        function drawTrackPattern(w, h) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+
+            // Grid or road markings based on track
+            if (currentTrack.id === 2 || currentTrack.id === 4) {
+                // City lights effect
+                for (let i = 0; i < 20; i++) {
+                    ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},255,0.3)`;
+                    ctx.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+                }
+            } else if (currentTrack.id === 6) {
+                // Snow flakes
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                for (let i = 0; i < 30; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * w, Math.random() * h, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else {
+                // Standard grid
+                for (let x = 0; x < w; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < h; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
                 }
             }
-
-            // Cámara
-            const camOffset = new THREE.Vector3(0, 4, -10).applyQuaternion(playerCar.quaternion);
-            camera.position.lerp(playerCar.position.clone().add(camOffset), 0.1);
-            camera.lookAt(playerCar.position);
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            update();
-            renderer.render(scene, camera);
+        function drawCar() {
+            ctx.save();
+            ctx.translate(car.x, car.y);
+            ctx.rotate(car.angle);
+
+            // Car body
+            const carLength = 35;
+            const carWidth = 20;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(-carLength/2 + 3, -carWidth/2 + 3, carLength, carWidth);
+
+            // Main body
+            const gradient = ctx.createLinearGradient(-carLength/2, 0, carLength/2, 0);
+            gradient.addColorStop(0, '#e74c3c');
+            gradient.addColorStop(0.5, '#ff6b6b');
+            gradient.addColorStop(1, '#c0392b');
+            ctx.fillStyle = gradient;
+            
+            // Rounded rectangle for car
+            roundRect(ctx, -carLength/2, -carWidth/2, carLength, carWidth, 5);
+            ctx.fill();
+
+            // Windshield
+            ctx.fillStyle = '#3498db';
+            roundRect(ctx, 5, -carWidth/2 + 3, 12, carWidth - 6, 2);
+            ctx.fill();
+
+            // Headlights
+            ctx.fillStyle = '#feca57';
+            ctx.beginPath();
+            ctx.arc(carLength/2 - 3, -carWidth/2 + 5, 3, 0, Math.PI * 2);
+            ctx.arc(carLength/2 - 3, carWidth/2 - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Taillights
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(-carLength/2 + 3, -carWidth/2 + 5, 2, 0, Math.PI * 2);
+            ctx.arc(-carLength/2 + 3, carWidth/2 - 5, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Drift smoke effect
+            if (car.drifting) {
+                ctx.fillStyle = 'rgba(200,200,200,0.6)';
+                ctx.beginPath();
+                ctx.ellipse(-carLength/2 - 10, -carWidth/2 + 3, 8 + Math.random() * 5, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(-carLength/2 - 10, carWidth/2 - 3, 8 + Math.random() * 5, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
         }
 
-        animate();
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function endGame() {
+            gameRunning = false;
+            clearInterval(gameTimeInterval);
+
+            // Calculate rewards
+            const baseCoins = Math.floor(score / 10) + currentTrack.reward;
+            const baseGems = score > 5000 ? currentTrack.gemReward : Math.ceil(currentTrack.gemReward / 2);
+            
+            // Apply double coins upgrade
+            let finalCoins = baseCoins;
+            if (gameState.purchasedItems.includes(2)) {
+                finalCoins *= 2;
+            }
+
+            gameState.coins += finalCoins;
+            gameState.gems += baseGems;
+            gameState.totalScore += score;
+
+            if (score > gameStats.highScore) gameStats.highScore = score;
+            gameStats.racesCompleted++;
+
+            saveGameState();
+            updateCurrencyDisplay();
+
+            // Show modal
+            document.getElementById('finalScore').textContent = score.toLocaleString();
+            document.getElementById('maxDrift').textContent = maxDriftThisGame + 'x';
+            document.getElementById('coinsEarned').textContent = '+' + finalCoins + ' 💰';
+            document.getElementById('gemsEarned').textContent = '+' + baseGems + ' 💎';
+            document.getElementById('gameOverModal').classList.add('active');
+
+            checkAchievements();
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverModal').classList.remove('active');
+            startRace(currentTrack.id);
+        }
+
+        function exitToMenu() {
+            document.getElementById('gameOverModal').classList.remove('active');
+            showSection('mainMenu');
+        }
+
+        // ==================== ACHIEVEMENTS ====================
+        function showAchievements() {
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = ach.condition();
+                return `
+                    <div class="modal-stat" style="${unlocked ? 'background: rgba(46,204,113,0.2);' : ''}">
+                        <span>${ach.icon} ${ach.name}</span>
+                        <span style="color: ${unlocked ? '#2ecc71' : '#888'};">
+                            ${unlocked ? '✓ Desbloqueado' : '🔒'}
+                        </span>
+                    </div>
+                    <div style="padding-left: 15px; color: #888; font-size: 0.85rem; margin-bottom: 10px;">
+                        ${ach.desc}
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('achievementsModal').classList.add('active');
+        }
+
+        function closeAchievements() {
+            document.getElementById('achievementsModal').classList.remove('active');
+        }
+
+        function checkAchievements() {
+            achievements.forEach(ach => {
+                if (ach.condition() && !gameState.achievements.includes(ach.id)) {
+                    gameState.achievements.push(ach.id);
+                    showNotification(`¡Logro desbloqueado: ${ach.name}! ${ach.icon}`);
+                }
+            });
+            saveGameState();
+        }
+
+        // ==================== INITIALIZATION ====================
+        window.onload = function() {
+            loadGameState();
+            
+            // Add CSS animation for notifications
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        };
     </script>
 </body>
 </html>
