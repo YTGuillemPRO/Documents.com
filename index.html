@@ -103,8 +103,8 @@
 <section><a href="Flip a Coin/index.html">Flip a Coin</a></section>
 <section><a href="1001 Juegos/index.html">1001 Juegos</a></section>
 <section><a href="Brawl Stars/index.html">Brawl Stars</a></section>
-  <section><a href="Drift/index.html">Drift</a></section>
-    <section><a href="GTA/index.html">GTA</a></section>
+<section><a href="Drift/index.html">Drift</a></section>
+<section><a href="GTA/index.html">GTA</a></section>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -197,7 +197,9 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     loggedIn.classList.add("hidden");
     loggedOut.classList.remove("hidden");
-    <script>if(!confirm("Esta web es per a jugar a casa, si estas a un cole entres assumin la teva responsabilitat"))window.location.href="https://www.google.com";</script>
+    if (!confirm("Esta web es per a jugar a casa, si estas a un cole entres assumin la teva responsabilitat")) {
+      window.location.href = "https://www.google.com";
+    }
   }
 });
 </script>
