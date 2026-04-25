@@ -16,6 +16,19 @@
             background: #000;
             color: #fff;
             overflow: hidden;
+            filter: none;
+        }
+
+        body.glitch {
+            animation: screen-glitch 0.1s infinite;
+        }
+
+        @keyframes screen-glitch {
+            0% { filter: hue-rotate(0deg) brightness(1); }
+            25% { filter: hue-rotate(90deg) brightness(1.2); }
+            50% { filter: hue-rotate(0deg) brightness(0.8); }
+            75% { filter: hue-rotate(45deg) brightness(1.1); }
+            100% { filter: hue-rotate(0deg) brightness(1); }
         }
 
         #game-container {
@@ -44,31 +57,73 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.8);
+            width: 6px;
+            height: 6px;
+            background: rgba(200, 0, 0, 0.8);
             border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5), 0 0 15px rgba(255, 0, 0, 0.6);
             pointer-events: none;
+        }
+
+        #threat-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 150px;
+            height: 150px;
+            border: 3px solid #ff4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ff4444;
+            background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            font-weight: bold;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        #threat-indicator.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+            background: radial-gradient(circle, rgba(255,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+            animation: threat-pulse 0.3s infinite;
+        }
+
+        @keyframes threat-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,0,0,0.5); }
+            50% { box-shadow: 0 0 40px rgba(255,0,0,0.9); }
         }
 
         #stats {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             border: 3px solid #00ff00;
             padding: 20px;
             border-radius: 10px;
-            min-width: 250px;
+            min-width: 280px;
             pointer-events: auto;
             font-family: 'Courier New', monospace;
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
         }
 
+        #stats.critical {
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+            animation: critical-pulse 0.2s infinite;
+        }
+
+        @keyframes critical-pulse {
+            0%, 100% { background: rgba(30, 0, 0, 0.95); }
+            50% { background: rgba(60, 0, 0, 0.95); }
+        }
+
         .stat-row {
             margin: 10px 0;
-            font-size: 20px;
+            font-size: 18px;
             color: #00ff00;
             text-shadow: 0 0 8px #00ff00;
             display: flex;
@@ -78,20 +133,45 @@
 
         #power-bar {
             width: 100%;
-            height: 30px;
+            height: 35px;
             background: #1a1a1a;
             border: 3px solid #00ff00;
             border-radius: 5px;
             overflow: hidden;
-            margin-top: 10px;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7);
+            margin-top: 15px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+            position: relative;
         }
 
         #power-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00ff00 0%, #ffff00 50%, #ff0000 100%);
-            transition: width 0.3s;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+            background: linear-gradient(90deg, #00ff00 0%, #ffff00 40%, #ff8800 70%, #ff0000 100%);
+            transition: width 0.2s;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8), inset 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        #power-bar.empty #power-fill {
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            animation: power-flicker 0.1s infinite;
+        }
+
+        @keyframes power-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #threat-level {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff4444;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #ff4444;
+            font-weight: bold;
+            pointer-events: auto;
         }
 
         #interact-prompt {
@@ -127,6 +207,7 @@
             display: none;
             flex-direction: column;
             pointer-events: auto;
+            z-index: 5000;
         }
 
         #camera-ui.active {
@@ -187,8 +268,8 @@
                 0deg,
                 transparent,
                 transparent 2px,
-                rgba(0, 255, 0, 0.05) 2px,
-                rgba(0, 255, 0, 0.05) 4px
+                rgba(0, 255, 0, 0.08) 2px,
+                rgba(0, 255, 0, 0.08) 4px
             );
             pointer-events: none;
             animation: scan 4s linear infinite;
@@ -238,6 +319,7 @@
             font-weight: bold;
             font-family: 'Courier New', monospace;
             color: #00ff00;
+            position: relative;
         }
 
         .cam-btn:hover {
@@ -250,6 +332,17 @@
             background: #00ff00;
             color: #000;
             box-shadow: 0 0 35px rgba(0, 255, 0, 0.9);
+        }
+
+        .cam-btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+            animation: camera-glitch 0.2s infinite;
+        }
+
+        @keyframes camera-glitch {
+            0%, 100% { text-shadow: 0 0 0 #ff0000; }
+            50% { text-shadow: 2px 2px 5px #ff0000; }
         }
 
         #game-over, #win-screen {
@@ -272,31 +365,40 @@
         }
 
         #game-over h1 {
-            font-size: 100px;
+            font-size: 120px;
             color: #ff0000;
             margin-bottom: 30px;
-            text-shadow: 0 0 50px #ff0000;
-            animation: glitch 0.3s infinite;
+            text-shadow: 0 0 80px #ff0000, 0 0 40px #990000;
+            animation: game-over-glitch 0.1s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes game-over-glitch {
+            0%, 100% { transform: translate(0, 0) skew(0deg); }
+            20% { transform: translate(-3px, 3px) skew(-2deg); }
+            40% { transform: translate(3px, -3px) skew(2deg); }
+            60% { transform: translate(-3px, -3px) skew(-2deg); }
+            80% { transform: translate(3px, 3px) skew(2deg); }
+        }
+
+        #game-over p {
+            font-size: 24px;
+            margin: 10px;
+            color: #ccc;
         }
 
         #win-screen h1 {
-            font-size: 100px;
+            font-size: 120px;
             color: #00ff00;
             margin-bottom: 30px;
-            text-shadow: 0 0 50px #00ff00;
+            text-shadow: 0 0 80px #00ff00;
             animation: glow 1s infinite;
-        }
-
-        @keyframes glitch {
-            0%, 100% { transform: translate(0); }
-            25% { transform: translate(-8px, 8px); }
-            50% { transform: translate(8px, -8px); }
-            75% { transform: translate(-8px, -8px); }
+            font-weight: bold;
         }
 
         @keyframes glow {
-            0%, 100% { text-shadow: 0 0 50px #00ff00; }
-            50% { text-shadow: 0 0 80px #00ff00; }
+            0%, 100% { text-shadow: 0 0 80px #00ff00; }
+            50% { text-shadow: 0 0 120px #00ff00, 0 0 60px #00aa00; }
         }
 
         h1, h2, p {
@@ -336,6 +438,7 @@
             animation: jumpscare-flash 0.08s infinite;
             pointer-events: auto;
             background: #000;
+            flex-direction: column;
         }
 
         .jumpscare.active {
@@ -343,22 +446,44 @@
         }
 
         .jumpscare-face {
-            font-size: 400px;
+            font-size: 500px;
             animation: jumpscare-shake 0.04s infinite;
-            filter: drop-shadow(0 0 60px #ff0000);
+            filter: drop-shadow(0 0 100px #ff0000) brightness(1.2);
+            text-shadow: 0 0 60px #ff0000;
+            line-height: 1;
+        }
+
+        .jumpscare-text {
+            font-size: 48px;
+            color: #ff0000;
+            margin-top: 30px;
+            font-weight: bold;
+            text-shadow: 0 0 40px #ff0000;
+            animation: jumpscare-text-flash 0.08s infinite;
         }
 
         @keyframes jumpscare-flash {
             0%, 100% { background: #000; }
-            50% { background: #600; }
+            25% { background: #600; }
+            50% { background: #300; }
+            75% { background: #900; }
         }
 
         @keyframes jumpscare-shake {
             0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-            20% { transform: translate(-40px, 40px) scale(1.3) rotate(-8deg); }
-            40% { transform: translate(40px, -40px) scale(0.8) rotate(8deg); }
-            60% { transform: translate(-40px, -40px) scale(1.2) rotate(-5deg); }
-            80% { transform: translate(40px, 40px) scale(1.1) rotate(5deg); }
+            10% { transform: translate(-60px, 60px) scale(1.4) rotate(-12deg); }
+            20% { transform: translate(60px, -60px) scale(0.9) rotate(12deg); }
+            30% { transform: translate(-60px, -60px) scale(1.3) rotate(-10deg); }
+            40% { transform: translate(60px, 60px) scale(1.1) rotate(10deg); }
+            50% { transform: translate(-40px, 40px) scale(1.2) rotate(-8deg); }
+            60% { transform: translate(40px, -40px) scale(1) rotate(8deg); }
+            70% { transform: translate(-40px, -40px) scale(1.15) rotate(-6deg); }
+            80% { transform: translate(40px, 40px) scale(1.05) rotate(6deg); }
+        }
+
+        @keyframes jumpscare-text-flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         #instructions {
@@ -367,36 +492,38 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.95);
-            border: 5px solid #00ff00;
+            border: 5px solid #ff6600;
             padding: 50px;
             border-radius: 20px;
             text-align: center;
             pointer-events: auto;
-            max-width: 700px;
-            box-shadow: 0 0 60px rgba(0, 255, 0, 0.5);
+            max-width: 800px;
+            box-shadow: 0 0 60px rgba(255, 102, 0, 0.6);
+            z-index: 5001;
         }
 
         #instructions h2 {
-            color: #00ff00;
+            color: #ff6600;
             margin-bottom: 30px;
-            font-size: 36px;
-            text-shadow: 0 0 15px #00ff00;
+            font-size: 42px;
+            text-shadow: 0 0 20px #ff6600;
         }
 
         #instructions p {
             margin: 15px 0;
             font-size: 18px;
             line-height: 1.8;
+            color: #ddd;
         }
 
         #start-btn {
             margin-top: 35px;
             padding: 20px 60px;
-            background: #1a4a1a;
-            border: 5px solid #00ff00;
+            background: #4a1a1a;
+            border: 5px solid #ff4444;
             border-radius: 12px;
             cursor: pointer;
-            color: #00ff00;
+            color: #ff4444;
             font-size: 24px;
             font-family: 'Arial', sans-serif;
             font-weight: bold;
@@ -404,9 +531,10 @@
         }
 
         #start-btn:hover {
-            background: #2a6a2a;
-            box-shadow: 0 0 40px rgba(0, 255, 0, 0.7);
+            background: #6a2a2a;
+            box-shadow: 0 0 40px rgba(255, 68, 68, 0.7);
             transform: scale(1.15);
+            color: #ff6666;
         }
 
         #controls-hint {
@@ -423,6 +551,27 @@
             border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
+
+        #warning-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 30px #ff0000;
+            display: none;
+            pointer-events: none;
+            z-index: 8999;
+            text-align: center;
+            animation: warning-pulse 0.5s infinite;
+        }
+
+        @keyframes warning-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -432,45 +581,59 @@
         <div id="ui-overlay">
             <div id="crosshair"></div>
 
+            <div id="threat-indicator">
+                <div>🎯<br>AMENAZA</div>
+            </div>
+
             <div id="instructions">
                 <h2>🍕 FIVE NIGHTS AT FREDDY'S 🍕</h2>
+                <p style="color: #ff6600; font-size: 20px;">⚠️ JUEGO DE TERROR ⚠️</p>
                 <p><strong>🖱️ RATÓN</strong> - Mirar alrededor</p>
                 <p><strong>W A S D</strong> - Moverte por la oficina</p>
                 <p><strong>E</strong> - Interactuar (palancas, botones, tablet)</p>
-                <p><strong>📹 TABLET</strong> - Monitorea las cámaras</p>
-                <p><strong>🚪 PALANCAS</strong> - Cierra las puertas</p>
-                <p><strong>💡 BOTONES</strong> - Enciende las luces</p>
-                <p><strong>⚡ ENERGÍA</strong> - ¡No la malgastes!</p>
-                <p style="color: #ff8800; font-weight: bold;">🎯 Sobrevive hasta las 6 AM</p>
-                <button id="start-btn">🎮 INICIAR NOCHE</button>
+                <p><strong>📹 TABLET</strong> - Monitorea las cámaras (caro!)</p>
+                <p><strong>🚪 PALANCAS</strong> - Cierra las puertas (urgente!)</p>
+                <p><strong>💡 BOTONES</strong> - Enciende las luces (muy caro!)</p>
+                <p><strong>⚡ ENERGÍA</strong> - Sé CUIDADOSO, es limitada</p>
+                <p style="color: #ff4444; font-weight: bold; font-size: 18px;">🎯 Sobrevive hasta las 6 AM</p>
+                <p style="color: #888; font-size: 14px;">Los animatrónicos están más activos en la noche...</p>
+                <button id="start-btn">🎮 INICIAR NOCHE (SI OSAS)</button>
             </div>
 
             <div id="stats" style="display: none;">
                 <div class="stat-row">
-                    <span>🕐</span>
+                    <span>🕐 HORA</span>
                     <span id="time">12 AM</span>
                 </div>
                 <div class="stat-row">
-                    <span>🌙 Noche</span>
+                    <span>🌙 NOCHE</span>
                     <span id="night">1</span>
                 </div>
                 <div class="stat-row">
-                    <span>⚡ Energía</span>
+                    <span>📊 AMENAZA</span>
+                    <span id="threat-status">BAJA</span>
+                </div>
+                <div class="stat-row">
+                    <span>⚡ ENERGÍA</span>
                     <span id="power-percent">100%</span>
                 </div>
                 <div id="power-bar">
                     <div id="power-fill" style="width: 100%;"></div>
                 </div>
                 <div class="stat-row" style="font-size: 14px; margin-top: 15px; color: #888;">
-                    <span>Uso</span>
-                    <span id="power-usage">1x</span>
+                    <span>CONSUMO</span>
+                    <span id="power-usage">0%</span>
                 </div>
+            </div>
+
+            <div id="threat-level">
+                🚨 AMENAZA: <span id="threat-value">BAJA</span>
             </div>
 
             <div id="interact-prompt">Presiona E</div>
 
             <div id="controls-hint" style="display: none;">
-                WASD - Mover | E - Interactuar | Ratón - Mirar
+                WASD - Mover | E - Interactuar | Ratón - Mirar | TAB - Reducir HUD
             </div>
 
             <div id="camera-ui">
@@ -489,34 +652,39 @@
                     </div>
                 </div>
                 <div id="camera-grid">
-                    <div class="cam-btn" data-room="show-stage">🎭 SHOW STAGE</div>
-                    <div class="cam-btn" data-room="dining">🍽️ DINING AREA</div>
+                    <div class="cam-btn" data-room="show-stage">🎭 STAGE</div>
+                    <div class="cam-btn" data-room="dining">🍽️ DINING</div>
                     <div class="cam-btn" data-room="backstage">🎪 BACKSTAGE</div>
-                    <div class="cam-btn" data-room="pirate-cove">🏴‍☠️ PIRATE COVE</div>
-                    <div class="cam-btn" data-room="supply">📦 SUPPLY CLOSET</div>
-                    <div class="cam-btn" data-room="west-hall">🚶 WEST HALL</div>
-                    <div class="cam-btn" data-room="east-hall">🚶 EAST HALL</div>
+                    <div class="cam-btn" data-room="pirate-cove">🏴 PIRATE</div>
+                    <div class="cam-btn" data-room="supply">📦 SUPPLY</div>
+                    <div class="cam-btn" data-room="west-hall">🚶 W.HALL</div>
+                    <div class="cam-btn" data-room="east-hall">🚶 E.HALL</div>
                     <div class="cam-btn" data-room="kitchen">🍕 KITCHEN</div>
                 </div>
             </div>
 
             <div class="jumpscare" id="jumpscare">
-                <div class="jumpscare-face">🤖💀</div>
+                <div class="jumpscare-face" id="jumpscare-emoji">🤖💀</div>
+                <div class="jumpscare-text">¡TE ATRAPÉ!</div>
             </div>
+
+            <div id="warning-text"></div>
 
             <div id="game-over">
                 <h1>☠️ GAME OVER ☠️</h1>
-                <p style="font-size: 26px;">No sobreviviste la noche...</p>
+                <p id="death-message" style="font-size: 26px;">No sobreviviste...</p>
                 <p style="font-size: 22px;">Llegaste hasta las <span id="final-time"></span></p>
-                <p style="font-size: 18px; color: #888;">Los animatrónicos te atraparon</p>
+                <p style="font-size: 18px; color: #ff4444;"><span id="killer-name"></span> te atrapó</p>
+                <p style="font-size: 16px; color: #888;" id="death-detail">Los animatrónicos son despiadados...</p>
                 <button class="restart-btn" onclick="location.reload()">🔄 REINTENTAR</button>
             </div>
 
             <div id="win-screen">
                 <h1>🎉 ¡6 AM! 🎉</h1>
-                <p style="font-size: 30px;">¡SOBREVIVISTE LA NOCHE!</p>
-                <p style="font-size: 22px;">Has completado tu turno en Freddy's</p>
-                <p style="font-size: 20px; color: #888;">Energía restante: <span id="final-power"></span>%</p>
+                <p style="font-size: 30px;">¡SOBREVIVISTE!</p>
+                <p style="font-size: 22px;">Has completado tu turno en Freddy Fazbear's</p>
+                <p style="font-size: 20px; color: #88ff88;">Energía restante: <span id="final-power"></span>%</p>
+                <p style="font-size: 16px; color: #888;">Pero volverás...</p>
                 <button class="restart-btn" onclick="location.reload()">🌙 SIGUIENTE NOCHE</button>
             </div>
         </div>
@@ -524,11 +692,52 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // AUDIO SYSTEM
+        class AudioManager {
+            constructor() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.context.createGain();
+                this.masterGain.connect(this.context.destination);
+                this.masterGain.gain.value = 0.3;
+            }
+
+            playSound(type, duration = 0.5, frequency = 440, volume = 0.5) {
+                if (!this.context) return;
+                const now = this.context.currentTime;
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+                osc.frequency.value = frequency;
+                
+                if (type === 'warning') {
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.linearRampToValueAtTime(200, now + duration);
+                    osc.type = 'sine';
+                } else if (type === 'death') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.exponentialRampToValueAtTime(400, now + duration);
+                } else if (type === 'threat') {
+                    osc.type = 'square';
+                }
+
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+        }
+
         class FNAFGame {
             constructor() {
                 this.scene = null;
                 this.camera = null;
                 this.renderer = null;
+                this.audioManager = new AudioManager();
+                
                 this.controls = {
                     moveForward: false,
                     moveBackward: false,
@@ -542,8 +751,17 @@
                 this.currentInteractable = null;
                 
                 this.power = 100;
-                this.powerUsage = 1;
+                this.baseConsumption = {
+                    idle: 0.3,
+                    leftDoor: 1.5,
+                    rightDoor: 1.5,
+                    leftLight: 2.0,
+                    rightLight: 2.0,
+                    camera: 1.2
+                };
+                this.activePowerConsumption = 0;
                 this.time = 0;
+                this.hour = 0;
                 this.gameRunning = false;
                 this.gameStarted = false;
                 this.leftDoorClosed = false;
@@ -558,11 +776,15 @@
                 this.rotationX = 0;
                 this.rotationY = 0;
 
+                this.threatLevel = 0; // 0-100
+                this.animatronic_aggressiveness = 1;
+                this.hasJumpscared = false;
+
                 this.animatronics = {
-                    freddy: { location: 'show-stage', ai: 1, atDoor: null, emoji: '🐻', color: 0x8B4513 },
-                    bonnie: { location: 'show-stage', ai: 3, atDoor: null, emoji: '🐰', color: 0x4169E1 },
-                    chica: { location: 'show-stage', ai: 2, atDoor: null, emoji: '🐥', color: 0xFFD700 },
-                    foxy: { location: 'pirate-cove', ai: 2, atDoor: null, emoji: '🦊', color: 0xDC143C }
+                    freddy: { location: 'show-stage', ai: 1, atDoor: null, emoji: '🐻', color: 0x8B4513, position: new THREE.Vector3(0, 1.1, -20), threat: 0 },
+                    bonnie: { location: 'show-stage', ai: 3, atDoor: null, emoji: '🐰', color: 0x4169E1, position: new THREE.Vector3(0, 1.1, -20), threat: 0 },
+                    chica: { location: 'show-stage', ai: 2, atDoor: null, emoji: '🐥', color: 0xFFD700, position: new THREE.Vector3(0, 1.1, -20), threat: 0 },
+                    foxy: { location: 'pirate-cove', ai: 2, atDoor: null, emoji: '🦊', color: 0xDC143C, position: new THREE.Vector3(0, 1.1, -20), threat: 0 }
                 };
 
                 this.doors = { left: null, right: null };
@@ -572,6 +794,7 @@
                 this.doorLights = { left: null, right: null };
                 this.spotLights = { left: null, right: null };
                 this.animatronics3D = [];
+                this.glitchActive = false;
 
                 this.initScene();
                 this.initElements();
@@ -582,8 +805,8 @@
                 const canvas = document.getElementById('game-canvas');
                 
                 this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x000000);
-                this.scene.fog = new THREE.Fog(0x000000, 1, 25);
+                this.scene.background = new THREE.Color(0x0a0a0a);
+                this.scene.fog = new THREE.Fog(0x0a0a0a, 2, 20);
 
                 this.camera = new THREE.PerspectiveCamera(
                     75,
@@ -597,17 +820,29 @@
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.shadowMap.enabled = true;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.physicallyCorrectLights = true;
 
-                // Luces
-                const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+                // LIGHTING MEJORADA
+                const ambientLight = new THREE.AmbientLight(0x303030, 0.4);
                 this.scene.add(ambientLight);
 
-                const mainLight = new THREE.PointLight(0xffcc88, 0.8, 20);
-                mainLight.position.set(0, 3.8, 0);
+                const mainLight = new THREE.PointLight(0xffbb88, 1, 25);
+                mainLight.position.set(0, 4, 0);
                 mainLight.castShadow = true;
                 mainLight.shadow.mapSize.width = 2048;
                 mainLight.shadow.mapSize.height = 2048;
+                mainLight.shadow.camera.near = 0.1;
+                mainLight.shadow.camera.far = 30;
                 this.scene.add(mainLight);
+
+                // Emergency lights
+                const emergencyLight1 = new THREE.PointLight(0xff3333, 0.5, 15);
+                emergencyLight1.position.set(-7, 3, 0);
+                this.scene.add(emergencyLight1);
+
+                const emergencyLight2 = new THREE.PointLight(0xff3333, 0.5, 15);
+                emergencyLight2.position.set(7, 3, 0);
+                this.scene.add(emergencyLight2);
 
                 this.createOffice();
                 this.createDoors();
@@ -625,222 +860,224 @@
             }
 
             createOffice() {
-                // Suelo con textura
-                const floorGeometry = new THREE.PlaneGeometry(15, 15);
-                const floorTexture = this.createCheckerboard(0x555555, 0x444444);
+                // PISO OSCURO
+                const floorGeometry = new THREE.PlaneGeometry(20, 20);
+                const floorCanvas = this.createTextureCanvas(0x222222, 0x111111, 64);
+                const floorTexture = new THREE.CanvasTexture(floorCanvas);
                 const floorMaterial = new THREE.MeshStandardMaterial({ 
                     map: floorTexture,
-                    roughness: 0.8,
-                    metalness: 0.1
+                    roughness: 0.9,
+                    metalness: 0,
+                    color: 0x1a1a1a
                 });
                 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // Paredes
+                // PAREDES MÁS OSCURAS
                 const wallMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x4a3520,
-                    roughness: 0.9
+                    color: 0x2a2a1a,
+                    roughness: 0.95,
+                    metalness: 0
                 });
 
-                // Pared trasera
+                // Back wall
                 const backWall = new THREE.Mesh(
-                    new THREE.BoxGeometry(15, 5, 0.3),
+                    new THREE.BoxGeometry(20, 6, 0.5),
                     wallMaterial
                 );
-                backWall.position.set(0, 2.5, -7);
+                backWall.position.set(0, 3, -10);
                 backWall.receiveShadow = true;
                 backWall.castShadow = true;
                 this.scene.add(backWall);
 
-                // Paredes laterales con huecos
-                const leftWall1 = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 5, 5),
+                // Side walls
+                const leftWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 6, 15),
                     wallMaterial
                 );
-                leftWall1.position.set(-7, 2.5, -4.5);
-                leftWall1.receiveShadow = true;
-                this.scene.add(leftWall1);
+                leftWall.position.set(-10, 3, -2.5);
+                leftWall.receiveShadow = true;
+                this.scene.add(leftWall);
 
-                const leftWall2 = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 5, 5),
+                const rightWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 6, 15),
                     wallMaterial
                 );
-                leftWall2.position.set(-7, 2.5, 2.5);
-                leftWall2.receiveShadow = true;
-                this.scene.add(leftWall2);
+                rightWall.position.set(10, 3, -2.5);
+                rightWall.receiveShadow = true;
+                this.scene.add(rightWall);
 
-                const rightWall1 = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 5, 5),
-                    wallMaterial
-                );
-                rightWall1.position.set(7, 2.5, -4.5);
-                rightWall1.receiveShadow = true;
-                this.scene.add(rightWall1);
-
-                const rightWall2 = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 5, 5),
-                    wallMaterial
-                );
-                rightWall2.position.set(7, 2.5, 2.5);
-                rightWall2.receiveShadow = true;
-                this.scene.add(rightWall2);
-
-                // Techo
+                // TECHO
                 const ceiling = new THREE.Mesh(
-                    new THREE.PlaneGeometry(15, 15),
-                    new THREE.MeshStandardMaterial({ color: 0x2a2010 })
+                    new THREE.PlaneGeometry(20, 20),
+                    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.95 })
                 );
                 ceiling.rotation.x = Math.PI / 2;
-                ceiling.position.y = 5;
+                ceiling.position.y = 6;
                 ceiling.receiveShadow = true;
                 this.scene.add(ceiling);
 
-                // Escritorio
-                const deskGeometry = new THREE.BoxGeometry(4.5, 0.2, 2.5);
+                // ESCRITORIO MALTRECHO
+                const deskGeometry = new THREE.BoxGeometry(5, 0.3, 3);
                 const deskMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x3a2510,
-                    roughness: 0.6
+                    color: 0x1a1010,
+                    roughness: 0.8,
+                    metalness: 0.3
                 });
                 const desk = new THREE.Mesh(deskGeometry, deskMaterial);
-                desk.position.set(0, 0.9, 2.5);
+                desk.position.set(0, 1, 2.5);
                 desk.castShadow = true;
                 desk.receiveShadow = true;
                 this.scene.add(desk);
 
-                // Patas del escritorio
-                const legPositions = [
-                    [-2, 0.45, 1.5], [2, 0.45, 1.5],
-                    [-2, 0.45, 3.5], [2, 0.45, 3.5]
-                ];
-                legPositions.forEach(pos => {
-                    const leg = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.1, 0.1, 0.9),
-                        deskMaterial
-                    );
-                    leg.position.set(...pos);
-                    leg.castShadow = true;
-                    this.scene.add(leg);
+                // PATAS
+                [-2.2, 2.2].forEach(x => {
+                    [-1, 1].forEach(z => {
+                        const leg = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.12, 0.12, 1),
+                            deskMaterial
+                        );
+                        leg.position.set(x, 0.5, 2.5 + z);
+                        leg.castShadow = true;
+                        this.scene.add(leg);
+                    });
                 });
 
-                // Monitor
+                // MONITOR APAGADO
                 const monitor = new THREE.Mesh(
-                    new THREE.BoxGeometry(1, 0.7, 0.1),
+                    new THREE.BoxGeometry(1.2, 0.8, 0.2),
                     new THREE.MeshStandardMaterial({ 
-                        color: 0x1a1a1a,
-                        emissive: 0x003300,
-                        emissiveIntensity: 0.4
+                        color: 0x0a0a0a,
+                        roughness: 0.3
                     })
                 );
-                monitor.position.set(-1.2, 1.45, 2.3);
-                monitor.rotation.x = -0.15;
+                monitor.position.set(-1.5, 1.5, 2);
+                monitor.rotation.x = -0.2;
+                monitor.castShadow = true;
                 this.scene.add(monitor);
 
-                // Silla
+                // SILLA GIRATORIA
                 const chairSeat = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.6, 0.6, 0.1),
-                    new THREE.MeshStandardMaterial({ color: 0x333333 })
+                    new THREE.CylinderGeometry(0.7, 0.7, 0.2),
+                    new THREE.MeshStandardMaterial({ color: 0x2a2a2a })
                 );
-                chairSeat.position.set(0, 0.6, 4.5);
+                chairSeat.position.set(0, 0.7, 4.5);
+                chairSeat.castShadow = true;
                 this.scene.add(chairSeat);
 
                 const chairBack = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.8, 0.8, 0.1),
-                    new THREE.MeshStandardMaterial({ color: 0x333333 })
+                    new THREE.BoxGeometry(1, 1, 0.2),
+                    deskMaterial
                 );
-                chairBack.position.set(0, 1.1, 4.2);
+                chairBack.position.set(0, 1.2, 4);
+                chairBack.castShadow = true;
                 this.scene.add(chairBack);
+
+                // DECORACIONES TERRORÍFICAS
+                const eyesMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xffff00,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 0.8
+                });
+
+                // Ojos en la pared del fondo
+                [-2, 2].forEach(x => {
+                    const eye = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.15),
+                        eyesMaterial
+                    );
+                    eye.position.set(x, 4.5, -9.8);
+                    this.scene.add(eye);
+                });
             }
 
-            createCheckerboard(color1, color2) {
+            createTextureCanvas(color1, color2, size) {
                 const canvas = document.createElement('canvas');
                 canvas.width = 512;
                 canvas.height = 512;
                 const ctx = canvas.getContext('2d');
                 
-                const tileSize = 64;
-                for (let y = 0; y < 8; y++) {
-                    for (let x = 0; x < 8; x++) {
+                const tileSize = 512 / (512 / size);
+                for (let y = 0; y < 512 / tileSize; y++) {
+                    for (let x = 0; x < 512 / tileSize; x++) {
                         ctx.fillStyle = (x + y) % 2 === 0 ? `#${color1.toString(16).padStart(6, '0')}` : `#${color2.toString(16).padStart(6, '0')}`;
                         ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
                     }
                 }
                 
-                const texture = new THREE.CanvasTexture(canvas);
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(6, 6);
-                return texture;
+                return canvas;
             }
 
             createDoors() {
                 const doorMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x666666,
-                    metalness: 0.5,
-                    roughness: 0.5
+                    color: 0x444444,
+                    metalness: 0.6,
+                    roughness: 0.4
                 });
 
-                // Puerta izquierda
+                // LEFT DOOR
                 this.doors.left = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 4, 3),
+                    new THREE.BoxGeometry(0.4, 4.5, 3.5),
                     doorMaterial
                 );
-                this.doors.left.position.set(-7, 2, -1);
-                this.doors.left.userData.targetY = 2;
-                this.doors.left.userData.closedY = -2;
+                this.doors.left.position.set(-10, 2.2, -1);
+                this.doors.left.userData.targetY = 2.2;
+                this.doors.left.userData.closedY = -2.5;
                 this.doors.left.castShadow = true;
                 this.scene.add(this.doors.left);
 
-                // Puerta derecha
+                // RIGHT DOOR
                 this.doors.right = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.3, 4, 3),
+                    new THREE.BoxGeometry(0.4, 4.5, 3.5),
                     doorMaterial
                 );
-                this.doors.right.position.set(7, 2, -1);
-                this.doors.right.userData.targetY = 2;
-                this.doors.right.userData.closedY = -2;
+                this.doors.right.position.set(10, 2.2, -1);
+                this.doors.right.userData.targetY = 2.2;
+                this.doors.right.userData.closedY = -2.5;
                 this.doors.right.castShadow = true;
                 this.scene.add(this.doors.right);
 
-                // Luces de las puertas
-                this.spotLights.left = new THREE.SpotLight(0xffff88, 0, 12, Math.PI / 3, 0.5);
-                this.spotLights.left.position.set(-5, 3, -1);
-                this.spotLights.left.target.position.set(-9, 0, -1);
+                // SPOTLIGHTS
+                this.spotLights.left = new THREE.SpotLight(0xffff99, 0, 18, Math.PI / 4, 0.5, 2);
+                this.spotLights.left.position.set(-7, 4, -1);
+                this.spotLights.left.target.position.set(-10, 0, -1);
                 this.spotLights.left.castShadow = true;
                 this.scene.add(this.spotLights.left);
                 this.scene.add(this.spotLights.left.target);
 
-                this.spotLights.right = new THREE.SpotLight(0xffff88, 0, 12, Math.PI / 3, 0.5);
-                this.spotLights.right.position.set(5, 3, -1);
-                this.spotLights.right.target.position.set(9, 0, -1);
+                this.spotLights.right = new THREE.SpotLight(0xffff99, 0, 18, Math.PI / 4, 0.5, 2);
+                this.spotLights.right.position.set(7, 4, -1);
+                this.spotLights.right.target.position.set(10, 0, -1);
                 this.spotLights.right.castShadow = true;
                 this.scene.add(this.spotLights.right);
                 this.scene.add(this.spotLights.right.target);
 
-                this.doorLights.left = new THREE.PointLight(0xffff88, 0, 6);
-                this.doorLights.left.position.set(-6, 2, -1);
+                // INDICATOR LIGHTS
+                this.doorLights.left = new THREE.PointLight(0xffff88, 0, 8);
+                this.doorLights.left.position.set(-9, 2, -1);
                 this.scene.add(this.doorLights.left);
 
-                this.doorLights.right = new THREE.PointLight(0xffff88, 0, 6);
-                this.doorLights.right.position.set(6, 2, -1);
+                this.doorLights.right = new THREE.PointLight(0xffff88, 0, 8);
+                this.doorLights.right.position.set(9, 2, -1);
                 this.scene.add(this.doorLights.right);
             }
 
             createInteractables() {
-                // Palanca izquierda (puerta)
+                // LEFT DOOR LEVER
                 const leverBase = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.2, 0.3, 0.2),
-                    new THREE.MeshStandardMaterial({ color: 0x444444 })
+                    new THREE.BoxGeometry(0.25, 0.4, 0.3),
+                    new THREE.MeshStandardMaterial({ color: 0x333333 })
                 );
-                leverBase.position.set(-5.5, 1.5, 0.5);
+                leverBase.position.set(-7.5, 1.5, 0.5);
                 this.scene.add(leverBase);
 
                 this.doorLevers.left = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 0.6),
-                    new THREE.MeshStandardMaterial({ color: 0xff4444 })
+                    new THREE.CylinderGeometry(0.08, 0.08, 0.7),
+                    new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff0000 })
                 );
-                this.doorLevers.left.position.set(-5.5, 1.8, 0.5);
+                this.doorLevers.left.position.set(-7.5, 1.8, 0.5);
                 this.doorLevers.left.rotation.z = 0.5;
                 this.doorLevers.left.userData.type = 'door';
                 this.doorLevers.left.userData.side = 'left';
@@ -848,19 +1085,19 @@
                 this.scene.add(this.doorLevers.left);
                 this.interactables.push(this.doorLevers.left);
 
-                // Palanca derecha (puerta)
+                // RIGHT DOOR LEVER
                 const leverBase2 = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.2, 0.3, 0.2),
-                    new THREE.MeshStandardMaterial({ color: 0x444444 })
+                    new THREE.BoxGeometry(0.25, 0.4, 0.3),
+                    new THREE.MeshStandardMaterial({ color: 0x333333 })
                 );
-                leverBase2.position.set(5.5, 1.5, 0.5);
+                leverBase2.position.set(7.5, 1.5, 0.5);
                 this.scene.add(leverBase2);
 
                 this.doorLevers.right = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 0.6),
-                    new THREE.MeshStandardMaterial({ color: 0xff4444 })
+                    new THREE.CylinderGeometry(0.08, 0.08, 0.7),
+                    new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff0000 })
                 );
-                this.doorLevers.right.position.set(5.5, 1.8, 0.5);
+                this.doorLevers.right.position.set(7.5, 1.8, 0.5);
                 this.doorLevers.right.rotation.z = -0.5;
                 this.doorLevers.right.userData.type = 'door';
                 this.doorLevers.right.userData.side = 'right';
@@ -868,48 +1105,48 @@
                 this.scene.add(this.doorLevers.right);
                 this.interactables.push(this.doorLevers.right);
 
-                // Botón luz izquierda
+                // LEFT LIGHT BUTTON
                 this.lightButtons.left = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.25, 0.25, 0.15),
+                    new THREE.BoxGeometry(0.3, 0.3, 0.2),
                     new THREE.MeshStandardMaterial({ 
-                        color: 0x4444ff,
+                        color: 0x3333ff,
                         emissive: 0x0000ff,
-                        emissiveIntensity: 0.3
+                        emissiveIntensity: 0.5
                     })
                 );
-                this.lightButtons.left.position.set(-5.5, 2.3, 0.5);
+                this.lightButtons.left.position.set(-7.5, 2.3, 0.5);
                 this.lightButtons.left.userData.type = 'light';
                 this.lightButtons.left.userData.side = 'left';
                 this.lightButtons.left.userData.interactable = true;
                 this.scene.add(this.lightButtons.left);
                 this.interactables.push(this.lightButtons.left);
 
-                // Botón luz derecha
+                // RIGHT LIGHT BUTTON
                 this.lightButtons.right = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.25, 0.25, 0.15),
+                    new THREE.BoxGeometry(0.3, 0.3, 0.2),
                     new THREE.MeshStandardMaterial({ 
-                        color: 0x4444ff,
+                        color: 0x3333ff,
                         emissive: 0x0000ff,
-                        emissiveIntensity: 0.3
+                        emissiveIntensity: 0.5
                     })
                 );
-                this.lightButtons.right.position.set(5.5, 2.3, 0.5);
+                this.lightButtons.right.position.set(7.5, 2.3, 0.5);
                 this.lightButtons.right.userData.type = 'light';
                 this.lightButtons.right.userData.side = 'right';
                 this.lightButtons.right.userData.interactable = true;
                 this.scene.add(this.lightButtons.right);
                 this.interactables.push(this.lightButtons.right);
 
-                // Tablet de cámaras
+                // TABLET
                 this.tablet = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.5, 0.35, 0.05),
+                    new THREE.BoxGeometry(0.6, 0.4, 0.1),
                     new THREE.MeshStandardMaterial({ 
-                        color: 0x222222,
-                        emissive: 0x004400,
-                        emissiveIntensity: 0.5
+                        color: 0x1a1a1a,
+                        emissive: 0x003300,
+                        emissiveIntensity: 0.6
                     })
                 );
-                this.tablet.position.set(1, 1.05, 2.3);
+                this.tablet.position.set(1.2, 1.1, 2.2);
                 this.tablet.rotation.x = -0.3;
                 this.tablet.userData.type = 'camera';
                 this.tablet.userData.interactable = true;
@@ -918,29 +1155,21 @@
             }
 
             createDecorations() {
-                // Posters
                 const posterMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0xff6600,
-                    emissive: 0x552200,
-                    emissiveIntensity: 0.3
+                    color: 0x664422,
+                    emissive: 0x442200,
+                    emissiveIntensity: 0.2,
+                    roughness: 0.9
                 });
 
                 [-3, 0, 3].forEach(x => {
                     const poster = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.9, 1.3, 0.05),
+                        new THREE.BoxGeometry(1, 1.5, 0.05),
                         posterMaterial
                     );
-                    poster.position.set(x, 2.8, -6.95);
+                    poster.position.set(x, 3, -9.9);
                     this.scene.add(poster);
                 });
-
-                // Fan
-                const fanBase = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.4, 0.4, 0.2),
-                    new THREE.MeshStandardMaterial({ color: 0x333333 })
-                );
-                fanBase.position.set(0, 4.9, 0);
-                this.scene.add(fanBase);
             }
 
             createAnimatronics() {
@@ -948,39 +1177,39 @@
                     const material = new THREE.MeshStandardMaterial({ 
                         color: data.color,
                         emissive: data.color,
-                        emissiveIntensity: 0.3,
-                        roughness: 0.6,
-                        metalness: 0.4
+                        emissiveIntensity: 0.4,
+                        roughness: 0.5,
+                        metalness: 0.5
                     });
                     
                     const body = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.9, 2.2, 0.8),
+                        new THREE.BoxGeometry(1, 2.5, 1),
                         material
                     );
                     
                     const head = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.7, 0.7, 0.7),
+                        new THREE.BoxGeometry(0.8, 0.8, 0.8),
                         material
                     );
-                    head.position.y = 1.5;
+                    head.position.y = 1.8;
                     body.add(head);
                     
                     const eyeMaterial = new THREE.MeshStandardMaterial({ 
-                        color: 0xffffff,
+                        color: 0xffff00,
                         emissive: 0xffff00,
-                        emissiveIntensity: 1
+                        emissiveIntensity: 1.2
                     });
                     
-                    [-0.2, 0.2].forEach(x => {
+                    [-0.25, 0.25].forEach(x => {
                         const eye = new THREE.Mesh(
-                            new THREE.SphereGeometry(0.08),
+                            new THREE.SphereGeometry(0.1),
                             eyeMaterial
                         );
-                        eye.position.set(x, 1.55, 0.3);
+                        eye.position.set(x, 1.85, 0.35);
                         body.add(eye);
                     });
                     
-                    body.position.set(0, 1.1, -20);
+                    body.position.copy(data.position);
                     body.visible = false;
                     body.castShadow = true;
                     body.userData.name = name;
@@ -995,414 +1224,359 @@
                 this.powerFill = document.getElementById('power-fill');
                 this.powerPercent = document.getElementById('power-percent');
                 this.powerUsageDisplay = document.getElementById('power-usage');
+                this.threatStatus = document.getElementById('threat-status');
+                this.threatValue = document.getElementById('threat-value');
+                this.threatIndicator = document.getElementById('threat-indicator');
                 this.gameOver = document.getElementById('game-over');
                 this.winScreen = document.getElementById('win-screen');
                 this.jumpscare = document.getElementById('jumpscare');
-                this.cameraContent = document.getElementById('camera-content');
-                this.cameraUI = document.getElementById('camera-ui');
-                this.interactPrompt = document.getElementById('interact-prompt');
+                this.stats = document.getElementById('stats');
+                this.warningText = document.getElementById('warning-text');
+                this.nightDisplay = document.getElementById('night');
             }
 
             initEventListeners() {
-                document.getElementById('start-btn').addEventListener('click', () => {
-                    document.getElementById('instructions').style.display = 'none';
-                    document.getElementById('stats').style.display = 'block';
-                    document.getElementById('controls-hint').style.display = 'block';
-                    this.gameStarted = true;
-                    this.startGame();
-                    document.body.requestPointerLock();
-                });
-
-                // Controles de teclado
                 document.addEventListener('keydown', (e) => {
-                    if (!this.gameStarted) return;
-                    
-                    switch(e.key.toLowerCase()) {
-                        case 'w': this.controls.moveForward = true; break;
-                        case 's': this.controls.moveBackward = true; break;
-                        case 'a': this.controls.moveLeft = true; break;
-                        case 'd': this.controls.moveRight = true; break;
-                        case 'e': this.interact(); break;
-                    }
+                    const key = e.key.toLowerCase();
+                    if (key === 'w') this.controls.moveForward = true;
+                    if (key === 'a') this.controls.moveLeft = true;
+                    if (key === 's') this.controls.moveBackward = true;
+                    if (key === 'd') this.controls.moveRight = true;
+                    if (key === 'e') this.interact();
                 });
 
                 document.addEventListener('keyup', (e) => {
-                    switch(e.key.toLowerCase()) {
-                        case 'w': this.controls.moveForward = false; break;
-                        case 's': this.controls.moveBackward = false; break;
-                        case 'a': this.controls.moveLeft = false; break;
-                        case 'd': this.controls.moveRight = false; break;
-                    }
+                    const key = e.key.toLowerCase();
+                    if (key === 'w') this.controls.moveForward = false;
+                    if (key === 'a') this.controls.moveLeft = false;
+                    if (key === 's') this.controls.moveBackward = false;
+                    if (key === 'd') this.controls.moveRight = false;
                 });
 
-                // Control de ratón
                 document.addEventListener('mousemove', (e) => {
-                    if (!this.gameStarted || this.cameraOpen || document.pointerLockElement !== document.body) return;
-                    
-                    this.rotationY -= e.movementX * 0.002;
-                    this.rotationX -= e.movementY * 0.002;
-                    this.rotationX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.rotationX));
+                    this.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                    const movementX = e.movementX || e.mozMovementX || 0;
+                    const movementY = e.movementY || e.mozMovementY || 0;
+
+                    this.rotationY -= movementX * 0.005;
+                    this.rotationX -= movementY * 0.005;
+                    this.rotationX = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, this.rotationX));
                 });
 
-                // Cerrar cámaras
-                document.getElementById('close-camera').addEventListener('click', () => {
-                    this.closeCamera();
-                });
-
-                // Botones de cámaras
-                document.querySelectorAll('.cam-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.currentCamera = e.target.dataset.room;
-                        this.updateCamera();
-                    });
-                });
-
-                // Click para recuperar pointer lock
                 document.addEventListener('click', () => {
-                    if (this.gameStarted && !this.cameraOpen) {
-                        document.body.requestPointerLock();
-                    }
+                    if (document.pointerLockElement === document.documentElement) return;
+                    document.documentElement.requestPointerLock = document.documentElement.requestPointerLock || document.documentElement.mozRequestPointerLock;
+                    document.documentElement.requestPointerLock();
                 });
-            }
 
-            interact() {
-                if (this.cameraOpen) {
-                    this.closeCamera();
-                    return;
-                }
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
 
-                if (this.currentInteractable) {
-                    const obj = this.currentInteractable;
-                    
-                    if (obj.userData.type === 'door') {
-                        this.toggleDoor(obj.userData.side);
-                    } else if (obj.userData.type === 'light') {
-                        this.toggleLight(obj.userData.side);
-                    } else if (obj.userData.type === 'camera') {
-                        this.openCamera();
-                    }
-                }
-            }
+                document.getElementById('close-camera').addEventListener('click', () => {
+                    this.toggleCamera();
+                });
 
-            toggleDoor(side) {
-                if (side === 'left') {
-                    this.leftDoorClosed = !this.leftDoorClosed;
-                    this.doors.left.userData.targetY = this.leftDoorClosed ? -2 : 2;
-                    this.doorLevers.left.rotation.z = this.leftDoorClosed ? -0.5 : 0.5;
-                    this.doorLevers.left.material.color.setHex(this.leftDoorClosed ? 0x44ff44 : 0xff4444);
-                } else {
-                    this.rightDoorClosed = !this.rightDoorClosed;
-                    this.doors.right.userData.targetY = this.rightDoorClosed ? -2 : 2;
-                    this.doorLevers.right.rotation.z = this.rightDoorClosed ? 0.5 : -0.5;
-                    this.doorLevers.right.material.color.setHex(this.rightDoorClosed ? 0x44ff44 : 0xff4444);
-                }
-                this.updatePowerUsage();
-            }
-
-            toggleLight(side) {
-                if (side === 'left') {
-                    this.leftLightOn = !this.leftLightOn;
-                    this.spotLights.left.intensity = this.leftLightOn ? 4 : 0;
-                    this.doorLights.left.intensity = this.leftLightOn ? 3 : 0;
-                    this.lightButtons.left.material.emissiveIntensity = this.leftLightOn ? 0.8 : 0.3;
-                    
-                    this.animatronics3D.forEach(anim => {
-                        if (this.animatronics[anim.userData.name].atDoor === 'left') {
-                            anim.visible = this.leftLightOn;
-                            anim.position.set(-8.5, 1.1, -1);
-                            anim.rotation.y = Math.PI / 2;
-                        } else if (anim.visible && anim.position.x < -6) {
-                            anim.visible = false;
-                        }
+                document.querySelectorAll('.cam-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.selectCamera(btn.dataset.room);
                     });
-                } else {
-                    this.rightLightOn = !this.rightLightOn;
-                    this.spotLights.right.intensity = this.rightLightOn ? 4 : 0;
-                    this.doorLights.right.intensity = this.rightLightOn ? 3 : 0;
-                    this.lightButtons.right.material.emissiveIntensity = this.rightLightOn ? 0.8 : 0.3;
-                    
-                    this.animatronics3D.forEach(anim => {
-                        if (this.animatronics[anim.userData.name].atDoor === 'right') {
-                            anim.visible = this.rightLightOn;
-                            anim.position.set(8.5, 1.1, -1);
-                            anim.rotation.y = -Math.PI / 2;
-                        } else if (anim.visible && anim.position.x > 6) {
-                            anim.visible = false;
-                        }
-                    });
-                }
-                this.updatePowerUsage();
-            }
-
-            openCamera() {
-                this.cameraOpen = true;
-                this.cameraUI.classList.add('active');
-                document.exitPointerLock();
-            }
-
-            closeCamera() {
-                this.cameraOpen = false;
-                this.cameraUI.classList.remove('active');
-                document.body.requestPointerLock();
-            }
-
-            updatePowerUsage() {
-                this.powerUsage = 1;
-                if (this.leftDoorClosed) this.powerUsage += 1;
-                if (this.rightDoorClosed) this.powerUsage += 1;
-                if (this.leftLightOn) this.powerUsage += 1;
-                if (this.rightLightOn) this.powerUsage += 1;
-                if (this.cameraOpen) this.powerUsage += 1;
-                
-                this.powerUsageDisplay.textContent = this.powerUsage + 'x';
-            }
-
-            updateCamera() {
-                if (!this.currentCamera) return;
-
-                const roomNames = {
-                    'show-stage': '🎭 SHOW STAGE',
-                    'dining': '🍽️ DINING AREA',
-                    'backstage': '🎪 BACKSTAGE',
-                    'pirate-cove': '🏴‍☠️ PIRATE COVE',
-                    'supply': '📦 SUPPLY CLOSET',
-                    'west-hall': '🚶 WEST HALL',
-                    'east-hall': '🚶 EAST HALL',
-                    'kitchen': '🍕 KITCHEN (AUDIO ONLY)'
-                };
-
-                let content = `<div style="text-align: center;"><div style="font-size: 28px; margin-bottom: 25px; color: #00ff00;">${roomNames[this.currentCamera] || this.currentCamera.toUpperCase()}</div>`;
-                
-                const animatronicsHere = Object.entries(this.animatronics)
-                    .filter(([name, data]) => data.location === this.currentCamera)
-                    .map(([name, data]) => `<div style="font-size: 48px; margin: 10px;">${data.emoji}</div><div style="font-size: 20px;">${name.toUpperCase()}</div>`);
-
-                if (animatronicsHere.length > 0) {
-                    content += `<div style="color: #ff0000; font-size: 22px; margin-bottom: 20px;">⚠️ ALERTA ⚠️</div>${animatronicsHere.join('')}`;
-                } else {
-                    content += `<div style="color: #00ff00; font-size: 22px;">✓ ÁREA DESPEJADA</div>`;
-                }
-                
-                content += '</div>';
-
-                this.cameraContent.innerHTML = content;
-            }
-
-            checkInteractables() {
-                const raycaster = new THREE.Raycaster();
-                const direction = new THREE.Vector3(0, 0, -1);
-                direction.applyQuaternion(this.camera.quaternion);
-                raycaster.set(this.camera.position, direction);
-
-                const intersects = raycaster.intersectObjects(this.interactables);
-
-                if (intersects.length > 0 && intersects[0].distance < 2.5) {
-                    this.currentInteractable = intersects[0].object;
-                    this.interactPrompt.style.display = 'block';
-                } else {
-                    this.currentInteractable = null;
-                    this.interactPrompt.style.display = 'none';
-                }
+                });
             }
 
             startGame() {
+                document.getElementById('instructions').style.display = 'none';
+                this.stats.style.display = 'block';
+                document.getElementById('controls-hint').style.display = 'block';
+                this.gameStarted = true;
                 this.gameRunning = true;
-                this.gameLoop();
-                this.timeLoop();
+                this.time = 0;
+                this.hour = 0;
+                this.power = 100;
+                this.threatLevel = 0;
+                this.nightDisplay.textContent = '1';
+                document.documentElement.requestPointerLock();
             }
 
-            gameLoop() {
-                if (!this.gameRunning) return;
+            interact() {
+                if (!this.gameRunning || this.cameraOpen) return;
 
-                this.power -= this.powerUsage / 8;
+                if (this.currentInteractable) {
+                    const type = this.currentInteractable.userData.type;
+                    
+                    if (type === 'door') {
+                        const side = this.currentInteractable.userData.side;
+                        if (side === 'left') {
+                            this.leftDoorClosed = !this.leftDoorClosed;
+                            this.activePowerConsumption = this.leftDoorClosed ? this.baseConsumption.leftDoor : 0;
+                        } else {
+                            this.rightDoorClosed = !this.rightDoorClosed;
+                            this.activePowerConsumption = this.rightDoorClosed ? this.baseConsumption.rightDoor : 0;
+                        }
+                    } else if (type === 'light') {
+                        const side = this.currentInteractable.userData.side;
+                        if (side === 'left') {
+                            this.leftLightOn = !this.leftLightOn;
+                            this.spotLights.left.intensity = this.leftLightOn ? 1 : 0;
+                            this.doorLights.left.intensity = this.leftLightOn ? 1 : 0;
+                        } else {
+                            this.rightLightOn = !this.rightLightOn;
+                            this.spotLights.right.intensity = this.rightLightOn ? 1 : 0;
+                            this.doorLights.right.intensity = this.rightLightOn ? 1 : 0;
+                        }
+                    } else if (type === 'camera') {
+                        this.toggleCamera();
+                    }
+                }
+            }
+
+            toggleCamera() {
+                this.cameraOpen = !this.cameraOpen;
+                document.getElementById('camera-ui').classList.toggle('active');
+                this.activePowerConsumption = this.cameraOpen ? this.baseConsumption.camera : 0;
+            }
+
+            selectCamera(room) {
+                this.currentCamera = room;
+                document.querySelectorAll('.cam-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.room === room) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                // Simular vista de cámara
+                const content = document.getElementById('camera-content');
+                const animatronicInRoom = this.getAnimatronicInRoom(room);
                 
+                if (animatronicInRoom) {
+                    const btn = document.querySelector(`[data-room="${room}"]`);
+                    btn.classList.add('danger');
+                    content.innerHTML = `<div style="color: #ff0000; font-size: 28px;">⚠️ DETECTADO: ${this.animatronics[animatronicInRoom].emoji}</div>`;
+                } else {
+                    content.innerHTML = `<div style="text-align: center;"><div style="font-size: 24px;">📹 ${room.toUpperCase()}</div><div style="font-size: 16px; color: #888; margin-top: 10px;">Área despejada</div></div>`;
+                }
+            }
+
+            getAnimatronicInRoom(room) {
+                for (let [name, data] of Object.entries(this.animatronics)) {
+                    if (data.location === room) return name;
+                }
+                return null;
+            }
+
+            updatePower(deltaTime) {
+                const consumption = (this.leftDoorClosed ? this.baseConsumption.leftDoor : 0) +
+                                   (this.rightDoorClosed ? this.baseConsumption.rightDoor : 0) +
+                                   (this.leftLightOn ? this.baseConsumption.leftLight : 0) +
+                                   (this.rightLightOn ? this.baseConsumption.rightLight : 0) +
+                                   (this.cameraOpen ? this.baseConsumption.camera : 0) +
+                                   this.baseConsumption.idle;
+
+                this.power -= consumption * deltaTime / 100;
+                this.power = Math.max(0, Math.min(100, this.power));
+
+                this.powerPercent.textContent = Math.ceil(this.power) + '%';
+                this.powerFill.style.width = this.power + '%';
+                this.powerUsageDisplay.textContent = Math.ceil(consumption) + '%';
+
+                if (this.power <= 20) {
+                    this.stats.classList.add('critical');
+                    this.powerFill.parentElement.classList.add('empty');
+                } else {
+                    this.stats.classList.remove('critical');
+                    this.powerFill.parentElement.classList.remove('empty');
+                }
+
                 if (this.power <= 0) {
                     this.power = 0;
-                    this.endGame();
-                    return;
+                    this.leftDoorClosed = false;
+                    this.rightDoorClosed = false;
+                    this.leftLightOn = false;
+                    this.rightLightOn = false;
+                    this.activateDanger('¡SIN ENERGÍA!');
                 }
-
-                this.powerFill.style.width = this.power + '%';
-                this.powerPercent.textContent = Math.floor(this.power) + '%';
-
-                if (Math.random() < 0.03) {
-                    this.moveAnimatronic();
-                }
-
-                this.checkThreats();
-
-                setTimeout(() => this.gameLoop(), 100);
             }
 
-            moveAnimatronic() {
-                const names = Object.keys(this.animatronics);
-                const name = names[Math.floor(Math.random() * names.length)];
-                const animatronic = this.animatronics[name];
-
-                const paths = {
-                    'show-stage': ['dining', 'backstage'],
-                    'dining': ['west-hall', 'east-hall'],
-                    'backstage': ['dining', 'supply'],
-                    'pirate-cove': ['west-hall'],
-                    'supply': ['west-hall'],
-                    'west-hall': ['west-door'],
-                    'east-hall': ['east-door'],
-                    'kitchen': ['east-hall']
-                };
+            updateThreat(deltaTime) {
+                this.threatLevel += deltaTime * (this.animatronicAggressiveness || 1);
                 
-                if (Math.random() * 20 < animatronic.ai * (1 + this.time / 250)) {
-                    const currentPaths = paths[animatronic.location] || [];
-                    
-                    if (currentPaths.length > 0) {
-                        const newLocation = currentPaths[Math.floor(Math.random() * currentPaths.length)];
-                        
-                        if (newLocation === 'west-door') {
-                            animatronic.atDoor = 'left';
-                            animatronic.location = 'west-door';
-                        } else if (newLocation === 'east-door') {
-                            animatronic.atDoor = 'right';
-                            animatronic.location = 'east-door';
-                        } else {
-                            animatronic.location = newLocation;
-                            animatronic.atDoor = null;
-                        }
-                    }
+                // Mayor amenaza si las puertas están abiertas
+                if (!this.leftDoorClosed || !this.rightDoorClosed) {
+                    this.threatLevel += deltaTime * 2;
                 }
 
-                this.updateCamera();
+                // Reducir amenaza si las puertas están cerradas Y las luces están encendidas
+                if (this.leftDoorClosed && this.leftLightOn) {
+                    this.threatLevel -= deltaTime * 0.5;
+                }
+                if (this.rightDoorClosed && this.rightLightOn) {
+                    this.threatLevel -= deltaTime * 0.5;
+                }
+
+                this.threatLevel = Math.max(0, Math.min(100, this.threatLevel));
+
+                let threatStatus = 'BAJA';
+                if (this.threatLevel > 75) {
+                    threatStatus = '🚨 CRÍTICA';
+                    this.threatIndicator.classList.add('danger');
+                } else if (this.threatLevel > 50) {
+                    threatStatus = '⚠️ ALTA';
+                    this.threatIndicator.classList.add('danger');
+                } else if (this.threatLevel > 25) {
+                    threatStatus = 'MEDIA';
+                    this.threatIndicator.classList.remove('danger');
+                } else {
+                    threatStatus = 'BAJA';
+                    this.threatIndicator.classList.remove('danger');
+                }
+
+                this.threatStatus.textContent = threatStatus;
+                this.threatValue.textContent = Math.ceil(this.threatLevel);
+
+                // Actualizar visibilidad de animatrónicos
+                this.updateAnimatronicPositions();
             }
 
-            checkThreats() {
-                Object.entries(this.animatronics).forEach(([name, data]) => {
-                    if (data.atDoor === 'left' && !this.leftDoorClosed && !this.leftLightOn && Math.random() < 0.015) {
-                        this.triggerJumpscare(name);
-                    }
-                    if (data.atDoor === 'right' && !this.rightDoorClosed && !this.rightLightOn && Math.random() < 0.015) {
-                        this.triggerJumpscare(name);
-                    }
-
-                    if (data.atDoor === 'left' && this.leftDoorClosed && Math.random() < 0.06) {
-                        data.atDoor = null;
-                        data.location = 'west-hall';
-                    }
-                    if (data.atDoor === 'right' && this.rightDoorClosed && Math.random() < 0.06) {
-                        data.atDoor = null;
-                        data.location = 'east-hall';
+            updateAnimatronicPositions() {
+                const threatFraction = this.threatLevel / 100;
+                
+                Object.entries(this.animatronics).forEach(([name, data], index) => {
+                    const model = this.animatronics3D[index];
+                    
+                    // Progresión del animatrónico hacia la puerta
+                    if (threatFraction > 0.1) {
+                        const progress = (threatFraction - 0.1) / 0.9;
+                        const targetZ = -2; // Posición cercana a la puerta
+                        const startZ = -20;
+                        
+                        data.position.z = THREE.MathUtils.lerp(startZ, targetZ, Math.min(progress, 1));
+                        model.position.copy(data.position);
+                        model.visible = threatFraction > 0.2;
                     }
                 });
             }
 
-            timeLoop() {
-                if (!this.gameRunning) return;
+            updateGameTime(deltaTime) {
+                this.time += deltaTime;
+                
+                // Cada 6 segundos reales = 1 hora en juego
+                const hours = Math.floor(this.time / 6);
+                this.hour = 12 + hours; // Comienza a las 12 AM
+
+                if (this.hour >= 24) this.hour -= 24;
+
+                const timeStr = this.hour + ':00 ' + (this.hour < 12 ? 'AM' : 'PM');
+                this.timeDisplay.textContent = timeStr;
+
+                // Victoria
+                if (this.hour >= 6) {
+                    this.endGame(true);
+                }
+            }
+
+            activateDanger(message) {
+                this.warningText.textContent = message;
+                this.warningText.style.display = 'block';
+                this.audioManager.playSound('warning', 0.3, 200, 0.8);
 
                 setTimeout(() => {
-                    this.time++;
-                    const hours = ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM'];
-                    const hour = Math.min(6, Math.floor(this.time / 85));
-                    this.timeDisplay.textContent = hours[hour];
-
-                    if (hour >= 6) {
-                        this.winGame();
-                    } else {
-                        this.timeLoop();
-                    }
-                }, 1000);
+                    this.warningText.style.display = 'none';
+                }, 2000);
             }
 
             triggerJumpscare(animatronicName) {
+                if (this.hasJumpscared) return;
+                this.hasJumpscared = true;
                 this.gameRunning = false;
-                const emoji = this.animatronics[animatronicName].emoji;
-                document.querySelector('.jumpscare-face').textContent = emoji + '💀' + emoji;
+
+                const anim = this.animatronics[animatronicName];
+                document.getElementById('jumpscare-emoji').textContent = anim.emoji + '💀';
                 this.jumpscare.classList.add('active');
-                
+
+                this.audioManager.playSound('death', 0.8, 100, 1);
+
                 setTimeout(() => {
-                    this.jumpscare.classList.remove('active');
-                    this.endGame();
-                }, 3000);
+                    this.endGame(false, animatronicName);
+                }, 1500);
             }
 
-            endGame() {
+            endGame(won, killer = null) {
                 this.gameRunning = false;
-                document.getElementById('final-time').textContent = this.timeDisplay.textContent;
-                this.gameOver.classList.add('active');
-                document.exitPointerLock();
+                document.documentElement.exitPointerLock = document.documentElement.exitPointerLock || document.documentElement.mozExitPointerLock;
+                document.documentElement.exitPointerLock();
+
+                if (won) {
+                    this.winScreen.classList.add('active');
+                    document.getElementById('final-power').textContent = Math.ceil(this.power);
+                } else {
+                    this.gameOver.classList.add('active');
+                    const timeStr = this.hour + ':00 ' + (this.hour < 12 ? 'AM' : 'PM');
+                    document.getElementById('final-time').textContent = timeStr;
+                    document.getElementById('killer-name').textContent = this.animatronics[killer]?.emoji || '?';
+                }
             }
 
-            winGame() {
-                this.gameRunning = false;
-                document.getElementById('final-power').textContent = Math.floor(this.power);
-                this.winScreen.classList.add('active');
-                document.exitPointerLock();
-            }
+            update(deltaTime) {
+                if (!this.gameStarted) return;
 
-            updateMovement() {
-                if (!this.gameStarted || this.cameraOpen) return;
+                // Movimiento
+                const moveSpeed = 0.015;
+                const forward = new THREE.Vector3(
+                    Math.sin(this.rotationY),
+                    0,
+                    Math.cos(this.rotationY)
+                );
+                const right = new THREE.Vector3(
+                    Math.cos(this.rotationY),
+                    0,
+                    -Math.sin(this.rotationY)
+                );
 
-                const moveSpeed = 0.08;
-                
-                this.direction.z = Number(this.controls.moveForward) - Number(this.controls.moveBackward);
-                this.direction.x = Number(this.controls.moveRight) - Number(this.controls.moveLeft);
-                this.direction.normalize();
+                if (this.controls.moveForward) this.camera.position.addScaledVector(forward, moveSpeed);
+                if (this.controls.moveBackward) this.camera.position.addScaledVector(forward, -moveSpeed);
+                if (this.controls.moveRight) this.camera.position.addScaledVector(right, moveSpeed);
+                if (this.controls.moveLeft) this.camera.position.addScaledVector(right, -moveSpeed);
 
-                if (this.controls.moveForward || this.controls.moveBackward) {
-                    this.velocity.z = this.direction.z * moveSpeed;
-                } else {
-                    this.velocity.z = 0;
-                }
+                // Clamp camera position
+                this.camera.position.x = Math.max(-9, Math.min(9, this.camera.position.x));
+                this.camera.position.z = Math.max(-8, Math.min(5, this.camera.position.z));
 
-                if (this.controls.moveLeft || this.controls.moveRight) {
-                    this.velocity.x = this.direction.x * moveSpeed;
-                } else {
-                    this.velocity.x = 0;
-                }
+                this.camera.rotation.order = 'YXZ';
+                this.camera.rotation.y = this.rotationY;
+                this.camera.rotation.x = this.rotationX;
 
-                const forward = new THREE.Vector3(0, 0, -1);
-                forward.applyQuaternion(this.camera.quaternion);
-                forward.y = 0;
-                forward.normalize();
+                // Updates principales
+                if (this.gameRunning) {
+                    this.updatePower(deltaTime);
+                    this.updateThreat(deltaTime);
+                    this.updateGameTime(deltaTime);
 
-                const right = new THREE.Vector3(1, 0, 0);
-                right.applyQuaternion(this.camera.quaternion);
-                right.y = 0;
-                right.normalize();
-
-                const movement = new THREE.Vector3();
-                movement.addScaledVector(forward, this.velocity.z);
-                movement.addScaledVector(right, this.velocity.x);
-
-                const newPos = this.camera.position.clone().add(movement);
-                
-                // Límites de movimiento
-                if (newPos.x > -6 && newPos.x < 6 && newPos.z > -4 && newPos.z < 5) {
-                    this.camera.position.copy(newPos);
+                    // Aleatoriedad de jumpscares
+                    if (this.threatLevel > 80 && Math.random() < 0.001) {
+                        const animatronics = Object.keys(this.animatronics);
+                        const randomAnim = animatronics[Math.floor(Math.random() * animatronics.length)];
+                        this.triggerJumpscare(randomAnim);
+                    }
                 }
             }
 
             animate() {
-                requestAnimationFrame(() => this.animate());
-
-                if (this.gameStarted && !this.cameraOpen) {
-                    this.camera.rotation.order = 'YXZ';
-                    this.camera.rotation.y = this.rotationY;
-                    this.camera.rotation.x = this.rotationX;
+                const clock = new THREE.Clock();
+                const animate = () => {
+                    const deltaTime = clock.getDelta() * 1000;
                     
-                    this.updateMovement();
-                    this.checkInteractables();
-                }
-
-                // Animar puertas
-                ['left', 'right'].forEach(side => {
-                    if (this.doors[side]) {
-                        this.doors[side].position.y += (this.doors[side].userData.targetY - this.doors[side].position.y) * 0.1;
-                    }
-                });
-
-                this.renderer.render(this.scene, this.camera);
+                    this.update(deltaTime);
+                    this.renderer.render(this.scene, this.camera);
+                    requestAnimationFrame(animate);
+                };
+                animate();
             }
         }
 
+        // Iniciar juego
         const game = new FNAFGame();
     </script>
 </body>
