@@ -52,6 +52,63 @@
             pointer-events: none;
         }
 
+        /* LINTERNA EFFECT */
+        #flashlight-beam {
+            position: absolute;
+            width: 400px;
+            height: 500px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        #flashlight-beam.active {
+            opacity: 1;
+        }
+
+        #flashlight-beam::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255,255,200,0.8) 0%, rgba(255,255,100,0.4) 30%, rgba(0,0,0,0) 100%);
+            filter: blur(20px);
+            animation: flashlight-flicker 0.08s infinite;
+        }
+
+        @keyframes flashlight-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        #flashlight-hint {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #ffff00;
+            display: none;
+            pointer-events: none;
+        }
+
+        #flashlight-hint.active {
+            display: block;
+            animation: hint-pulse 0.5s infinite;
+        }
+
+        @keyframes hint-pulse {
+            0%, 100% { text-shadow: 0 0 10px #ffff00; }
+            50% { text-shadow: 0 0 20px #ffff00; }
+        }
+
         #crosshair {
             position: absolute;
             top: 50%;
@@ -579,6 +636,9 @@
         <canvas id="game-canvas"></canvas>
 
         <div id="ui-overlay">
+            <div id="flashlight-beam"></div>
+            <div id="flashlight-hint">💡 F - LINTERNA (90 segundos)</div>
+            
             <div id="crosshair"></div>
 
             <div id="threat-indicator">
@@ -591,10 +651,11 @@
                 <p><strong>🖱️ RATÓN</strong> - Mirar alrededor</p>
                 <p><strong>W A S D</strong> - Moverte por la oficina</p>
                 <p><strong>E</strong> - Interactuar (palancas, botones, tablet)</p>
-                <p><strong>📹 TABLET</strong> - Monitorea las cámaras (caro!)</p>
-                <p><strong>🚪 PALANCAS</strong> - Cierra las puertas (urgente!)</p>
-                <p><strong>💡 BOTONES</strong> - Enciende las luces (muy caro!)</p>
-                <p><strong>⚡ ENERGÍA</strong> - Sé CUIDADOSO, es limitada</p>
+                <p><strong>💡 F</strong> - LINTERNA (90 segundos, caro!)</p>
+                <p><strong>📹 TABLET</strong> - Monitorea las cámaras</p>
+                <p><strong>🚪 PALANCAS</strong> - Cierra las puertas</p>
+                <p><strong>💡 BOTONES</strong> - Enciende las luces</p>
+                <p><strong>⚡ ENERGÍA</strong> - Sé CUIDADOSO</p>
                 <p style="color: #ff4444; font-weight: bold; font-size: 18px;">🎯 Sobrevive hasta las 6 AM</p>
                 <p style="color: #888; font-size: 14px;">Los animatrónicos están más activos en la noche...</p>
                 <button id="start-btn">🎮 INICIAR NOCHE (SI OSAS)</button>
@@ -612,6 +673,10 @@
                 <div class="stat-row">
                     <span>📊 AMENAZA</span>
                     <span id="threat-status">BAJA</span>
+                </div>
+                <div class="stat-row">
+                    <span>💡 LINTERNA</span>
+                    <span id="flashlight-status">LISTA</span>
                 </div>
                 <div class="stat-row">
                     <span>⚡ ENERGÍA</span>
@@ -633,7 +698,7 @@
             <div id="interact-prompt">Presiona E</div>
 
             <div id="controls-hint" style="display: none;">
-                WASD - Mover | E - Interactuar | Ratón - Mirar | TAB - Reducir HUD
+                WASD - Mover | E - Interactuar | F - Linterna | Ratón - Mirar
             </div>
 
             <div id="camera-ui">
@@ -724,6 +789,10 @@
                     osc.frequency.exponentialRampToValueAtTime(400, now + duration);
                 } else if (type === 'threat') {
                     osc.type = 'square';
+                } else if (type === 'flashlight') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.linearRampToValueAtTime(600, now + 0.1);
                 }
 
                 osc.start(now);
@@ -757,7 +826,8 @@
                     rightDoor: 1.5,
                     leftLight: 2.0,
                     rightLight: 2.0,
-                    camera: 1.2
+                    camera: 1.2,
+                    flashlight: 3.0
                 };
                 this.activePowerConsumption = 0;
                 this.time = 0;
@@ -770,13 +840,16 @@
                 this.rightLightOn = false;
                 this.cameraOpen = false;
                 this.currentCamera = null;
+                this.flashlightActive = false;
+                this.flashlightDuration = 90; // 90 segundos
+                this.flashlightRemaining = 90;
                 
                 this.mouseX = 0;
                 this.mouseY = 0;
                 this.rotationX = 0;
                 this.rotationY = 0;
 
-                this.threatLevel = 0; // 0-100
+                this.threatLevel = 0;
                 this.animatronic_aggressiveness = 1;
                 this.hasJumpscared = false;
 
@@ -795,6 +868,7 @@
                 this.spotLights = { left: null, right: null };
                 this.animatronics3D = [];
                 this.glitchActive = false;
+                this.flashlightLight = null;
 
                 this.initScene();
                 this.initElements();
@@ -822,7 +896,7 @@
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 this.renderer.physicallyCorrectLights = true;
 
-                // LIGHTING MEJORADA
+                // LIGHTING
                 const ambientLight = new THREE.AmbientLight(0x303030, 0.4);
                 this.scene.add(ambientLight);
 
@@ -844,6 +918,15 @@
                 emergencyLight2.position.set(7, 3, 0);
                 this.scene.add(emergencyLight2);
 
+                // FLASHLIGHT
+                this.flashlightLight = new THREE.SpotLight(0xffffdd, 0, 20, Math.PI / 5, 0.5, 1);
+                this.flashlightLight.position.copy(this.camera.position);
+                this.flashlightLight.target.position.set(0, 1, 5);
+                this.flashlightLight.castShadow = true;
+                this.flashlightLight.intensity = 0;
+                this.scene.add(this.flashlightLight);
+                this.scene.add(this.flashlightLight.target);
+
                 this.createOffice();
                 this.createDoors();
                 this.createInteractables();
@@ -860,7 +943,6 @@
             }
 
             createOffice() {
-                // PISO OSCURO
                 const floorGeometry = new THREE.PlaneGeometry(20, 20);
                 const floorCanvas = this.createTextureCanvas(0x222222, 0x111111, 64);
                 const floorTexture = new THREE.CanvasTexture(floorCanvas);
@@ -875,14 +957,12 @@
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // PAREDES MÁS OSCURAS
                 const wallMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x2a2a1a,
                     roughness: 0.95,
                     metalness: 0
                 });
 
-                // Back wall
                 const backWall = new THREE.Mesh(
                     new THREE.BoxGeometry(20, 6, 0.5),
                     wallMaterial
@@ -892,7 +972,6 @@
                 backWall.castShadow = true;
                 this.scene.add(backWall);
 
-                // Side walls
                 const leftWall = new THREE.Mesh(
                     new THREE.BoxGeometry(0.5, 6, 15),
                     wallMaterial
@@ -909,7 +988,6 @@
                 rightWall.receiveShadow = true;
                 this.scene.add(rightWall);
 
-                // TECHO
                 const ceiling = new THREE.Mesh(
                     new THREE.PlaneGeometry(20, 20),
                     new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.95 })
@@ -919,7 +997,6 @@
                 ceiling.receiveShadow = true;
                 this.scene.add(ceiling);
 
-                // ESCRITORIO MALTRECHO
                 const deskGeometry = new THREE.BoxGeometry(5, 0.3, 3);
                 const deskMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x1a1010,
@@ -932,7 +1009,6 @@
                 desk.receiveShadow = true;
                 this.scene.add(desk);
 
-                // PATAS
                 [-2.2, 2.2].forEach(x => {
                     [-1, 1].forEach(z => {
                         const leg = new THREE.Mesh(
@@ -945,7 +1021,6 @@
                     });
                 });
 
-                // MONITOR APAGADO
                 const monitor = new THREE.Mesh(
                     new THREE.BoxGeometry(1.2, 0.8, 0.2),
                     new THREE.MeshStandardMaterial({ 
@@ -958,7 +1033,6 @@
                 monitor.castShadow = true;
                 this.scene.add(monitor);
 
-                // SILLA GIRATORIA
                 const chairSeat = new THREE.Mesh(
                     new THREE.CylinderGeometry(0.7, 0.7, 0.2),
                     new THREE.MeshStandardMaterial({ color: 0x2a2a2a })
@@ -975,14 +1049,12 @@
                 chairBack.castShadow = true;
                 this.scene.add(chairBack);
 
-                // DECORACIONES TERRORÍFICAS
                 const eyesMaterial = new THREE.MeshStandardMaterial({
                     color: 0xffff00,
                     emissive: 0xffff00,
                     emissiveIntensity: 0.8
                 });
 
-                // Ojos en la pared del fondo
                 [-2, 2].forEach(x => {
                     const eye = new THREE.Mesh(
                         new THREE.SphereGeometry(0.15),
@@ -1017,7 +1089,6 @@
                     roughness: 0.4
                 });
 
-                // LEFT DOOR
                 this.doors.left = new THREE.Mesh(
                     new THREE.BoxGeometry(0.4, 4.5, 3.5),
                     doorMaterial
@@ -1028,7 +1099,6 @@
                 this.doors.left.castShadow = true;
                 this.scene.add(this.doors.left);
 
-                // RIGHT DOOR
                 this.doors.right = new THREE.Mesh(
                     new THREE.BoxGeometry(0.4, 4.5, 3.5),
                     doorMaterial
@@ -1039,7 +1109,6 @@
                 this.doors.right.castShadow = true;
                 this.scene.add(this.doors.right);
 
-                // SPOTLIGHTS
                 this.spotLights.left = new THREE.SpotLight(0xffff99, 0, 18, Math.PI / 4, 0.5, 2);
                 this.spotLights.left.position.set(-7, 4, -1);
                 this.spotLights.left.target.position.set(-10, 0, -1);
@@ -1054,7 +1123,6 @@
                 this.scene.add(this.spotLights.right);
                 this.scene.add(this.spotLights.right.target);
 
-                // INDICATOR LIGHTS
                 this.doorLights.left = new THREE.PointLight(0xffff88, 0, 8);
                 this.doorLights.left.position.set(-9, 2, -1);
                 this.scene.add(this.doorLights.left);
@@ -1065,7 +1133,6 @@
             }
 
             createInteractables() {
-                // LEFT DOOR LEVER
                 const leverBase = new THREE.Mesh(
                     new THREE.BoxGeometry(0.25, 0.4, 0.3),
                     new THREE.MeshStandardMaterial({ color: 0x333333 })
@@ -1085,7 +1152,6 @@
                 this.scene.add(this.doorLevers.left);
                 this.interactables.push(this.doorLevers.left);
 
-                // RIGHT DOOR LEVER
                 const leverBase2 = new THREE.Mesh(
                     new THREE.BoxGeometry(0.25, 0.4, 0.3),
                     new THREE.MeshStandardMaterial({ color: 0x333333 })
@@ -1105,7 +1171,6 @@
                 this.scene.add(this.doorLevers.right);
                 this.interactables.push(this.doorLevers.right);
 
-                // LEFT LIGHT BUTTON
                 this.lightButtons.left = new THREE.Mesh(
                     new THREE.BoxGeometry(0.3, 0.3, 0.2),
                     new THREE.MeshStandardMaterial({ 
@@ -1121,7 +1186,6 @@
                 this.scene.add(this.lightButtons.left);
                 this.interactables.push(this.lightButtons.left);
 
-                // RIGHT LIGHT BUTTON
                 this.lightButtons.right = new THREE.Mesh(
                     new THREE.BoxGeometry(0.3, 0.3, 0.2),
                     new THREE.MeshStandardMaterial({ 
@@ -1137,7 +1201,6 @@
                 this.scene.add(this.lightButtons.right);
                 this.interactables.push(this.lightButtons.right);
 
-                // TABLET
                 this.tablet = new THREE.Mesh(
                     new THREE.BoxGeometry(0.6, 0.4, 0.1),
                     new THREE.MeshStandardMaterial({ 
@@ -1173,7 +1236,7 @@
             }
 
             createAnimatronics() {
-                Object.entries(this.animatronics).forEach(([name, data]) => {
+                Object.entries(this.animatronics).forEach(([name, data], index) => {
                     const material = new THREE.MeshStandardMaterial({ 
                         color: data.color,
                         emissive: data.color,
@@ -1233,6 +1296,9 @@
                 this.stats = document.getElementById('stats');
                 this.warningText = document.getElementById('warning-text');
                 this.nightDisplay = document.getElementById('night');
+                this.flashlightBeam = document.getElementById('flashlight-beam');
+                this.flashlightStatus = document.getElementById('flashlight-status');
+                this.flashlightHint = document.getElementById('flashlight-hint');
             }
 
             initEventListeners() {
@@ -1243,6 +1309,7 @@
                     if (key === 's') this.controls.moveBackward = true;
                     if (key === 'd') this.controls.moveRight = true;
                     if (key === 'e') this.interact();
+                    if (key === 'f') this.toggleFlashlight();
                 });
 
                 document.addEventListener('keyup', (e) => {
@@ -1286,16 +1353,39 @@
                 });
             }
 
+            toggleFlashlight() {
+                if (!this.gameRunning || this.cameraOpen) return;
+                
+                if (this.flashlightRemaining <= 0) {
+                    this.activateDanger('⚡ LINTERNA SIN BATERÍA');
+                    return;
+                }
+
+                this.flashlightActive = !this.flashlightActive;
+                this.flashlightBeam.classList.toggle('active');
+                
+                if (this.flashlightActive) {
+                    this.audioManager.playSound('flashlight', 0.2);
+                    this.flashlightHint.classList.remove('active');
+                    this.flashlightLight.intensity = 2;
+                    this.threatLevel = Math.max(0, this.threatLevel - 15);
+                } else {
+                    this.flashlightLight.intensity = 0;
+                }
+            }
+
             startGame() {
                 document.getElementById('instructions').style.display = 'none';
                 this.stats.style.display = 'block';
                 document.getElementById('controls-hint').style.display = 'block';
+                this.flashlightHint.classList.add('active');
                 this.gameStarted = true;
                 this.gameRunning = true;
                 this.time = 0;
                 this.hour = 0;
                 this.power = 100;
                 this.threatLevel = 0;
+                this.flashlightRemaining = 90;
                 this.nightDisplay.textContent = '1';
                 document.documentElement.requestPointerLock();
             }
@@ -1347,7 +1437,6 @@
                     }
                 });
 
-                // Simular vista de cámara
                 const content = document.getElementById('camera-content');
                 const animatronicInRoom = this.getAnimatronicInRoom(room);
                 
@@ -1367,12 +1456,38 @@
                 return null;
             }
 
+            updateFlashlight(deltaTime) {
+                if (this.flashlightActive && this.gameRunning) {
+                    this.flashlightRemaining -= deltaTime / 1000;
+                    
+                    if (this.flashlightRemaining <= 0) {
+                        this.flashlightRemaining = 0;
+                        this.flashlightActive = false;
+                        this.flashlightBeam.classList.remove('active');
+                        this.flashlightLight.intensity = 0;
+                        this.activateDanger('⚡ LINTERNA AGOTADA');
+                    }
+
+                    this.flashlightLight.position.copy(this.camera.position);
+                    const forward = new THREE.Vector3(
+                        Math.sin(this.rotationY),
+                        Math.sin(this.rotationX),
+                        Math.cos(this.rotationY)
+                    );
+                    this.flashlightLight.target.position.addVectors(this.camera.position, forward.multiplyScalar(10));
+
+                    const percent = Math.ceil((this.flashlightRemaining / 90) * 100);
+                    this.flashlightStatus.textContent = this.flashlightActive ? `${percent}%` : 'LISTA';
+                }
+            }
+
             updatePower(deltaTime) {
                 const consumption = (this.leftDoorClosed ? this.baseConsumption.leftDoor : 0) +
                                    (this.rightDoorClosed ? this.baseConsumption.rightDoor : 0) +
                                    (this.leftLightOn ? this.baseConsumption.leftLight : 0) +
                                    (this.rightLightOn ? this.baseConsumption.rightLight : 0) +
                                    (this.cameraOpen ? this.baseConsumption.camera : 0) +
+                                   (this.flashlightActive ? this.baseConsumption.flashlight : 0) +
                                    this.baseConsumption.idle;
 
                 this.power -= consumption * deltaTime / 100;
@@ -1396,24 +1511,29 @@
                     this.rightDoorClosed = false;
                     this.leftLightOn = false;
                     this.rightLightOn = false;
+                    this.flashlightActive = false;
+                    this.flashlightBeam.classList.remove('active');
+                    this.flashlightLight.intensity = 0;
                     this.activateDanger('¡SIN ENERGÍA!');
                 }
             }
 
             updateThreat(deltaTime) {
-                this.threatLevel += deltaTime * (this.animatronicAggressiveness || 1);
+                this.threatLevel += deltaTime * (this.animatronic_aggressiveness || 1);
                 
-                // Mayor amenaza si las puertas están abiertas
                 if (!this.leftDoorClosed || !this.rightDoorClosed) {
                     this.threatLevel += deltaTime * 2;
                 }
 
-                // Reducir amenaza si las puertas están cerradas Y las luces están encendidas
                 if (this.leftDoorClosed && this.leftLightOn) {
                     this.threatLevel -= deltaTime * 0.5;
                 }
                 if (this.rightDoorClosed && this.rightLightOn) {
                     this.threatLevel -= deltaTime * 0.5;
+                }
+
+                if (this.flashlightActive) {
+                    this.threatLevel -= deltaTime * 1.5;
                 }
 
                 this.threatLevel = Math.max(0, Math.min(100, this.threatLevel));
@@ -1436,7 +1556,6 @@
                 this.threatStatus.textContent = threatStatus;
                 this.threatValue.textContent = Math.ceil(this.threatLevel);
 
-                // Actualizar visibilidad de animatrónicos
                 this.updateAnimatronicPositions();
             }
 
@@ -1446,10 +1565,9 @@
                 Object.entries(this.animatronics).forEach(([name, data], index) => {
                     const model = this.animatronics3D[index];
                     
-                    // Progresión del animatrónico hacia la puerta
                     if (threatFraction > 0.1) {
                         const progress = (threatFraction - 0.1) / 0.9;
-                        const targetZ = -2; // Posición cercana a la puerta
+                        const targetZ = -2;
                         const startZ = -20;
                         
                         data.position.z = THREE.MathUtils.lerp(startZ, targetZ, Math.min(progress, 1));
@@ -1462,16 +1580,14 @@
             updateGameTime(deltaTime) {
                 this.time += deltaTime;
                 
-                // Cada 6 segundos reales = 1 hora en juego
                 const hours = Math.floor(this.time / 6);
-                this.hour = 12 + hours; // Comienza a las 12 AM
+                this.hour = 12 + hours;
 
                 if (this.hour >= 24) this.hour -= 24;
 
                 const timeStr = this.hour + ':00 ' + (this.hour < 12 ? 'AM' : 'PM');
                 this.timeDisplay.textContent = timeStr;
 
-                // Victoria
                 if (this.hour >= 6) {
                     this.endGame(true);
                 }
@@ -1522,7 +1638,6 @@
             update(deltaTime) {
                 if (!this.gameStarted) return;
 
-                // Movimiento
                 const moveSpeed = 0.015;
                 const forward = new THREE.Vector3(
                     Math.sin(this.rotationY),
@@ -1540,7 +1655,6 @@
                 if (this.controls.moveRight) this.camera.position.addScaledVector(right, moveSpeed);
                 if (this.controls.moveLeft) this.camera.position.addScaledVector(right, -moveSpeed);
 
-                // Clamp camera position
                 this.camera.position.x = Math.max(-9, Math.min(9, this.camera.position.x));
                 this.camera.position.z = Math.max(-8, Math.min(5, this.camera.position.z));
 
@@ -1548,13 +1662,12 @@
                 this.camera.rotation.y = this.rotationY;
                 this.camera.rotation.x = this.rotationX;
 
-                // Updates principales
                 if (this.gameRunning) {
                     this.updatePower(deltaTime);
                     this.updateThreat(deltaTime);
                     this.updateGameTime(deltaTime);
+                    this.updateFlashlight(deltaTime);
 
-                    // Aleatoriedad de jumpscares
                     if (this.threatLevel > 80 && Math.random() < 0.001) {
                         const animatronics = Object.keys(this.animatronics);
                         const randomAnim = animatronics[Math.floor(Math.random() * animatronics.length)];
@@ -1576,7 +1689,6 @@
             }
         }
 
-        // Iniciar juego
         const game = new FNAFGame();
     </script>
 </body>
