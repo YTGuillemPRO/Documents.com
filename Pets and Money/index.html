@@ -1,529 +1,362 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pet Simulator Ultra - Compact Edition</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body { 
-    font-family: 'Segoe UI', Arial, sans-serif; 
-    height: 100vh; 
-    overflow: hidden; 
-    background: radial-gradient(ellipse at center, #0a0a23 0%, #1a0033 30%, #000428 70%, #16213e 100%);
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    user-select: none;
-  }
-
-  body::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%);
-    animation: bgShift 20s ease-in-out infinite;
-    z-index: -1;
-  }
-
-  @keyframes bgShift {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
-  }
-
-  #game { 
-    width: 380px; 
-    height: 85vh;
-    background: rgba(15, 23, 42, 0.95); 
-    backdrop-filter: blur(20px);
-    border-radius: 25px; 
-    padding: 25px; 
-    text-align: center; 
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-  }
-
-  h1 { 
-    font-size: 26px; 
-    margin-bottom: 15px; 
-    background: linear-gradient(45deg, #fbbf24, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 900;
-  }
-
-  .stats { 
-    background: rgba(248, 250, 252, 0.15); 
-    padding: 18px; 
-    border-radius: 20px; 
-    margin-bottom: 15px; 
-    border: 2px solid rgba(255,255,255,0.1);
-  }
-
-  .money { 
-    font-size: 32px; 
-    font-weight: 900; 
-    background: linear-gradient(45deg, #10b981, #059669);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .top-buttons { display: flex; gap: 8px; margin-bottom: 15px; }
-  
-  .tab-btn { 
-    flex: 1; 
-    padding: 12px; 
-    font-size: 14px; 
-    border-radius: 15px; 
-    border: 2px solid rgba(255,255,255,0.1);
-    cursor: pointer; 
-    background: rgba(226, 232, 240, 0.2); 
-    font-weight: 800;
-    color: white;
-    transition: all 0.3s ease;
-  }
-
-  .tab-btn.active { 
-    background: linear-gradient(45deg, #10b981, #059669); 
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-  }
-
-  .egg-selector { display: flex; gap: 8px; margin: 10px 0; }
-  
-  .egg-type-btn { 
-    flex: 1; 
-    padding: 14px; 
-    font-weight: 700; 
-    border-radius: 15px; 
-    border: 2px solid rgba(255,255,255,0.1); 
-    cursor: pointer; 
-    background: rgba(241, 245, 249, 0.2); 
-    font-size: 13px;
-    color: white;
-    transition: all 0.3s ease;
-  }
-
-  .egg-type-btn.active { 
-    background: rgba(255,255,255,0.25); 
-    border-color: #fbbf24; 
-    color: #fbbf24;
-    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3);
-  }
-
-  button.main-btn { 
-    width: 100%; 
-    padding: 16px; 
-    font-size: 18px; 
-    border: none; 
-    border-radius: 18px; 
-    cursor: pointer; 
-    margin: 8px 0; 
-    font-weight: 900; 
-    transition: all 0.2s ease;
-  }
-
-  #buyEggBtn { 
-    background: linear-gradient(45deg, #fbbf24, #f59e0b); 
-    color: white; 
-    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5); 
-  }
-
-  #rebirthBtn { 
-    background: linear-gradient(45deg, #8b5cf6, #a855f7); 
-    color: white; 
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
-    margin-bottom: 15px !important;
-  }
-
-  #rebirthBtn:disabled { 
-    background: rgba(107, 114, 128, 0.3); 
-    opacity: 0.6; 
-    cursor: not-allowed; 
-    box-shadow: none;
-  }
-
-  #petList { 
-    flex: 1; 
-    overflow-y: auto; 
-    padding-right: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.3) transparent;
-    min-height: 200px;
-  }
-
-  .pet { 
-    margin-bottom: 8px; 
-    padding: 12px; 
-    border-radius: 15px; 
-    font-weight: 700; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    font-size: 14px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: white;
-    transition: all 0.3s ease;
-  }
-
-  .common { border-left: 6px solid #94a3b8; }
-  .rare { border-left: 6px solid #3b82f6; background: rgba(59, 130, 246, 0.15); }
-  .epic { border-left: 6px solid #8b5cf6; background: rgba(139, 92, 246, 0.2); }
-  .god { border-left: 6px solid #a855f7; background: rgba(168, 85, 247, 0.25); }
-  .legendary { border-left: 6px solid #f59e0b; background: rgba(245, 158, 11, 0.2); }
-  .mythic { border-left: 6px solid #ef4444; background: rgba(239, 68, 68, 0.25); }
-  .secret { border-left: 6px solid #fbbf24; background: rgba(251, 191, 36, 0.2); }
-  .og { border-left: 6px solid #ff6b6b; background: rgba(255, 107, 107, 0.3); border: 2px solid rgba(255, 107, 107, 0.5); }
-
-  .no-pets {
-    color: rgba(255,255,255,0.5);
-    font-size: 16px;
-    padding: 40px 20px;
-    text-align: center;
-  }
-
-  .sellBtn { 
-    background: linear-gradient(45deg, #ef4444, #dc2626); 
-    color: white; 
-    border: none; 
-    padding: 6px 12px; 
-    border-radius: 10px; 
-    cursor: pointer; 
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  #hatchOverlay { 
-    position: absolute; 
-    inset: 0; 
-    background: rgba(15, 23, 42, 0.98); 
-    backdrop-filter: blur(20px);
-    display: none; 
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center; 
-    z-index: 100; 
-    border-radius: 25px;
-  }
-
-  #hatchBox { 
-    background: rgba(255,255,255,0.1); 
-    backdrop-filter: blur(20px);
-    border-radius: 30px; 
-    padding: 35px; 
-    width: 320px; 
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    color: white;
-  }
-  
-  #hatchEgg { 
-    width: 120px; height: 160px; margin: 0 auto 20px; 
-    background: radial-gradient(circle at 30% 30%, #fff, #fbbf24); 
-    border-radius: 50% 50% 45% 45%; 
-    border: 6px solid #f59e0b;
-  }
-
-  #hatchedPetIcon { font-size: 80px; display: none; margin-bottom: 15px; filter: drop-shadow(0 0 15px currentColor); }
-  
-  #closeHatchBtn { 
-    background: linear-gradient(45deg, #1e293b, #334155); 
-    color: white; 
-    border: none; 
-    padding: 10px 25px; 
-    border-radius: 12px; 
-    cursor: pointer; 
-    font-weight: 700; 
-    font-size: 14px; 
-    margin-top: 20px; 
-  }
-
-  @keyframes eggShake { 
-    0%, 100% { transform: rotate(0); } 
-    20% { transform: rotate(-15deg); } 
-    40% { transform: rotate(15deg); } 
-    60% { transform: rotate(-10deg); } 
-    80% { transform: rotate(10deg); } 
-  }
-  @keyframes eggBreak { 
-    0% { transform: scale(1); opacity: 1; } 
-    100% { transform: scale(1.6); opacity: 0; } 
-  }
-  .shaking { animation: eggShake 0.4s infinite ease-in-out; }
-  .breaking { animation: eggBreak 0.6s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-  #hatchedPetName { font-size:22px; color:#fbbf24; font-weight:900; margin-bottom: 8px; }
-  #hatchedPetInfo { color:#a1a1aa; font-weight:700; font-size:16px; }
-</style>
-</head><body>
-
-<div id="hatchOverlay">
-  <div id="hatchBox">
-    <div id="hatchEgg"></div>
-    <div id="hatchedPetIcon"></div>
-    <h2 id="hatchedPetName"></h2>
-    <p id="hatchedPetInfo"></p>
-    <button id="closeHatchBtn">Continuar</button>
-  </div>
-</div>
-
-<div id="game">
-  <h1>🥚 PET SIM ULTRA</h1>
-  
-  <div class="top-buttons">
-    <button id="tabPetsBtn" class="tab-btn active" onclick="switchTab('pets')">JUEGO</button>
-    <button id="tabIndexBtn" class="tab-btn" onclick="switchTab('index')">INDEX</button>
-  </div>
-
-  <div class="stats">
-    <div class="money">💰 $<span id="money">10</span></div>
-    
-    <div class="egg-selector">
-      <button id="normalBtn" class="egg-type-btn active" onclick="setEgg(false)">
-        NORMAL<br>$<span id="priceN">10</span>
-      </button>
-      <button id="specialBtn" class="egg-type-btn" onclick="setEgg(true)">
-        ESPECIAL<br>$<span id="priceS">500</span>
-      </button>
-    </div>
-  </div>
-
-  <div id="tabPets" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-    <button id="buyEggBtn" class="main-btn" onclick="openEgg()">🛒 ABRIR HUEVO</button>
-    
-    <button id="rebirthBtn" class="main-btn" onclick="doRebirth()" disabled style="margin-bottom: 15px;">
-      ⚡ REBIRTH (500K)
-    </button>
-    
-    <div id="petList">
-      <div class="no-pets">¡Abre tu primer huevo para ver tus pets aquí! 🥚</div>
-    </div>
-  </div>
-
-  <div id="tabIndex" style="display:none; overflow-y:auto; flex:1;">
-    <div id="indexList" style="padding:10px;"></div>
-  </div>
-</div>
-
 <script>
-  // CONFIGURACIÓN COMPLETA
-  const petsConfig = {
-    normal: [
-      {icon:'🐭', name:'Ratón de Campo', rarity:'common', earnings:2},
-      {icon:'🐶', name:'Perro Fiel', rarity:'common', earnings:4},
-      {icon:'🐱', name:'Gato Curioso', rarity:'common', earnings:5},
-      {icon:'🐰', name:'Conejo', rarity:'common', earnings:6},
-      {icon:'🐥', name:'Pollito', rarity:'common', earnings:8},
-      {icon:'🦊', name:'Zorro', rarity:'rare', earnings:15},
-      {icon:'🐻', name:'Oso', rarity:'rare', earnings:20},
-      {icon:'🐼', name:'Panda', rarity:'rare', earnings:25},
-      {icon:'🐨', name:'Koala', rarity:'rare', earnings:30},
-      {icon:'🐯', name:'Tigre', rarity:'epic', earnings:50},
-      {icon:'🦁', name:'León', rarity:'epic', earnings:65},
-      {icon:'🐺', name:'Lobo', rarity:'epic', earnings:80}
-    ],
-    special: [
-      {icon:'🦁', name:'León Majestuoso', rarity:'rare', earnings:35},
-      {icon:'🦄', name:'Unicornio Místico', rarity:'god', earnings:120},
-      {icon:'🐲', name:'Dragón Ancestral', rarity:'god', earnings:200},
-      {icon:'🦖', name:'T-Rex OG', rarity:'og', earnings:800},
-      {icon:'🦄', name:'Unicornio', rarity:'legendary', earnings:400},
-      {icon:'🐲', name:'Dragón', rarity:'legendary', earnings:550},
-      {icon:'🔱', name:'Poseidón', rarity:'mythic', earnings:1000},
-      {icon:'🔥', name:'Fénix', rarity:'mythic', earnings:1400},
-      {icon:'⚡', name:'Zeus', rarity:'mythic', earnings:1800},
-      {icon:'👾', name:'Glitch', rarity:'secret', earnings:2500},
-      {icon:'🌌', name:'Galaxia', rarity:'secret', earnings:3500},
-      {icon:'💎', name:'Diamante', rarity:'secret', earnings:4500},
-      {icon:'👁️', name:'Illuminati', rarity:'secret', earnings:5500},
-      {icon:'👑', name:'EL REY OG', rarity:'og', earnings:12000}
-    ]
+var petsConfig = {
+  normal: [
+    {icon:'🐭',name:'Raton de Campo',rarity:'common',earnings:2},
+    {icon:'🐶',name:'Perro Fiel',rarity:'common',earnings:4},
+    {icon:'🐱',name:'Gato Curioso',rarity:'common',earnings:5},
+    {icon:'🐰',name:'Conejo',rarity:'common',earnings:6},
+    {icon:'🐥',name:'Pollito',rarity:'common',earnings:8},
+    {icon:'🦆',name:'Pato Real',rarity:'common',earnings:10},
+    {icon:'🐷',name:'Cerdo Feliz',rarity:'common',earnings:7},
+    {icon:'🦊',name:'Zorro Astuto',rarity:'rare',earnings:18},
+    {icon:'🐻',name:'Oso Pardo',rarity:'rare',earnings:22},
+    {icon:'🐼',name:'Panda Gigante',rarity:'rare',earnings:28},
+    {icon:'🐨',name:'Koala Dormilon',rarity:'rare',earnings:32},
+    {icon:'🦙',name:'Llama Dorada',rarity:'rare',earnings:38},
+    {icon:'🐯',name:'Tigre Bengal',rarity:'epic',earnings:55},
+    {icon:'🦁',name:'Leon Rey',rarity:'epic',earnings:70},
+    {icon:'🐺',name:'Lobo Alpha',rarity:'epic',earnings:85},
+    {icon:'🐲',name:'Dragon Joven',rarity:'god',earnings:130}
+  ],
+  special: [
+    {icon:'🦅',name:'Aguila Real',rarity:'rare',earnings:40},
+    {icon:'🐺',name:'Lobo Fantasma',rarity:'rare',earnings:48},
+    {icon:'🦁',name:'Leon Dorado',rarity:'epic',earnings:100},
+    {icon:'🐯',name:'Tigre Blanco',rarity:'epic',earnings:120},
+    {icon:'🦄',name:'Unicornio Mistico',rarity:'god',earnings:160},
+    {icon:'🐲',name:'Dragon Ancestral',rarity:'god',earnings:220},
+    {icon:'⚡',name:'Trueno Divino',rarity:'god',earnings:300},
+    {icon:'🐲',name:'Dragon Fenix',rarity:'legendary',earnings:420},
+    {icon:'🦅',name:'Halcon de Fuego',rarity:'legendary',earnings:560},
+    {icon:'🐍',name:'Hidra Legendaria',rarity:'legendary',earnings:700},
+    {icon:'🔥',name:'Fenix Menor',rarity:'mythic',earnings:1000},
+    {icon:'🔥',name:'Fenix Primordial',rarity:'mythic',earnings:1500},
+    {icon:'🔱',name:'Poseidon',rarity:'mythic',earnings:2000},
+    {icon:'⚡',name:'Zeus',rarity:'mythic',earnings:2600},
+    {icon:'👾',name:'Glitch',rarity:'secret',earnings:3500},
+    {icon:'🌌',name:'Galaxia',rarity:'secret',earnings:5000},
+    {icon:'💎',name:'Diamante Infinito',rarity:'secret',earnings:7000},
+    {icon:'👁️',name:'Illuminati',rarity:'secret',earnings:9000},
+    {icon:'🦖',name:'T-Rex OG',rarity:'og',earnings:15000},
+    {icon:'👑',name:'EL REY OG',rarity:'og',earnings:25000}
+  ]
+};
+
+var state = {
+  money: 10, rb: 0, mult: 1.0,
+  pets: [], discovered: [],
+  priceN: 10, priceS: 500,
+  totalOwned: 0, totalEarned: 0
+};
+
+var isSpecial = false;
+
+/* --- Guardado robusto --- */
+function save() {
+  try { localStorage.setItem('PetSimUltra', JSON.stringify(state)); } catch(e) {}
+}
+
+function load() {
+  try {
+    var raw = localStorage.getItem('PetSimUltra');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    if (!d || typeof d.money !== 'number') return;
+    state.money = isFinite(d.money) ? d.money : 10;
+    state.rb = d.rb || 0;
+    state.mult = (d.mult && isFinite(d.mult) && d.mult >= 1) ? d.mult : 1;
+    state.pets = Array.isArray(d.pets) ? d.pets : [];
+    state.discovered = Array.isArray(d.discovered) ? d.discovered : [];
+    state.priceN = d.priceN || 10;
+    state.priceS = d.priceS || 500;
+    state.totalOwned = d.totalOwned || state.pets.length;
+    state.totalEarned = d.totalEarned || 0;
+    /* Migrar mascotas viejas sin nivel */
+    for (var i = 0; i < state.pets.length; i++) {
+      if (!state.pets[i].level) state.pets[i].level = 1;
+      if (!state.pets[i].baseE) state.pets[i].baseE = state.pets[i].earnings || 1;
+    }
+  } catch(e) {}
+}
+
+/* --- Formato compacto --- */
+function fmt(n) {
+  if (!isFinite(n)) return '0';
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toString();
+}
+
+/* --- Toasts en vez de alert --- */
+function toast(msg, tipo) {
+  var c = document.getElementById('toastBox');
+  if (!c) {
+    c = document.createElement('div');
+    c.id = 'toastBox';
+    c.style.cssText = 'position:absolute;bottom:16px;left:16px;right:16px;z-index:999;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none';
+    document.getElementById('game').appendChild(c);
+  }
+  var t = document.createElement('div');
+  var bg = tipo === 'error' ? 'rgba(239,68,68,0.9)' : tipo === 'reward' ? 'rgba(251,191,36,0.95)' : 'rgba(16,185,129,0.9)';
+  var col = tipo === 'reward' ? '#1a1a1a' : '#fff';
+  t.style.cssText = 'padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;color:' + col + ';background:' + bg + ';backdrop-filter:blur(8px);animation:toastAnim 3s ease forwards;pointer-events:auto';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 3100);
+}
+
+/* Inyectar animacion de toast si no existe */
+(function() {
+  var s = document.createElement('style');
+  s.textContent = '@keyframes toastAnim{0%{opacity:0;transform:translateY(16px)}8%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}';
+  document.head.appendChild(s);
+})();
+
+/* --- Calculos --- */
+function petEarn(p) {
+  return (p.baseE || 1) * (1 + 0.25 * ((p.level || 1) - 1)) * state.mult;
+}
+
+function totalIncome() {
+  var s = 0;
+  for (var i = 0; i < state.pets.length; i++) s += petEarn(state.pets[i]);
+  return s;
+}
+
+function rbCost() { return Math.floor(500000 * Math.pow(2, state.rb)); }
+
+function upCost(p) { return Math.floor((p.baseE || 1) * 30 * (p.level || 1)); }
+
+/* --- Logros --- */
+var LOGROS = [
+  {id:'p1',n:'Primera Mascota',d:'Abre un huevo',r:500,c:function(){return state.totalOwned>=1}},
+  {id:'p10',n:'Coleccionista',d:'10 mascotas en total',r:3000,c:function(){return state.totalOwned>=10}},
+  {id:'rare',n:'Primera Rareza',d:'Obten un Raro',r:1500,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='rare'})}},
+  {id:'epic',n:'Poder Emergente',d:'Obten un Epico',r:5000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='epic'})}},
+  {id:'god',n:'Tocado por los Dioses',d:'Obten un Dios',r:10000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='god'})}},
+  {id:'leg',n:'Leyenda Viviente',d:'Obten un Legendario',r:50000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='legendary'})}},
+  {id:'myth',n:'Mitico',d:'Obten un Mitico',r:100000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='mythic'})}},
+  {id:'sec',n:'Secreto Descubierto',d:'Obten un Secreto',r:500000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='secret'})}},
+  {id:'og',n:'OG Status',d:'Obten un OG',r:1000000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='og'})}},
+  {id:'rb1',n:'Renacimiento',d:'Primer Rebirth',r:10000,c:function(){return state.rb>=1}},
+  {id:'rb5',n:'Veterano',d:'5 Rebirths',r:200000,c:function(){return state.rb>=5}},
+  {id:'idx',n:'Completista',d:'Descubre todas',r:5000000,c:function(){return state.discovered.length>=allPets().length}},
+  {id:'m100k',n:'Rico',d:'Gana $100K total',r:8000,c:function(){return state.totalEarned>=100000}},
+  {id:'m1m',n:'Millonario',d:'Gana $1M total',r:80000,c:function(){return state.totalEarned>=1000000}}
+];
+
+function findPet(name) {
+  var all = petsConfig.normal.concat(petsConfig.special);
+  for (var i = 0; i < all.length; i++) { if (all[i].name === name) return all[i]; }
+  return null;
+}
+
+function allPets() { return petsConfig.normal.concat(petsConfig.special); }
+
+function checkLogros() {
+  for (var i = 0; i < LOGROS.length; i++) {
+    var l = LOGROS[i];
+    if (state.discovered.indexOf('logro_' + l.id) === -1 && l.c()) {
+      state.discovered.push('logro_' + l.id);
+      state.money += l.r;
+      state.totalEarned += l.r;
+      toast('Logro: ' + l.n + ' +$' + fmt(l.r), 'reward');
+    }
+  }
+}
+
+/* --- UI --- */
+function updateUI() {
+  document.getElementById('money').textContent = fmt(state.money);
+  document.getElementById('priceN').textContent = fmt(state.priceN);
+  document.getElementById('priceS').textContent = fmt(state.priceS);
+
+  var cost = rbCost();
+  var rbBtn = document.getElementById('rebirthBtn');
+  rbBtn.textContent = '⚡ REBIRTH ($' + fmt(cost) + ')';
+  rbBtn.disabled = state.money < cost;
+
+  renderPets();
+}
+
+function setEgg(special) {
+  isSpecial = special;
+  document.getElementById('normalBtn').classList.toggle('active', !special);
+  document.getElementById('specialBtn').classList.toggle('active', special);
+}
+
+function switchTab(tab) {
+  document.getElementById('tabPets').style.display = tab === 'pets' ? 'flex' : 'none';
+  document.getElementById('tabIndex').style.display = tab === 'index' ? 'block' : 'none';
+  document.getElementById('tabPetsBtn').classList.toggle('active', tab === 'pets');
+  document.getElementById('tabIndexBtn').classList.toggle('active', tab === 'index');
+  if (tab === 'index') renderIndex();
+}
+
+/* --- Abrir huevo --- */
+function openEgg() {
+  var cost = isSpecial ? state.priceS : state.priceN;
+  if (state.money < cost) { toast('Sin dinero suficiente', 'error'); return; }
+
+  state.money -= cost;
+  if (isSpecial) state.priceS = Math.floor(state.priceS * 1.2);
+  else state.priceN = Math.floor(state.priceN * 1.12);
+
+  var pool = isSpecial ? petsConfig.special : petsConfig.normal;
+  var tpl = pool[Math.floor(Math.random() * pool.length)];
+
+  var newPet = {
+    icon: tpl.icon, name: tpl.name, rarity: tpl.rarity,
+    baseE: tpl.earnings, level: 1
   };
+  state.pets.push(newPet);
+  state.totalOwned++;
 
-  const rebirthCosts = [500000];
+  var all = allPets();
+  var isDisc = false;
+  for (var i = 0; i < state.discovered.length; i++) {
+    if (state.discovered[i] === tpl.name) { isDisc = true; break; }
+  }
+  if (!isDisc) state.discovered.push(tpl.name);
 
-  // ESTADO CON GUARDADO
-  let state = {
-    money: 10,
-    rb: 0,
-    mult: 1.0,
-    pets: [],
-    discovered: [],
-    priceN: 10,
-    priceS: 500
-  };
+  checkLogros();
+  save();
+  updateUI();
+  playHatch(newPet);
+}
 
-  let isSpecial = false;
+function playHatch(pet) {
+  var overlay = document.getElementById('hatchOverlay');
+  var egg = document.getElementById('hatchEgg');
+  var icon = document.getElementById('hatchedPetIcon');
 
-  // GUARDADO AUTOMÁTICO
-  function save() { 
-    localStorage.setItem('PetSimUltra', JSON.stringify(state)); 
+  overlay.style.display = 'flex';
+  egg.style.display = 'block';
+  icon.style.display = 'none';
+  egg.className = 'shaking';
+
+  setTimeout(function() {
+    egg.className = 'breaking';
+    setTimeout(function() {
+      egg.style.display = 'none';
+      icon.style.display = 'block';
+      icon.textContent = pet.icon;
+      document.getElementById('hatchedPetName').textContent = pet.name;
+      document.getElementById('hatchedPetInfo').textContent =
+        pet.rarity.toUpperCase() + ' | +$' + fmt(petEarn(pet)) + '/s';
+    }, 600);
+  }, 1500);
+}
+
+/* --- Renderizar mascotas --- */
+function renderPets() {
+  var list = document.getElementById('petList');
+  if (state.pets.length === 0) {
+    list.innerHTML = '<div class="no-pets">Abre tu primer huevo para ver tus pets aqui</div>';
+    return;
   }
 
-  // CARGAR PROGRESO
-  function load() {
-    const saved = localStorage.getItem('PetSimUltra');
-    if(saved) {
-      const loadedState = JSON.parse(saved);
-      state = loadedState;
-    }
+  var ro = {common:0,rare:1,epic:2,god:3,legendary:4,mythic:5,secret:6,og:7};
+  var sorted = state.pets.slice().sort(function(a, b) {
+    return (ro[b.rarity]||0) - (ro[a.rarity]||0);
+  });
+
+  var html = '';
+  for (var i = 0; i < sorted.length; i++) {
+    var p = sorted[i];
+    var idx = state.pets.indexOf(p);
+    var earn = petEarn(p);
+    var uc = p.level < 50 ? upCost(p) : null;
+    html += '<div class="pet ' + p.rarity + '">' +
+      '<span>' + p.icon + ' ' + p.name +
+        ' <small style="opacity:.6">Nvl.' + p.level + '</small></span>' +
+      '<span>$' + fmt(earn) + '/s ' +
+        (uc ? '<button class="sellBtn" style="background:rgba(16,185,129,0.8)" onclick="upgradePet(' + idx + ')">↑</button> ' : '') +
+        '<button class="sellBtn" onclick="sellPet(' + idx + ')">V</button>' +
+      '</span></div>';
+  }
+  list.innerHTML = html;
+}
+
+/* --- Mejorar mascota --- */
+function upgradePet(idx) {
+  if (idx < 0 || idx >= state.pets.length) return;
+  var p = state.pets[idx];
+  if (p.level >= 50) return;
+  var cost = upCost(p);
+  if (state.money < cost) { toast('Dinero insuficiente', 'error'); return; }
+  state.money -= cost;
+  p.level++;
+  toast(p.name + ' Nivel ' + p.level, 'success');
+  save(); updateUI();
+}
+
+/* --- Vender mascota --- */
+function sellPet(idx) {
+  if (idx < 0 || idx >= state.pets.length) return;
+  var p = state.pets[idx];
+  var val = Math.floor(petEarn(p) * 12);
+  state.money += val;
+  state.pets.splice(idx, 1);
+  toast(p.name + ' vendido +$' + fmt(val), 'success');
+  save(); updateUI();
+}
+
+/* --- Rebirth --- */
+function doRebirth() {
+  var cost = rbCost();
+  if (state.money < cost) { toast('Necesitas $' + fmt(cost), 'error'); return; }
+  state.rb++;
+  state.mult *= 1.8;
+  state.money = 10;
+  state.pets = [];
+  state.priceN = 10;
+  state.priceS = 500;
+  toast('REBIRTH ' + state.rb + ' — x' + state.mult.toFixed(1) + ' ganancias', 'reward');
+  checkLogros();
+  save(); updateUI();
+}
+
+/* --- Index --- */
+function renderIndex() {
+  var idxL = document.getElementById('indexList');
+  var all = allPets();
+  var ro = {common:0,rare:1,epic:2,god:3,legendary:4,mythic:5,secret:6,og:7};
+  all = all.slice().sort(function(a,b){return (ro[a.rarity]||0)-(ro[b.rarity]||0)});
+
+  var html = '';
+  for (var i = 0; i < all.length; i++) {
+    var p = all[i];
+    var disc = state.discovered.indexOf(p.name) !== -1;
+    html += '<div class="pet ' + p.rarity + '" style="opacity:' + (disc ? '1' : '0.35') + '">' +
+      '<span>' + (disc ? p.icon : '???') + ' ' + p.name + '</span>' +
+      '<span>' + p.rarity.toUpperCase() + '</span></div>';
+  }
+  idxL.innerHTML = html;
+}
+
+/* --- Cerrar hatch --- */
+document.getElementById('closeHatchBtn').onclick = function() {
+  document.getElementById('hatchOverlay').style.display = 'none';
+  document.getElementById('hatchEgg').className = '';
+};
+
+/* --- Tick de ingresos cada segundo --- */
+setInterval(function() {
+  var inc = totalIncome();
+  if (inc > 0) {
+    state.money += inc;
+    state.totalEarned += inc;
+    checkLogros();
     updateUI();
   }
+}, 1000);
 
-  function updateUI() {
-    document.getElementById('money').innerText = Math.floor(state.money).toLocaleString();
-    document.getElementById('priceN').innerText = state.priceN.toLocaleString();
-    document.getElementById('priceS').innerText = state.priceS.toLocaleString();
-    
-    const rbBtn = document.getElementById('rebirthBtn');
-    let cost = rebirthCosts[state.rb];
-    rbBtn.innerText = `⚡ REBIRTH ($${cost.toLocaleString()})`;
-    rbBtn.disabled = state.money < cost;
-    
-    renderPets();
-  }
+/* --- Auto-guardado --- */
+setInterval(save, 8000);
 
-  function setEgg(special) { 
-    isSpecial = special; 
-    document.getElementById('normalBtn').classList.toggle('active', !special); 
-    document.getElementById('specialBtn').classList.toggle('active', special); 
-  }
-
-  function openEgg() {
-    let cost = isSpecial ? state.priceS : state.priceN;
-    if(state.money < cost) { alert('¡Sin dinero!'); return; }
-    state.money -= cost;
-    
-    if(isSpecial) state.priceS = Math.floor(state.priceS * 1.25);
-    else state.priceN = Math.floor(state.priceN * 1.15);
-
-    const pool = isSpecial ? petsConfig.special : petsConfig.normal;
-    const pet = pool[Math.floor(Math.random() * pool.length)];
-    state.pets.push({...pet, id: Date.now()});
-    
-    if(!state.discovered.includes(pet.name)) state.discovered.push(pet.name);
-    playHatchAnimation(pet);
-    save();
-    updateUI();
-  }
-
-  function playHatchAnimation(pet) {
-    const overlay = document.getElementById('hatchOverlay');
-    const egg = document.getElementById('hatchEgg');
-    const icon = document.getElementById('hatchedPetIcon');
-    
-    overlay.style.display = 'flex';
-    egg.style.display = 'block';
-    icon.style.display = 'none';
-    egg.className = 'shaking';
-
-    setTimeout(() => {
-      egg.className = 'breaking';
-      setTimeout(() => {
-        egg.style.display = 'none';
-        icon.style.display = 'block';
-        icon.innerHTML = pet.icon;
-        document.getElementById('hatchedPetName').innerText = pet.name;
-        document.getElementById('hatchedPetInfo').innerText = `${pet.rarity.toUpperCase()} | +$${(pet.earnings * state.mult).toLocaleString()}/s`;
-      }, 600);
-    }, 1500);
-  }
-
-  function renderPets() {
-    const list = document.getElementById('petList');
-    if(state.pets.length === 0) {
-      list.innerHTML = '<div class="no-pets">¡Abre tu primer huevo para ver tus pets aquí! 🥚</div>';
-      return;
-    }
-    
-    list.innerHTML = '';
-    state.pets.forEach(p => {
-      const div = document.createElement('div');
-      div.className = `pet ${p.rarity}`;
-      div.innerHTML = `
-        <span>${p.icon} ${p.name}</span>
-        <span>$${(p.earnings * state.mult).toLocaleString()}/s 
-          <button class="sellBtn" onclick="sellPet(${p.id})">V</button>
-        </span>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  function sellPet(id) {
-    let idx = state.pets.findIndex(p => p.id === id);
-    if(idx !== -1) {
-      state.money += state.pets[idx].earnings * 10;
-      state.pets.splice(idx, 1);
-      save();
-      updateUI();
-    }
-  }
-
-  function doRebirth() {
-    if(state.money < rebirthCosts[state.rb]) return;
-    state.rb++;
-    state.mult *= 1.8;
-    state.money = 10;
-    state.pets = [];
-    state.priceN = 10;
-    state.priceS = 500;
-    save();
-    updateUI();
-    alert("¡REBIRTH! x1.8 ganancias");
-  }
-
-  function switchTab(tab) {
-    document.getElementById('tabPets').style.display = tab === 'pets' ? 'flex' : 'none';
-    document.getElementById('tabIndex').style.display = tab === 'index' ? 'block' : 'none';
-    document.getElementById('tabPetsBtn').classList.toggle('active', tab === 'pets');
-    document.getElementById('tabIndexBtn').classList.toggle('active', tab === 'index');
-    if(tab === 'index') renderIndex();
-  }
-
-  function renderIndex() {
-    const idxL = document.getElementById('indexList');
-    idxL.innerHTML = '';
-    [...petsConfig.normal, ...petsConfig.special].forEach(p => {
-      const disc = state.discovered.includes(p.name);
-      const row = document.createElement('div');
-      row.className = `pet ${p.rarity}`;
-      row.style.opacity = disc ? '1' : '0.4';
-      row.innerHTML = `<span>${disc ? p.icon : '❓'} ${p.name}</span> <span>${p.rarity.toUpperCase()}</span>`;
-      idxL.appendChild(row);
-    });
-  }
-
-  // EVENTOS
-  document.getElementById('closeHatchBtn').onclick = function() {
-    document.getElementById('hatchOverlay').style.display = 'none';
-    document.getElementById('hatchEgg').className = '';
-    document.getElementById('hatchedPetIcon').style.display = 'none';
-  };
-
-  // GUARDADO AUTOMÁTICO CADA 10 SEGUNDOS
-  setInterval(save, 10000);
-
-  // GANANCIAS POR SEGUNDO
-  setInterval(() => {
-    let totalIncome = state.pets.reduce((acc, p) => acc + p.earnings, 0) * state.mult;
-    if(totalIncome > 0) {
-      state.money += totalIncome;
-      updateUI();
-    }
-  }, 1000);
-
-  // INICIO CON CARGA DE PROGRESO
-  window.onload = function() { 
-    load(); 
-  };
+/* --- Inicio --- */
+load();
+updateUI();
 </script>
-</body>
-</html>
