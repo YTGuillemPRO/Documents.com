@@ -1,362 +1,944 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pet Simulator Ultra</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  height:100vh;overflow:hidden;
+  background:#060e1a;
+  display:flex;justify-content:center;align-items:center;
+  user-select:none;
+}
+
+/* Fondo animado CSS puro - sin canvas */
+body::before,body::after{
+  content:'';position:fixed;border-radius:50%;pointer-events:none;filter:blur(80px);
+}
+body::before{
+  width:500px;height:500px;top:-150px;left:-100px;
+  background:rgba(16,185,129,0.12);
+  animation:drift1 18s ease-in-out infinite;
+}
+body::after{
+  width:400px;height:400px;bottom:-100px;right:-80px;
+  background:rgba(251,191,36,0.1);
+  animation:drift2 22s ease-in-out infinite;
+}
+@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
+@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-80px)}}
+
+#game{
+  position:relative;z-index:1;
+  width:390px;height:86vh;max-height:760px;
+  background:rgba(10,20,40,0.92);
+  border:1.5px solid rgba(255,255,255,0.07);
+  border-radius:26px;
+  box-shadow:0 30px 70px rgba(0,0,0,0.6);
+  padding:20px 18px 16px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{
+  font-family:'Russo One',sans-serif;font-size:18px;letter-spacing:0.5px;
+  background:linear-gradient(135deg,#fbbf24,#f59e0b,#fde68a);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hdr-btns{display:flex;gap:6px}
+.hdr-btn{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+  color:#7a8ba8;width:32px;height:32px;border-radius:10px;
+  cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.hdr-btn:hover{background:rgba(255,255,255,0.12);color:#f1f5f9}
+
+/* Stats */
+.stats{display:flex;gap:5px;margin-bottom:12px}
+.st{
+  flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;padding:8px 6px;text-align:center;
+}
+.st i{font-size:12px;margin-bottom:3px;display:block}
+.st-money i{color:#10b981}.st-inc i{color:#fbbf24}.st-pets i{color:#c084fc}
+.st-v{display:block;font-size:14px;font-weight:900;color:#f1f5f9}
+.st-l{display:block;font-size:8px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+/* Tabs */
+.tabs{display:flex;gap:5px;margin-bottom:12px}
+.tab{
+  flex:1;padding:9px;font-family:inherit;font-size:11px;font-weight:800;
+  letter-spacing:.4px;border:1.5px solid rgba(255,255,255,0.07);border-radius:11px;
+  cursor:pointer;background:rgba(255,255,255,0.04);color:#7a8ba8;transition:all .2s;
+}
+.tab.on{background:linear-gradient(135deg,#059669,#10b981);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(16,185,129,0.3)}
+.tab:not(.on):hover{background:rgba(255,255,255,0.08);color:#f1f5f9}
+
+/* Paneles */
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column}
+.panel.on{display:flex}
+
+/* Huevos */
+.eggs{display:flex;gap:6px;margin-bottom:8px}
+.egg{
+  flex:1;padding:8px 4px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all .2s;color:#f1f5f9;
+}
+.egg.on{border-color:#fbbf24;background:rgba(251,191,36,0.07);box-shadow:0 0 16px rgba(251,191,36,0.12)}
+.egg:hover{transform:scale(1.03)}
+.egg-shape{
+  width:32px;height:42px;border-radius:50% 50% 42% 42%;margin:0 auto 5px;
+}
+.egg-b{background:linear-gradient(145deg,#f8fafc,#cbd5e1);border:2.5px solid #94a3b8}
+.egg-g{background:linear-gradient(145deg,#fef3c7,#f59e0b);border:2.5px solid #d97706;box-shadow:0 0 10px rgba(251,191,36,0.2)}
+.egg-c{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4);border:2.5px solid #8b5cf6;box-shadow:0 0 14px rgba(139,92,246,0.25);animation:eggGlow 2.5s ease-in-out infinite}
+@keyframes eggGlow{0%,100%{box-shadow:0 0 14px rgba(139,92,246,0.25)}50%{box-shadow:0 0 22px rgba(6,182,212,0.35)}}
+.egg-n{display:block;font-size:10px;font-weight:800}
+.egg-p{display:block;font-size:11px;font-weight:900;color:#10b981;margin-top:1px}
+
+/* Botones principales */
+.btn{
+  width:100%;padding:13px;font-family:inherit;font-size:14px;font-weight:900;
+  letter-spacing:.4px;border:none;border-radius:14px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn:active{transform:scale(0.97)}
+.btn-buy{background:linear-gradient(135deg,#fbbf24,#d97706);color:#1a1a1a;box-shadow:0 5px 18px rgba(251,191,36,0.35);margin-bottom:6px}
+.btn-buy.can{animation:bpulse 2s ease-in-out infinite}
+.btn-buy.no{opacity:.4;filter:saturate(0.4);animation:none}
+@keyframes bpulse{0%,100%{box-shadow:0 5px 18px rgba(251,191,36,0.35)}50%{box-shadow:0 5px 28px rgba(251,191,36,0.6)}}
+.btn-rb{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,0.3);margin-bottom:10px}
+.btn-rb:disabled{background:rgba(100,116,139,0.15);color:#64748b;box-shadow:none;cursor:not-allowed;opacity:.5}
+.btn-rb.yes{background:linear-gradient(135deg,#f43f5e,#e11d48)!important;box-shadow:0 4px 18px rgba(244,63,94,0.4)!important;animation:rbpulse .5s ease-in-out infinite!important;opacity:1!important}
+@keyframes rbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* Lista de mascotas */
+.plist{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+.plist::-webkit-scrollbar{width:3px}
+.plist::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.empty{text-align:center;padding:35px 15px;color:#64748b}
+.empty i{font-size:32px;margin-bottom:10px;display:block;opacity:.4}
+.empty p{font-size:13px;font-weight:600}
+
+.pc{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 10px;margin-bottom:5px;border-radius:12px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+  transition:all .15s;
+}
+.pc:hover{background:rgba(255,255,255,0.07)}
+.pc-l{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.pc-i{font-size:22px;flex-shrink:0}
+.pc-t{min-width:0}
+.pc-n{display:block;font-size:12px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-m{display:block;font-size:9px;font-weight:700;color:#7a8ba8;margin-top:1px}
+.pc-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pc-e{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
+.pc-a{display:flex;gap:3px}
+.ab{
+  width:26px;height:26px;border:none;border-radius:7px;cursor:pointer;font-size:10px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.ab:hover{transform:scale(1.15)}
+.ab-u{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.15)}
+.ab-s{background:rgba(244,63,94,0.12);color:#f43f5e;border:1px solid rgba(244,63,94,0.15)}
+
+/* Bordes rareza */
+.pc.common{border-left:3px solid #9ca3af}
+.pc.rare{border-left:3px solid #38bdf8;background:rgba(56,189,248,0.04)}
+.pc.epic{border-left:3px solid #c084fc;background:rgba(192,132,252,0.04)}
+.pc.god{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.04)}
+.pc.legendary{border-left:3px solid #f87171;background:rgba(248,113,113,0.04)}
+.pc.mythic{border-left:3px solid #f472b6;background:rgba(244,114,182,0.04)}
+.pc.secret{border-left:3px solid #22d3ee;background:rgba(34,211,238,0.04)}
+.pc.og{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.06);border:1.5px solid rgba(251,191,36,0.25);box-shadow:0 0 12px rgba(251,191,36,0.08)}
+
+/* Index */
+.idx-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 2px}
+.idx-hd span:first-child{font-size:12px;font-weight:800;color:#7a8ba8}
+.idx-hd span:last-child{font-size:14px;font-weight:900;color:#fbbf24}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.05);margin-bottom:12px;overflow:hidden}
+.bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#10b981,#fbbf24);transition:width .4s}
+.igrid{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+.igrid::-webkit-scrollbar{width:3px}
+.igrid::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.ii{display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:3px;border-radius:8px;border-left:3px solid;background:rgba(255,255,255,0.03)}
+.ii.off{opacity:.25}
+.ii .ic{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.ii .in{font-size:11px;font-weight:700;color:#f1f5f9;flex:1}
+.ii .ir{font-size:8px;font-weight:800;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px}
+.ir.common{color:#9ca3af;background:rgba(156,163,175,0.1)}.ir.rare{color:#38bdf8;background:rgba(56,189,248,0.1)}
+.ir.epic{color:#c084fc;background:rgba(192,132,252,0.1)}.ir.god{color:#fbbf24;background:rgba(251,191,36,0.1)}
+.ir.legendary{color:#f87171;background:rgba(248,113,113,0.1)}.ir.mythic{color:#f472b6;background:rgba(244,114,182,0.1)}
+.ir.secret{color:#22d3ee;background:rgba(34,211,238,0.1)}.ir.og{color:#fbbf24;background:rgba(251,191,36,0.12)}
+.ii.common{border-left-color:#9ca3af}.ii.rare{border-left-color:#38bdf8}.ii.epic{border-left-color:#c084fc}
+.ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}
+.ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}
+
+/* Logros */
+.al-t{font-size:12px;font-weight:800;color:#7a8ba8;margin-bottom:8px;padding:0 2px}
+.al{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+.al::-webkit-scrollbar{width:3px}
+.al::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.ai{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:4px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
+.ai.ok{border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.04)}
+.ai-i{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:rgba(255,255,255,0.04);color:#64748b}
+.ai.ok .ai-i{background:rgba(251,191,36,0.12);color:#fbbf24}
+.ai-t{flex:1;min-width:0}
+.ai-n{display:block;font-size:11px;font-weight:800;color:#f1f5f9}
+.ai-d{display:block;font-size:9px;color:#64748b;margin-top:1px}
+.ai-r{font-size:9px;font-weight:800;color:#10b981;white-space:nowrap}
+
+/* Overlay */
+#overlay{
+  position:absolute;inset:0;background:rgba(4,10,22,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:100;border-radius:26px;
+}
+#obox{
+  background:rgba(12,24,48,0.95);border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:24px;padding:30px 25px;width:280px;text-align:center;color:#f1f5f9;
+}
+#oegg{width:90px;height:120px;border-radius:50% 50% 42% 42%;margin:0 auto 16px}
+#oicon{font-size:64px;display:none;margin:0 auto 10px;filter:drop-shadow(0 0 16px currentColor)}
+#oname{font-family:'Russo One',sans-serif;font-size:18px;color:#fbbf24;margin-bottom:4px}
+#orar{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+#oinfo{font-size:13px;font-weight:700;color:#7a8ba8}
+#oclose{
+  margin-top:18px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.08);
+  color:#f1f5f9;padding:9px 28px;border-radius:10px;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.4px;transition:all .2s;
+}
+#oclose:hover{background:rgba(255,255,255,0.12)}
+
+@keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-16deg) scale(1.04)}30%{transform:rotate(14deg) scale(1.04)}45%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}75%{transform:rotate(-5deg)}}
+@keyframes brk{0%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}100%{transform:scale(1.8);opacity:0}}
+@keyframes rev{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.15) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+.shk{animation:shake .35s infinite ease-in-out}
+.brk{animation:brk .5s forwards ease-out}
+.rev{animation:rev .5s forwards ease-out}
+
+/* Toasts */
+#toasts{position:absolute;bottom:16px;left:16px;right:16px;z-index:200;display:flex;flex-direction:column-reverse;gap:5px;pointer-events:none}
+.toast{
+  padding:9px 12px;border-radius:10px;font-size:11px;font-weight:700;color:#fff;
+  animation:tin .25s ease,tout .25s ease 2.5s forwards;pointer-events:auto;
+}
+.t-ok{background:rgba(16,185,129,0.88)}.t-err{background:rgba(244,63,94,0.88)}
+.t-inf{background:rgba(56,189,248,0.88)}.t-rwd{background:rgba(251,191,36,0.92);color:#1a1a1a}
+@keyframes tin{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-8px)}}
+
+/* Float money */
+.fm{
+  position:absolute;font-size:13px;font-weight:900;color:#10b981;pointer-events:none;
+  animation:fup 1s ease-out forwards;z-index:50;text-shadow:0 2px 6px rgba(0,0,0,0.5);
+}
+@keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
+
+/* Debug */
+#debug{
+  display:none;position:fixed;top:10px;left:10px;right:10px;z-index:9999;
+  background:rgba(244,63,94,0.95);color:#fff;padding:12px 16px;border-radius:10px;
+  font-family:monospace;font-size:12px;line-height:1.5;cursor:pointer;
+}
+
+@media(max-height:680px){
+  #game{height:95vh;padding:12px 14px 10px;border-radius:20px}
+  h1{font-size:16px;margin-bottom:6px}.stats{margin-bottom:6px}.st{padding:6px 4px}.st-v{font-size:12px}
+  .tabs{margin-bottom:6px}.egg-shape{width:26px;height:34px}.btn{padding:10px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="debug" onclick="this.style.display='none'"></div>
+
+<div id="game">
+  <header>
+    <h1>PET SIMULATOR ULTRA</h1>
+    <div class="hdr-btns">
+      <button class="hdr-btn" id="btnMute" aria-label="Sonido"><i class="fas fa-volume-high"></i></button>
+      <button class="hdr-btn" id="btnReset" aria-label="Reset"><i class="fas fa-rotate-left"></i></button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="st st-money"><i class="fas fa-coins"></i><span class="st-v" id="sMoney">$10</span><span class="st-l">Dinero</span></div>
+    <div class="st st-inc"><i class="fas fa-chart-line"></i><span class="st-v" id="sInc">$0/s</span><span class="st-l">Ingreso</span></div>
+    <div class="st st-pets"><i class="fas fa-paw"></i><span class="st-v" id="sPets">0</span><span class="st-l">Mascotas</span></div>
+  </div>
+
+  <nav class="tabs" id="navTabs">
+    <button class="tab on" data-t="game">JUEGO</button>
+    <button class="tab" data-t="index">INDEX</button>
+    <button class="tab" data-t="ach">LOGROS</button>
+  </nav>
+
+  <section id="pGame" class="panel on">
+    <div class="eggs" id="navEggs">
+      <button class="egg on" data-e="basic"><div class="egg-shape egg-b"></div><span class="egg-n">Basico</span><span class="egg-p" id="pB">$10</span></button>
+      <button class="egg" data-e="golden"><div class="egg-shape egg-g"></div><span class="egg-n">Dorado</span><span class="egg-p" id="pG">$500</span></button>
+      <button class="egg" data-e="cosmic"><div class="egg-shape egg-c"></div><span class="egg-n">Cosmico</span><span class="egg-p" id="pC">$5,000</span></button>
+    </div>
+    <button class="btn btn-buy can" id="btnBuy"><i class="fas fa-egg"></i> ABRIR HUEVO</button>
+    <button class="btn btn-rb" id="btnRb" disabled><i class="fas fa-bolt"></i> REBIRTH ($500K)</button>
+    <div id="petList" class="plist"></div>
+  </section>
+
+  <section id="pIndex" class="panel">
+    <div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div>
+    <div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div>
+    <div id="idxList" class="igrid"></div>
+  </section>
+
+  <section id="pAch" class="panel">
+    <div class="al-t">Logros: <span id="achN">0</span>/<span id="achT">0</span></div>
+    <div id="achList" class="al"></div>
+  </section>
+
+  <div id="overlay">
+    <div id="obox">
+      <div id="oegg"></div>
+      <div id="oicon"></div>
+      <h2 id="oname"></h2>
+      <p id="orar"></p>
+      <p id="oinfo"></p>
+      <button id="oclose">CONTINUAR</button>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+</div>
+
 <script>
-var petsConfig = {
-  normal: [
-    {icon:'🐭',name:'Raton de Campo',rarity:'common',earnings:2},
-    {icon:'🐶',name:'Perro Fiel',rarity:'common',earnings:4},
-    {icon:'🐱',name:'Gato Curioso',rarity:'common',earnings:5},
-    {icon:'🐰',name:'Conejo',rarity:'common',earnings:6},
-    {icon:'🐥',name:'Pollito',rarity:'common',earnings:8},
-    {icon:'🦆',name:'Pato Real',rarity:'common',earnings:10},
-    {icon:'🐷',name:'Cerdo Feliz',rarity:'common',earnings:7},
-    {icon:'🦊',name:'Zorro Astuto',rarity:'rare',earnings:18},
-    {icon:'🐻',name:'Oso Pardo',rarity:'rare',earnings:22},
-    {icon:'🐼',name:'Panda Gigante',rarity:'rare',earnings:28},
-    {icon:'🐨',name:'Koala Dormilon',rarity:'rare',earnings:32},
-    {icon:'🦙',name:'Llama Dorada',rarity:'rare',earnings:38},
-    {icon:'🐯',name:'Tigre Bengal',rarity:'epic',earnings:55},
-    {icon:'🦁',name:'Leon Rey',rarity:'epic',earnings:70},
-    {icon:'🐺',name:'Lobo Alpha',rarity:'epic',earnings:85},
-    {icon:'🐲',name:'Dragon Joven',rarity:'god',earnings:130}
-  ],
-  special: [
-    {icon:'🦅',name:'Aguila Real',rarity:'rare',earnings:40},
-    {icon:'🐺',name:'Lobo Fantasma',rarity:'rare',earnings:48},
-    {icon:'🦁',name:'Leon Dorado',rarity:'epic',earnings:100},
-    {icon:'🐯',name:'Tigre Blanco',rarity:'epic',earnings:120},
-    {icon:'🦄',name:'Unicornio Mistico',rarity:'god',earnings:160},
-    {icon:'🐲',name:'Dragon Ancestral',rarity:'god',earnings:220},
-    {icon:'⚡',name:'Trueno Divino',rarity:'god',earnings:300},
-    {icon:'🐲',name:'Dragon Fenix',rarity:'legendary',earnings:420},
-    {icon:'🦅',name:'Halcon de Fuego',rarity:'legendary',earnings:560},
-    {icon:'🐍',name:'Hidra Legendaria',rarity:'legendary',earnings:700},
-    {icon:'🔥',name:'Fenix Menor',rarity:'mythic',earnings:1000},
-    {icon:'🔥',name:'Fenix Primordial',rarity:'mythic',earnings:1500},
-    {icon:'🔱',name:'Poseidon',rarity:'mythic',earnings:2000},
-    {icon:'⚡',name:'Zeus',rarity:'mythic',earnings:2600},
-    {icon:'👾',name:'Glitch',rarity:'secret',earnings:3500},
-    {icon:'🌌',name:'Galaxia',rarity:'secret',earnings:5000},
-    {icon:'💎',name:'Diamante Infinito',rarity:'secret',earnings:7000},
-    {icon:'👁️',name:'Illuminati',rarity:'secret',earnings:9000},
-    {icon:'🦖',name:'T-Rex OG',rarity:'og',earnings:15000},
-    {icon:'👑',name:'EL REY OG',rarity:'og',earnings:25000}
-  ]
+/* =============================================
+   DEBUG - muestra errores en pantalla
+   ============================================= */
+window.onerror = function(msg, url, line) {
+  var d = document.getElementById('debug');
+  d.style.display = 'block';
+  d.textContent = 'ERROR: ' + msg + ' (linea ' + line + ')';
 };
 
-var state = {
-  money: 10, rb: 0, mult: 1.0,
-  pets: [], discovered: [],
-  priceN: 10, priceS: 500,
-  totalOwned: 0, totalEarned: 0
+/* =============================================
+   BASE DE DATOS
+   ============================================= */
+var PETS = [
+  {i:'🐭',n:'Raton de Campo',r:'common',e:2,eg:['basic']},
+  {i:'🐶',n:'Perro Fiel',r:'common',e:4,eg:['basic']},
+  {i:'🐱',n:'Gato Curioso',r:'common',e:5,eg:['basic']},
+  {i:'🐰',n:'Conejo Saltarin',r:'common',e:6,eg:['basic']},
+  {i:'🐥',n:'Pollito Dorado',r:'common',e:8,eg:['basic']},
+  {i:'🦆',n:'Pato Real',r:'common',e:10,eg:['basic']},
+  {i:'🐷',n:'Cerdo Feliz',r:'common',e:7,eg:['basic']},
+  {i:'🦊',n:'Zorro Astuto',r:'rare',e:15,eg:['basic']},
+  {i:'🐻',n:'Oso Pardo',r:'rare',e:20,eg:['basic']},
+  {i:'🐼',n:'Panda Gigante',r:'rare',e:25,eg:['basic']},
+  {i:'🐨',n:'Koala Dormilon',r:'rare',e:30,eg:['basic']},
+  {i:'🦙',n:'Llama Dorada',r:'rare',e:35,eg:['basic']},
+  {i:'🦅',n:'Aguila Real',r:'rare',e:40,eg:['golden']},
+  {i:'🐺',n:'Lobo Gris',r:'rare',e:45,eg:['golden']},
+  {i:'🐯',n:'Tigre Bengal',r:'epic',e:50,eg:['basic']},
+  {i:'🦁',n:'Leon Rey',r:'epic',e:65,eg:['basic']},
+  {i:'🐺',n:'Lobo Alpha',r:'epic',e:80,eg:['basic']},
+  {i:'🐯',n:'Tigre Blanco',r:'epic',e:90,eg:['golden']},
+  {i:'🦁',n:'Leon Dorado',r:'epic',e:110,eg:['golden']},
+  {i:'🐲',n:'Dragon Joven',r:'god',e:120,eg:['basic']},
+  {i:'🦄',n:'Unicornio Mistico',r:'god',e:150,eg:['golden']},
+  {i:'🐲',n:'Dragon Ancestral',r:'god',e:220,eg:['golden','cosmic']},
+  {i:'🦄',n:'Unicornio Arcano',r:'god',e:280,eg:['cosmic']},
+  {i:'⚡',n:'Trueno Divino',r:'god',e:350,eg:['cosmic']},
+  {i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},
+  {i:'🦅',n:'Halcon de Fuego',r:'legendary',e:500,eg:['golden']},
+  {i:'🐲',n:'Dragon Celestial',r:'legendary',e:600,eg:['cosmic']},
+  {i:'🐍',n:'Hidra de Nueve Cabezas',r:'legendary',e:800,eg:['cosmic']},
+  {i:'🦅',n:'Aguila Imperial',r:'legendary',e:700,eg:['cosmic']},
+  {i:'🔥',n:'Fenix Menor',r:'mythic',e:1000,eg:['golden']},
+  {i:'🔥',n:'Fenix Primordial',r:'mythic',e:1400,eg:['cosmic']},
+  {i:'🔱',n:'Poseidon',r:'mythic',e:1800,eg:['cosmic']},
+  {i:'⚡',n:'Zeus',r:'mythic',e:2200,eg:['cosmic']},
+  {i:'🌋',n:'Volcan Viviente',r:'mythic',e:2600,eg:['cosmic']},
+  {i:'👾',n:'Glitch',r:'secret',e:3500,eg:['cosmic']},
+  {i:'🌌',n:'Galaxia',r:'secret',e:5000,eg:['cosmic']},
+  {i:'💎',n:'Diamante Infinito',r:'secret',e:6500,eg:['cosmic']},
+  {i:'👁️',n:'Illuminati',r:'secret',e:8000,eg:['cosmic']},
+  {i:'🦖',n:'T-Rex OG',r:'og',e:12000,eg:['cosmic']},
+  {i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']}
+];
+
+var WEIGHTS = {
+  basic:{common:65,rare:25,epic:8,god:2},
+  golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:2,og:1},
+  cosmic:{god:5,legendary:15,mythic:35,secret:30,og:15}
 };
 
-var isSpecial = false;
+var RCOL = {common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
+var RNAME = {common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
+var RORD = {common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 
-/* --- Guardado robusto --- */
+/* =============================================
+   LOGROS
+   ============================================= */
+function hasR(r) {
+  for (var i=0;i<G.disc.length;i++) for (var j=0;j<PETS.length;j++) if (PETS[j].n===G.disc[i]&&PETS[j].r===r) return true;
+  return false;
+}
+var ACHS = [
+  {id:'a1',nm:'Primera Mascota',ds:'Abre tu primer huevo',rw:1000,ic:'fa-egg',ck:function(){return G.tot>=1}},
+  {id:'a2',nm:'Coleccionista',ds:'Obten 10 mascotas',rw:5000,ic:'fa-layer-group',ck:function(){return G.tot>=10}},
+  {id:'a3',nm:'Gran Coleccionista',ds:'Obten 50 mascotas',rw:50000,ic:'fa-boxes-stacked',ck:function(){return G.tot>=50}},
+  {id:'a4',nm:'Primera Rareza',ds:'Obten una Rara',rw:2000,ic:'fa-gem',ck:function(){return hasR('rare')}},
+  {id:'a5',nm:'Poder Emergente',ds:'Obten una Epica',rw:5000,ic:'fa-fire',ck:function(){return hasR('epic')}},
+  {id:'a6',nm:'Tocado por los Dioses',ds:'Obten un Dios',rw:10000,ic:'fa-sun',ck:function(){return hasR('god')}},
+  {id:'a7',nm:'Leyenda Viviente',ds:'Obten una Legendaria',rw:50000,ic:'fa-crown',ck:function(){return hasR('legendary')}},
+  {id:'a8',nm:'Mitico',ds:'Obten una Mitica',rw:100000,ic:'fa-wand-magic-sparkles',ck:function(){return hasR('mythic')}},
+  {id:'a9',nm:'Secreto Descubierto',ds:'Obten una Secreta',rw:500000,ic:'fa-eye',ck:function(){return hasR('secret')}},
+  {id:'a10',nm:'OG Status',ds:'Obten una OG',rw:1000000,ic:'fa-skull',ck:function(){return hasR('og')}},
+  {id:'a11',nm:'Renacimiento',ds:'Primer Rebirth',rw:10000,ic:'fa-bolt',ck:function(){return G.rb>=1}},
+  {id:'a12',nm:'Veterano',ds:'5 Rebirths',rw:100000,ic:'fa-star',ck:function(){return G.rb>=5}},
+  {id:'a13',nm:'Explorador',ds:'50% del Index',rw:50000,ic:'fa-compass',ck:function(){return G.disc.length>=PETS.length*0.5}},
+  {id:'a14',nm:'Completista',ds:'Todas las mascotas',rw:2000000,ic:'fa-trophy',ck:function(){return G.disc.length>=PETS.length}},
+  {id:'a15',nm:'Rico',ds:'Gana $100K total',rw:10000,ic:'fa-sack-dollar',ck:function(){return G.te>=100000}},
+  {id:'a16',nm:'Millonario',ds:'Gana $1M total',rw:100000,ic:'fa-vault',ck:function(){return G.te>=1000000}}
+];
+
+/* =============================================
+   ESTADO
+   ============================================= */
+var G = {money:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000},tot:0,te:0,achs:[],mut:false,nid:1};
+var selEgg = 'basic';
+var rbConf = false;
+var rbTmr = null;
+
+/* =============================================
+   SONIDO
+   ============================================= */
+var snd = {
+  cx: null,
+  go: function() { try { if(!this.cx) this.cx=new(window.AudioContext||window.webkitAudioContext)(); if(this.cx.state==='suspended')this.cx.resume(); } catch(e){} },
+  t: function(f,d,tp,v) { if(!this.cx||G.mut)return; try{var o=this.cx.createOscillator(),g=this.cx.createGain();o.type=tp||'sine';o.frequency.setValueAtTime(f,this.cx.currentTime);g.gain.setValueAtTime(v||0.1,this.cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,this.cx.currentTime+d);o.connect(g);g.connect(this.cx.destination);o.start();o.stop(this.cx.currentTime+d);}catch(e){} },
+  hatch: function(r) {
+    this.go(); var x=['common','rare','epic','god','legendary','mythic','secret','og'].indexOf(r), s=this;
+    if(x<=1){this.t(523,0.12);setTimeout(function(){s.t(659,0.15)},80)}
+    else if(x===2){this.t(523,0.1);setTimeout(function(){s.t(659,0.1)},70);setTimeout(function(){s.t(784,0.2)},140)}
+    else if(x===3){this.t(659,0.1);setTimeout(function(){s.t(784,0.1)},70);setTimeout(function(){s.t(988,0.15)},140);setTimeout(function(){s.t(1047,0.25)},210)}
+    else{[523,659,784,988,1047,1175,1319].forEach(function(f,i){setTimeout(function(){s.t(f,0.2,'triangle',0.08)},i*60)})}
+  },
+  click: function(){this.go();this.t(800,0.05,'square',0.04)},
+  sell: function(){this.go();this.t(400,0.1,'sawtooth',0.05)},
+  up: function(){this.go();this.t(600,0.08);var s=this;setTimeout(function(){s.t(900,0.12)},60)},
+  err: function(){this.go();this.t(200,0.2,'sawtooth',0.05)}
+};
+
+/* =============================================
+   UTILIDADES
+   ============================================= */
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n) || !isFinite(n)) return '0';
+  n = Number(n);
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toLocaleString();
+}
+
+function toast(msg, type) {
+  var c = document.getElementById('toasts');
+  var t = document.createElement('div');
+  t.className = 'toast t-' + (type||'inf');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 3000);
+}
+
+function floatM(amt) {
+  var el = document.createElement('div');
+  el.className = 'fm';
+  el.textContent = '+$' + fmt(amt);
+  el.style.left = (Math.random()*160+100) + 'px';
+  el.style.top = '75px';
+  document.getElementById('game').appendChild(el);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 1100);
+}
+
+/* =============================================
+   GUARDADO
+   ============================================= */
+var SAVE_KEY = 'PetSimUltra_v4';
+
 function save() {
-  try { localStorage.setItem('PetSimUltra', JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch(e) {}
 }
 
 function load() {
+  // Limpiar saves viejos
+  try { localStorage.removeItem('PetSimUltra'); } catch(e){}
+  try { localStorage.removeItem('PetSimUltra_v2'); } catch(e){}
+  try { localStorage.removeItem('PetSimUltra_v3'); } catch(e){}
+
+  var raw = null;
+  try { raw = localStorage.getItem(SAVE_KEY); } catch(e){ return; }
+  if (!raw) return;
+
   try {
-    var raw = localStorage.getItem('PetSimUltra');
-    if (!raw) return;
     var d = JSON.parse(raw);
     if (!d || typeof d.money !== 'number') return;
-    state.money = isFinite(d.money) ? d.money : 10;
-    state.rb = d.rb || 0;
-    state.mult = (d.mult && isFinite(d.mult) && d.mult >= 1) ? d.mult : 1;
-    state.pets = Array.isArray(d.pets) ? d.pets : [];
-    state.discovered = Array.isArray(d.discovered) ? d.discovered : [];
-    state.priceN = d.priceN || 10;
-    state.priceS = d.priceS || 500;
-    state.totalOwned = d.totalOwned || state.pets.length;
-    state.totalEarned = d.totalEarned || 0;
-    /* Migrar mascotas viejas sin nivel */
-    for (var i = 0; i < state.pets.length; i++) {
-      if (!state.pets[i].level) state.pets[i].level = 1;
-      if (!state.pets[i].baseE) state.pets[i].baseE = state.pets[i].earnings || 1;
+
+    // Copiar campos validos
+    G.money = (isNaN(d.money)||!isFinite(d.money)) ? 10 : d.money;
+    G.rb = (typeof d.rb==='number' && isFinite(d.rb)) ? Math.max(0,d.rb) : 0;
+    G.mult = (typeof d.mult==='number' && isFinite(d.mult) && d.mult>=1) ? d.mult : 1;
+    G.mut = (typeof d.mut==='boolean') ? d.mut : false;
+    G.tot = (typeof d.tot==='number') ? Math.max(0,d.tot) : 0;
+    G.te = (typeof d.te==='number') ? Math.max(0,d.te) : 0;
+    G.nid = (typeof d.nid==='number') ? Math.max(1,d.nid) : 1;
+
+    // Precios
+    if (d.pr && typeof d.pr.basic === 'number') G.pr = d.pr;
+    else if (typeof d.priceN === 'number') G.pr = {basic:d.priceN, golden:d.priceS||500, cosmic:5000};
+
+    // Arrays
+    G.disc = Array.isArray(d.disc) ? d.disc : [];
+    G.achs = Array.isArray(d.achs) ? d.achs : [];
+    G.pets = Array.isArray(d.pets) ? [] : [];
+
+    // Migrar mascotas una por una, validando
+    if (Array.isArray(d.pets)) {
+      for (var i = 0; i < d.pets.length; i++) {
+        var p = d.pets[i];
+        if (!p || !p.i || !p.n || !p.r) continue; // descartar mascotas invalidas
+        var be = (typeof p.be === 'number' && isFinite(p.be) && p.be > 0) ? p.be : (p.e || 1);
+        var lv = (typeof p.lv === 'number' && p.lv >= 1) ? Math.min(99, Math.floor(p.lv)) : 1;
+        var id = (typeof p.id === 'number' && p.id > 0) ? Math.floor(p.id) : G.nid++;
+        G.pets.push({i:p.i, n:p.n, r:p.r, be:be, lv:lv, id:id});
+      }
     }
-  } catch(e) {}
-}
-
-/* --- Formato compacto --- */
-function fmt(n) {
-  if (!isFinite(n)) return '0';
-  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-  return Math.floor(n).toString();
-}
-
-/* --- Toasts en vez de alert --- */
-function toast(msg, tipo) {
-  var c = document.getElementById('toastBox');
-  if (!c) {
-    c = document.createElement('div');
-    c.id = 'toastBox';
-    c.style.cssText = 'position:absolute;bottom:16px;left:16px;right:16px;z-index:999;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none';
-    document.getElementById('game').appendChild(c);
+  } catch(e) {
+    console.warn('Error cargando save, usando defaults');
   }
-  var t = document.createElement('div');
-  var bg = tipo === 'error' ? 'rgba(239,68,68,0.9)' : tipo === 'reward' ? 'rgba(251,191,36,0.95)' : 'rgba(16,185,129,0.9)';
-  var col = tipo === 'reward' ? '#1a1a1a' : '#fff';
-  t.style.cssText = 'padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;color:' + col + ';background:' + bg + ';backdrop-filter:blur(8px);animation:toastAnim 3s ease forwards;pointer-events:auto';
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(function() { if (t.parentNode) t.remove(); }, 3100);
 }
 
-/* Inyectar animacion de toast si no existe */
-(function() {
-  var s = document.createElement('style');
-  s.textContent = '@keyframes toastAnim{0%{opacity:0;transform:translateY(16px)}8%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}';
-  document.head.appendChild(s);
-})();
+function resetGame() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e){}
+  G = {money:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000},tot:0,te:0,achs:[],mut:false,nid:1};
+  selEgg = 'basic';
+  rbConf = false;
+  if (rbTmr) clearTimeout(rbTmr);
+  updateUI();
+  toast('Juego reiniciado', 'inf');
+}
 
-/* --- Calculos --- */
+/* =============================================
+   CALCULOS
+   ============================================= */
 function petEarn(p) {
-  return (p.baseE || 1) * (1 + 0.25 * ((p.level || 1) - 1)) * state.mult;
+  return (p.be || 1) * (1 + 0.2 * ((p.lv || 1) - 1)) * (G.mult || 1);
 }
 
-function totalIncome() {
+function totInc() {
   var s = 0;
-  for (var i = 0; i < state.pets.length; i++) s += petEarn(state.pets[i]);
+  for (var i = 0; i < G.pets.length; i++) s += petEarn(G.pets[i]);
   return s;
 }
 
-function rbCost() { return Math.floor(500000 * Math.pow(2, state.rb)); }
+function rbCost() { return Math.floor(500000 * Math.pow(2, G.rb)); }
 
-function upCost(p) { return Math.floor((p.baseE || 1) * 30 * (p.level || 1)); }
+function upCost(p) { return Math.floor((p.be || 1) * 25 * (p.lv || 1)); }
 
-/* --- Logros --- */
-var LOGROS = [
-  {id:'p1',n:'Primera Mascota',d:'Abre un huevo',r:500,c:function(){return state.totalOwned>=1}},
-  {id:'p10',n:'Coleccionista',d:'10 mascotas en total',r:3000,c:function(){return state.totalOwned>=10}},
-  {id:'rare',n:'Primera Rareza',d:'Obten un Raro',r:1500,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='rare'})}},
-  {id:'epic',n:'Poder Emergente',d:'Obten un Epico',r:5000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='epic'})}},
-  {id:'god',n:'Tocado por los Dioses',d:'Obten un Dios',r:10000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='god'})}},
-  {id:'leg',n:'Leyenda Viviente',d:'Obten un Legendario',r:50000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='legendary'})}},
-  {id:'myth',n:'Mitico',d:'Obten un Mitico',r:100000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='mythic'})}},
-  {id:'sec',n:'Secreto Descubierto',d:'Obten un Secreto',r:500000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='secret'})}},
-  {id:'og',n:'OG Status',d:'Obten un OG',r:1000000,c:function(){return state.discovered.some(function(n){var p=findPet(n);return p&&p.rarity==='og'})}},
-  {id:'rb1',n:'Renacimiento',d:'Primer Rebirth',r:10000,c:function(){return state.rb>=1}},
-  {id:'rb5',n:'Veterano',d:'5 Rebirths',r:200000,c:function(){return state.rb>=5}},
-  {id:'idx',n:'Completista',d:'Descubre todas',r:5000000,c:function(){return state.discovered.length>=allPets().length}},
-  {id:'m100k',n:'Rico',d:'Gana $100K total',r:8000,c:function(){return state.totalEarned>=100000}},
-  {id:'m1m',n:'Millonario',d:'Gana $1M total',r:80000,c:function(){return state.totalEarned>=1000000}}
-];
-
-function findPet(name) {
-  var all = petsConfig.normal.concat(petsConfig.special);
-  for (var i = 0; i < all.length; i++) { if (all[i].name === name) return all[i]; }
-  return null;
+/* =============================================
+   ROLL DE MASCOTA
+   ============================================= */
+function roll(egg) {
+  var w = WEIGHTS[egg];
+  if (!w) return PETS[0];
+  var keys = Object.keys(w);
+  var total = 0;
+  for (var i = 0; i < keys.length; i++) total += w[keys[i]];
+  var roll = Math.random() * total;
+  var chosen = keys[0];
+  for (var i = 0; i < keys.length; i++) {
+    roll -= w[keys[i]];
+    if (roll <= 0) { chosen = keys[i]; break; }
+  }
+  var pool = [];
+  for (var i = 0; i < PETS.length; i++) {
+    if (PETS[i].r === chosen && PETS[i].eg.indexOf(egg) !== -1) pool.push(PETS[i]);
+  }
+  if (pool.length === 0) {
+    for (var i = 0; i < PETS.length; i++) {
+      if (PETS[i].eg.indexOf(egg) !== -1) return PETS[i];
+    }
+    return PETS[0];
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function allPets() { return petsConfig.normal.concat(petsConfig.special); }
+/* =============================================
+   ABRIR HUEVO
+   ============================================= */
+function openEgg() {
+  snd.go();
+  var cost = G.pr[selEgg];
+  if (G.money < cost) { snd.err(); toast('Sin dinero suficiente', 'err'); return; }
 
-function checkLogros() {
-  for (var i = 0; i < LOGROS.length; i++) {
-    var l = LOGROS[i];
-    if (state.discovered.indexOf('logro_' + l.id) === -1 && l.c()) {
-      state.discovered.push('logro_' + l.id);
-      state.money += l.r;
-      state.totalEarned += l.r;
-      toast('Logro: ' + l.n + ' +$' + fmt(l.r), 'reward');
+  G.money -= cost;
+  var scales = {basic:1.15, golden:1.2, cosmic:1.25};
+  G.pr[selEgg] = Math.floor(G.pr[selEgg] * (scales[selEgg] || 1.15));
+
+  var tpl = roll(selEgg);
+  var np = {i:tpl.i, n:tpl.n, r:tpl.r, be:tpl.e, lv:1, id:G.nid++};
+  G.pets.push(np);
+  G.tot++;
+
+  if (G.disc.indexOf(tpl.n) === -1) G.disc.push(tpl.n);
+
+  checkAch();
+  save();
+  updateUI();
+  showHatch(np);
+}
+
+/* =============================================
+   ANIMACION DE ECLOSION
+   ============================================= */
+function showHatch(pet) {
+  var ov = document.getElementById('overlay');
+  var egg = document.getElementById('oegg');
+  var ico = document.getElementById('oicon');
+
+  ov.style.display = 'flex';
+
+  var cls = {basic:'egg-b', golden:'egg-g', cosmic:'egg-c'}[selEgg] || 'egg-b';
+  egg.className = cls;
+  egg.style.display = 'block';
+  ico.style.display = 'none';
+  ico.className = '';
+  document.getElementById('oname').textContent = '';
+  document.getElementById('orar').textContent = '';
+  document.getElementById('orar').style.color = '';
+  document.getElementById('oinfo').textContent = '';
+
+  egg.classList.add('shk');
+  snd.hatch(pet.r);
+
+  var tier = ['common','rare','epic','god','legendary','mythic','secret','og'].indexOf(pet.r);
+  var dur = tier >= 3 ? 2000 : 1500;
+
+  setTimeout(function() {
+    egg.classList.remove('shk');
+    egg.classList.add('brk');
+
+    setTimeout(function() {
+      egg.style.display = 'none';
+      egg.classList.remove('brk');
+
+      ico.style.display = 'block';
+      ico.textContent = pet.i;
+      ico.style.color = RCOL[pet.r] || '#fff';
+      ico.classList.add('rev');
+
+      document.getElementById('oname').textContent = pet.n;
+      document.getElementById('orar').textContent = RNAME[pet.r] || pet.r;
+      document.getElementById('orar').style.color = RCOL[pet.r] || '#fff';
+      document.getElementById('oinfo').textContent = '+$' + fmt(petEarn(pet)) + '/s';
+    }, 500);
+  }, dur);
+}
+
+function closeHatch() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('oegg').className = '';
+  document.getElementById('oicon').className = '';
+  document.getElementById('oicon').style.display = 'none';
+}
+
+/* =============================================
+   MEJORAR / VENDER
+   ============================================= */
+function doUpgrade(id) {
+  var pet = null;
+  for (var i=0;i<G.pets.length;i++) if(G.pets[i].id===id){pet=G.pets[i];break;}
+  if (!pet || pet.lv >= 99) return;
+  var c = upCost(pet);
+  if (G.money < c) { snd.err(); toast('Dinero insuficiente', 'err'); return; }
+  G.money -= c;
+  pet.lv++;
+  snd.up();
+  toast(pet.n + ' Nivel ' + pet.lv, 'ok');
+  save(); updateUI();
+}
+
+function doSell(id) {
+  var idx = -1;
+  for (var i=0;i<G.pets.length;i++) if(G.pets[i].id===id){idx=i;break;}
+  if (idx === -1) return;
+  var pet = G.pets[idx];
+  var val = Math.floor(petEarn(pet) * 10);
+  G.money += val;
+  G.pets.splice(idx, 1);
+  snd.sell();
+  toast(pet.n + ' vendido $' + fmt(val), 'inf');
+  save(); updateUI();
+}
+
+/* =============================================
+   REBIRTH
+   ============================================= */
+function doRb() {
+  snd.go();
+  var cost = rbCost();
+  if (rbConf) {
+    clearTimeout(rbTmr);
+    rbConf = false;
+    G.rb++;
+    G.mult *= 1.8;
+    G.money = 10;
+    G.pets = [];
+    G.pr = {basic:10, golden:500, cosmic:5000};
+    snd.hatch('og');
+    toast('REBIRTH ' + G.rb + ' — x' + G.mult.toFixed(1), 'rwd');
+    checkAch(); save(); updateUI();
+  } else {
+    if (G.money < cost) { snd.err(); toast('Necesitas $' + fmt(cost), 'err'); return; }
+    rbConf = true;
+    var btn = document.getElementById('btnRb');
+    btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';
+    btn.classList.add('yes');
+    btn.disabled = false;
+    snd.click();
+    rbTmr = setTimeout(function(){ rbConf = false; updateUI(); }, 3000);
+  }
+}
+
+/* =============================================
+   LOGROS
+   ============================================= */
+function checkAch() {
+  for (var i = 0; i < ACHS.length; i++) {
+    var a = ACHS[i];
+    if (G.achs.indexOf(a.id) === -1) {
+      try {
+        if (a.ck()) {
+          G.achs.push(a.id);
+          G.money += a.rw;
+          G.te += a.rw;
+          toast('Logro: ' + a.nm + ' +$' + fmt(a.rw), 'rwd');
+        }
+      } catch(e) {}
     }
   }
 }
 
-/* --- UI --- */
+/* =============================================
+   RENDERIZADO
+   ============================================= */
 function updateUI() {
-  document.getElementById('money').textContent = fmt(state.money);
-  document.getElementById('priceN').textContent = fmt(state.priceN);
-  document.getElementById('priceS').textContent = fmt(state.priceS);
+  document.getElementById('sMoney').textContent = '$' + fmt(G.money);
+  document.getElementById('sInc').textContent = '$' + fmt(totInc()) + '/s';
+  document.getElementById('sPets').textContent = G.pets.length;
 
-  var cost = rbCost();
-  var rbBtn = document.getElementById('rebirthBtn');
-  rbBtn.textContent = '⚡ REBIRTH ($' + fmt(cost) + ')';
-  rbBtn.disabled = state.money < cost;
+  document.getElementById('pB').textContent = '$' + fmt(G.pr.basic);
+  document.getElementById('pG').textContent = '$' + fmt(G.pr.golden);
+  document.getElementById('pC').textContent = '$' + fmt(G.pr.cosmic);
+
+  var bb = document.getElementById('btnBuy');
+  if (G.money >= G.pr[selEgg]) { bb.classList.add('can'); bb.classList.remove('no'); }
+  else { bb.classList.remove('can'); bb.classList.add('no'); }
+
+  if (!rbConf) {
+    var rb = document.getElementById('btnRb');
+    rb.innerHTML = '<i class="fas fa-bolt"></i> REBIRTH ($' + fmt(rbCost()) + ')';
+    rb.disabled = G.money < rbCost();
+    rb.classList.remove('yes');
+  }
 
   renderPets();
 }
 
-function setEgg(special) {
-  isSpecial = special;
-  document.getElementById('normalBtn').classList.toggle('active', !special);
-  document.getElementById('specialBtn').classList.toggle('active', special);
-}
-
-function switchTab(tab) {
-  document.getElementById('tabPets').style.display = tab === 'pets' ? 'flex' : 'none';
-  document.getElementById('tabIndex').style.display = tab === 'index' ? 'block' : 'none';
-  document.getElementById('tabPetsBtn').classList.toggle('active', tab === 'pets');
-  document.getElementById('tabIndexBtn').classList.toggle('active', tab === 'index');
-  if (tab === 'index') renderIndex();
-}
-
-/* --- Abrir huevo --- */
-function openEgg() {
-  var cost = isSpecial ? state.priceS : state.priceN;
-  if (state.money < cost) { toast('Sin dinero suficiente', 'error'); return; }
-
-  state.money -= cost;
-  if (isSpecial) state.priceS = Math.floor(state.priceS * 1.2);
-  else state.priceN = Math.floor(state.priceN * 1.12);
-
-  var pool = isSpecial ? petsConfig.special : petsConfig.normal;
-  var tpl = pool[Math.floor(Math.random() * pool.length)];
-
-  var newPet = {
-    icon: tpl.icon, name: tpl.name, rarity: tpl.rarity,
-    baseE: tpl.earnings, level: 1
-  };
-  state.pets.push(newPet);
-  state.totalOwned++;
-
-  var all = allPets();
-  var isDisc = false;
-  for (var i = 0; i < state.discovered.length; i++) {
-    if (state.discovered[i] === tpl.name) { isDisc = true; break; }
-  }
-  if (!isDisc) state.discovered.push(tpl.name);
-
-  checkLogros();
-  save();
-  updateUI();
-  playHatch(newPet);
-}
-
-function playHatch(pet) {
-  var overlay = document.getElementById('hatchOverlay');
-  var egg = document.getElementById('hatchEgg');
-  var icon = document.getElementById('hatchedPetIcon');
-
-  overlay.style.display = 'flex';
-  egg.style.display = 'block';
-  icon.style.display = 'none';
-  egg.className = 'shaking';
-
-  setTimeout(function() {
-    egg.className = 'breaking';
-    setTimeout(function() {
-      egg.style.display = 'none';
-      icon.style.display = 'block';
-      icon.textContent = pet.icon;
-      document.getElementById('hatchedPetName').textContent = pet.name;
-      document.getElementById('hatchedPetInfo').textContent =
-        pet.rarity.toUpperCase() + ' | +$' + fmt(petEarn(pet)) + '/s';
-    }, 600);
-  }, 1500);
-}
-
-/* --- Renderizar mascotas --- */
 function renderPets() {
-  var list = document.getElementById('petList');
-  if (state.pets.length === 0) {
-    list.innerHTML = '<div class="no-pets">Abre tu primer huevo para ver tus pets aqui</div>';
+  var el = document.getElementById('petList');
+  if (G.pets.length === 0) {
+    el.innerHTML = '<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo para empezar</p></div>';
     return;
   }
 
-  var ro = {common:0,rare:1,epic:2,god:3,legendary:4,mythic:5,secret:6,og:7};
-  var sorted = state.pets.slice().sort(function(a, b) {
-    return (ro[b.rarity]||0) - (ro[a.rarity]||0);
+  var sorted = G.pets.slice().sort(function(a,b) {
+    var rd = (RORD[b.r]||0) - (RORD[a.r]||0);
+    if (rd !== 0) return rd;
+    return petEarn(b) - petEarn(a);
   });
 
-  var html = '';
+  var h = '';
   for (var i = 0; i < sorted.length; i++) {
     var p = sorted[i];
-    var idx = state.pets.indexOf(p);
     var earn = petEarn(p);
-    var uc = p.level < 50 ? upCost(p) : null;
-    html += '<div class="pet ' + p.rarity + '">' +
-      '<span>' + p.icon + ' ' + p.name +
-        ' <small style="opacity:.6">Nvl.' + p.level + '</small></span>' +
-      '<span>$' + fmt(earn) + '/s ' +
-        (uc ? '<button class="sellBtn" style="background:rgba(16,185,129,0.8)" onclick="upgradePet(' + idx + ')">↑</button> ' : '') +
-        '<button class="sellBtn" onclick="sellPet(' + idx + ')">V</button>' +
-      '</span></div>';
+    var uc = p.lv < 99 ? upCost(p) : 0;
+    h += '<div class="pc ' + p.r + '">'
+      + '<div class="pc-l"><span class="pc-i">' + p.i + '</span><div class="pc-t">'
+      + '<span class="pc-n">' + p.n + '</span>'
+      + '<span class="pc-m">Nvl.' + p.lv + ' · ' + (RNAME[p.r]||p.r) + (uc ? ' · Up $' + fmt(uc) : '') + '</span>'
+      + '</div></div>'
+      + '<div class="pc-r"><span class="pc-e">$' + fmt(earn) + '/s</span><div class="pc-a">'
+      + (p.lv < 99 ? '<button class="ab ab-u" data-act="up" data-id="' + p.id + '"><i class="fas fa-arrow-up"></i></button>' : '')
+      + '<button class="ab ab-s" data-act="sell" data-id="' + p.id + '"><i class="fas fa-coins"></i></button>'
+      + '</div></div></div>';
   }
-  list.innerHTML = html;
+  el.innerHTML = h;
 }
 
-/* --- Mejorar mascota --- */
-function upgradePet(idx) {
-  if (idx < 0 || idx >= state.pets.length) return;
-  var p = state.pets[idx];
-  if (p.level >= 50) return;
-  var cost = upCost(p);
-  if (state.money < cost) { toast('Dinero insuficiente', 'error'); return; }
-  state.money -= cost;
-  p.level++;
-  toast(p.name + ' Nivel ' + p.level, 'success');
-  save(); updateUI();
-}
+function renderIdx() {
+  var pct = Math.round((G.disc.length / PETS.length) * 100);
+  document.getElementById('idxPct').textContent = pct + '%';
+  document.getElementById('idxBar').style.width = pct + '%';
 
-/* --- Vender mascota --- */
-function sellPet(idx) {
-  if (idx < 0 || idx >= state.pets.length) return;
-  var p = state.pets[idx];
-  var val = Math.floor(petEarn(p) * 12);
-  state.money += val;
-  state.pets.splice(idx, 1);
-  toast(p.name + ' vendido +$' + fmt(val), 'success');
-  save(); updateUI();
-}
-
-/* --- Rebirth --- */
-function doRebirth() {
-  var cost = rbCost();
-  if (state.money < cost) { toast('Necesitas $' + fmt(cost), 'error'); return; }
-  state.rb++;
-  state.mult *= 1.8;
-  state.money = 10;
-  state.pets = [];
-  state.priceN = 10;
-  state.priceS = 500;
-  toast('REBIRTH ' + state.rb + ' — x' + state.mult.toFixed(1) + ' ganancias', 'reward');
-  checkLogros();
-  save(); updateUI();
-}
-
-/* --- Index --- */
-function renderIndex() {
-  var idxL = document.getElementById('indexList');
-  var all = allPets();
-  var ro = {common:0,rare:1,epic:2,god:3,legendary:4,mythic:5,secret:6,og:7};
-  all = all.slice().sort(function(a,b){return (ro[a.rarity]||0)-(ro[b.rarity]||0)});
-
-  var html = '';
-  for (var i = 0; i < all.length; i++) {
-    var p = all[i];
-    var disc = state.discovered.indexOf(p.name) !== -1;
-    html += '<div class="pet ' + p.rarity + '" style="opacity:' + (disc ? '1' : '0.35') + '">' +
-      '<span>' + (disc ? p.icon : '???') + ' ' + p.name + '</span>' +
-      '<span>' + p.rarity.toUpperCase() + '</span></div>';
+  var sorted = PETS.slice().sort(function(a,b){ return (RORD[a.r]||0)-(RORD[b.r]||0); });
+  var h = '';
+  for (var i=0;i<sorted.length;i++) {
+    var p = sorted[i];
+    var d = G.disc.indexOf(p.n) !== -1;
+    h += '<div class="ii ' + p.r + (d?'':' off') + '">'
+      + '<span class="ic">' + (d ? p.i : '?') + '</span>'
+      + '<span class="in">' + (d ? p.n : '???') + '</span>'
+      + '<span class="ir ' + p.r + '">' + (RNAME[p.r]||p.r) + '</span></div>';
   }
-  idxL.innerHTML = html;
+  document.getElementById('idxList').innerHTML = h;
 }
 
-/* --- Cerrar hatch --- */
-document.getElementById('closeHatchBtn').onclick = function() {
-  document.getElementById('hatchOverlay').style.display = 'none';
-  document.getElementById('hatchEgg').className = '';
-};
+function renderAch() {
+  document.getElementById('achN').textContent = G.achs.length;
+  document.getElementById('achT').textContent = ACHS.length;
+  var h = '';
+  for (var i=0;i<ACHS.length;i++) {
+    var a = ACHS[i];
+    var ok = G.achs.indexOf(a.id) !== -1;
+    h += '<div class="ai' + (ok?' ok':'') + '">'
+      + '<div class="ai-i"><i class="fas ' + a.ic + '"></i></div>'
+      + '<div class="ai-t"><span class="ai-n">' + (ok?a.nm:'???') + '</span>'
+      + '<span class="ai-d">' + a.ds + '</span></div>'
+      + '<span class="ai-r">+$' + fmt(a.rw) + '</span></div>';
+  }
+  document.getElementById('achList').innerHTML = h;
+}
 
-/* --- Tick de ingresos cada segundo --- */
-setInterval(function() {
-  var inc = totalIncome();
-  if (inc > 0) {
-    state.money += inc;
-    state.totalEarned += inc;
-    checkLogros();
+/* =============================================
+   TABS Y HUEVOS
+   ============================================= */
+function setTab(t) {
+  snd.click();
+  var panels = document.querySelectorAll('.panel');
+  for (var i=0;i<panels.length;i++) panels[i].classList.remove('on');
+  var btns = document.querySelectorAll('.tab');
+  for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
+
+  var map = {game:'pGame', index:'pIndex', ach:'pAch'};
+  var pel = document.getElementById(map[t]);
+  if (pel) pel.classList.add('on');
+  var bel = document.querySelector('.tab[data-t="'+t+'"]');
+  if (bel) bel.classList.add('on');
+
+  if (t === 'index') renderIdx();
+  if (t === 'ach') renderAch();
+}
+
+function setEgg(e) {
+  snd.click();
+  selEgg = e;
+  var btns = document.querySelectorAll('.egg');
+  for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
+  var bel = document.querySelector('.egg[data-e="'+e+'"]');
+  if (bel) bel.classList.add('on');
+  updateUI();
+}
+
+/* =============================================
+   INICIALIZACION
+   ============================================= */
+function init() {
+  try {
+    load();
+
+    // Mute button
+    var mb = document.getElementById('btnMute');
+    mb.innerHTML = G.mut ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
+    mb.onclick = function() {
+      G.mut = !G.mut;
+      this.innerHTML = G.mut ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
+      save();
+    };
+
+    // Reset button
+    document.getElementById('btnReset').onclick = function() {
+      if (confirm('Reiniciar todo el progreso?')) resetGame();
+    };
+
+    // Tabs (event delegation)
+    document.getElementById('navTabs').onclick = function(ev) {
+      var btn = ev.target.closest('.tab');
+      if (btn) setTab(btn.getAttribute('data-t'));
+    };
+
+    // Eggs (event delegation)
+    document.getElementById('navEggs').onclick = function(ev) {
+      var btn = ev.target.closest('.egg');
+      if (btn) setEgg(btn.getAttribute('data-e'));
+    };
+
+    // Buy
+    document.getElementById('btnBuy').onclick = openEgg;
+
+    // Rebirth
+    document.getElementById('btnRb').onclick = doRb;
+
+    // Close hatch
+    document.getElementById('oclose').onclick = closeHatch;
+
+    // Pet list actions (event delegation)
+    document.getElementById('petList').onclick = function(ev) {
+      var btn = ev.target.closest('[data-act]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-act');
+      var id = parseInt(btn.getAttribute('data-id'), 10);
+      if (act === 'up') doUpgrade(id);
+      else if (act === 'sell') doSell(id);
+    };
+
     updateUI();
+
+    // Tick ingresos
+    setInterval(function() {
+      var inc = totInc();
+      if (inc > 0) {
+        G.money += inc;
+        G.te += inc;
+        if (inc >= 10 && Math.random() < 0.2) floatM(inc);
+        checkAch();
+        updateUI();
+      }
+    }, 1000);
+
+    // Auto-guardado
+    setInterval(save, 8000);
+
+  } catch(e) {
+    var d = document.getElementById('debug');
+    d.style.display = 'block';
+    d.textContent = 'INIT ERROR: ' + e.message;
   }
-}, 1000);
+}
 
-/* --- Auto-guardado --- */
-setInterval(save, 8000);
+document.addEventListener('DOMContentLoaded', init);
 
-/* --- Inicio --- */
-load();
-updateUI();
+// Desbloquear audio al primer toque
+document.addEventListener('click', function(){snd.go()}, {once:true});
+document.addEventListener('touchstart', function(){snd.go()}, {once:true});
 </script>
+</body>
+</html>
