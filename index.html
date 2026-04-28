@@ -175,7 +175,6 @@
       background-clip: text;
     }
 
-    /* Live pulse dot */
     .live-dot {
       width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
       display: inline-block; position: relative;
@@ -190,7 +189,6 @@
       100% { transform: scale(2.2); opacity: 0; }
     }
 
-    /* Live stats bar */
     .live-bar {
       background: rgba(18, 18, 26, 0.6);
       border: 1px solid rgba(255,255,255,0.06);
@@ -198,23 +196,18 @@
       border-radius: 16px;
       padding: 16px 28px;
     }
-    .live-stat {
-      display: flex; align-items: center; gap: 10px;
-    }
+    .live-stat { display: flex; align-items: center; gap: 10px; }
     .live-stat-icon {
       width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .live-stat-value {
-      font-size: 22px; font-weight: 800; line-height: 1;
-    }
+    .live-stat-value { font-size: 22px; font-weight: 800; line-height: 1; }
     .live-stat-label {
       font-size: 11px; color: #64748b; text-transform: uppercase;
       letter-spacing: 0.08em; font-weight: 500;
     }
 
-    /* Shimmer loading for stats */
     @keyframes shimmer {
       0% { background-position: -200px 0; }
       100% { background-position: 200px 0; }
@@ -238,7 +231,6 @@
   Discord
 </a>
 
-<!-- AUTH MODAL -->
 <div id="auth-overlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="flex items-center justify-between mb-6">
@@ -267,7 +259,6 @@
   </div>
 </div>
 
-<!-- NAVBAR -->
 <nav class="fixed top-0 left-0 right-0 z-[9990] border-b border-white/5" style="background: rgba(10,10,15,0.8); backdrop-filter: blur(16px);">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2.5 group">
@@ -297,7 +288,6 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-16">
   <div class="hero-orb" style="width:400px;height:400px;background:#6c5ce7;top:-100px;left:-100px;"></div>
   <div class="hero-orb" style="width:350px;height:350px;background:#a29bfe;bottom:-80px;right:-80px;animation-delay:-3s;"></div>
@@ -316,9 +306,7 @@
       Explora nuestra colección de juegos. Sin descargas, sin límites. Entra y juega directamente desde tu navegador.
     </p>
 
-    <!-- Live Stats Bar -->
     <div class="live-bar inline-flex items-center gap-6 sm:gap-10 flex-wrap justify-center">
-      <!-- Online -->
       <div class="live-stat">
         <div class="live-stat-icon" style="background: rgba(34,197,94,0.12);">
           <span class="iconify" data-icon="mdi:account-group" data-width="22" style="color:#22c55e"></span>
@@ -336,7 +324,6 @@
 
       <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
 
-      <!-- Total Visits -->
       <div class="live-stat">
         <div class="live-stat-icon" style="background: rgba(108,92,231,0.12);">
           <span class="iconify" data-icon="mdi:eye-outline" data-width="22" style="color:#6c5ce7"></span>
@@ -351,7 +338,6 @@
 
       <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
 
-      <!-- Games -->
       <div class="live-stat">
         <div class="live-stat-icon" style="background: rgba(245,158,11,0.12);">
           <span class="iconify" data-icon="mdi:gamepad-square" data-width="22" style="color:#f59e0b"></span>
@@ -365,7 +351,6 @@
   </div>
 </section>
 
-<!-- SEARCH & FILTERS -->
 <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 -mt-4 mb-8">
   <div class="relative max-w-md mx-auto mb-6">
     <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" data-icon="mdi:magnify" data-width="20"></span>
@@ -384,7 +369,6 @@
   </div>
 </section>
 
-<!-- GAMES GRID -->
 <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-24">
   <div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
   <div id="no-results" class="hidden text-center py-20">
@@ -394,7 +378,6 @@
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="border-t border-white/5 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-2">
@@ -411,7 +394,6 @@
   </div>
 </footer>
 
-<!-- MAIN SCRIPTS -->
 <script>
 const GAMES = [
   { name: "Pets and Money", path: "Pets and Money/index.html", icon: "mdi:paw", color: "#f59e0b", category: "casual", tag: "Popular" },
@@ -424,7 +406,7 @@ const GAMES = [
   { name: "Speed per Click", path: "juego9/index.html", icon: "mdi:cursor-click", color: "#f97316", category: "casual", tag: "" },
   { name: "Minecraft", path: "Minecraft/index.html", icon: "mdi:cube-outline", color: "#84cc16", category: "accion", tag: "Top" },
   { name: "Obby Practica", path: "juego11/index.html", icon: "mdi:obstacle-course", color: "#06b6d4", category: "accion", tag: "" },
-  { name: "Geometry Dash", path: "Gometry Dash/index.html", icon: "mdi:shape-outline", color: "#eab308", category: "accion", tag: "Popular" },
+  { name: "Geometry Dash", path: "juego12/index.html", icon: "mdi:shape-outline", color: "#eab308", category: "accion", tag: "Popular" },
   { name: "1 V 1 Arco", path: "juego13/index.html", icon: "mdi:bow-arrow", color: "#14b8a6", category: "accion", tag: "" },
   { name: "Fortnite", path: "juego14/index.html", icon: "mdi:shield-sword", color: "#6366f1", category: "accion", tag: "Top" },
   { name: "Call of Duty", path: "call-of-duty/index.html", icon: "mdi:crosshairs-gps", color: "#78716c", category: "accion", tag: "Popular" },
@@ -435,6 +417,7 @@ const GAMES = [
   { name: "Instagram", path: "instagram/index.html", icon: "mdi:instagram", color: "#e4405f", category: "social", tag: "" },
   { name: "Studio", path: "fl studio/index.html", icon: "mdi:music-circle", color: "#f97316", category: "musica", tag: "" },
   { name: "Roblox", path: "Roblox/index.html", icon: "mdi:blocks", color: "#e11d48", category: "accion", tag: "Top" },
+  { name: "Un Juego Más", path: "One More Game/index.html", icon: "mdi:plus-circle", color: "#8b5cf6", category: "casual", tag: "" },
   { name: "Clash Royale", path: "Clash Royale/index.html", icon: "mdi:crown", color: "#3b82f6", category: "estrategia", tag: "Popular" },
   { name: "Mario Kart", path: "Mario Kart/index.html", icon: "mdi:car-sports", color: "#ef4444", category: "carreras", tag: "Clásico" },
   { name: "TerraNova", path: "Terranova/index.html", icon: "mdi:earth", color: "#22c55e", category: "estrategia", tag: "Nuevo" },
@@ -486,9 +469,7 @@ function renderGames(filter = 'all', search = '') {
     grid.appendChild(card);
   });
   requestAnimationFrame(() => {
-    document.querySelectorAll('.fade-up').forEach(el => {
-      setTimeout(() => el.classList.add('visible'), 50);
-    });
+    document.querySelectorAll('.fade-up').forEach(el => setTimeout(() => el.classList.add('visible'), 50));
   });
 }
 
@@ -501,9 +482,7 @@ document.getElementById('category-container').addEventListener('click', (e) => {
   activeCategory = pill.dataset.category;
   renderGames(activeCategory, document.getElementById('search-input').value);
 });
-document.getElementById('search-input').addEventListener('input', (e) => {
-  renderGames(activeCategory, e.target.value);
-});
+document.getElementById('search-input').addEventListener('input', (e) => renderGames(activeCategory, e.target.value));
 renderGames();
 
 const authOverlay = document.getElementById('auth-overlay');
@@ -528,7 +507,7 @@ import {
   createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
-  getDatabase, ref, set, onValue, onDisconnect, push, runTransaction, get
+  getDatabase, ref, set, onValue, onDisconnect, push, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -562,54 +541,49 @@ const connectedRef = ref(db, '.info/connected');
 
 onValue(connectedRef, (snap) => {
   if (snap.val() === true) {
-    // Remove old entry if reconnecting
     myPresenceRef.onDisconnect().remove();
-    set(myPresenceRef, {
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent.substring(0, 80)
-    });
+    set(myPresenceRef, { timestamp: Date.now() });
   }
 });
 
-// Listen to online count
 const onlineCountEl = document.getElementById('online-count');
 const onlineRef = ref(db, 'presence/online');
 
 onValue(onlineRef, (snap) => {
   if (snap.exists()) {
     const data = snap.val();
-    const count = Object.keys(data).length;
-
-    // Clean stale entries (>90s old)
     const now = Date.now();
     const staleThreshold = 90000;
-    let hasStale = false;
+    let staleCount = 0;
     for (const key in data) {
       if (data[key].timestamp && (now - data[key].timestamp > staleThreshold)) {
         set(ref(db, `presence/online/${key}`), null);
-        hasStale = true;
+        staleCount++;
       }
     }
-
-    const displayCount = hasStale ? count - 1 : count;
-    onlineCountEl.textContent = Math.max(0, displayCount);
+    onlineCountEl.textContent = Math.max(0, Object.keys(data).length - staleCount);
   } else {
     onlineCountEl.textContent = '0';
   }
 });
 
 // ==========================================
-//  TOTAL VISITS
+//  TOTAL VISITS (solo cuenta una vez por sesión)
 // ==========================================
 const visitsCountEl = document.getElementById('visits-count');
 const visitsRef = ref(db, 'stats/totalVisits');
 
-// Increment on every visit
-runTransaction(visitsRef, (current) => {
-  return (current || 0) + 1;
-}).catch(() => {});
+// sessionStorage sobrevive recargas pero se borra al cerrar la pestaña
+const VISIT_FLAG = 'gv_visited';
+if (!sessionStorage.getItem(VISIT_FLAG)) {
+  // Primera vez en esta sesión → contar
+  runTransaction(visitsRef, (current) => {
+    return (current || 0) + 1;
+  }).catch(() => {});
+  sessionStorage.setItem(VISIT_FLAG, '1');
+}
 
-// Listen for the updated value
+// Escuchar el valor actual (sin importar si se incrementó o no)
 onValue(visitsRef, (snap) => {
   const val = snap.val() || 0;
   visitsCountEl.textContent = val.toLocaleString('es-ES');
@@ -646,7 +620,6 @@ document.getElementById("btn-login-google").onclick = async () => {
 };
 
 document.getElementById("btn-logout").onclick = async () => {
-  // Clean up presence before logout
   set(myPresenceRef, null);
   await signOut(auth);
   showToast("Sesión cerrada", "info");
@@ -676,7 +649,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Clean presence when tab closes
 window.addEventListener('beforeunload', () => {
   set(myPresenceRef, null);
 });
