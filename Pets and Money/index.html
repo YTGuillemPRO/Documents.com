@@ -6,6 +6,9 @@
 <title>Pet Simulator Ultra</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -15,8 +18,6 @@ body{
   display:flex;justify-content:center;align-items:center;
   user-select:none;
 }
-
-/* Fondo animado CSS puro - sin canvas */
 body::before,body::after{
   content:'';position:fixed;border-radius:50%;pointer-events:none;filter:blur(80px);
 }
@@ -44,9 +45,9 @@ body::after{
   display:flex;flex-direction:column;overflow:hidden;
 }
 
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 h1{
-  font-family:'Russo One',sans-serif;font-size:18px;letter-spacing:0.5px;
+  font-family:'Russo One',sans-serif;font-size:17px;letter-spacing:0.5px;
   background:linear-gradient(135deg,#fbbf24,#f59e0b,#fde68a);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
@@ -59,97 +60,101 @@ h1{
 }
 .hdr-btn:hover{background:rgba(255,255,255,0.12);color:#f1f5f9}
 
-/* Stats */
-.stats{display:flex;gap:5px;margin-bottom:12px}
+.stats{display:flex;gap:5px;margin-bottom:10px}
 .st{
   flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
-  border-radius:12px;padding:8px 6px;text-align:center;
+  border-radius:12px;padding:7px 4px;text-align:center;
 }
-.st i{font-size:12px;margin-bottom:3px;display:block}
+.st i{font-size:11px;margin-bottom:2px;display:block}
 .st-money i{color:#10b981}.st-inc i{color:#fbbf24}.st-pets i{color:#c084fc}
-.st-v{display:block;font-size:14px;font-weight:900;color:#f1f5f9}
-.st-l{display:block;font-size:8px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.st-v{display:block;font-size:13px;font-weight:900;color:#f1f5f9}
+.st-l{display:block;font-size:7px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
 
-/* Tabs */
-.tabs{display:flex;gap:5px;margin-bottom:12px}
+.tabs{display:flex;gap:3px;margin-bottom:10px}
 .tab{
-  flex:1;padding:9px;font-family:inherit;font-size:11px;font-weight:800;
-  letter-spacing:.4px;border:1.5px solid rgba(255,255,255,0.07);border-radius:11px;
+  flex:1;padding:7px 2px;font-family:inherit;font-size:9.5px;font-weight:800;
+  letter-spacing:.3px;border:1.5px solid rgba(255,255,255,0.07);border-radius:10px;
   cursor:pointer;background:rgba(255,255,255,0.04);color:#7a8ba8;transition:all .2s;
 }
 .tab.on{background:linear-gradient(135deg,#059669,#10b981);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(16,185,129,0.3)}
 .tab:not(.on):hover{background:rgba(255,255,255,0.08);color:#f1f5f9}
 
-/* Paneles */
 .panel{display:none;flex:1;overflow:hidden;flex-direction:column}
 .panel.on{display:flex}
 
-/* Huevos */
-.eggs{display:flex;gap:6px;margin-bottom:8px}
+.eggs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
 .egg{
-  flex:1;padding:8px 4px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.07);
+  flex:1 1 30%;min-width:0;padding:7px 2px 5px;border-radius:12px;border:2px solid rgba(255,255,255,0.07);
   background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all .2s;color:#f1f5f9;
 }
-.egg.on{border-color:#fbbf24;background:rgba(251,191,36,0.07);box-shadow:0 0 16px rgba(251,191,36,0.12)}
+.egg.on{border-color:#fbbf24;background:rgba(251,191,36,0.07);box-shadow:0 0 12px rgba(251,191,36,0.12)}
 .egg:hover{transform:scale(1.03)}
-.egg-shape{
-  width:32px;height:42px;border-radius:50% 50% 42% 42%;margin:0 auto 5px;
-}
-.egg-b{background:linear-gradient(145deg,#f8fafc,#cbd5e1);border:2.5px solid #94a3b8}
-.egg-g{background:linear-gradient(145deg,#fef3c7,#f59e0b);border:2.5px solid #d97706;box-shadow:0 0 10px rgba(251,191,36,0.2)}
-.egg-c{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4);border:2.5px solid #8b5cf6;box-shadow:0 0 14px rgba(139,92,246,0.25);animation:eggGlow 2.5s ease-in-out infinite}
-@keyframes eggGlow{0%,100%{box-shadow:0 0 14px rgba(139,92,246,0.25)}50%{box-shadow:0 0 22px rgba(6,182,212,0.35)}}
-.egg-n{display:block;font-size:10px;font-weight:800}
-.egg-p{display:block;font-size:11px;font-weight:900;color:#10b981;margin-top:1px}
+.egg-shape{width:26px;height:34px;border-radius:50% 50% 42% 42%;margin:0 auto 4px}
+.egg-b{background:linear-gradient(145deg,#f8fafc,#cbd5e1);border:2px solid #94a3b8}
+.egg-g{background:linear-gradient(145deg,#fef3c7,#f59e0b);border:2px solid #d97706;box-shadow:0 0 8px rgba(251,191,36,0.15)}
+.egg-c{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4);border:2px solid #8b5cf6;box-shadow:0 0 10px rgba(139,92,246,0.2);animation:eggGlow 2.5s ease-in-out infinite}
+.egg-v{background:linear-gradient(145deg,#1a1a2e,#4a044e,#0f0f23);border:2px solid #6b21a8;box-shadow:0 0 10px rgba(107,2,168,0.25);animation:eggV 3s ease-in-out infinite}
+.egg-d{background:linear-gradient(145deg,#fef9c3,#fde68a,#fff);border:2px solid #fbbf24;box-shadow:0 0 12px rgba(253,224,71,0.3);animation:eggD 2s ease-in-out infinite}
+.egg-i{background:linear-gradient(145deg,#7f1d1d,#dc2626,#f97316);border:2px solid #ef4444;box-shadow:0 0 12px rgba(239,68,68,0.3);animation:eggI 1.5s ease-in-out infinite}
+@keyframes eggGlow{0%,100%{box-shadow:0 0 10px rgba(139,92,246,0.2)}50%{box-shadow:0 0 18px rgba(6,182,212,0.3)}}
+@keyframes eggV{0%,100%{box-shadow:0 0 10px rgba(107,2,168,0.25)}50%{box-shadow:0 0 20px rgba(168,85,247,0.4)}}
+@keyframes eggD{0%,100%{box-shadow:0 0 12px rgba(253,224,71,0.3)}50%{box-shadow:0 0 22px rgba(251,191,36,0.5)}}
+@keyframes eggI{0%,100%{box-shadow:0 0 12px rgba(239,68,68,0.3)}50%{box-shadow:0 0 22px rgba(249,115,22,0.5)}}
+.egg-n{display:block;font-size:9px;font-weight:800}
+.egg-p{display:block;font-size:10px;font-weight:900;color:#10b981;margin-top:1px}
 
-/* Botones principales */
 .btn{
-  width:100%;padding:13px;font-family:inherit;font-size:14px;font-weight:900;
-  letter-spacing:.4px;border:none;border-radius:14px;cursor:pointer;
+  width:100%;padding:11px;font-family:inherit;font-size:13px;font-weight:900;
+  letter-spacing:.4px;border:none;border-radius:12px;cursor:pointer;
   transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
 }
 .btn:active{transform:scale(0.97)}
-.btn-buy{background:linear-gradient(135deg,#fbbf24,#d97706);color:#1a1a1a;box-shadow:0 5px 18px rgba(251,191,36,0.35);margin-bottom:6px}
+.btn-buy{background:linear-gradient(135deg,#fbbf24,#d97706);color:#1a1a1a;box-shadow:0 4px 14px rgba(251,191,36,0.3);margin-bottom:5px}
 .btn-buy.can{animation:bpulse 2s ease-in-out infinite}
 .btn-buy.no{opacity:.4;filter:saturate(0.4);animation:none}
-@keyframes bpulse{0%,100%{box-shadow:0 5px 18px rgba(251,191,36,0.35)}50%{box-shadow:0 5px 28px rgba(251,191,36,0.6)}}
-.btn-rb{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,0.3);margin-bottom:10px}
+@keyframes bpulse{0%,100%{box-shadow:0 4px 14px rgba(251,191,36,0.3)}50%{box-shadow:0 4px 22px rgba(251,191,36,0.55)}}
+
+.btn-auto{background:rgba(16,185,129,0.1);border:1.5px solid rgba(16,185,129,0.2);color:#10b981;margin-bottom:5px;box-shadow:none;font-size:11px;padding:9px}
+.btn-auto.can{background:rgba(16,185,129,0.15);animation:autoPulse 2.5s ease-in-out infinite}
+.btn-auto.on{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(16,185,129,0.3)}
+.btn-auto.no{opacity:.4;filter:saturate(0.4);animation:none;color:#64748b}
+@keyframes autoPulse{0%,100%{box-shadow:0 0 10px rgba(16,185,129,0.15)}50%{box-shadow:0 0 20px rgba(16,185,129,0.3)}}
+
+.btn-rb{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,0.3);margin-bottom:8px;font-size:11px;padding:9px}
 .btn-rb:disabled{background:rgba(100,116,139,0.15);color:#64748b;box-shadow:none;cursor:not-allowed;opacity:.5}
 .btn-rb.yes{background:linear-gradient(135deg,#f43f5e,#e11d48)!important;box-shadow:0 4px 18px rgba(244,63,94,0.4)!important;animation:rbpulse .5s ease-in-out infinite!important;opacity:1!important}
 @keyframes rbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 
-/* Lista de mascotas */
 .plist{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
 .plist::-webkit-scrollbar{width:3px}
 .plist::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.empty{text-align:center;padding:35px 15px;color:#64748b}
-.empty i{font-size:32px;margin-bottom:10px;display:block;opacity:.4}
-.empty p{font-size:13px;font-weight:600}
+.empty{text-align:center;padding:30px 15px;color:#64748b}
+.empty i{font-size:28px;margin-bottom:8px;display:block;opacity:.4}
+.empty p{font-size:12px;font-weight:600}
 
 .pc{
   display:flex;align-items:center;justify-content:space-between;
-  padding:9px 10px;margin-bottom:5px;border-radius:12px;
+  padding:8px 9px;margin-bottom:4px;border-radius:10px;
   background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
   transition:all .15s;
 }
 .pc:hover{background:rgba(255,255,255,0.07)}
-.pc-l{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-.pc-i{font-size:22px;flex-shrink:0}
+.pc-l{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
+.pc-i{font-size:20px;flex-shrink:0}
 .pc-t{min-width:0}
-.pc-n{display:block;font-size:12px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-m{display:block;font-size:9px;font-weight:700;color:#7a8ba8;margin-top:1px}
-.pc-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.pc-e{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
+.pc-n{display:block;font-size:11px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-m{display:block;font-size:8px;font-weight:700;color:#7a8ba8;margin-top:1px}
+.pc-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.pc-e{font-size:10px;font-weight:900;color:#10b981;white-space:nowrap}
 .pc-a{display:flex;gap:3px}
 .ab{
-  width:26px;height:26px;border:none;border-radius:7px;cursor:pointer;font-size:10px;
+  width:24px;height:24px;border:none;border-radius:6px;cursor:pointer;font-size:9px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;
 }
 .ab:hover{transform:scale(1.15)}
 .ab-u{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.15)}
 .ab-s{background:rgba(244,63,94,0.12);color:#f43f5e;border:1px solid rgba(244,63,94,0.15)}
 
-/* Bordes rareza */
 .pc.common{border-left:3px solid #9ca3af}
 .pc.rare{border-left:3px solid #38bdf8;background:rgba(56,189,248,0.04)}
 .pc.epic{border-left:3px solid #c084fc;background:rgba(192,132,252,0.04)}
@@ -159,20 +164,19 @@ h1{
 .pc.secret{border-left:3px solid #22d3ee;background:rgba(34,211,238,0.04)}
 .pc.og{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.06);border:1.5px solid rgba(251,191,36,0.25);box-shadow:0 0 12px rgba(251,191,36,0.08)}
 
-/* Index */
 .idx-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 2px}
 .idx-hd span:first-child{font-size:12px;font-weight:800;color:#7a8ba8}
 .idx-hd span:last-child{font-size:14px;font-weight:900;color:#fbbf24}
-.bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.05);margin-bottom:12px;overflow:hidden}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.05);margin-bottom:10px;overflow:hidden}
 .bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#10b981,#fbbf24);transition:width .4s}
 .igrid{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
 .igrid::-webkit-scrollbar{width:3px}
 .igrid::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.ii{display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:3px;border-radius:8px;border-left:3px solid;background:rgba(255,255,255,0.03)}
+.ii{display:flex;align-items:center;gap:7px;padding:5px 9px;margin-bottom:3px;border-radius:7px;border-left:3px solid;background:rgba(255,255,255,0.03)}
 .ii.off{opacity:.25}
-.ii .ic{font-size:18px;width:24px;text-align:center;flex-shrink:0}
-.ii .in{font-size:11px;font-weight:700;color:#f1f5f9;flex:1}
-.ii .ir{font-size:8px;font-weight:800;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px}
+.ii .ic{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.ii .in{font-size:10px;font-weight:700;color:#f1f5f9;flex:1}
+.ii .ir{font-size:7px;font-weight:800;padding:2px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
 .ir.common{color:#9ca3af;background:rgba(156,163,175,0.1)}.ir.rare{color:#38bdf8;background:rgba(56,189,248,0.1)}
 .ir.epic{color:#c084fc;background:rgba(192,132,252,0.1)}.ir.god{color:#fbbf24;background:rgba(251,191,36,0.1)}
 .ir.legendary{color:#f87171;background:rgba(248,113,113,0.1)}.ir.mythic{color:#f472b6;background:rgba(244,114,182,0.1)}
@@ -181,40 +185,68 @@ h1{
 .ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}
 .ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}
 
-/* Logros */
-.al-t{font-size:12px;font-weight:800;color:#7a8ba8;margin-bottom:8px;padding:0 2px}
+.al-t{font-size:11px;font-weight:800;color:#7a8ba8;margin-bottom:6px;padding:0 2px}
 .al{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
 .al::-webkit-scrollbar{width:3px}
 .al::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.ai{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:4px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
+.ai{display:flex;align-items:center;gap:7px;padding:7px 9px;margin-bottom:3px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
 .ai.ok{border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.04)}
-.ai-i{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:rgba(255,255,255,0.04);color:#64748b}
+.ai-i{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:rgba(255,255,255,0.04);color:#64748b}
 .ai.ok .ai-i{background:rgba(251,191,36,0.12);color:#fbbf24}
 .ai-t{flex:1;min-width:0}
-.ai-n{display:block;font-size:11px;font-weight:800;color:#f1f5f9}
-.ai-d{display:block;font-size:9px;color:#64748b;margin-top:1px}
-.ai-r{font-size:9px;font-weight:800;color:#10b981;white-space:nowrap}
+.ai-n{display:block;font-size:10px;font-weight:800;color:#f1f5f9}
+.ai-d{display:block;font-size:8px;color:#64748b;margin-top:1px}
+.ai-r{font-size:8px;font-weight:800;color:#10b981;white-space:nowrap}
+
+/* === RANKING === */
+.rk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+.rk-name-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+.rk-name-wrap i{color:#fbbf24;font-size:12px;flex-shrink:0}
+.rk-name-input{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:7px;padding:4px 7px;color:#f1f5f9;font-family:inherit;
+  font-size:11px;font-weight:700;width:100%;max-width:120px;outline:none;
+  transition:border-color .2s;
+}
+.rk-name-input:focus{border-color:rgba(251,191,36,0.4)}
+.rk-live{display:flex;align-items:center;gap:4px;font-size:8px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+.rk-live-dot{width:5px;height:5px;border-radius:50%;background:#10b981;animation:livePulse 1.5s ease-in-out infinite}
+.rk-off-dot{background:#f43f5e;animation:none}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px #10b981}50%{opacity:.4;box-shadow:none}}
+
+.rk-my{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;margin-bottom:8px;border-radius:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12)}
+.rk-my-l{font-size:9px;font-weight:700;color:#7a8ba8}
+.rk-my-v{font-size:14px;font-weight:900;color:#10b981}
+.rk-my-e{font-size:10px;font-weight:800;color:#fbbf24;margin-left:auto}
+
+.rk-list{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+.rk-list::-webkit-scrollbar{width:3px}
+.rk-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.rk-i{display:flex;align-items:center;gap:8px;padding:8px 9px;margin-bottom:4px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);transition:all .15s}
+.rk-i:hover{background:rgba(255,255,255,0.06)}
+.rk-i.me{background:rgba(16,185,129,0.06);border:1.5px solid rgba(16,185,129,0.2);box-shadow:0 0 12px rgba(16,185,129,0.08)}
+.rk-pos{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#64748b;background:rgba(255,255,255,0.05)}
+.rk-pos.p1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;box-shadow:0 2px 6px rgba(251,191,36,0.3)}
+.rk-pos.p2{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a1a1a;box-shadow:0 2px 6px rgba(148,163,184,0.2)}
+.rk-pos.p3{background:linear-gradient(135deg,#d97706,#92400e);color:#fef3c7;box-shadow:0 2px 6px rgba(217,119,6,0.2)}
+.rk-body{flex:1;min-width:0}
+.rk-top{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px}
+.rk-n{font-size:11px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.rk-you{font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(16,185,129,0.15);color:#10b981;letter-spacing:.2px;flex-shrink:0}
+.rk-rb{font-size:7px;font-weight:800;padding:2px 5px;border-radius:3px;background:rgba(124,58,237,0.12);color:#a78bfa;flex-shrink:0}
+.rk-bot{display:flex;align-items:center;justify-content:space-between}
+.rk-pc{font-size:8px;font-weight:600;color:#64748b}
+.rk-earn{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
 
 /* Overlay */
-#overlay{
-  position:absolute;inset:0;background:rgba(4,10,22,0.97);
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  z-index:100;border-radius:26px;
-}
-#obox{
-  background:rgba(12,24,48,0.95);border:1.5px solid rgba(255,255,255,0.08);
-  border-radius:24px;padding:30px 25px;width:280px;text-align:center;color:#f1f5f9;
-}
-#oegg{width:90px;height:120px;border-radius:50% 50% 42% 42%;margin:0 auto 16px}
-#oicon{font-size:64px;display:none;margin:0 auto 10px;filter:drop-shadow(0 0 16px currentColor)}
-#oname{font-family:'Russo One',sans-serif;font-size:18px;color:#fbbf24;margin-bottom:4px}
-#orar{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-#oinfo{font-size:13px;font-weight:700;color:#7a8ba8}
-#oclose{
-  margin-top:18px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.08);
-  color:#f1f5f9;padding:9px 28px;border-radius:10px;cursor:pointer;
-  font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.4px;transition:all .2s;
-}
+#overlay{position:absolute;inset:0;background:rgba(4,10,22,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;border-radius:26px}
+#obox{background:rgba(12,24,48,0.95);border:1.5px solid rgba(255,255,255,0.08);border-radius:24px;padding:28px 22px;width:270px;text-align:center;color:#f1f5f9}
+#oegg{width:80px;height:105px;border-radius:50% 50% 42% 42%;margin:0 auto 14px}
+#oicon{font-size:56px;display:none;margin:0 auto 8px;filter:drop-shadow(0 0 14px currentColor)}
+#oname{font-family:'Russo One',sans-serif;font-size:17px;color:#fbbf24;margin-bottom:3px}
+#orar{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+#oinfo{font-size:12px;font-weight:700;color:#7a8ba8}
+#oclose{margin-top:16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.08);color:#f1f5f9;padding:8px 24px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.4px;transition:all .2s}
 #oclose:hover{background:rgba(255,255,255,0.12)}
 
 @keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-16deg) scale(1.04)}30%{transform:rotate(14deg) scale(1.04)}45%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}75%{transform:rotate(-5deg)}}
@@ -224,35 +256,22 @@ h1{
 .brk{animation:brk .5s forwards ease-out}
 .rev{animation:rev .5s forwards ease-out}
 
-/* Toasts */
-#toasts{position:absolute;bottom:16px;left:16px;right:16px;z-index:200;display:flex;flex-direction:column-reverse;gap:5px;pointer-events:none}
-.toast{
-  padding:9px 12px;border-radius:10px;font-size:11px;font-weight:700;color:#fff;
-  animation:tin .25s ease,tout .25s ease 2.5s forwards;pointer-events:auto;
-}
+#toasts{position:absolute;bottom:14px;left:14px;right:14px;z-index:200;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none}
+.toast{padding:8px 10px;border-radius:9px;font-size:10px;font-weight:700;color:#fff;animation:tin .25s ease,tout .25s ease 2.5s forwards;pointer-events:auto}
 .t-ok{background:rgba(16,185,129,0.88)}.t-err{background:rgba(244,63,94,0.88)}
 .t-inf{background:rgba(56,189,248,0.88)}.t-rwd{background:rgba(251,191,36,0.92);color:#1a1a1a}
-@keyframes tin{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-8px)}}
+@keyframes tin{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-6px)}}
 
-/* Float money */
-.fm{
-  position:absolute;font-size:13px;font-weight:900;color:#10b981;pointer-events:none;
-  animation:fup 1s ease-out forwards;z-index:50;text-shadow:0 2px 6px rgba(0,0,0,0.5);
-}
-@keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
+.fm{position:absolute;font-size:12px;font-weight:900;color:#10b981;pointer-events:none;animation:fup 1s ease-out forwards;z-index:50;text-shadow:0 2px 6px rgba(0,0,0,0.5)}
+@keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-35px)}}
 
-/* Debug */
-#debug{
-  display:none;position:fixed;top:10px;left:10px;right:10px;z-index:9999;
-  background:rgba(244,63,94,0.95);color:#fff;padding:12px 16px;border-radius:10px;
-  font-family:monospace;font-size:12px;line-height:1.5;cursor:pointer;
-}
+#debug{display:none;position:fixed;top:10px;left:10px;right:10px;z-index:9999;background:rgba(244,63,94,0.95);color:#fff;padding:12px 16px;border-radius:10px;font-family:monospace;font-size:12px;line-height:1.5;cursor:pointer}
 
 @media(max-height:680px){
-  #game{height:95vh;padding:12px 14px 10px;border-radius:20px}
-  h1{font-size:16px;margin-bottom:6px}.stats{margin-bottom:6px}.st{padding:6px 4px}.st-v{font-size:12px}
-  .tabs{margin-bottom:6px}.egg-shape{width:26px;height:34px}.btn{padding:10px;font-size:12px}
+  #game{height:95vh;padding:10px 12px 8px;border-radius:18px}
+  h1{font-size:15px}.stats{margin-bottom:6px}.st{padding:5px 3px}.st-v{font-size:11px}
+  .tabs{margin-bottom:6px}.btn{padding:8px;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -279,6 +298,7 @@ h1{
   <nav class="tabs" id="navTabs">
     <button class="tab on" data-t="game">JUEGO</button>
     <button class="tab" data-t="index">INDEX</button>
+    <button class="tab" data-t="rank">RANKING</button>
     <button class="tab" data-t="ach">LOGROS</button>
   </nav>
 
@@ -286,9 +306,13 @@ h1{
     <div class="eggs" id="navEggs">
       <button class="egg on" data-e="basic"><div class="egg-shape egg-b"></div><span class="egg-n">Basico</span><span class="egg-p" id="pB">$10</span></button>
       <button class="egg" data-e="golden"><div class="egg-shape egg-g"></div><span class="egg-n">Dorado</span><span class="egg-p" id="pG">$500</span></button>
-      <button class="egg" data-e="cosmic"><div class="egg-shape egg-c"></div><span class="egg-n">Cosmico</span><span class="egg-p" id="pC">$5,000</span></button>
+      <button class="egg" data-e="cosmic"><div class="egg-shape egg-c"></div><span class="egg-n">Cosmico</span><span class="egg-p" id="pC">$5K</span></button>
+      <button class="egg" data-e="void"><div class="egg-shape egg-v"></div><span class="egg-n">Void</span><span class="egg-p" id="pV">$50K</span></button>
+      <button class="egg" data-e="divine"><div class="egg-shape egg-d"></div><span class="egg-n">Divino</span><span class="egg-p" id="pD">$250K</span></button>
+      <button class="egg" data-e="infernal"><div class="egg-shape egg-i"></div><span class="egg-n">Infernal</span><span class="egg-p" id="pI">$1M</span></button>
     </div>
     <button class="btn btn-buy can" id="btnBuy"><i class="fas fa-egg"></i> ABRIR HUEVO</button>
+    <button class="btn btn-auto no" id="btnAuto"><i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)</button>
     <button class="btn btn-rb" id="btnRb" disabled><i class="fas fa-bolt"></i> REBIRTH ($500K)</button>
     <div id="petList" class="plist"></div>
   </section>
@@ -297,6 +321,22 @@ h1{
     <div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div>
     <div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div>
     <div id="idxList" class="igrid"></div>
+  </section>
+
+  <section id="pRank" class="panel">
+    <div class="rk-hd">
+      <div class="rk-name-wrap">
+        <i class="fas fa-fort-awesome"></i>
+        <input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false" aria-label="Nombre de tu base">
+      </div>
+      <div class="rk-live" id="rkLive"><span class="rk-live-dot rk-off-dot"></span> SIN CONEXION</div>
+    </div>
+    <div class="rk-my">
+      <span class="rk-my-l">Tu posicion:</span>
+      <span class="rk-my-v" id="rkPos">#--</span>
+      <span class="rk-my-e" id="rkMyEarn">$0/s</span>
+    </div>
+    <div id="rkList" class="rk-list"></div>
   </section>
 
   <section id="pAch" class="panel">
@@ -320,18 +360,55 @@ h1{
 
 <script>
 /* =============================================
-   DEBUG - muestra errores en pantalla
+   CONFIGURACION DE FIREBASE (Ranking Global)
+   -----------------------------------------------
+   Para que el ranking funcione con CUENTAS REALES,
+   necesitas una base de datos de Firebase (gratis).
+   
+   PASOS:
+   1. Ve a https://console.firebase.google.com/
+   2. Crea un proyecto nuevo.
+   3. Ve a Build > Realtime Database > Create Database.
+   4. Elige "Start in test mode" (para permitir escritura).
+   5. Copia la URL de la base de datos (ej: https://mi-juego.firebaseio.com)
+   6. Ve a Project Settings (engranaje) > General > Your apps > Web app (</>).
+   7. Registra la app y copia el objeto "firebaseConfig".
+   8. Pega los datos abajo.
+   
+   Reglas de seguridad recomendadas para tu BD (para que no borren datos):
+   {
+     "rules": {
+       "rankings": {
+         ".indexOn": ["earn"],
+         "$uid": {
+           ".read": true,
+           ".write": true
+         }
+       }
+     }
+   }
    ============================================= */
-window.onerror = function(msg, url, line) {
-  var d = document.getElementById('debug');
-  d.style.display = 'block';
-  d.textContent = 'ERROR: ' + msg + ' (linea ' + line + ')';
+var firebaseConfig = {
+  apiKey: "TU_API_KEY_AQUI",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "TU_ID",
+  appId: "TU_APP_ID"
 };
 
 /* =============================================
-   BASE DE DATOS
+   VARIABLES DE FIREBASE Y ESTADO
+   ============================================= */
+var fbConnected = false;
+var fbDb = null;
+
+/* =============================================
+   BASE DE DATOS DE MASCOTAS
    ============================================= */
 var PETS = [
+  // BASIC
   {i:'🐭',n:'Raton de Campo',r:'common',e:2,eg:['basic']},
   {i:'🐶',n:'Perro Fiel',r:'common',e:4,eg:['basic']},
   {i:'🐱',n:'Gato Curioso',r:'common',e:5,eg:['basic']},
@@ -344,24 +421,27 @@ var PETS = [
   {i:'🐼',n:'Panda Gigante',r:'rare',e:25,eg:['basic']},
   {i:'🐨',n:'Koala Dormilon',r:'rare',e:30,eg:['basic']},
   {i:'🦙',n:'Llama Dorada',r:'rare',e:35,eg:['basic']},
-  {i:'🦅',n:'Aguila Real',r:'rare',e:40,eg:['golden']},
-  {i:'🐺',n:'Lobo Gris',r:'rare',e:45,eg:['golden']},
   {i:'🐯',n:'Tigre Bengal',r:'epic',e:50,eg:['basic']},
   {i:'🦁',n:'Leon Rey',r:'epic',e:65,eg:['basic']},
   {i:'🐺',n:'Lobo Alpha',r:'epic',e:80,eg:['basic']},
+  {i:'🐲',n:'Dragon Joven',r:'god',e:120,eg:['basic']},
+  // GOLDEN
+  {i:'🦅',n:'Aguila Real',r:'rare',e:40,eg:['golden']},
+  {i:'🐺',n:'Lobo Gris',r:'rare',e:45,eg:['golden']},
   {i:'🐯',n:'Tigre Blanco',r:'epic',e:90,eg:['golden']},
   {i:'🦁',n:'Leon Dorado',r:'epic',e:110,eg:['golden']},
-  {i:'🐲',n:'Dragon Joven',r:'god',e:120,eg:['basic']},
   {i:'🦄',n:'Unicornio Mistico',r:'god',e:150,eg:['golden']},
+  {i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},
+  {i:'🦅',n:'Halcon de Fuego',r:'legendary',e:500,eg:['golden']},
+  {i:'🔥',n:'Fenix Menor',r:'mythic',e:1000,eg:['golden']},
+  // COSMIC
+  {i:'🦙',n:'Llama Cosmica',r:'rare',e:42,eg:['cosmic']},
   {i:'🐲',n:'Dragon Ancestral',r:'god',e:220,eg:['golden','cosmic']},
   {i:'🦄',n:'Unicornio Arcano',r:'god',e:280,eg:['cosmic']},
   {i:'⚡',n:'Trueno Divino',r:'god',e:350,eg:['cosmic']},
-  {i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},
-  {i:'🦅',n:'Halcon de Fuego',r:'legendary',e:500,eg:['golden']},
   {i:'🐲',n:'Dragon Celestial',r:'legendary',e:600,eg:['cosmic']},
   {i:'🐍',n:'Hidra de Nueve Cabezas',r:'legendary',e:800,eg:['cosmic']},
   {i:'🦅',n:'Aguila Imperial',r:'legendary',e:700,eg:['cosmic']},
-  {i:'🔥',n:'Fenix Menor',r:'mythic',e:1000,eg:['golden']},
   {i:'🔥',n:'Fenix Primordial',r:'mythic',e:1400,eg:['cosmic']},
   {i:'🔱',n:'Poseidon',r:'mythic',e:1800,eg:['cosmic']},
   {i:'⚡',n:'Zeus',r:'mythic',e:2200,eg:['cosmic']},
@@ -371,22 +451,41 @@ var PETS = [
   {i:'💎',n:'Diamante Infinito',r:'secret',e:6500,eg:['cosmic']},
   {i:'👁️',n:'Illuminati',r:'secret',e:8000,eg:['cosmic']},
   {i:'🦖',n:'T-Rex OG',r:'og',e:12000,eg:['cosmic']},
-  {i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']}
+  {i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']},
+  // VOID
+  {i:'🦇',n:'Murcielago Sombra',r:'rare',e:55,eg:['void']},
+  {i:'🐺',n:'Lobo Espectral',r:'epic',e:120,eg:['void']},
+  {i:'🐙',n:'Kraken',r:'legendary',e:900,eg:['void']},
+  {i:'👻',n:'Fantasma',r:'mythic',e:2400,eg:['void']},
+  {i:'🕳️',n:'Agujero Negro',r:'secret',e:7500,eg:['void']},
+  // DIVINE
+  {i:'🕊️',n:'Paloma Sagrada',r:'epic',e:100,eg:['divine']},
+  {i:'🦚',n:'Pavo Real Celestial',r:'god',e:200,eg:['divine']},
+  {i:'🦋',n:'Mariposa Dimensional',r:'legendary',e:850,eg:['divine']},
+  {i:'👼',n:'Serafin',r:'mythic',e:2800,eg:['divine']},
+  {i:'✨',n:'Estrella Fugaz',r:'secret',e:9000,eg:['divine']},
+  // INFERNAL
+  {i:'🦂',n:'Escorpion Infernal',r:'god',e:300,eg:['infernal']},
+  {i:'🐍',n:'Serpiente del Eden',r:'legendary',e:950,eg:['infernal']},
+  {i:'😈',n:'Diablo Menor',r:'mythic',e:3000,eg:['infernal']},
+  {i:'🔥',n:'Demonio Ancestral',r:'secret',e:11000,eg:['infernal']},
+  {i:'☠️',n:'Muerte',r:'og',e:25000,eg:['infernal']}
 ];
 
 var WEIGHTS = {
   basic:{common:65,rare:25,epic:8,god:2},
-  golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:2,og:1},
-  cosmic:{god:5,legendary:15,mythic:35,secret:30,og:15}
+  golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:0.5,og:0.1},
+  cosmic:{god:5,legendary:15,mythic:35,secret:2,og:1},
+  void:{epic:10,god:15,legendary:35,mythic:25,secret:1,og:0.5},
+  divine:{god:10,legendary:25,mythic:40,secret:1.5,og:0.8},
+  infernal:{legendary:5,mythic:35,secret:3,og:2}
 };
 
 var RCOL = {common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
 var RNAME = {common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
 var RORD = {common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 
-/* =============================================
-   LOGROS
-   ============================================= */
+/* Logros */
 function hasR(r) {
   for (var i=0;i<G.disc.length;i++) for (var j=0;j<PETS.length;j++) if (PETS[j].n===G.disc[i]&&PETS[j].r===r) return true;
   return false;
@@ -407,16 +506,29 @@ var ACHS = [
   {id:'a13',nm:'Explorador',ds:'50% del Index',rw:50000,ic:'fa-compass',ck:function(){return G.disc.length>=PETS.length*0.5}},
   {id:'a14',nm:'Completista',ds:'Todas las mascotas',rw:2000000,ic:'fa-trophy',ck:function(){return G.disc.length>=PETS.length}},
   {id:'a15',nm:'Rico',ds:'Gana $100K total',rw:10000,ic:'fa-sack-dollar',ck:function(){return G.te>=100000}},
-  {id:'a16',nm:'Millonario',ds:'Gana $1M total',rw:100000,ic:'fa-vault',ck:function(){return G.te>=1000000}}
+  {id:'a16',nm:'Millonario',ds:'Gana $1M total',rw:100000,ic:'fa-vault',ck:function(){return G.te>=1000000}},
+  {id:'a17',nm:'Billonario',ds:'Gana $1B total',rw:500000,ic:'fa-money-bill-trend-up',ck:function(){return G.te>=1e9}},
+  {id:'a18',nm:'Top 10',ds:'Entra al Top 10',rw:25000,ic:'fa-ranking-star',ck:function(){return G._top10===true}},
+  {id:'a19',nm:'Top 3',ds:'Entra al Top 3',rw:100000,ic:'fa-medal',ck:function(){return G._top3===true}},
+  {id:'a20',nm:'Numero 1',ds:'Llega al #1',rw:500000,ic:'fa-crown',ck:function(){return G._top1===true}},
+  {id:'a21',nm:'Automata',ds:'Compra Auto Apertura',rw:100000,ic:'fa-robot',ck:function(){return G.autoOpen===true}}
 ];
 
 /* =============================================
-   ESTADO
+   ESTADO DEL JUEGO
    ============================================= */
-var G = {money:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000},tot:0,te:0,achs:[],mut:false,nid:1};
+var G = {
+  money:10, rb:0, mult:1, pets:[], disc:[],
+  pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
+  tot:0, te:0, achs:[], mut:false, nid:1, pname:'Mi Base',
+  autoOpen:false, autoOn:false,
+  _top10:false, _top3:false, _top1:false,
+  fbId:'', rankCache:[]
+};
 var selEgg = 'basic';
 var rbConf = false;
 var rbTmr = null;
+var activeTab = 'game';
 
 /* =============================================
    SONIDO
@@ -444,6 +556,7 @@ var snd = {
 function fmt(n) {
   if (n === undefined || n === null || isNaN(n) || !isFinite(n)) return '0';
   n = Number(n);
+  if (n >= 1e12) return (n/1e12).toFixed(1)+'T';
   if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
   if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
   if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
@@ -463,26 +576,32 @@ function floatM(amt) {
   var el = document.createElement('div');
   el.className = 'fm';
   el.textContent = '+$' + fmt(amt);
-  el.style.left = (Math.random()*160+100) + 'px';
-  el.style.top = '75px';
+  el.style.left = (Math.random()*140+100) + 'px';
+  el.style.top = '65px';
   document.getElementById('game').appendChild(el);
   setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 1100);
 }
 
 /* =============================================
-   GUARDADO
+   GUARDADO / CARGA
    ============================================= */
-var SAVE_KEY = 'PetSimUltra_v4';
+var SAVE_KEY = 'PetSimUltra_v7';
 
 function save() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch(e) {}
+  try {
+    var d = {
+      money:G.money, rb:G.rb, mult:G.mult, pets:G.pets, disc:G.disc,
+      pr:G.pr, tot:G.tot, te:G.te, achs:G.achs, mut:G.mut, nid:G.nid,
+      pname:G.pname, autoOpen:G.autoOpen, autoOn:G.autoOn, fbId:G.fbId
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(d));
+  } catch(e) {}
 }
 
 function load() {
-  // Limpiar saves viejos
-  try { localStorage.removeItem('PetSimUltra'); } catch(e){}
-  try { localStorage.removeItem('PetSimUltra_v2'); } catch(e){}
-  try { localStorage.removeItem('PetSimUltra_v3'); } catch(e){}
+  ['PetSimUltra','PetSimUltra_v2','PetSimUltra_v3','PetSimUltra_v4','PetSimUltra_v5','PetSimUltra_v6'].forEach(function(k){
+    try{localStorage.removeItem(k)}catch(e){}
+  });
 
   var raw = null;
   try { raw = localStorage.getItem(SAVE_KEY); } catch(e){ return; }
@@ -492,7 +611,6 @@ function load() {
     var d = JSON.parse(raw);
     if (!d || typeof d.money !== 'number') return;
 
-    // Copiar campos validos
     G.money = (isNaN(d.money)||!isFinite(d.money)) ? 10 : d.money;
     G.rb = (typeof d.rb==='number' && isFinite(d.rb)) ? Math.max(0,d.rb) : 0;
     G.mult = (typeof d.mult==='number' && isFinite(d.mult) && d.mult>=1) ? d.mult : 1;
@@ -500,21 +618,28 @@ function load() {
     G.tot = (typeof d.tot==='number') ? Math.max(0,d.tot) : 0;
     G.te = (typeof d.te==='number') ? Math.max(0,d.te) : 0;
     G.nid = (typeof d.nid==='number') ? Math.max(1,d.nid) : 1;
+    G.pname = (typeof d.pname==='string' && d.pname.length>0) ? d.pname.slice(0,14) : 'Mi Base';
+    G.autoOpen = (typeof d.autoOpen==='boolean') ? d.autoOpen : false;
+    G.autoOn = (typeof d.autoOn==='boolean') ? d.autoOn : false;
+    G.fbId = (typeof d.fbId==='string' && d.fbId.length>0) ? d.fbId : '';
 
-    // Precios
-    if (d.pr && typeof d.pr.basic === 'number') G.pr = d.pr;
-    else if (typeof d.priceN === 'number') G.pr = {basic:d.priceN, golden:d.priceS||500, cosmic:5000};
+    if (d.pr && typeof d.pr.basic === 'number') {
+      G.pr = d.pr;
+      if (!G.pr.void) G.pr.void = 50000;
+      if (!G.pr.divine) G.pr.divine = 250000;
+      if (!G.pr.infernal) G.pr.infernal = 1000000;
+    } else if (typeof d.priceN === 'number') {
+      G.pr = {basic:d.priceN, golden:d.priceS||500, cosmic:5000, void:50000, divine:250000, infernal:1000000};
+    }
 
-    // Arrays
     G.disc = Array.isArray(d.disc) ? d.disc : [];
     G.achs = Array.isArray(d.achs) ? d.achs : [];
-    G.pets = Array.isArray(d.pets) ? [] : [];
 
-    // Migrar mascotas una por una, validando
+    G.pets = [];
     if (Array.isArray(d.pets)) {
       for (var i = 0; i < d.pets.length; i++) {
         var p = d.pets[i];
-        if (!p || !p.i || !p.n || !p.r) continue; // descartar mascotas invalidas
+        if (!p || !p.i || !p.n || !p.r) continue;
         var be = (typeof p.be === 'number' && isFinite(p.be) && p.be > 0) ? p.be : (p.e || 1);
         var lv = (typeof p.lv === 'number' && p.lv >= 1) ? Math.min(99, Math.floor(p.lv)) : 1;
         var id = (typeof p.id === 'number' && p.id > 0) ? Math.floor(p.id) : G.nid++;
@@ -522,16 +647,23 @@ function load() {
       }
     }
   } catch(e) {
-    console.warn('Error cargando save, usando defaults');
+    console.warn('Error cargando save');
   }
 }
 
 function resetGame() {
   try { localStorage.removeItem(SAVE_KEY); } catch(e){}
-  G = {money:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000},tot:0,te:0,achs:[],mut:false,nid:1};
+  G = {
+    money:10, rb:0, mult:1, pets:[], disc:[],
+    pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
+    tot:0, te:0, achs:[], mut:false, nid:1, pname:'Mi Base',
+    autoOpen:false, autoOn:false, _top10:false, _top3:false, _top1:false,
+    fbId:G.fbId, rankCache:[]
+  };
   selEgg = 'basic';
   rbConf = false;
   if (rbTmr) clearTimeout(rbTmr);
+  document.getElementById('rkName').value = 'Mi Base';
   updateUI();
   toast('Juego reiniciado', 'inf');
 }
@@ -562,11 +694,11 @@ function roll(egg) {
   var keys = Object.keys(w);
   var total = 0;
   for (var i = 0; i < keys.length; i++) total += w[keys[i]];
-  var roll = Math.random() * total;
+  var r = Math.random() * total;
   var chosen = keys[0];
   for (var i = 0; i < keys.length; i++) {
-    roll -= w[keys[i]];
-    if (roll <= 0) { chosen = keys[i]; break; }
+    r -= w[keys[i]];
+    if (r <= 0) { chosen = keys[i]; break; }
   }
   var pool = [];
   for (var i = 0; i < PETS.length; i++) {
@@ -584,13 +716,16 @@ function roll(egg) {
 /* =============================================
    ABRIR HUEVO
    ============================================= */
-function openEgg() {
-  snd.go();
+function openEgg(silent) {
   var cost = G.pr[selEgg];
-  if (G.money < cost) { snd.err(); toast('Sin dinero suficiente', 'err'); return; }
+  if (G.money < cost) {
+    if (!silent) { snd.err(); toast('Sin dinero suficiente', 'err'); }
+    if (G.autoOn && G.money < cost) { G.autoOn = false; updateUI(); }
+    return false;
+  }
 
   G.money -= cost;
-  var scales = {basic:1.15, golden:1.2, cosmic:1.25};
+  var scales = {basic:1.15, golden:1.2, cosmic:1.25, void:1.28, divine:1.3, infernal:1.35};
   G.pr[selEgg] = Math.floor(G.pr[selEgg] * (scales[selEgg] || 1.15));
 
   var tpl = roll(selEgg);
@@ -603,7 +738,12 @@ function openEgg() {
   checkAch();
   save();
   updateUI();
-  showHatch(np);
+
+  if (!silent) {
+    snd.go();
+    showHatch(np);
+  }
+  return true;
 }
 
 /* =============================================
@@ -616,8 +756,8 @@ function showHatch(pet) {
 
   ov.style.display = 'flex';
 
-  var cls = {basic:'egg-b', golden:'egg-g', cosmic:'egg-c'}[selEgg] || 'egg-b';
-  egg.className = cls;
+  var clsMap = {basic:'egg-b', golden:'egg-g', cosmic:'egg-c', void:'egg-v', divine:'egg-d', infernal:'egg-i'};
+  egg.className = clsMap[selEgg] || 'egg-b';
   egg.style.display = 'block';
   ico.style.display = 'none';
   ico.className = '';
@@ -702,7 +842,7 @@ function doRb() {
     G.mult *= 1.8;
     G.money = 10;
     G.pets = [];
-    G.pr = {basic:10, golden:500, cosmic:5000};
+    G.pr = {basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000};
     snd.hatch('og');
     toast('REBIRTH ' + G.rb + ' — x' + G.mult.toFixed(1), 'rwd');
     checkAch(); save(); updateUI();
@@ -719,9 +859,29 @@ function doRb() {
 }
 
 /* =============================================
+   AUTO APERTURA
+   ============================================= */
+function handleAuto() {
+  snd.click();
+  if (!G.autoOpen) {
+    if (G.money < 1e9) { snd.err(); toast('Necesitas $1.0B', 'err'); return; }
+    G.money -= 1e9;
+    G.autoOpen = true;
+    G.autoOn = true;
+    toast('Auto Apertura activada!', 'rwd');
+    checkAch(); save(); updateUI();
+  } else {
+    G.autoOn = !G.autoOn;
+    toast('Auto: ' + (G.autoOn ? 'ON' : 'OFF'), 'inf');
+    save(); updateUI();
+  }
+}
+
+/* =============================================
    LOGROS
    ============================================= */
 function checkAch() {
+  updateRankFlags();
   for (var i = 0; i < ACHS.length; i++) {
     var a = ACHS[i];
     if (G.achs.indexOf(a.id) === -1) {
@@ -737,6 +897,135 @@ function checkAch() {
   }
 }
 
+function updateRankFlags() {
+  var myEarn = totInc();
+  var entries = G.rankCache.slice();
+  var selfEntry = {name:G.pname, earn:Math.floor(myEarn), id:G.fbId, isPlayer:true};
+  var inTop = false;
+  for(var i=0; i<entries.length; i++) {
+    if(entries[i].id === G.fbId) { entries[i] = selfEntry; inTop = true; }
+    else { entries[i].isPlayer = false; }
+  }
+  if(!inTop) entries.push(selfEntry);
+  entries.sort(function(a,b){ return b.earn - a.earn; });
+
+  var playerRank = -1;
+  for(var i=0; i<entries.length; i++) {
+    if(entries[i].isPlayer) { playerRank = i + 1; break; }
+  }
+  G._top10 = playerRank <= 10 && playerRank > 0;
+  G._top3 = playerRank <= 3 && playerRank > 0;
+  G._top1 = playerRank === 1;
+}
+
+/* =============================================
+   FIREBASE RANKING GLOBAL (CUENTAS REALES)
+   ============================================= */
+function initFirebase() {
+  // Verificar si se configuró Firebase
+  if (!firebaseConfig.databaseURL || firebaseConfig.databaseURL.includes("TU_PROYECTO")) {
+    console.warn("Firebase no configurado. Ranking en modo local.");
+    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot rk-off-dot"></span> SIN CONEXION';
+    return;
+  }
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+    fbConnected = true;
+
+    // Escuchar el Top 100 en tiempo real
+    fbDb.ref('rankings').orderByChild('earn').limitToLast(100).on('value', function(snapshot) {
+      var data = snapshot.val() || {};
+      G.rankCache = Object.keys(data).map(function(key) {
+        var d = data[key];
+        return { id: key, name: d.name || '???', earn: d.earn || 0, rb: d.rb || 0, pets: d.pets || 0, isPlayer: (key === G.fbId) };
+      });
+      G.rankCache.sort(function(a, b) { return b.earn - a.earn; });
+      
+      // Actualizar flags de logros y UI
+      updateRankFlags();
+      if (activeTab === 'rank') renderRank();
+    });
+
+    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot"></span> EN VIVO';
+    toast('Conectado al Ranking Global', 'ok');
+  } catch(e) {
+    console.error("Error Firebase:", e);
+    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot rk-off-dot"></span> ERROR';
+  }
+}
+
+function updateMyRanking() {
+  if (!fbConnected || !fbDb) return;
+  var myData = {
+    name: G.pname || 'Mi Base',
+    earn: Math.floor(totInc()),
+    rb: G.rb,
+    pets: G.pets.length,
+    ts: firebase.database.ServerValue.TIMESTAMP
+  };
+  fbDb.ref('rankings/' + G.fbId).set(myData);
+}
+
+function renderRank() {
+  var myEarn = totInc();
+  var entries = [];
+
+  if (fbConnected) {
+    entries = G.rankCache.slice();
+  }
+
+  // Asegurar que el jugador actual esté en la lista
+  var selfEntry = {name: G.pname || 'Mi Base', rb: G.rb, pets: G.pets.length, earn: Math.floor(myEarn), isPlayer: true, id: G.fbId};
+  var inTop = false;
+  for(var i=0; i<entries.length; i++) {
+    if(entries[i].id === G.fbId) {
+      entries[i] = selfEntry; // Actualizar datos locales
+      inTop = true;
+    } else {
+      entries[i].isPlayer = false;
+    }
+  }
+  if(!inTop) entries.push(selfEntry);
+
+  entries.sort(function(a,b){ return b.earn - a.earn; });
+
+  var playerRank = -1;
+  for(var i=0; i<entries.length; i++) {
+    if(entries[i].isPlayer) { playerRank = i + 1; break; }
+  }
+
+  document.getElementById('rkPos').textContent = '#' + playerRank;
+  document.getElementById('rkMyEarn').textContent = '$' + fmt(myEarn) + '/s';
+
+  var top10 = entries.slice(0, 10);
+  var h = '';
+  for (var i = 0; i < top10.length; i++) {
+    var e = top10[i];
+    var pos = i + 1;
+    var posClass = pos <= 3 ? ' p' + pos : '';
+    var meClass = e.isPlayer ? ' me' : '';
+    h += '<div class="rk-i' + meClass + '">'
+      + '<div class="rk-pos' + posClass + '">' + pos + '</div>'
+      + '<div class="rk-body">'
+      + '<div class="rk-top">'
+      + '<span class="rk-n">' + e.name + (e.isPlayer ? ' <span class="rk-you">TU</span>' : '') + '</span>'
+      + '<span class="rk-rb">RB ' + e.rb + '</span>'
+      + '</div>'
+      + '<div class="rk-bot">'
+      + '<span class="rk-pc">' + e.pets + ' mascotas</span>'
+      + '<span class="rk-earn">$' + fmt(e.earn) + '/s</span>'
+      + '</div></div></div>';
+  }
+  
+  if (!fbConnected && top10.length <= 1) {
+    h += '<div class="empty"><i class="fas fa-globe"></i><p>Configura Firebase para ver jugadores reales en vivo</p></div>';
+  }
+  
+  document.getElementById('rkList').innerHTML = h;
+}
+
 /* =============================================
    RENDERIZADO
    ============================================= */
@@ -745,13 +1034,30 @@ function updateUI() {
   document.getElementById('sInc').textContent = '$' + fmt(totInc()) + '/s';
   document.getElementById('sPets').textContent = G.pets.length;
 
-  document.getElementById('pB').textContent = '$' + fmt(G.pr.basic);
-  document.getElementById('pG').textContent = '$' + fmt(G.pr.golden);
-  document.getElementById('pC').textContent = '$' + fmt(G.pr.cosmic);
+  var eggIds = {basic:'pB',golden:'pG',cosmic:'pC',void:'pV',divine:'pD',infernal:'pI'};
+  for (var k in eggIds) {
+    var el = document.getElementById(eggIds[k]);
+    if (el) el.textContent = '$' + fmt(G.pr[k]);
+  }
 
   var bb = document.getElementById('btnBuy');
   if (G.money >= G.pr[selEgg]) { bb.classList.add('can'); bb.classList.remove('no'); }
   else { bb.classList.remove('can'); bb.classList.add('no'); }
+
+  var ba = document.getElementById('btnAuto');
+  if (!G.autoOpen) {
+    ba.innerHTML = '<i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)';
+    if (G.money >= 1e9) { ba.classList.add('can'); ba.classList.remove('no','on'); }
+    else { ba.classList.add('no'); ba.classList.remove('can','on'); }
+  } else {
+    if (G.autoOn) {
+      ba.innerHTML = '<i class="fas fa-robot"></i> AUTO: ON';
+      ba.classList.add('on'); ba.classList.remove('no','can');
+    } else {
+      ba.innerHTML = '<i class="fas fa-robot"></i> AUTO: OFF';
+      ba.classList.add('can'); ba.classList.remove('on','no');
+    }
+  }
 
   if (!rbConf) {
     var rb = document.getElementById('btnRb');
@@ -761,6 +1067,7 @@ function updateUI() {
   }
 
   renderPets();
+  if (activeTab === 'rank') renderRank();
 }
 
 function renderPets() {
@@ -833,18 +1140,20 @@ function renderAch() {
    ============================================= */
 function setTab(t) {
   snd.click();
+  activeTab = t;
   var panels = document.querySelectorAll('.panel');
   for (var i=0;i<panels.length;i++) panels[i].classList.remove('on');
   var btns = document.querySelectorAll('.tab');
   for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
 
-  var map = {game:'pGame', index:'pIndex', ach:'pAch'};
+  var map = {game:'pGame', index:'pIndex', rank:'pRank', ach:'pAch'};
   var pel = document.getElementById(map[t]);
   if (pel) pel.classList.add('on');
   var bel = document.querySelector('.tab[data-t="'+t+'"]');
   if (bel) bel.classList.add('on');
 
   if (t === 'index') renderIdx();
+  if (t === 'rank') renderRank();
   if (t === 'ach') renderAch();
 }
 
@@ -865,7 +1174,22 @@ function init() {
   try {
     load();
 
-    // Mute button
+    // Asignar ID unico de jugador si no tiene
+    if (!G.fbId) {
+      G.fbId = 'p_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+      save();
+    }
+
+    // Nombre base
+    var nameInput = document.getElementById('rkName');
+    nameInput.value = G.pname || 'Mi Base';
+    nameInput.addEventListener('input', function() {
+      G.pname = this.value.trim().slice(0,14) || 'Mi Base';
+      save();
+    });
+    nameInput.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    // Mute
     var mb = document.getElementById('btnMute');
     mb.innerHTML = G.mut ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
     mb.onclick = function() {
@@ -874,25 +1198,28 @@ function init() {
       save();
     };
 
-    // Reset button
+    // Reset
     document.getElementById('btnReset').onclick = function() {
       if (confirm('Reiniciar todo el progreso?')) resetGame();
     };
 
-    // Tabs (event delegation)
+    // Tabs
     document.getElementById('navTabs').onclick = function(ev) {
       var btn = ev.target.closest('.tab');
       if (btn) setTab(btn.getAttribute('data-t'));
     };
 
-    // Eggs (event delegation)
+    // Eggs
     document.getElementById('navEggs').onclick = function(ev) {
       var btn = ev.target.closest('.egg');
       if (btn) setEgg(btn.getAttribute('data-e'));
     };
 
     // Buy
-    document.getElementById('btnBuy').onclick = openEgg;
+    document.getElementById('btnBuy').onclick = function() { openEgg(false); };
+
+    // Auto
+    document.getElementById('btnAuto').onclick = handleAuto;
 
     // Rebirth
     document.getElementById('btnRb').onclick = doRb;
@@ -900,7 +1227,7 @@ function init() {
     // Close hatch
     document.getElementById('oclose').onclick = closeHatch;
 
-    // Pet list actions (event delegation)
+    // Pet actions
     document.getElementById('petList').onclick = function(ev) {
       var btn = ev.target.closest('[data-act]');
       if (!btn) return;
@@ -910,21 +1237,35 @@ function init() {
       else if (act === 'sell') doSell(id);
     };
 
+    // Iniciar Firebase
+    initFirebase();
+
     updateUI();
 
-    // Tick ingresos
+    // Tick del juego
+    var tickCount = 0;
     setInterval(function() {
       var inc = totInc();
       if (inc > 0) {
         G.money += inc;
         G.te += inc;
-        if (inc >= 10 && Math.random() < 0.2) floatM(inc);
-        checkAch();
-        updateUI();
+        if (inc >= 10 && Math.random() < 0.15) floatM(inc);
+      }
+      // Auto open (1 huevo silencioso por segundo)
+      if (G.autoOn && G.money >= G.pr[selEgg]) {
+        openEgg(true);
+      }
+      checkAch();
+      updateUI();
+
+      // Subir datos a Firebase cada 30 segundos
+      tickCount++;
+      if (tickCount % 30 === 0) {
+        updateMyRanking();
       }
     }, 1000);
 
-    // Auto-guardado
+    // Auto-guardado local cada 8 segundos
     setInterval(save, 8000);
 
   } catch(e) {
@@ -935,8 +1276,6 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
-// Desbloquear audio al primer toque
 document.addEventListener('click', function(){snd.go()}, {once:true});
 document.addEventListener('touchstart', function(){snd.go()}, {once:true});
 </script>
