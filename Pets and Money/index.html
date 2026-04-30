@@ -6,9 +6,6 @@
 <title>Pet Simulator Ultra</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -185,19 +182,6 @@ h1{
 .ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}
 .ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}
 
-.al-t{font-size:11px;font-weight:800;color:#7a8ba8;margin-bottom:6px;padding:0 2px}
-.al{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
-.al::-webkit-scrollbar{width:3px}
-.al::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.ai{display:flex;align-items:center;gap:7px;padding:7px 9px;margin-bottom:3px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
-.ai.ok{border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.04)}
-.ai-i{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:rgba(255,255,255,0.04);color:#64748b}
-.ai.ok .ai-i{background:rgba(251,191,36,0.12);color:#fbbf24}
-.ai-t{flex:1;min-width:0}
-.ai-n{display:block;font-size:10px;font-weight:800;color:#f1f5f9}
-.ai-d{display:block;font-size:8px;color:#64748b;margin-top:1px}
-.ai-r{font-size:8px;font-weight:800;color:#10b981;white-space:nowrap}
-
 /* === RANKING === */
 .rk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
 .rk-name-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
@@ -211,7 +195,6 @@ h1{
 .rk-name-input:focus{border-color:rgba(251,191,36,0.4)}
 .rk-live{display:flex;align-items:center;gap:4px;font-size:8px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
 .rk-live-dot{width:5px;height:5px;border-radius:50%;background:#10b981;animation:livePulse 1.5s ease-in-out infinite}
-.rk-off-dot{background:#f43f5e;animation:none}
 @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px #10b981}50%{opacity:.4;box-shadow:none}}
 
 .rk-my{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;margin-bottom:8px;border-radius:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12)}
@@ -237,6 +220,10 @@ h1{
 .rk-bot{display:flex;align-items:center;justify-content:space-between}
 .rk-pc{font-size:8px;font-weight:600;color:#64748b}
 .rk-earn{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
+
+.rk-i.rank-up{border-left:2px solid #10b981}
+.rk-i.rank-down{border-left:2px solid #f43f5e}
+.rk-i.rank-new{border-left:2px solid #fbbf24}
 
 /* Overlay */
 #overlay{position:absolute;inset:0;background:rgba(4,10,22,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;border-radius:26px}
@@ -266,8 +253,6 @@ h1{
 .fm{position:absolute;font-size:12px;font-weight:900;color:#10b981;pointer-events:none;animation:fup 1s ease-out forwards;z-index:50;text-shadow:0 2px 6px rgba(0,0,0,0.5)}
 @keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-35px)}}
 
-#debug{display:none;position:fixed;top:10px;left:10px;right:10px;z-index:9999;background:rgba(244,63,94,0.95);color:#fff;padding:12px 16px;border-radius:10px;font-family:monospace;font-size:12px;line-height:1.5;cursor:pointer}
-
 @media(max-height:680px){
   #game{height:95vh;padding:10px 12px 8px;border-radius:18px}
   h1{font-size:15px}.stats{margin-bottom:6px}.st{padding:5px 3px}.st-v{font-size:11px}
@@ -277,8 +262,6 @@ h1{
 </style>
 </head>
 <body>
-
-<div id="debug" onclick="this.style.display='none'"></div>
 
 <div id="game">
   <header>
@@ -299,7 +282,6 @@ h1{
     <button class="tab on" data-t="game">JUEGO</button>
     <button class="tab" data-t="index">INDEX</button>
     <button class="tab" data-t="rank">RANKING</button>
-    <button class="tab" data-t="ach">LOGROS</button>
   </nav>
 
   <section id="pGame" class="panel on">
@@ -329,7 +311,7 @@ h1{
         <i class="fas fa-fort-awesome"></i>
         <input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false" aria-label="Nombre de tu base">
       </div>
-      <div class="rk-live" id="rkLive"><span class="rk-live-dot rk-off-dot"></span> SIN CONEXION</div>
+      <div class="rk-live" id="rkLive"><span class="rk-live-dot"></span> EN VIVO</div>
     </div>
     <div class="rk-my">
       <span class="rk-my-l">Tu posicion:</span>
@@ -337,11 +319,6 @@ h1{
       <span class="rk-my-e" id="rkMyEarn">$0/s</span>
     </div>
     <div id="rkList" class="rk-list"></div>
-  </section>
-
-  <section id="pAch" class="panel">
-    <div class="al-t">Logros: <span id="achN">0</span>/<span id="achT">0</span></div>
-    <div id="achList" class="al"></div>
   </section>
 
   <div id="overlay">
@@ -360,55 +337,9 @@ h1{
 
 <script>
 /* =============================================
-   CONFIGURACION DE FIREBASE (Ranking Global)
-   -----------------------------------------------
-   Para que el ranking funcione con CUENTAS REALES,
-   necesitas una base de datos de Firebase (gratis).
-   
-   PASOS:
-   1. Ve a https://console.firebase.google.com/
-   2. Crea un proyecto nuevo.
-   3. Ve a Build > Realtime Database > Create Database.
-   4. Elige "Start in test mode" (para permitir escritura).
-   5. Copia la URL de la base de datos (ej: https://mi-juego.firebaseio.com)
-   6. Ve a Project Settings (engranaje) > General > Your apps > Web app (</>).
-   7. Registra la app y copia el objeto "firebaseConfig".
-   8. Pega los datos abajo.
-   
-   Reglas de seguridad recomendadas para tu BD (para que no borren datos):
-   {
-     "rules": {
-       "rankings": {
-         ".indexOn": ["earn"],
-         "$uid": {
-           ".read": true,
-           ".write": true
-         }
-       }
-     }
-   }
-   ============================================= */
-var firebaseConfig = {
-  apiKey: "TU_API_KEY_AQUI",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_ID",
-  appId: "TU_APP_ID"
-};
-
-/* =============================================
-   VARIABLES DE FIREBASE Y ESTADO
-   ============================================= */
-var fbConnected = false;
-var fbDb = null;
-
-/* =============================================
    BASE DE DATOS DE MASCOTAS
    ============================================= */
 var PETS = [
-  // BASIC
   {i:'🐭',n:'Raton de Campo',r:'common',e:2,eg:['basic']},
   {i:'🐶',n:'Perro Fiel',r:'common',e:4,eg:['basic']},
   {i:'🐱',n:'Gato Curioso',r:'common',e:5,eg:['basic']},
@@ -425,7 +356,6 @@ var PETS = [
   {i:'🦁',n:'Leon Rey',r:'epic',e:65,eg:['basic']},
   {i:'🐺',n:'Lobo Alpha',r:'epic',e:80,eg:['basic']},
   {i:'🐲',n:'Dragon Joven',r:'god',e:120,eg:['basic']},
-  // GOLDEN
   {i:'🦅',n:'Aguila Real',r:'rare',e:40,eg:['golden']},
   {i:'🐺',n:'Lobo Gris',r:'rare',e:45,eg:['golden']},
   {i:'🐯',n:'Tigre Blanco',r:'epic',e:90,eg:['golden']},
@@ -434,7 +364,6 @@ var PETS = [
   {i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},
   {i:'🦅',n:'Halcon de Fuego',r:'legendary',e:500,eg:['golden']},
   {i:'🔥',n:'Fenix Menor',r:'mythic',e:1000,eg:['golden']},
-  // COSMIC
   {i:'🦙',n:'Llama Cosmica',r:'rare',e:42,eg:['cosmic']},
   {i:'🐲',n:'Dragon Ancestral',r:'god',e:220,eg:['golden','cosmic']},
   {i:'🦄',n:'Unicornio Arcano',r:'god',e:280,eg:['cosmic']},
@@ -452,19 +381,16 @@ var PETS = [
   {i:'👁️',n:'Illuminati',r:'secret',e:8000,eg:['cosmic']},
   {i:'🦖',n:'T-Rex OG',r:'og',e:12000,eg:['cosmic']},
   {i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']},
-  // VOID
   {i:'🦇',n:'Murcielago Sombra',r:'rare',e:55,eg:['void']},
   {i:'🐺',n:'Lobo Espectral',r:'epic',e:120,eg:['void']},
   {i:'🐙',n:'Kraken',r:'legendary',e:900,eg:['void']},
   {i:'👻',n:'Fantasma',r:'mythic',e:2400,eg:['void']},
   {i:'🕳️',n:'Agujero Negro',r:'secret',e:7500,eg:['void']},
-  // DIVINE
   {i:'🕊️',n:'Paloma Sagrada',r:'epic',e:100,eg:['divine']},
   {i:'🦚',n:'Pavo Real Celestial',r:'god',e:200,eg:['divine']},
   {i:'🦋',n:'Mariposa Dimensional',r:'legendary',e:850,eg:['divine']},
   {i:'👼',n:'Serafin',r:'mythic',e:2800,eg:['divine']},
   {i:'✨',n:'Estrella Fugaz',r:'secret',e:9000,eg:['divine']},
-  // INFERNAL
   {i:'🦂',n:'Escorpion Infernal',r:'god',e:300,eg:['infernal']},
   {i:'🐍',n:'Serpiente del Eden',r:'legendary',e:950,eg:['infernal']},
   {i:'😈',n:'Diablo Menor',r:'mythic',e:3000,eg:['infernal']},
@@ -485,34 +411,80 @@ var RCOL = {common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legenda
 var RNAME = {common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
 var RORD = {common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 
-/* Logros */
-function hasR(r) {
-  for (var i=0;i<G.disc.length;i++) for (var j=0;j<PETS.length;j++) if (PETS[j].n===G.disc[i]&&PETS[j].r===r) return true;
-  return false;
-}
-var ACHS = [
-  {id:'a1',nm:'Primera Mascota',ds:'Abre tu primer huevo',rw:1000,ic:'fa-egg',ck:function(){return G.tot>=1}},
-  {id:'a2',nm:'Coleccionista',ds:'Obten 10 mascotas',rw:5000,ic:'fa-layer-group',ck:function(){return G.tot>=10}},
-  {id:'a3',nm:'Gran Coleccionista',ds:'Obten 50 mascotas',rw:50000,ic:'fa-boxes-stacked',ck:function(){return G.tot>=50}},
-  {id:'a4',nm:'Primera Rareza',ds:'Obten una Rara',rw:2000,ic:'fa-gem',ck:function(){return hasR('rare')}},
-  {id:'a5',nm:'Poder Emergente',ds:'Obten una Epica',rw:5000,ic:'fa-fire',ck:function(){return hasR('epic')}},
-  {id:'a6',nm:'Tocado por los Dioses',ds:'Obten un Dios',rw:10000,ic:'fa-sun',ck:function(){return hasR('god')}},
-  {id:'a7',nm:'Leyenda Viviente',ds:'Obten una Legendaria',rw:50000,ic:'fa-crown',ck:function(){return hasR('legendary')}},
-  {id:'a8',nm:'Mitico',ds:'Obten una Mitica',rw:100000,ic:'fa-wand-magic-sparkles',ck:function(){return hasR('mythic')}},
-  {id:'a9',nm:'Secreto Descubierto',ds:'Obten una Secreta',rw:500000,ic:'fa-eye',ck:function(){return hasR('secret')}},
-  {id:'a10',nm:'OG Status',ds:'Obten una OG',rw:1000000,ic:'fa-skull',ck:function(){return hasR('og')}},
-  {id:'a11',nm:'Renacimiento',ds:'Primer Rebirth',rw:10000,ic:'fa-bolt',ck:function(){return G.rb>=1}},
-  {id:'a12',nm:'Veterano',ds:'5 Rebirths',rw:100000,ic:'fa-star',ck:function(){return G.rb>=5}},
-  {id:'a13',nm:'Explorador',ds:'50% del Index',rw:50000,ic:'fa-compass',ck:function(){return G.disc.length>=PETS.length*0.5}},
-  {id:'a14',nm:'Completista',ds:'Todas las mascotas',rw:2000000,ic:'fa-trophy',ck:function(){return G.disc.length>=PETS.length}},
-  {id:'a15',nm:'Rico',ds:'Gana $100K total',rw:10000,ic:'fa-sack-dollar',ck:function(){return G.te>=100000}},
-  {id:'a16',nm:'Millonario',ds:'Gana $1M total',rw:100000,ic:'fa-vault',ck:function(){return G.te>=1000000}},
-  {id:'a17',nm:'Billonario',ds:'Gana $1B total',rw:500000,ic:'fa-money-bill-trend-up',ck:function(){return G.te>=1e9}},
-  {id:'a18',nm:'Top 10',ds:'Entra al Top 10',rw:25000,ic:'fa-ranking-star',ck:function(){return G._top10===true}},
-  {id:'a19',nm:'Top 3',ds:'Entra al Top 3',rw:100000,ic:'fa-medal',ck:function(){return G._top3===true}},
-  {id:'a20',nm:'Numero 1',ds:'Llega al #1',rw:500000,ic:'fa-crown',ck:function(){return G._top1===true}},
-  {id:'a21',nm:'Automata',ds:'Compra Auto Apertura',rw:100000,ic:'fa-robot',ck:function(){return G.autoOpen===true}}
+/* =============================================
+   JUGADORES SIMULADOS PARA EL RANKING
+   ============================================= */
+var FAKE_NAMES = [
+  'xDarkFire','ProGamer99','Luna_Eclipse','ElMejor','NoobMaster',
+  'ShadowKing','MysticWolf','StarDust_X','DragonSlayer','CoolCat42',
+  'NebulaForce','GhostRider','PhoenixRise','ThunderBolt','CrystalHeart',
+  'VoidWalker','IronFist','SilverMoon','BlazeRunner','ArcticFox',
+  'CosmicDust','TitanForce','SerpentEye','FrostBite','SolarFlare',
+  'NeonBlade','PixelKing','StormChaser','DarkMatter','QuantumX'
 ];
+
+var fakePlayers = [];
+
+function initFakePlayers() {
+  /* Crear 25 jugadores simulados con datos variados */
+  fakePlayers = [];
+  for (var i = 0; i < FAKE_NAMES.length; i++) {
+    /* Distribucion variada: algunos nuevos, algunos fuertes */
+    var tier = Math.random();
+    var rb, pets, earn;
+    if (tier < 0.15) {
+      /* Novatos */
+      rb = 0; pets = Math.floor(Math.random() * 8) + 1; earn = Math.floor(Math.random() * 300) + 20;
+    } else if (tier < 0.4) {
+      /* Intermedios bajos */
+      rb = Math.floor(Math.random() * 2); pets = Math.floor(Math.random() * 15) + 8; earn = Math.floor(Math.random() * 2000) + 300;
+    } else if (tier < 0.65) {
+      /* Intermedios */
+      rb = Math.floor(Math.random() * 4) + 1; pets = Math.floor(Math.random() * 25) + 15; earn = Math.floor(Math.random() * 8000) + 2000;
+    } else if (tier < 0.85) {
+      /* Avanzados */
+      rb = Math.floor(Math.random() * 6) + 3; pets = Math.floor(Math.random() * 40) + 30; earn = Math.floor(Math.random() * 25000) + 8000;
+    } else {
+      /* Top jugadores */
+      rb = Math.floor(Math.random() * 8) + 6; pets = Math.floor(Math.random() * 50) + 50; earn = Math.floor(Math.random() * 80000) + 25000;
+    }
+
+    fakePlayers.push({
+      name: FAKE_NAMES[i],
+      rb: rb,
+      pets: pets,
+      earn: earn,
+      baseEarn: earn,
+      isPlayer: false
+    });
+  }
+}
+
+/* Actualizar ganancias de jugadores simulados para que parezcan reales */
+function tickFakePlayers() {
+  for (var i = 0; i < fakePlayers.length; i++) {
+    var fp = fakePlayers[i];
+    /* Variacion aleatoria: la mayoria sube un poco, algunos bajan, saltos ocasionales */
+    var roll = Math.random();
+    if (roll < 0.6) {
+      /* Crecimiento lento */
+      fp.earn = Math.max(10, fp.earn + Math.floor(fp.baseEarn * 0.002 * (Math.random() + 0.5)));
+    } else if (roll < 0.85) {
+      /* Sin cambio o leve bajada */
+      fp.earn = Math.max(10, fp.earn - Math.floor(fp.baseEarn * 0.001));
+    } else if (roll < 0.95) {
+      /* Salto moderado (alguien abrio un huevo bueno) */
+      fp.earn += Math.floor(fp.baseEarn * 0.05 * (Math.random() + 1));
+      fp.pets++;
+    } else {
+      /* Salto grande (rebirth o huevo epico) */
+      fp.earn += Math.floor(fp.baseEarn * 0.15 * (Math.random() + 2));
+      if (Math.random() < 0.3) { fp.rb++; fp.pets -= Math.floor(fp.pets * 0.3); fp.pets = Math.max(1, fp.pets); }
+      else { fp.pets += Math.floor(Math.random() * 3) + 1; }
+    }
+    fp.earn = Math.max(10, fp.earn);
+  }
+}
 
 /* =============================================
    ESTADO DEL JUEGO
@@ -520,10 +492,8 @@ var ACHS = [
 var G = {
   money:10, rb:0, mult:1, pets:[], disc:[],
   pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
-  tot:0, te:0, achs:[], mut:false, nid:1, pname:'Mi Base',
-  autoOpen:false, autoOn:false,
-  _top10:false, _top3:false, _top1:false,
-  fbId:'', rankCache:[]
+  tot:0, te:0, mut:false, nid:1, pname:'Mi Base',
+  autoOpen:false, autoOn:false
 };
 var selEgg = 'basic';
 var rbConf = false;
@@ -585,21 +555,22 @@ function floatM(amt) {
 /* =============================================
    GUARDADO / CARGA
    ============================================= */
-var SAVE_KEY = 'PetSimUltra_v7';
+var SAVE_KEY = 'PetSimUltra_v8';
 
 function save() {
   try {
     var d = {
       money:G.money, rb:G.rb, mult:G.mult, pets:G.pets, disc:G.disc,
-      pr:G.pr, tot:G.tot, te:G.te, achs:G.achs, mut:G.mut, nid:G.nid,
-      pname:G.pname, autoOpen:G.autoOpen, autoOn:G.autoOn, fbId:G.fbId
+      pr:G.pr, tot:G.tot, te:G.te, mut:G.mut, nid:G.nid,
+      pname:G.pname, autoOpen:G.autoOpen, autoOn:G.autoOn
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(d));
   } catch(e) {}
 }
 
 function load() {
-  ['PetSimUltra','PetSimUltra_v2','PetSimUltra_v3','PetSimUltra_v4','PetSimUltra_v5','PetSimUltra_v6'].forEach(function(k){
+  /* Limpiar saves viejos */
+  ['PetSimUltra','PetSimUltra_v2','PetSimUltra_v3','PetSimUltra_v4','PetSimUltra_v5','PetSimUltra_v6','PetSimUltra_v7'].forEach(function(k){
     try{localStorage.removeItem(k)}catch(e){}
   });
 
@@ -621,20 +592,15 @@ function load() {
     G.pname = (typeof d.pname==='string' && d.pname.length>0) ? d.pname.slice(0,14) : 'Mi Base';
     G.autoOpen = (typeof d.autoOpen==='boolean') ? d.autoOpen : false;
     G.autoOn = (typeof d.autoOn==='boolean') ? d.autoOn : false;
-    G.fbId = (typeof d.fbId==='string' && d.fbId.length>0) ? d.fbId : '';
 
     if (d.pr && typeof d.pr.basic === 'number') {
       G.pr = d.pr;
       if (!G.pr.void) G.pr.void = 50000;
       if (!G.pr.divine) G.pr.divine = 250000;
       if (!G.pr.infernal) G.pr.infernal = 1000000;
-    } else if (typeof d.priceN === 'number') {
-      G.pr = {basic:d.priceN, golden:d.priceS||500, cosmic:5000, void:50000, divine:250000, infernal:1000000};
     }
 
     G.disc = Array.isArray(d.disc) ? d.disc : [];
-    G.achs = Array.isArray(d.achs) ? d.achs : [];
-
     G.pets = [];
     if (Array.isArray(d.pets)) {
       for (var i = 0; i < d.pets.length; i++) {
@@ -646,9 +612,7 @@ function load() {
         G.pets.push({i:p.i, n:p.n, r:p.r, be:be, lv:lv, id:id});
       }
     }
-  } catch(e) {
-    console.warn('Error cargando save');
-  }
+  } catch(e) {}
 }
 
 function resetGame() {
@@ -656,14 +620,14 @@ function resetGame() {
   G = {
     money:10, rb:0, mult:1, pets:[], disc:[],
     pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
-    tot:0, te:0, achs:[], mut:false, nid:1, pname:'Mi Base',
-    autoOpen:false, autoOn:false, _top10:false, _top3:false, _top1:false,
-    fbId:G.fbId, rankCache:[]
+    tot:0, te:0, mut:false, nid:1, pname:'Mi Base',
+    autoOpen:false, autoOn:false
   };
   selEgg = 'basic';
   rbConf = false;
   if (rbTmr) clearTimeout(rbTmr);
   document.getElementById('rkName').value = 'Mi Base';
+  initFakePlayers();
   updateUI();
   toast('Juego reiniciado', 'inf');
 }
@@ -735,7 +699,6 @@ function openEgg(silent) {
 
   if (G.disc.indexOf(tpl.n) === -1) G.disc.push(tpl.n);
 
-  checkAch();
   save();
   updateUI();
 
@@ -845,7 +808,7 @@ function doRb() {
     G.pr = {basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000};
     snd.hatch('og');
     toast('REBIRTH ' + G.rb + ' — x' + G.mult.toFixed(1), 'rwd');
-    checkAch(); save(); updateUI();
+    save(); updateUI();
   } else {
     if (G.money < cost) { snd.err(); toast('Necesitas $' + fmt(cost), 'err'); return; }
     rbConf = true;
@@ -869,7 +832,7 @@ function handleAuto() {
     G.autoOpen = true;
     G.autoOn = true;
     toast('Auto Apertura activada!', 'rwd');
-    checkAch(); save(); updateUI();
+    save(); updateUI();
   } else {
     G.autoOn = !G.autoOn;
     toast('Auto: ' + (G.autoOn ? 'ON' : 'OFF'), 'inf');
@@ -878,139 +841,66 @@ function handleAuto() {
 }
 
 /* =============================================
-   LOGROS
+   RENDERIZADO DEL RANKING
    ============================================= */
-function checkAch() {
-  updateRankFlags();
-  for (var i = 0; i < ACHS.length; i++) {
-    var a = ACHS[i];
-    if (G.achs.indexOf(a.id) === -1) {
-      try {
-        if (a.ck()) {
-          G.achs.push(a.id);
-          G.money += a.rw;
-          G.te += a.rw;
-          toast('Logro: ' + a.nm + ' +$' + fmt(a.rw), 'rwd');
-        }
-      } catch(e) {}
-    }
-  }
-}
-
-function updateRankFlags() {
-  var myEarn = totInc();
-  var entries = G.rankCache.slice();
-  var selfEntry = {name:G.pname, earn:Math.floor(myEarn), id:G.fbId, isPlayer:true};
-  var inTop = false;
-  for(var i=0; i<entries.length; i++) {
-    if(entries[i].id === G.fbId) { entries[i] = selfEntry; inTop = true; }
-    else { entries[i].isPlayer = false; }
-  }
-  if(!inTop) entries.push(selfEntry);
-  entries.sort(function(a,b){ return b.earn - a.earn; });
-
-  var playerRank = -1;
-  for(var i=0; i<entries.length; i++) {
-    if(entries[i].isPlayer) { playerRank = i + 1; break; }
-  }
-  G._top10 = playerRank <= 10 && playerRank > 0;
-  G._top3 = playerRank <= 3 && playerRank > 0;
-  G._top1 = playerRank === 1;
-}
-
-/* =============================================
-   FIREBASE RANKING GLOBAL (CUENTAS REALES)
-   ============================================= */
-function initFirebase() {
-  // Verificar si se configuró Firebase
-  if (!firebaseConfig.databaseURL || firebaseConfig.databaseURL.includes("TU_PROYECTO")) {
-    console.warn("Firebase no configurado. Ranking en modo local.");
-    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot rk-off-dot"></span> SIN CONEXION';
-    return;
-  }
-
-  try {
-    firebase.initializeApp(firebaseConfig);
-    fbDb = firebase.database();
-    fbConnected = true;
-
-    // Escuchar el Top 100 en tiempo real
-    fbDb.ref('rankings').orderByChild('earn').limitToLast(100).on('value', function(snapshot) {
-      var data = snapshot.val() || {};
-      G.rankCache = Object.keys(data).map(function(key) {
-        var d = data[key];
-        return { id: key, name: d.name || '???', earn: d.earn || 0, rb: d.rb || 0, pets: d.pets || 0, isPlayer: (key === G.fbId) };
-      });
-      G.rankCache.sort(function(a, b) { return b.earn - a.earn; });
-      
-      // Actualizar flags de logros y UI
-      updateRankFlags();
-      if (activeTab === 'rank') renderRank();
-    });
-
-    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot"></span> EN VIVO';
-    toast('Conectado al Ranking Global', 'ok');
-  } catch(e) {
-    console.error("Error Firebase:", e);
-    document.getElementById('rkLive').innerHTML = '<span class="rk-live-dot rk-off-dot"></span> ERROR';
-  }
-}
-
-function updateMyRanking() {
-  if (!fbConnected || !fbDb) return;
-  var myData = {
-    name: G.pname || 'Mi Base',
-    earn: Math.floor(totInc()),
-    rb: G.rb,
-    pets: G.pets.length,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  };
-  fbDb.ref('rankings/' + G.fbId).set(myData);
-}
+var prevPlayerRank = -1;
 
 function renderRank() {
-  var myEarn = totInc();
+  var myEarn = Math.floor(totInc());
+
+  /* Construir lista combinada: jugadores simulados + yo */
   var entries = [];
-
-  if (fbConnected) {
-    entries = G.rankCache.slice();
+  for (var i = 0; i < fakePlayers.length; i++) {
+    entries.push({
+      name: fakePlayers[i].name,
+      rb: fakePlayers[i].rb,
+      pets: fakePlayers[i].pets,
+      earn: fakePlayers[i].earn,
+      isPlayer: false
+    });
   }
+  /* Agregar al jugador real */
+  entries.push({
+    name: G.pname || 'Mi Base',
+    rb: G.rb,
+    pets: G.pets.length,
+    earn: myEarn,
+    isPlayer: true
+  });
 
-  // Asegurar que el jugador actual esté en la lista
-  var selfEntry = {name: G.pname || 'Mi Base', rb: G.rb, pets: G.pets.length, earn: Math.floor(myEarn), isPlayer: true, id: G.fbId};
-  var inTop = false;
-  for(var i=0; i<entries.length; i++) {
-    if(entries[i].id === G.fbId) {
-      entries[i] = selfEntry; // Actualizar datos locales
-      inTop = true;
-    } else {
-      entries[i].isPlayer = false;
-    }
-  }
-  if(!inTop) entries.push(selfEntry);
+  /* Ordenar por ganancias descendente */
+  entries.sort(function(a, b) { return b.earn - a.earn; });
 
-  entries.sort(function(a,b){ return b.earn - a.earn; });
-
+  /* Encontrar posicion del jugador */
   var playerRank = -1;
-  for(var i=0; i<entries.length; i++) {
-    if(entries[i].isPlayer) { playerRank = i + 1; break; }
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].isPlayer) { playerRank = i + 1; break; }
   }
 
-  document.getElementById('rkPos').textContent = '#' + playerRank;
+  document.getElementById('rkPos').textContent = '#' + (playerRank > 0 ? playerRank : '--');
   document.getElementById('rkMyEarn').textContent = '$' + fmt(myEarn) + '/s';
 
-  var top10 = entries.slice(0, 10);
+  /* Top 15 */
+  var top = entries.slice(0, 15);
   var h = '';
-  for (var i = 0; i < top10.length; i++) {
-    var e = top10[i];
+  for (var i = 0; i < top.length; i++) {
+    var e = top[i];
     var pos = i + 1;
     var posClass = pos <= 3 ? ' p' + pos : '';
     var meClass = e.isPlayer ? ' me' : '';
-    h += '<div class="rk-i' + meClass + '">'
+
+    /* Indicador de movimiento de ranking */
+    var moveClass = '';
+    if (e.isPlayer && prevPlayerRank > 0 && prevPlayerRank !== playerRank) {
+      if (playerRank < prevPlayerRank) moveClass = ' rank-up';
+      else moveClass = ' rank-down';
+    }
+
+    h += '<div class="rk-i' + meClass + moveClass + '">'
       + '<div class="rk-pos' + posClass + '">' + pos + '</div>'
       + '<div class="rk-body">'
       + '<div class="rk-top">'
-      + '<span class="rk-n">' + e.name + (e.isPlayer ? ' <span class="rk-you">TU</span>' : '') + '</span>'
+      + '<span class="rk-n">' + escHtml(e.name) + (e.isPlayer ? ' <span class="rk-you">TU</span>' : '') + '</span>'
       + '<span class="rk-rb">RB ' + e.rb + '</span>'
       + '</div>'
       + '<div class="rk-bot">'
@@ -1018,16 +908,19 @@ function renderRank() {
       + '<span class="rk-earn">$' + fmt(e.earn) + '/s</span>'
       + '</div></div></div>';
   }
-  
-  if (!fbConnected && top10.length <= 1) {
-    h += '<div class="empty"><i class="fas fa-globe"></i><p>Configura Firebase para ver jugadores reales en vivo</p></div>';
-  }
-  
+
   document.getElementById('rkList').innerHTML = h;
+  prevPlayerRank = playerRank;
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 /* =============================================
-   RENDERIZADO
+   RENDERIZADO GENERAL
    ============================================= */
 function updateUI() {
   document.getElementById('sMoney').textContent = '$' + fmt(G.money);
@@ -1119,22 +1012,6 @@ function renderIdx() {
   document.getElementById('idxList').innerHTML = h;
 }
 
-function renderAch() {
-  document.getElementById('achN').textContent = G.achs.length;
-  document.getElementById('achT').textContent = ACHS.length;
-  var h = '';
-  for (var i=0;i<ACHS.length;i++) {
-    var a = ACHS[i];
-    var ok = G.achs.indexOf(a.id) !== -1;
-    h += '<div class="ai' + (ok?' ok':'') + '">'
-      + '<div class="ai-i"><i class="fas ' + a.ic + '"></i></div>'
-      + '<div class="ai-t"><span class="ai-n">' + (ok?a.nm:'???') + '</span>'
-      + '<span class="ai-d">' + a.ds + '</span></div>'
-      + '<span class="ai-r">+$' + fmt(a.rw) + '</span></div>';
-  }
-  document.getElementById('achList').innerHTML = h;
-}
-
 /* =============================================
    TABS Y HUEVOS
    ============================================= */
@@ -1146,7 +1023,7 @@ function setTab(t) {
   var btns = document.querySelectorAll('.tab');
   for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
 
-  var map = {game:'pGame', index:'pIndex', rank:'pRank', ach:'pAch'};
+  var map = {game:'pGame', index:'pIndex', rank:'pRank'};
   var pel = document.getElementById(map[t]);
   if (pel) pel.classList.add('on');
   var bel = document.querySelector('.tab[data-t="'+t+'"]');
@@ -1154,7 +1031,6 @@ function setTab(t) {
 
   if (t === 'index') renderIdx();
   if (t === 'rank') renderRank();
-  if (t === 'ach') renderAch();
 }
 
 function setEgg(e) {
@@ -1173,23 +1049,19 @@ function setEgg(e) {
 function init() {
   try {
     load();
+    initFakePlayers();
 
-    // Asignar ID unico de jugador si no tiene
-    if (!G.fbId) {
-      G.fbId = 'p_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-      save();
-    }
-
-    // Nombre base
+    /* Nombre base */
     var nameInput = document.getElementById('rkName');
     nameInput.value = G.pname || 'Mi Base';
     nameInput.addEventListener('input', function() {
       G.pname = this.value.trim().slice(0,14) || 'Mi Base';
       save();
+      if (activeTab === 'rank') renderRank();
     });
     nameInput.addEventListener('click', function(e) { e.stopPropagation(); });
 
-    // Mute
+    /* Mute */
     var mb = document.getElementById('btnMute');
     mb.innerHTML = G.mut ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
     mb.onclick = function() {
@@ -1198,36 +1070,36 @@ function init() {
       save();
     };
 
-    // Reset
+    /* Reset */
     document.getElementById('btnReset').onclick = function() {
       if (confirm('Reiniciar todo el progreso?')) resetGame();
     };
 
-    // Tabs
+    /* Tabs */
     document.getElementById('navTabs').onclick = function(ev) {
       var btn = ev.target.closest('.tab');
       if (btn) setTab(btn.getAttribute('data-t'));
     };
 
-    // Eggs
+    /* Eggs */
     document.getElementById('navEggs').onclick = function(ev) {
       var btn = ev.target.closest('.egg');
       if (btn) setEgg(btn.getAttribute('data-e'));
     };
 
-    // Buy
+    /* Buy */
     document.getElementById('btnBuy').onclick = function() { openEgg(false); };
 
-    // Auto
+    /* Auto */
     document.getElementById('btnAuto').onclick = handleAuto;
 
-    // Rebirth
+    /* Rebirth */
     document.getElementById('btnRb').onclick = doRb;
 
-    // Close hatch
+    /* Close hatch */
     document.getElementById('oclose').onclick = closeHatch;
 
-    // Pet actions
+    /* Pet actions */
     document.getElementById('petList').onclick = function(ev) {
       var btn = ev.target.closest('[data-act]');
       if (!btn) return;
@@ -1237,12 +1109,9 @@ function init() {
       else if (act === 'sell') doSell(id);
     };
 
-    // Iniciar Firebase
-    initFirebase();
-
     updateUI();
 
-    // Tick del juego
+    /* Tick del juego cada segundo */
     var tickCount = 0;
     setInterval(function() {
       var inc = totInc();
@@ -1251,27 +1120,27 @@ function init() {
         G.te += inc;
         if (inc >= 10 && Math.random() < 0.15) floatM(inc);
       }
-      // Auto open (1 huevo silencioso por segundo)
+
+      /* Auto open (1 huevo silencioso por segundo) */
       if (G.autoOn && G.money >= G.pr[selEgg]) {
         openEgg(true);
       }
-      checkAch();
-      updateUI();
 
-      // Subir datos a Firebase cada 30 segundos
+      /* Actualizar jugadores simulados cada 3 segundos */
       tickCount++;
-      if (tickCount % 30 === 0) {
-        updateMyRanking();
+      if (tickCount % 3 === 0) {
+        tickFakePlayers();
+        if (activeTab === 'rank') renderRank();
       }
+
+      updateUI();
     }, 1000);
 
-    // Auto-guardado local cada 8 segundos
+    /* Auto-guardado local cada 8 segundos */
     setInterval(save, 8000);
 
   } catch(e) {
-    var d = document.getElementById('debug');
-    d.style.display = 'block';
-    d.textContent = 'INIT ERROR: ' + e.message;
+    console.error('Init error:', e);
   }
 }
 
