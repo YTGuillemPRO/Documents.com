@@ -1,0 +1,704 @@
+import React, { useState, useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { Zap, Shield, Crown, Crosshair, Home, ShoppingCart, Users, Play, Settings, ChevronDown, X } from 'lucide-react';
+
+const FortniteGame = () => {
+  const [currentScreen, setCurrentScreen] = useState('lobby');
+  const [gameStarted, setGameStarted] = useState(false);
+  const [landing, setLanding] = useState(true);
+  const [playerHealth, setPlayerHealth] = useState(100);
+  const [shield, setShield] = useState(0);
+  const [kills, setKills] = useState(0);
+  const [ammo, setAmmo] = useState(999);
+  const [selectedSkin, setSelectedSkin] = useState(0);
+  const [showStats, setShowStats] = useState(false);
+  const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const playerRef = useRef(null);
+  const enemiesRef = useRef([]);
+  const cameraRef = useRef(null);
+  const keysPressed = useRef({});
+  const gameStateRef = useRef({
+    playerPos: new THREE.Vector3(0, 10, 0),
+    playerHealth: 100,
+    playerShield: 0,
+    kills: 0,
+    inAir: true,
+    speed: 0.2,
+  });
+
+  const skins = [
+    { id: 0, name: 'Astra', color: '#6B46C1' },
+    { id: 1, name: 'Shadowborne', color: '#1F2937' },
+    { id: 2, name: 'Nexus', color: '#06B6D4' },
+    { id: 3, name: 'Inferno', color: '#DC2626' },
+    { id: 4, name: 'Frostbyte', color: '#3B82F6' },
+  ];
+
+  // Initialize Three.js scene
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    scene.fog = new THREE.Fog(0x87CEEB, 500, 1000);
+    sceneRef.current = scene;
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+    camera.position.set(0, 15, 30);
+    cameraRef.current = camera;
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Lights
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+    sunLight.position.set(100, 100, 100);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    scene.add(sunLight);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    // Create island terrain
+    const terrainGeometry = new THREE.ConeGeometry(150, 30, 32);
+    const terrainMaterial = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
+    const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+    terrain.castShadow = true;
+    terrain.receiveShadow = true;
+    scene.add(terrain);
+
+    // Add some buildings/obstacles
+    for (let i = 0; i < 15; i++) {
+      const buildingGeometry = new THREE.BoxGeometry(10, 20, 10);
+      const buildingMaterial = new THREE.MeshPhongMaterial({ color: Math.random() * 0xffffff });
+      const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+      building.position.set(
+        (Math.random() - 0.5) * 200,
+        10,
+        (Math.random() - 0.5) * 200
+      );
+      building.castShadow = true;
+      building.receiveShadow = true;
+      scene.add(building);
+    }
+
+    // Create player
+    const playerGeometry = new THREE.CapsuleGeometry(1, 3, 4, 8);
+    const playerMaterial = new THREE.MeshPhongMaterial({ color: skins[selectedSkin].color });
+    const player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.position.copy(gameStateRef.current.playerPos);
+    player.castShadow = true;
+    player.receiveShadow = true;
+    scene.add(player);
+    playerRef.current = player;
+
+    // Create enemies
+    for (let i = 0; i < 5; i++) {
+      const enemyGeometry = new THREE.CapsuleGeometry(1, 3, 4, 8);
+      const enemyMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6B6B });
+      const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
+      enemy.position.set(
+        (Math.random() - 0.5) * 150,
+        15,
+        (Math.random() - 0.5) * 150
+      );
+      enemy.castShadow = true;
+      enemy.receiveShadow = true;
+      enemy.userData = {
+        health: 100,
+        name: ['ShadowKnight', 'NovaGhost', 'IceQueen', 'FireLord', 'VoidWalker'][i],
+        velocity: new THREE.Vector3(),
+      };
+      scene.add(enemy);
+      enemiesRef.current.push(enemy);
+    }
+
+    // Keyboard controls
+    const handleKeyDown = (e) => {
+      keysPressed.current[e.key.toLowerCase()] = true;
+      if (e.key === ' ') handleShoot();
+    };
+    const handleKeyUp = (e) => {
+      keysPressed.current[e.key.toLowerCase()] = false;
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    const handleShoot = () => {
+      if (ammo > 0) {
+        setAmmo((a) => a - 1);
+        
+        // Raycast to check for hits
+        const raycaster = new THREE.Raycaster();
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        raycaster.set(camera.position, direction);
+
+        const intersects = raycaster.intersectObjects(enemiesRef.current);
+        if (intersects.length > 0) {
+          const hitEnemy = intersects[0].object;
+          hitEnemy.userData.health -= 25;
+          
+          if (hitEnemy.userData.health <= 0) {
+            scene.remove(hitEnemy);
+            enemiesRef.current = enemiesRef.current.filter((e) => e !== hitEnemy);
+            setKills((k) => k + 1);
+          }
+        }
+      }
+    };
+
+    // Game loop
+    const gameLoop = () => {
+      requestAnimationFrame(gameLoop);
+
+      // Player movement
+      const moveSpeed = 0.3;
+      if (keysPressed.current['w']) gameStateRef.current.playerPos.z -= moveSpeed;
+      if (keysPressed.current['s']) gameStateRef.current.playerPos.z += moveSpeed;
+      if (keysPressed.current['a']) gameStateRef.current.playerPos.x -= moveSpeed;
+      if (keysPressed.current['d']) gameStateRef.current.playerPos.x += moveSpeed;
+
+      // Gravity
+      if (gameStateRef.current.playerPos.y > 1) {
+        gameStateRef.current.playerPos.y -= 0.2;
+      } else {
+        gameStateRef.current.playerPos.y = 1;
+      }
+
+      // Constrain to island
+      const dist = gameStateRef.current.playerPos.length();
+      if (dist > 140) {
+        gameStateRef.current.playerPos.normalize().multiplyScalar(140);
+      }
+
+      if (playerRef.current) {
+        playerRef.current.position.copy(gameStateRef.current.playerPos);
+      }
+
+      // Update camera to follow player (3rd person)
+      const offset = new THREE.Vector3(0, 5, 20);
+      offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+      camera.position.lerp(
+        gameStateRef.current.playerPos.clone().add(offset),
+        0.1
+      );
+      camera.lookAt(gameStateRef.current.playerPos.clone().add(new THREE.Vector3(0, 2, 0)));
+
+      // Enemy AI
+      enemiesRef.current.forEach((enemy) => {
+        const direction = gameStateRef.current.playerPos.clone().sub(enemy.position);
+        const distance = direction.length();
+
+        if (distance < 100) {
+          direction.normalize().multiplyScalar(0.05);
+          enemy.position.add(direction);
+        }
+
+        // Simple gravity for enemies
+        if (enemy.position.y > 1) {
+          enemy.position.y -= 0.2;
+        } else {
+          enemy.position.y = 1;
+        }
+
+        // Constrain enemies to island
+        const enemyDist = enemy.position.length();
+        if (enemyDist > 140) {
+          enemy.position.normalize().multiplyScalar(140);
+        }
+
+        // Damage from enemy contact
+        const contactDist = gameStateRef.current.playerPos.distanceTo(enemy.position);
+        if (contactDist < 3) {
+          setPlayerHealth((h) => Math.max(0, h - 0.5));
+        }
+      });
+
+      renderer.render(scene, camera);
+    };
+
+    gameLoop();
+
+    // Handle window resize
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('resize', handleResize);
+      renderer.dispose();
+      if (mountRef.current) mountRef.current.removeChild(renderer.domElement);
+    };
+  }, [gameStarted, selectedSkin, ammo]);
+
+  const handleQuitGame = () => {
+    setGameStarted(false);
+    setLanding(true);
+    setPlayerHealth(100);
+    setShield(0);
+    setKills(0);
+    setAmmo(999);
+    setCurrentScreen('lobby');
+  };
+
+  // 3D Game View
+  if (gameStarted) {
+    return (
+      <div className="w-full h-screen bg-black text-white overflow-hidden">
+        {/* Three.js Canvas */}
+        <div ref={mountRef} className="w-full h-full" />
+
+        {/* HUD Overlay */}
+        <div className="fixed inset-0 pointer-events-none">
+          {/* Top Left - Health & Shield */}
+          <div className="absolute top-6 left-6">
+            <div className="bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-cyan-500 border-opacity-50 w-72">
+              <div className="text-xs text-cyan-400 font-bold mb-3">HEALTH</div>
+              <div className="flex gap-2 mb-4">
+                <div className="flex-1">
+                  <div className="h-6 bg-gray-800 rounded border border-red-500 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all"
+                      style={{ width: `${Math.max(0, playerHealth)}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">{Math.max(0, Math.floor(playerHealth))}/100</div>
+                </div>
+              </div>
+
+              <div className="text-xs text-blue-400 font-bold mb-2">SHIELD</div>
+              <div className="h-4 bg-gray-800 rounded border border-blue-500 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+                  style={{ width: `${shield}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Top Right - Ammo & Stats */}
+          <div className="absolute top-6 right-6">
+            <div className="bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-purple-500 border-opacity-50 text-right">
+              <div className="text-4xl font-black text-purple-400">{kills}</div>
+              <div className="text-xs text-purple-300 font-bold">ELIMINATIONS</div>
+            </div>
+
+            <div className="mt-3 bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-yellow-500 border-opacity-50 text-right">
+              <div className="text-2xl font-black text-yellow-400">{ammo}</div>
+              <div className="text-xs text-yellow-300 font-bold">AMMO</div>
+            </div>
+          </div>
+
+          {/* Center - Crosshair */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+            <Crosshair className="w-8 h-8 text-cyan-400 opacity-60" />
+          </div>
+
+          {/* Bottom - Controls */}
+          <div className="absolute bottom-6 left-6 bg-black bg-opacity-70 backdrop-blur-sm p-3 rounded-lg border border-cyan-500 border-opacity-50 text-xs text-cyan-300">
+            <div className="font-bold mb-2">CONTROLS</div>
+            <div>W/A/S/D - Move | SPACE - Shoot</div>
+          </div>
+
+          {/* Bottom Right - Quit Button */}
+          <button
+            onClick={handleQuitGame}
+            className="absolute bottom-6 right-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold text-white transition-all pointer-events-auto flex items-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            QUIT
+          </button>
+
+          {/* Death Screen */}
+          {playerHealth <= 0 && (
+            <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center pointer-events-auto">
+              <div className="text-center">
+                <div className="text-6xl font-black text-red-500 mb-4 animate-pulse">ELIMINATED</div>
+                <div className="text-2xl text-gray-300 mb-6">Final Score: {kills} Eliminations</div>
+                <button
+                  onClick={handleQuitGame}
+                  className="px-10 py-4 bg-cyan-500 hover:bg-cyan-600 rounded-lg font-bold text-white text-lg transition-all"
+                >
+                  RETURN TO LOBBY
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white font-sans overflow-x-hidden">
+      {/* Animated background */}
+      <div className="fixed inset-0 -z-10 opacity-20">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500 rounded-full filter blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl animate-pulse" />
+      </div>
+
+      {/* Header */}
+      <header className="border-b border-cyan-500 border-opacity-30 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-bold text-sm">
+              F
+            </div>
+            <div>
+              <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                FORTNITE 3D
+              </h1>
+              <p className="text-xs text-cyan-300">ULTIMATE BATTLE ROYALE</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button className="p-2 hover:bg-slate-700 rounded-lg transition">
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <div className="border-b border-cyan-500 border-opacity-30 bg-slate-900 bg-opacity-50 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex gap-6">
+          {[
+            { id: 'lobby', label: 'LOBBY', icon: Home },
+            { id: 'battle-pass', label: 'BATTLE PASS', icon: Crown },
+            { id: 'shop', label: 'ITEM SHOP', icon: ShoppingCart },
+            { id: 'squad', label: 'SQUAD', icon: Users },
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setCurrentScreen(id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                currentScreen === id
+                  ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold'
+                  : 'text-gray-300 hover:text-cyan-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* LOBBY SCREEN */}
+        {currentScreen === 'lobby' && (
+          <div className="space-y-8">
+            {/* Featured */}
+            <section className="relative overflow-hidden rounded-xl border border-cyan-500 border-opacity-30 bg-gradient-to-r from-slate-800 to-slate-900 p-8">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full filter blur-3xl" />
+              </div>
+              <div className="relative z-10">
+                <p className="text-cyan-400 text-sm font-bold mb-2">NOW AVAILABLE</p>
+                <h2 className="text-4xl font-black mb-4 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                  {skins[selectedSkin].name}
+                </h2>
+                <p className="text-gray-300 mb-6">Featured legendary outfit</p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setCurrentScreen('shop')}
+                    className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold hover:opacity-90 transition flex items-center gap-2"
+                  >
+                    <ShoppingCart className="w-5 h-5" /> VIEW SHOP
+                  </button>
+                  <button className="px-8 py-3 border-2 border-cyan-500 rounded-lg font-bold hover:bg-cyan-500 hover:bg-opacity-10 transition">
+                    PREVIEW
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Play Section */}
+            <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-cyan-500 border-opacity-30 p-8">
+              <h3 className="text-2xl font-black mb-6">READY TO FIGHT?</h3>
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { mode: 'Solo', players: '100', color: 'from-cyan-500 to-blue-600' },
+                  { mode: 'Duo', players: '50', color: 'from-purple-500 to-pink-600' },
+                  { mode: 'Squad', players: '25', color: 'from-orange-500 to-red-600' },
+                ].map((mode) => (
+                  <button
+                    key={mode.mode}
+                    onClick={() => {
+                      setGameStarted(true);
+                      setPlayerHealth(100);
+                      setKills(0);
+                    }}
+                    className={`bg-gradient-to-br ${mode.color} p-6 rounded-lg font-bold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all transform hover:scale-105`}
+                  >
+                    <Play className="w-6 h-6 mx-auto mb-2" />
+                    <div className="text-lg">{mode.mode}</div>
+                    <div className="text-sm opacity-90">{mode.players} Players</div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Stats */}
+            <section className="grid grid-cols-4 gap-4">
+              {[
+                { label: 'Level', value: playerLevel, icon: Shield },
+                { label: 'Matches Played', value: '47', icon: Users },
+                { label: 'Win Rate', value: '12%', icon: Crown },
+                { label: 'Total Kills', value: '156', icon: Zap },
+              ].map((stat, i) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={i}
+                    className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-6 border border-cyan-500 border-opacity-30 hover:border-opacity-100 transition"
+                  >
+                    <Icon className="w-6 h-6 text-cyan-400 mb-3" />
+                    <div className="text-3xl font-black">{stat.value}</div>
+                    <div className="text-gray-400 text-sm">{stat.label}</div>
+                  </div>
+                );
+              })}
+            </section>
+          </div>
+        )}
+
+        {/* BATTLE PASS SCREEN */}
+        {currentScreen === 'battle-pass' && (
+          <div>
+            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+              CHAPTER 6 BATTLE PASS
+            </h2>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              {/* Progress */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-cyan-500 border-opacity-30">
+                <h3 className="text-xl font-bold mb-4">YOUR PROGRESS</h3>
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-300">Tier {battlePassTier}</span>
+                    <span className="text-cyan-400 font-bold">100 Tiers Available</span>
+                  </div>
+                  <div className="w-full h-8 bg-slate-700 rounded-lg overflow-hidden border border-cyan-500 border-opacity-50">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all"
+                      style={{ width: `${(battlePassTier / 100) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBattlePassTier(Math.min(100, battlePassTier + 5))}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold hover:opacity-90 transition"
+                >
+                  LEVEL UP +5 TIERS (Demo)
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-cyan-500 border-opacity-30">
+                <h3 className="text-xl font-bold mb-4">SEASON INFO</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Season Duration</span>
+                    <span className="text-cyan-300 font-bold">45 Days</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Pass Cost</span>
+                    <span className="text-cyan-300 font-bold">950 V-Bucks</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Total Rewards</span>
+                    <span className="text-cyan-300 font-bold">100+ Items</span>
+                  </div>
+                  <div className="flex justify-between pt-3 border-t border-cyan-500 border-opacity-30">
+                    <span className="text-gray-400">Days Remaining</span>
+                    <span className="text-purple-300 font-bold">28 Days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rewards Grid */}
+            <h3 className="text-2xl font-bold mb-4">TIER REWARDS</h3>
+            <div className="grid grid-cols-5 gap-4">
+              {battlePassRewards.map((reward) => (
+                <div
+                  key={reward.tier}
+                  className={`relative rounded-lg p-4 text-center border-2 transition-all ${
+                    battlePassTier >= reward.tier
+                      ? 'border-cyan-500 bg-gradient-to-b from-cyan-500 from-10% to-slate-900'
+                      : 'border-slate-600 bg-slate-800 opacity-50'
+                  }`}
+                >
+                  <div className="text-xs font-bold text-gray-400 mb-2">TIER {reward.tier}</div>
+                  <div className={`text-sm font-bold mb-2 ${battlePassTier >= reward.tier ? 'text-yellow-300' : 'text-gray-300'}`}>
+                    {reward.item}
+                  </div>
+                  <div className="text-xs text-purple-300 uppercase">{reward.rarity}</div>
+                  {battlePassTier >= reward.tier && (
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold">
+                      ✓
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SHOP SCREEN */}
+        {currentScreen === 'shop' && (
+          <div>
+            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+              ITEM SHOP
+            </h2>
+
+            <div className="mb-8">
+              <h3 className="text-xl font-bold mb-4">OUTFITS</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {skins.map((skin) => (
+                  <div
+                    key={skin.id}
+                    onClick={() => setSelectedSkin(skin.id)}
+                    className={`relative rounded-lg overflow-hidden cursor-pointer transition-all transform hover:scale-105 border-2 ${
+                      selectedSkin === skin.id ? 'border-cyan-400 shadow-lg shadow-cyan-500/50' : 'border-slate-600'
+                    }`}
+                  >
+                    {/* Skin Preview */}
+                    <div className={`bg-gradient-to-br ${skin.color} aspect-square flex items-center justify-center relative overflow-hidden group`}>
+                      <div className="absolute inset-0 opacity-20">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+                      </div>
+                      <div className="relative z-10 text-center">
+                        <div className="text-4xl mb-2">👤</div>
+                        <div className="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition">PREVIEW</div>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="bg-slate-900 p-3 border-t border-slate-700">
+                      <div className="font-bold text-sm mb-1">{skin.name}</div>
+                      <div className="text-xs text-purple-300 uppercase mb-2">{skin.rarity}</div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold flex items-center gap-1">
+                          <Zap className="w-4 h-4 text-yellow-400" />
+                          {skin.price}
+                        </span>
+                        <button className="px-3 py-1 bg-cyan-500 hover:bg-cyan-600 rounded text-xs font-bold transition">
+                          BUY
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Back Blings Section */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">BACK BLINGS</h3>
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div
+                    key={item}
+                    className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-4 border border-slate-600 hover:border-purple-500 transition text-center"
+                  >
+                    <div className="text-3xl mb-2">🎒</div>
+                    <div className="text-xs font-bold mb-1">Cosmic Pack {item}</div>
+                    <div className="text-xs text-yellow-400 flex items-center justify-center gap-1 mb-2">
+                      <Zap className="w-3 h-3" /> 800
+                    </div>
+                    <button className="w-full px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs font-bold transition">
+                      BUY
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SQUAD SCREEN */}
+        {currentScreen === 'squad' && (
+          <div>
+            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+              SQUAD
+            </h2>
+
+            <div className="grid grid-cols-4 gap-4">
+              {[
+                { username: 'YourName', level: 45, status: 'Ready', skin: 'Astra' },
+                { username: 'ShadowKnight', level: 52, status: 'Playing', skin: 'Shadowborne' },
+                { username: 'NovaGhost', level: 38, status: 'Idle', skin: 'Nexus' },
+                { username: 'FrostKing', level: 41, status: 'Offline', skin: 'Frostbyte' },
+              ].map((member, i) => (
+                <div
+                  key={i}
+                  className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-6 border border-cyan-500 border-opacity-30 hover:border-opacity-100 transition"
+                >
+                  <div className="text-4xl text-center mb-3">👤</div>
+                  <div className="font-bold text-center mb-2">{member.username}</div>
+                  <div className="text-sm text-gray-400 text-center mb-3">{member.skin}</div>
+
+                  <div className="flex justify-between text-xs mb-3 pb-3 border-b border-slate-600">
+                    <span>Level {member.level}</span>
+                    <span
+                      className={`font-bold ${
+                        member.status === 'Ready'
+                          ? 'text-green-400'
+                          : member.status === 'Playing'
+                            ? 'text-yellow-400'
+                            : member.status === 'Idle'
+                              ? 'text-gray-400'
+                              : 'text-red-400'
+                      }`}
+                    >
+                      {member.status}
+                    </span>
+                  </div>
+
+                  <button className="w-full py-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded font-bold text-sm hover:opacity-90 transition">
+                    {i === 0 ? 'YOU' : 'INVITE'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-cyan-500 border-opacity-30 bg-slate-900 bg-opacity-50 backdrop-blur mt-16">
+        <div className="max-w-7xl mx-auto px-6 py-8 text-center text-sm text-gray-400">
+          <p>© 2024 FORTNITE BATTLE ARENA | Official Game Engine Demo</p>
+        </div>
+      </footer>
+
+      {/* Keyboard hint for gameplay */}
+      <div className="fixed bottom-4 left-4 text-xs text-gray-400 pointer-events-none">
+        Press SPACEBAR to shoot during gameplay
+      </div>
+    </div>
+  );
+};
+
+export default FortniteGame;
