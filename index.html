@@ -103,21 +103,74 @@
       background: linear-gradient(135deg, #1a1a2e, #16213e);
     }
 
-    /* LIKE BUTTON STYLES */
+    /* ========== LIKE BUTTON MEJORADO ========== */
     .like-btn {
-      position: absolute; top: 12px; left: 12px; z-index: 20;
-      background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 50px;
-      padding: 6px 10px; display: flex; align-items: center; gap: 5px;
-      cursor: pointer; transition: all 0.2s ease; color: #94a3b8;
+      position: absolute; top: 10px; left: 10px; z-index: 30;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 50px;
+      padding: 7px 12px; display: flex; align-items: center; gap: 6px;
+      cursor: pointer; transition: all 0.25s ease; color: #94a3b8;
+      font-family: 'Inter', sans-serif; outline: none;
+      -webkit-tap-highlight-color: transparent;
     }
-    .like-btn:hover { background: rgba(0,0,0,0.7); border-color: rgba(255,255,255,0.2); transform: scale(1.05); }
+    .like-btn:hover:not(.loading) {
+      background: rgba(0,0,0,0.75);
+      border-color: rgba(255,255,255,0.25);
+      transform: scale(1.08);
+    }
+    .like-btn:active:not(.loading) { transform: scale(0.95); }
     .like-btn .icon-full { display: none; color: #ef4444; }
     .like-btn .icon-empty { display: inline-block; }
     .like-btn.liked .icon-full { display: inline-block; }
     .like-btn.liked .icon-empty { display: none; }
-    .like-btn.liked { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
-    .like-count { font-size: 12px; font-weight: 700; }
+    .like-btn.liked {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.12);
+    }
+    .like-btn.liked:hover:not(.loading) {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+    .like-count { font-size: 12px; font-weight: 700; min-width: 8px; }
+
+    /* Estado de carga del botón */
+    .like-btn.loading {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .like-btn.loading::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      width: 14px; height: 14px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.35); }
+      60% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+    .like-btn.pop-anim {
+      animation: heartPop 0.4s ease-out;
+    }
+
+    .like-particle {
+      position: absolute; pointer-events: none; z-index: 40;
+      font-size: 16px; animation: floatUp 0.8s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-40px) scale(0.5); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 1s linear infinite; }
 
     .cat-pill {
       padding: 8px 20px; border-radius: 100px; font-size: 13px;
@@ -127,6 +180,7 @@
     }
     .cat-pill:hover { border-color: rgba(108,92,231,0.3); color: #e2e8f0; }
     .cat-pill.active { background: #6c5ce7; border-color: #6c5ce7; color: white; }
+    .cat-pill.active-fav { background: #ef4444; border-color: #ef4444; color: white; }
 
     #discord-floating-btn {
       position: fixed; bottom: 24px; right: 24px;
@@ -165,6 +219,7 @@
       font-size: 14px; transform: translateX(120%);
       transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex; align-items: center; gap: 10px;
     }
     .toast.show { transform: translateX(0); }
 
@@ -234,11 +289,61 @@
       background-size: 200px 100%;
       animation: shimmer 1.5s ease-in-out infinite;
     }
+
+    .fav-empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; text-align: center;
+    }
+    .fav-empty-state .icon-wrap {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px); z-index: 99998;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .confirm-overlay.active { opacity: 1; pointer-events: all; }
+    .confirm-box {
+      background: #12121a; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 28px; width: 90%; max-width: 380px;
+      text-align: center; transform: scale(0.95); transition: transform 0.3s ease;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    }
+    .confirm-overlay.active .confirm-box { transform: scale(1); }
   </style>
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
+
+<!-- Indicador de carga inicial -->
+<div id="firebase-loading" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99997;background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.3);backdrop-filter:blur(10px);padding:10px 20px;border-radius:100px;font-size:13px;color:#a29bfe;display:flex;align-items:center;gap:8px;transition:all 0.5s ease;">
+  <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+    <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"></path>
+  </svg>
+  <span id="loading-text">Conectando con el servidor...</span>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirm-overlay" class="confirm-overlay">
+  <div class="confirm-box">
+    <div class="w-14 h-14 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center mx-auto mb-4">
+      <span class="iconify text-yellow-400" data-icon="mdi:alert-outline" data-width="28"></span>
+    </div>
+    <h3 class="text-lg font-bold text-white mb-2">¿Estás en casa?</h3>
+    <p class="text-sm text-gray-400 mb-6 leading-relaxed">Esta web es para jugar en casa. Si estás en un colegio, entras asumiendo tu responsabilidad.</p>
+    <div class="flex gap-3">
+      <button id="confirm-cancel" class="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-semibold text-gray-400 hover:text-red-400 hover:border-red-400/30 transition-all">Salir</button>
+      <button id="confirm-ok" class="flex-1 py-2.5 rounded-lg bg-[#6c5ce7] text-sm font-semibold text-white hover:bg-[#5a4bd1] transition-all">Entendido</button>
+    </div>
+  </div>
+</div>
 
 <a href="https://discord.gg/ngEsNyDCpz" target="_blank" id="discord-floating-btn">
   <svg width="22" height="22" viewBox="0 0 127.14 96.36" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -374,6 +479,7 @@
   </div>
   <div class="flex items-center gap-2 overflow-x-auto pb-2 justify-center flex-wrap" id="category-container">
     <button class="cat-pill active" data-category="all">🎮 Todos</button>
+    <button class="cat-pill" data-category="favoritos">❤️ Favoritos</button>
     <button class="cat-pill" data-category="accion">⚔️ Acción</button>
     <button class="cat-pill" data-category="deportes">⚽ Deportes</button>
     <button class="cat-pill" data-category="carreras">🏎️ Carreras</button>
@@ -391,6 +497,15 @@
     <span class="iconify text-gray-600 mb-4 mx-auto" data-icon="mdi:gamepad-variant-outline" data-width="64"></span>
     <p class="text-gray-500 text-lg">No se encontraron juegos</p>
     <p class="text-gray-600 text-sm mt-1">Intenta con otra búsqueda o categoría</p>
+  </div>
+  <div id="fav-empty" class="hidden">
+    <div class="fav-empty-state">
+      <div class="icon-wrap">
+        <span class="iconify text-red-400" data-icon="mdi:heart-outline" data-width="36"></span>
+      </div>
+      <p class="text-gray-400 text-lg font-semibold mb-1">Sin favoritos aún</p>
+      <p class="text-gray-600 text-sm">Dale al ❤️ en cualquier juego para guardarlo aquí</p>
+    </div>
   </div>
 </section>
 
@@ -411,6 +526,9 @@
 </footer>
 
 <script>
+// ============================================
+// DATOS DE JUEGOS
+// ============================================
 const GAMES = [
   { name: "Pets and Money", path: "Pets and Money/index.html", icon: "mdi:paw", color: "#f59e0b", category: "casual", tag: "Popular" },
   { name: "No cliques el Botón", path: "juego2/index.html", icon: "mdi:cursor-default-click", color: "#ef4444", category: "casual", tag: "Reto" },
@@ -432,7 +550,7 @@ const GAMES = [
   { name: "AETHER STRANDED", path: "AETHER STRANDED/index.html", icon: "mdi:weather-dust", color: "#6366f1", category: "accion", tag: "Nuevo" },
   { name: "Instagram", path: "instagram/index.html", icon: "mdi:instagram", color: "#e4405f", category: "social", tag: "" },
   { name: "Studio", path: "fl studio/index.html", icon: "mdi:music-circle", color: "#f97316", category: "musica", tag: "" },
-  { name: "Spotify", path: "Spotify/index.html", icon: "mdi:music-circle", color: "#f97316", category: "musica", tag: "" },
+  { name: "Spotify-Proximamente,solo test", path: "Spotify/index.html", icon: "mdi:music-circle", color: "#f97316", category: "musica", tag: "" },
   { name: "Roblox", path: "Roblox/index.html", icon: "mdi:blocks", color: "#e11d48", category: "accion", tag: "Top" },
   { name: "Un Juego Más", path: "One More Game/index.html", icon: "mdi:plus-circle", color: "#8b5cf6", category: "casual", tag: "" },
   { name: "Clash Royale", path: "Clash Royale/index.html", icon: "mdi:crown", color: "#3b82f6", category: "estrategia", tag: "Popular" },
@@ -451,44 +569,131 @@ const GAMES = [
   { name: "GTA", path: "GTA/index.html", icon: "mdi:car-side", color: "#84cc16", category: "accion", tag: "Top" }
 ];
 
-// Helper to create URL friendly IDs for database keys
 GAMES.forEach(g => g.id = g.name.replace(/[^a-zA-Z0-9]/g, '_'));
 
+// ============================================
+// SISTEMA DE ESTADO GLOBAL ROBUSTO
+// ============================================
+
+const AppState = {
+  firebaseReady: false,
+  authReady: false,
+  userFavs: {},
+  currentUid: null,
+  
+  isFullyReady() {
+    return this.firebaseReady && this.authReady;
+  },
+  
+  markFirebaseReady() {
+    this.firebaseReady = true;
+    console.log('✅ Firebase Ready:', new Date().toLocaleTimeString());
+    this.checkAndEnableUI();
+  },
+  
+  markAuthReady() {
+    this.authReady = true;
+    console.log('✅ Auth Ready:', new Date().toLocaleTimeString());
+    this.checkAndEnableUI();
+  },
+  
+  checkAndEnableUI() {
+    if (this.isFullyReady()) {
+      console.log('🎉 Sistema COMPLETAMENTE listo');
+      
+      // Ocultar indicador de carga
+      const loadingEl = document.getElementById('firebase-loading');
+      if (loadingEl) {
+        loadingEl.style.opacity = '0';
+        loadingEl.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => {
+          if (loadingEl.parentNode) loadingEl.remove();
+        }, 500);
+      }
+      
+      // Habilitar botones de like
+      document.querySelectorAll('.like-btn.loading').forEach(btn => {
+        btn.classList.remove('loading');
+      });
+      
+      // Evento personalizado
+      window.dispatchEvent(new CustomEvent('app:ready'));
+    }
+  },
+  
+  updateFavs(favs) {
+    this.userFavs = favs || {};
+    window._userFavs = this.userFavs;
+    if (window.syncLikesUI) window.syncLikesUI();
+  }
+};
+
+window.AppState = AppState;
+window._userFavs = AppState.userFavs;
+window._currentUid = null;
+
+// ============================================
+// ELEMENTOS DEL DOM
+// ============================================
 const grid = document.getElementById('games-grid');
 const noResults = document.getElementById('no-results');
+const favEmpty = document.getElementById('fav-empty');
 
+// ============================================
+// RENDERIZADO DE JUEGOS
+// ============================================
 function renderGames(filter = 'all', search = '') {
   grid.innerHTML = '';
-  const filtered = GAMES.filter(g => {
-    const catMatch = filter === 'all' || g.category === filter;
+  noResults.classList.add('hidden');
+  favEmpty.classList.add('hidden');
+  
+  const addLoadingClass = !AppState.isFullyReady();
+
+  let filtered = GAMES.filter(g => {
+    const catMatch = filter === 'all' || filter === 'favoritos' || g.category === filter;
     const searchMatch = g.name.toLowerCase().includes(search.toLowerCase());
     return catMatch && searchMatch;
   });
-  if (filtered.length === 0) { noResults.classList.remove('hidden'); return; }
-  noResults.classList.add('hidden');
-  
+
+  if (filter === 'favoritos') {
+    filtered = GAMES.filter(g => AppState.userFavs[g.id]);
+  }
+
+  if (filtered.length === 0) {
+    if (filter === 'favoritos') {
+      favEmpty.classList.remove('hidden');
+    } else {
+      noResults.classList.remove('hidden');
+    }
+    return;
+  }
+
   filtered.forEach((game, i) => {
     const card = document.createElement('div');
     card.className = 'game-card fade-up';
     card.style.transitionDelay = `${i * 40}ms`;
-    
+    card.dataset.path = game.path;
+    card.dataset.gameId = game.id;
+
+    const isLiked = !!AppState.userFavs[game.id];
+
     const tagHTML = game.tag
       ? `<span class="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider" style="background:${game.color}22;color:${game.color};border:1px solid ${game.color}44">${game.tag}</span>`
       : '';
 
     card.innerHTML = `
-      <div class="game-thumb" onclick="window.location.href='${game.path}'">
+      <div class="game-thumb">
         <div class="game-thumb-bg" style="background: linear-gradient(135deg, ${game.color}15, ${game.color}05);"></div>
         ${tagHTML}
-        <button class="like-btn" data-game-id="${game.id}" onclick="event.stopPropagation(); window.handleLikeToggle('${game.id}')">
-          <span class="iconify icon-empty" data-icon="mdi:heart-outline" data-width="18"></span>
-          <span class="iconify icon-full" data-icon="mdi:heart" data-width="18"></span>
+        <button class="like-btn ${isLiked ? 'liked' : ''} ${addLoadingClass ? 'loading' : ''}" data-game-id="${game.id}" type="button" aria-label="Dar like a ${game.name}">
+          <span class="iconify icon-empty" data-icon="mdi:heart-outline" data-width="20"></span>
+          <span class="iconify icon-full" data-icon="mdi:heart" data-width="20"></span>
           <span class="like-count">0</span>
         </button>
         <span class="iconify relative z-10 drop-shadow-lg" data-icon="${game.icon}" data-width="56" style="color:${game.color}"></span>
       </div>
       <div class="card-glow"></div>
-      <div class="relative p-4" onclick="window.location.href='${game.path}'">
+      <div class="relative p-4">
         <h3 class="text-sm font-semibold text-white mb-1 truncate">${game.name}</h3>
         <span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:${game.color}15;color:${game.color}">${game.category.charAt(0).toUpperCase() + game.category.slice(1)}</span>
       </div>
@@ -500,40 +705,140 @@ function renderGames(filter = 'all', search = '') {
     document.querySelectorAll('.fade-up').forEach(el => setTimeout(() => el.classList.add('visible'), 50));
   });
 
-  // Trigger initial UI sync for likes if function exists
   if (window.syncLikesUI) window.syncLikesUI();
 }
 
+// ============================================
+// EVENT DELEGATION - CLICK HANDLER
+// ============================================
+grid.addEventListener('click', (e) => {
+  const likeBtn = e.target.closest('.like-btn');
+  if (likeBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    const gameId = likeBtn.dataset.gameId;
+    
+    console.log('📍 Click like:', gameId, {
+      fullyReady: AppState.isFullyReady(),
+      firebaseReady: AppState.firebaseReady,
+      authReady: AppState.authReady,
+      uid: AppState.currentUid,
+      hasHandler: typeof window.handleLikeToggle === 'function'
+    });
+    
+    if (!AppState.isFullyReady()) {
+      if (!AppState.firebaseReady) {
+        window.showToast("🔄 Conectando con Firebase...", "info");
+      } else if (!AppState.authReady) {
+        window.showToast("⏳ Verificando autenticación...", "info");
+      }
+      
+      likeBtn.classList.add('loading');
+      setTimeout(() => {
+        if (AppState.isFullyReady()) {
+          likeBtn.classList.remove('loading');
+        }
+      }, 2000);
+      return;
+    }
+    
+    if (!AppState.currentUid) {
+      window.showToast("Inicia sesión para dar like ❤️", "error");
+      document.getElementById('auth-overlay').classList.add("active");
+      return;
+    }
+    
+    if (typeof window.handleLikeToggle === 'function') {
+      window.handleLikeToggle(gameId, likeBtn);
+    } else {
+      window.showToast("❌ Error: Sistema no disponible", "error");
+      console.error('handleLikeToggle no es función');
+    }
+    return;
+  }
+
+  const card = e.target.closest('.game-card');
+  if (card && card.dataset.path) {
+    window.location.href = card.dataset.path;
+  }
+});
+
+// ============================================
+// FILTROS Y BÚSQUEDA
+// ============================================
 let activeCategory = 'all';
 document.getElementById('category-container').addEventListener('click', (e) => {
   const pill = e.target.closest('.cat-pill');
   if (!pill) return;
-  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    p.classList.remove('active', 'active-fav');
+  });
+  if (pill.dataset.category === 'favoritos') {
+    pill.classList.add('active-fav');
+  } else {
+    pill.classList.add('active');
+  }
   activeCategory = pill.dataset.category;
   renderGames(activeCategory, document.getElementById('search-input').value);
 });
-document.getElementById('search-input').addEventListener('input', (e) => renderGames(activeCategory, e.target.value));
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  renderGames(activeCategory, e.target.value);
+});
+
 renderGames();
 
+// ============================================
+// AUTH OVERLAY
+// ============================================
 const authOverlay = document.getElementById('auth-overlay');
 document.getElementById('btn-open-auth').addEventListener('click', () => authOverlay.classList.add('active'));
 document.getElementById('btn-close-auth').addEventListener('click', () => authOverlay.classList.remove('active'));
-authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) authOverlay.classList.remove('active'); });
+authOverlay.addEventListener('click', (e) => { 
+  if (e.target === authOverlay) authOverlay.classList.remove('active'); 
+});
 
+// ============================================
+// TOAST SYSTEM
+// ============================================
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast');
+  const icons = { info: 'mdi:information', error: 'mdi:alert-circle', success: 'mdi:check-circle' };
   const colors = { info: '#6c5ce7', error: '#ef4444', success: '#10b981' };
-  toast.innerHTML = `<span style="color:${colors[type]}">${msg}</span>`;
+  toast.innerHTML = `
+    <span class="iconify" data-icon="${icons[type]}" data-width="18" style="color:${colors[type]};flex-shrink:0"></span>
+    <span>${msg}</span>
+  `;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3500);
 }
-
-// Expose globally so Firebase module can use it
 window.showToast = showToast;
+
+// ============================================
+// CONFIRM DIALOG
+// ============================================
+const confirmOverlay = document.getElementById('confirm-overlay');
+let confirmResolve = null;
+
+function showConfirm() {
+  return new Promise((resolve) => {
+    confirmResolve = resolve;
+    confirmOverlay.classList.add('active');
+  });
+}
+window.showConfirm = showConfirm;
+
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  confirmOverlay.classList.remove('active');
+  if (confirmResolve) confirmResolve(true);
+});
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  confirmOverlay.classList.remove('active');
+  if (confirmResolve) confirmResolve(false);
+});
 </script>
 
-<!-- FIREBASE -->
+<!-- FIREBASE MODULE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -541,9 +846,14 @@ import {
   createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
-  getDatabase, ref, set, onValue, onDisconnect, push, runTransaction, get
+  getDatabase, ref, set, onValue, onDisconnect, push, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+console.log('🔥 Inicializando Firebase...');
+
+// ==========================================
+// CONFIGURACIÓN
+// ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
   authDomain: "inici-de-sessio.firebaseapp.com",
@@ -567,79 +877,118 @@ const authOverlay = document.getElementById("auth-overlay");
 
 const BANNED_EMAILS = ["bcarrere@ietemple.cat", "gvarela@ietemple.cat"];
 
-// ==========================================
-//  ONLINE USERS (Presence System)
-// ==========================================
-const myPresenceRef = push(ref(db, 'presence/online'));
-const connectedRef = ref(db, '.info/connected');
-
-onValue(connectedRef, (snap) => {
-  if (snap.val() === true) {
-    myPresenceRef.onDisconnect().remove();
-    set(myPresenceRef, { timestamp: Date.now() });
-  }
-});
-
-const onlineCountEl = document.getElementById('online-count');
-const onlineRef = ref(db, 'presence/online');
-
-onValue(onlineRef, (snap) => {
-  if (snap.exists()) {
-    const data = snap.val();
-    const now = Date.now();
-    const staleThreshold = 90000;
-    let staleCount = 0;
-    for (const key in data) {
-      if (data[key].timestamp && (now - data[key].timestamp > staleThreshold)) {
-        set(ref(db, `presence/online/${key}`), null);
-        staleCount++;
+// TIMEOUT DE SEGURIDAD (8 segundos)
+setTimeout(() => {
+  if (!window.AppState.isFullyReady()) {
+    console.warn('⚠️ Timeout de seguridad activado');
+    window.AppState.markFirebaseReady();
+    window.AppState.markAuthReady();
+    
+    const loadingText = document.getElementById('loading-text');
+    if (loadingText) loadingText.textContent = 'Modo offline - Funciones limitadas';
+    
+    setTimeout(() => {
+      const loadingEl = document.getElementById('firebase-loading');
+      if (loadingEl && loadingEl.parentNode) {
+        loadingEl.style.opacity = '0';
+        setTimeout(() => loadingEl.remove(), 500);
       }
-    }
-    onlineCountEl.textContent = Math.max(0, Object.keys(data).length - staleCount);
-  } else {
-    onlineCountEl.textContent = '0';
+    }, 2000);
   }
-});
+}, 8000);
 
 // ==========================================
-//  TOTAL VISITS
+// PRESENCE SYSTEM
 // ==========================================
-const visitsCountEl = document.getElementById('visits-count');
-const visitsRef = ref(db, 'stats/totalVisits');
-const VISIT_FLAG = 'gv_visited';
+let myPresenceRef = null;
 
-if (!sessionStorage.getItem(VISIT_FLAG)) {
-  runTransaction(visitsRef, (current) => { return (current || 0) + 1; }).catch(() => {});
-  sessionStorage.setItem(VISIT_FLAG, '1');
+try {
+  myPresenceRef = push(ref(db, 'presence/online'));
+  const connectedRef = ref(db, '.info/connected');
+
+  onValue(connectedRef, (snap) => {
+    if (snap.val() === true && myPresenceRef) {
+      myPresenceRef.onDisconnect().remove();
+      set(myPresenceRef, { timestamp: Date.now() });
+    }
+  });
+
+  const onlineCountEl = document.getElementById('online-count');
+  const onlineRef = ref(db, 'presence/online');
+
+  onValue(onlineRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.val();
+      const now = Date.now();
+      let staleCount = 0;
+      for (const key in data) {
+        if (data[key].timestamp && (now - data[key].timestamp > 90000)) {
+          set(ref(db, `presence/online/${key}`), null);
+          staleCount++;
+        }
+      }
+      onlineCountEl.textContent = Math.max(0, Object.keys(data).length - staleCount);
+    } else {
+      onlineCountEl.textContent = '0';
+    }
+  });
+} catch (err) {
+  console.error('Error en presence system:', err);
 }
 
-onValue(visitsRef, (snap) => {
-  const val = snap.val() || 0;
-  visitsCountEl.textContent = val.toLocaleString('es-ES');
+// ==========================================
+// VISITS COUNTER
+// ==========================================
+try {
+  const visitsCountEl = document.getElementById('visits-count');
+  const visitsRef = ref(db, 'stats/totalVisits');
+  const VISIT_FLAG = 'gv_visited';
+
+  if (!sessionStorage.getItem(VISIT_FLAG)) {
+    runTransaction(visitsRef, (current) => (current || 0) + 1).catch(() => {});
+    sessionStorage.setItem(VISIT_FLAG, '1');
+  }
+
+  onValue(visitsRef, (snap) => {
+    const val = snap.val() || 0;
+    visitsCountEl.textContent = val.toLocaleString('es-ES');
+  });
+} catch (err) {
+  console.error('Error en visits counter:', err);
+}
+
+// ==========================================
+// LIKES / FAVORITES SYSTEM
+// ==========================================
+console.log('🔧 Configurando sistema de likes...');
+
+let currentUid = null;
+
+Object.defineProperty(window, 'currentUid', {
+  get: () => currentUid,
+  set: (val) => { 
+    currentUid = val; 
+    window.AppState.currentUid = val;
+    window._currentUid = val;
+  }
 });
 
-// ==========================================
-//  LIKES / FAVORITES SYSTEM
-// ==========================================
-let currentUid = null;
-let userFavs = {};
-
-// Listen to global game likes
+// Escuchar likes globales
 const gameLikesRef = ref(db, 'gameLikes');
 onValue(gameLikesRef, (snap) => {
   const likesData = snap.val() || {};
   document.querySelectorAll('.like-btn').forEach(btn => {
     const gameId = btn.dataset.gameId;
     const countEl = btn.querySelector('.like-count');
-    countEl.textContent = likesData[gameId] || 0;
+    if (countEl) countEl.textContent = likesData[gameId] || 0;
   });
 });
 
-// Sync UI based on user's favorites and current likes data
+// Sincronizar UI
 window.syncLikesUI = () => {
   document.querySelectorAll('.like-btn').forEach(btn => {
     const gameId = btn.dataset.gameId;
-    if (userFavs[gameId]) {
+    if (window.AppState.userFavs[gameId]) {
       btn.classList.add('liked');
     } else {
       btn.classList.remove('liked');
@@ -647,48 +996,89 @@ window.syncLikesUI = () => {
   });
 };
 
-// Handle Like Click
-window.handleLikeToggle = async (gameId) => {
+// Partículas de corazón
+function spawnHeartParticle(btn) {
+  const rect = btn.getBoundingClientRect();
+  const particle = document.createElement('span');
+  particle.className = 'like-particle';
+  particle.textContent = '❤️';
+  particle.style.left = (rect.left + rect.width / 2 - 8) + 'px';
+  particle.style.top = (rect.top - 5) + 'px';
+  document.body.appendChild(particle);
+  setTimeout(() => particle.remove(), 900);
+}
+
+// Handler principal de like
+window.handleLikeToggle = async (gameId, btnElement) => {
+  console.log('💖 handleLikeToggle llamado:', gameId);
+  
   if (!currentUid) {
-    window.showToast("Inicia sesión para dar like", "error");
+    window.showToast("Inicia sesión para dar like ❤️", "error");
     authOverlay.classList.add("active");
     return;
   }
 
-  const isFav = userFavs[gameId];
+  const isFav = !!window.AppState.userFavs[gameId];
   const favRef = ref(db, `userFavorites/${currentUid}/${gameId}`);
   const likeCountRef = ref(db, `gameLikes/${gameId}`);
 
-  // Optimistic UI Update
+  // Optimistic update
+  const newFavs = { ...window.AppState.userFavs };
   if (isFav) {
-    delete userFavs[gameId];
+    delete newFavs[gameId];
   } else {
-    userFavs[gameId] = true;
+    newFavs[gameId] = true;
   }
-  window.syncLikesUI();
+  window.AppState.updateFavs(newFavs);
 
-  // Firebase Updates
+  // Animación
+  if (btnElement) {
+    btnElement.classList.remove('pop-anim');
+    void btnElement.offsetWidth;
+    btnElement.classList.add('pop-anim');
+    if (!isFav) spawnHeartParticle(btnElement);
+  }
+
+  // Re-renderizar si estamos en favoritos
+  const activeCat = document.querySelector('.cat-pill.active-fav');
+  if (activeCat && isFav) {
+    const searchVal = document.getElementById('search-input').value;
+    renderGames('favoritos', searchVal);
+  }
+
+  // Guardar en Firebase
   try {
     await set(favRef, isFav ? null : true);
-    runTransaction(likeCountRef, (current) => {
-      if (isFav) return (current || 1) - 1; // Remove like
-      return (current || 0) + 1; // Add like
+    await runTransaction(likeCountRef, (current) => {
+      return isFav ? Math.max(0, (current || 1) - 1) : (current || 0) + 1;
     });
+    window.showToast(isFav ? "Eliminado de favoritos" : "Añadido a favoritos ❤️", "success");
   } catch (err) {
-    // Revert on error
-    if (isFav) { userFavs[gameId] = true; } else { delete userFavs[gameId]; }
-    window.syncLikesUI();
+    // Revertir en error
+    const revertFavs = { ...window.AppState.userFavs };
+    if (isFav) { revertFavs[gameId] = true; } else { delete revertFavs[gameId]; }
+    window.AppState.updateFavs(revertFavs);
     window.showToast("Error al guardar like", "error");
+    console.error("Like error:", err);
   }
 };
 
+// Marcar Firebase como listo
+console.log('✅ Marcando Firebase como listo...');
+window.AppState.markFirebaseReady();
+
 // ==========================================
-//  AUTH
+// AUTH SYSTEM
 // ==========================================
+console.log('🔐 Configurando auth listener...');
+
 document.getElementById("btn-login-email").onclick = async () => {
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
-  if (!email || !pass) { window.showToast("Introduce email y contraseña", "error"); return; }
+  if (!email || !pass) { 
+    window.showToast("Introduce email y contraseña", "error"); 
+    return; 
+  }
   try {
     await signInWithEmailAndPassword(auth, email, pass);
     window.showToast("Sesión iniciada ✓", "success");
@@ -699,8 +1089,12 @@ document.getElementById("btn-login-email").onclick = async () => {
         await createUserWithEmailAndPassword(auth, email, pass);
         window.showToast("Cuenta creada ✓", "success");
         authOverlay.classList.remove("active");
-      } catch (e) { window.showToast("Error al crear cuenta: " + e.message, "error"); }
-    } else { window.showToast("Error: " + error.message, "error"); }
+      } catch (e) { 
+        window.showToast("Error al crear cuenta: " + e.message, "error"); 
+      }
+    } else { 
+      window.showToast("Error: " + error.message, "error"); 
+    }
   }
 };
 
@@ -709,20 +1103,28 @@ document.getElementById("btn-login-google").onclick = async () => {
     await signInWithPopup(auth, provider);
     window.showToast("Sesión iniciada con Google ✓", "success");
     authOverlay.classList.remove("active");
-  } catch (error) { window.showToast("Error Google: " + error.message, "error"); }
+  } catch (error) { 
+    window.showToast("Error Google: " + error.message, "error"); 
+  }
 };
 
 document.getElementById("btn-logout").onclick = async () => {
-  set(myPresenceRef, null);
+  if (myPresenceRef) set(myPresenceRef, null);
   await signOut(auth);
   window.showToast("Sesión cerrada", "info");
 };
 
+// AUTH STATE LISTENER
 onAuthStateChanged(auth, async (user) => {
+  console.log('🔄 Auth state changed:', user ? user.email : 'null');
+  
+  // SIEMPRE marcar auth como listo
+  window.AppState.markAuthReady();
+  
   if (user) {
     if (BANNED_EMAILS.includes(user.email)) {
       window.showToast("Tu cuenta ha sido suspendida", "error");
-      set(myPresenceRef, null);
+      if (myPresenceRef) set(myPresenceRef, null);
       await signOut(auth);
       window.location.href = "https://www.google.com";
       return;
@@ -734,29 +1136,36 @@ onAuthStateChanged(auth, async (user) => {
     loggedIn.classList.add("flex");
     welcomeMsg.textContent = user.email;
 
-    // Fetch and listen to user's favorites
+    // Cargar favoritos
     const favsRef = ref(db, `userFavorites/${currentUid}`);
     onValue(favsRef, (snap) => {
-      userFavs = snap.val() || {};
-      if (window.syncLikesUI) window.syncLikesUI();
+      window.AppState.updateFavs(snap.val());
+      
+      const activeFav = document.querySelector('.cat-pill.active-fav');
+      if (activeFav) {
+        const searchVal = document.getElementById('search-input').value;
+        renderGames('favoritos', searchVal);
+      }
     });
 
   } else {
     currentUid = null;
-    userFavs = {};
+    window.AppState.updateFavs({});
     loggedIn.classList.add("hidden");
     loggedIn.classList.remove("flex");
     loggedOut.classList.remove("hidden");
     
-    if (!confirm("Esta web es para jugar en casa. Si estás en un cole, entras asumiendo tu responsabilidad.")) {
-      set(myPresenceRef, null);
+    const accepted = await window.showConfirm();
+    if (!accepted) {
+      if (myPresenceRef) set(myPresenceRef, null);
       window.location.href = "https://www.google.com";
     }
   }
 });
 
+// Cleanup
 window.addEventListener('beforeunload', () => {
-  set(myPresenceRef, null);
+  if (myPresenceRef) set(myPresenceRef, null);
 });
 </script>
 
