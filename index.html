@@ -103,7 +103,7 @@
       background: linear-gradient(135deg, #1a1a2e, #16213e);
     }
 
-    /* ========== LIKE BUTTON MEJORADO ========== */
+    /* LIKE BUTTON MEJORADO */
     .like-btn {
       position: absolute; top: 10px; left: 10px; z-index: 30;
       background: rgba(0,0,0,0.55); backdrop-filter: blur(10px);
@@ -134,7 +134,7 @@
     }
     .like-count { font-size: 12px; font-weight: 700; min-width: 8px; }
 
-    /* Estado de carga del botón */
+    /* Estado de carga */
     .like-btn.loading {
       pointer-events: none;
       opacity: 0.6;
@@ -156,9 +156,7 @@
       60% { transform: scale(0.9); }
       100% { transform: scale(1); }
     }
-    .like-btn.pop-anim {
-      animation: heartPop 0.4s ease-out;
-    }
+    .like-btn.pop-anim { animation: heartPop 0.4s ease-out; }
 
     .like-particle {
       position: absolute; pointer-events: none; z-index: 40;
@@ -321,7 +319,7 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Indicador de carga inicial -->
+<!-- Indicador de carga -->
 <div id="firebase-loading" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99997;background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.3);backdrop-filter:blur(10px);padding:10px 20px;border-radius:100px;font-size:13px;color:#a29bfe;display:flex;align-items:center;gap:8px;transition:all 0.5s ease;">
   <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
@@ -352,6 +350,7 @@
   Discord
 </a>
 
+<!-- Auth Modal -->
 <div id="auth-overlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="flex items-center justify-between mb-6">
@@ -380,6 +379,7 @@
   </div>
 </div>
 
+<!-- Navbar -->
 <nav class="fixed top-0 left-0 right-0 z-[9990] border-b border-white/5" style="background: rgba(10,10,15,0.8); backdrop-filter: blur(16px);">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2.5 group">
@@ -409,6 +409,7 @@
   </div>
 </nav>
 
+<!-- Hero Section -->
 <section class="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-16">
   <div class="hero-orb" style="width:400px;height:400px;background:#6c5ce7;top:-100px;left:-100px;"></div>
   <div class="hero-orb" style="width:350px;height:350px;background:#a29bfe;bottom:-80px;right:-80px;animation-delay:-3s;"></div>
@@ -434,31 +435,23 @@
         </div>
         <div class="text-left">
           <div class="flex items-center gap-2">
-            <span class="live-stat-value text-white" id="online-count">
-              <span class="stat-loading"></span>
-            </span>
+            <span class="live-stat-value text-white" id="online-count"><span class="stat-loading"></span></span>
             <span class="live-dot"></span>
           </div>
           <div class="live-stat-label">En línea ahora</div>
         </div>
       </div>
-
       <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
-
       <div class="live-stat">
         <div class="live-stat-icon" style="background: rgba(108,92,231,0.12);">
           <span class="iconify" data-icon="mdi:eye-outline" data-width="22" style="color:#6c5ce7"></span>
         </div>
         <div class="text-left">
-          <div class="live-stat-value stat-number" id="visits-count">
-            <span class="stat-loading"></span>
-          </div>
+          <div class="live-stat-value stat-number" id="visits-count"><span class="stat-loading"></span></div>
           <div class="live-stat-label">Visitas totales</div>
         </div>
       </div>
-
       <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
-
       <div class="live-stat">
         <div class="live-stat-icon" style="background: rgba(245,158,11,0.12);">
           <span class="iconify" data-icon="mdi:gamepad-square" data-width="22" style="color:#f59e0b"></span>
@@ -472,6 +465,7 @@
   </div>
 </section>
 
+<!-- Search & Categories -->
 <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 -mt-4 mb-8">
   <div class="relative max-w-md mx-auto mb-6">
     <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" data-icon="mdi:magnify" data-width="20"></span>
@@ -491,6 +485,7 @@
   </div>
 </section>
 
+<!-- Games Grid -->
 <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-24">
   <div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
   <div id="no-results" class="hidden text-center py-20">
@@ -509,6 +504,7 @@
   </div>
 </section>
 
+<!-- Footer -->
 <footer class="border-t border-white/5 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-2">
@@ -572,17 +568,55 @@ const GAMES = [
 GAMES.forEach(g => g.id = g.name.replace(/[^a-zA-Z0-9]/g, '_'));
 
 // ============================================
-// SISTEMA DE ESTADO GLOBAL ROBUSTO
+// SISTEMA DE ESTADO GLOBAL v2 - CON PROMESAS
 // ============================================
-
 const AppState = {
   firebaseReady: false,
   authReady: false,
   userFavs: {},
   currentUid: null,
   
+  // Sistema de promesas para auth
+  _authResolved: false,
+  _authPromise: null,
+  _authResolveFn: null,
+  
   isFullyReady() {
     return this.firebaseReady && this.authReady;
+  },
+  
+  // ESPERAR a que auth resuelva (devuelve Promise)
+  waitForAuth() {
+    console.log('⏳ waitForAuth() llamado - _authResolved:', this._authResolved, 'currentUid:', this.currentUid);
+    
+    if (this._authResolved) {
+      console.log('✅ Auth ya resuelto, devolviendo UID:', this.currentUid);
+      return Promise.resolve(this.currentUid);
+    }
+    
+    if (!this._authPromise) {
+      console.log('🔒 Creando nueva promesa de auth...');
+      this._authPromise = new Promise((resolve) => {
+        this._authResolveFn = resolve;
+      });
+    }
+    
+    return this._authPromise;
+  },
+  
+  // RESOLVER auth con el UID real (llamado desde Firebase)
+  resolveAuth(uid) {
+    console.log('🎯 resolveAuth() llamado con UID:', uid);
+    this.currentUid = uid;
+    this._authResolved = true;
+    window._currentUid = uid;
+    
+    if (this._authResolveFn) {
+      console.log('⚡ Ejecutando resolve function con:', uid);
+      this._authResolveFn(uid);
+    }
+    
+    console.log('✅ Estado final - currentUid:', this.currentUid, '_authResolved:', this._authResolved);
   },
   
   markFirebaseReady() {
@@ -599,9 +633,8 @@ const AppState = {
   
   checkAndEnableUI() {
     if (this.isFullyReady()) {
-      console.log('🎉 Sistema COMPLETAMENTE listo');
+      console.log('🎉 SISTEMA COMPLETAMENTE LISTO');
       
-      // Ocultar indicador de carga
       const loadingEl = document.getElementById('firebase-loading');
       if (loadingEl) {
         loadingEl.style.opacity = '0';
@@ -611,12 +644,10 @@ const AppState = {
         }, 500);
       }
       
-      // Habilitar botones de like
       document.querySelectorAll('.like-btn.loading').forEach(btn => {
         btn.classList.remove('loading');
       });
       
-      // Evento personalizado
       window.dispatchEvent(new CustomEvent('app:ready'));
     }
   },
@@ -709,54 +740,70 @@ function renderGames(filter = 'all', search = '') {
 }
 
 // ============================================
-// EVENT DELEGATION - CLICK HANDLER
+// EVENT DELEGATION - ASYNC CON PROMESAS
 // ============================================
-grid.addEventListener('click', (e) => {
+grid.addEventListener('click', async (e) => {
   const likeBtn = e.target.closest('.like-btn');
   if (likeBtn) {
     e.preventDefault();
     e.stopPropagation();
     const gameId = likeBtn.dataset.gameId;
     
-    console.log('📍 Click like:', gameId, {
+    console.log('📍 Click en like:', gameId);
+    console.log('Estado ANTES de esperar:', {
       fullyReady: AppState.isFullyReady(),
-      firebaseReady: AppState.firebaseReady,
-      authReady: AppState.authReady,
-      uid: AppState.currentUid,
-      hasHandler: typeof window.handleLikeToggle === 'function'
+      authResolved: AppState._authResolved,
+      currentUid: AppState.currentUid,
+      _currentUid: window._currentUid
     });
     
+    // 1. Si no está listo, mostrar carga y esperar
     if (!AppState.isFullyReady()) {
+      likeBtn.classList.add('loading');
+      
       if (!AppState.firebaseReady) {
         window.showToast("🔄 Conectando con Firebase...", "info");
       } else if (!AppState.authReady) {
         window.showToast("⏳ Verificando autenticación...", "info");
       }
       
-      likeBtn.classList.add('loading');
-      setTimeout(() => {
-        if (AppState.isFullyReady()) {
-          likeBtn.classList.remove('loading');
-        }
-      }, 2000);
-      return;
+      // Esperar a que esté listo (máx 3 seg)
+      await Promise.race([
+        new Promise(resolve => window.addEventListener('app:ready', resolve, {once: true})),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]);
+      
+      likeBtn.classList.remove('loading');
     }
     
-    if (!AppState.currentUid) {
+    // 2. ESPERAR A QUE AUTH RESUELVA (PROMESA)
+    console.log('⏳ Llamando a waitForAuth()...');
+    const resolvedUid = await AppState.waitForAuth();
+    console.log('✅ Auth resuelto -> UID:', resolvedUid || '(sin sesión)');
+    console.log('Estado DESPUÉS de esperar:', {
+      currentUid: AppState.currentUid,
+      _currentUid: window._currentUid,
+      resolvedUid: resolvedUid
+    });
+    
+    // 3. Verificar si hay usuario logueado
+    if (!resolvedUid) {
       window.showToast("Inicia sesión para dar like ❤️", "error");
       document.getElementById('auth-overlay').classList.add("active");
       return;
     }
     
+    // 4. Ejecutar handler de like
     if (typeof window.handleLikeToggle === 'function') {
+      console.log('💖 Ejecutando handleLikeToggle...');
       window.handleLikeToggle(gameId, likeBtn);
     } else {
       window.showToast("❌ Error: Sistema no disponible", "error");
-      console.error('handleLikeToggle no es función');
     }
     return;
   }
 
+  // Click en card (navegar al juego)
   const card = e.target.closest('.game-card');
   if (card && card.dataset.path) {
     window.location.href = card.dataset.path;
@@ -851,9 +898,7 @@ import {
 
 console.log('🔥 Inicializando Firebase...');
 
-// ==========================================
 // CONFIGURACIÓN
-// ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
   authDomain: "inici-de-sessio.firebaseapp.com",
@@ -884,6 +929,12 @@ setTimeout(() => {
     window.AppState.markFirebaseReady();
     window.AppState.markAuthReady();
     
+    // Resolver auth como null si aún no ha resuelto
+    if (!window.AppState._authResolved) {
+      console.warn('⚠️ Forzando resolveAuth(null) por timeout');
+      window.AppState.resolveAuth(null);
+    }
+    
     const loadingText = document.getElementById('loading-text');
     if (loadingText) loadingText.textContent = 'Modo offline - Funciones limitadas';
     
@@ -897,23 +948,36 @@ setTimeout(() => {
   }
 }, 8000);
 
-// ==========================================
-// PRESENCE SYSTEM
-// ==========================================
+// PRESENCE SYSTEM (CORREGIDO - Sin errores)
 let myPresenceRef = null;
+const onlineCountEl = document.getElementById('online-count');
 
 try {
-  myPresenceRef = push(ref(db, 'presence/online'));
+  console.log('🌐 Inicializando Presence System...');
+  
+  // Crear referencia de presencia de forma segura
+  const presenceOnlineRef = ref(db, 'presence/online');
+  myPresenceRef = push(presenceOnlineRef);
+  
+  console.log('📍 Presence ref creada:', myPresenceRef ? myPresenceRef.key : 'ERROR - ref es null');
+  
   const connectedRef = ref(db, '.info/connected');
 
   onValue(connectedRef, (snap) => {
+    console.log('🌐 Connected:', snap.val());
+    
     if (snap.val() === true && myPresenceRef) {
-      myPresenceRef.onDisconnect().remove();
-      set(myPresenceRef, { timestamp: Date.now() });
+      // Usar onDisconnect de forma segura (CORREGIDO)
+      try {
+        onDisconnect(myPresenceRef).remove();
+        set(myPresenceRef, { timestamp: Date.now() });
+        console.log('✅ Presence registrada correctamente');
+      } catch (err) {
+        console.warn('⚠️ Error al registrar presence (no crítico):', err);
+      }
     }
   });
 
-  const onlineCountEl = document.getElementById('online-count');
   const onlineRef = ref(db, 'presence/online');
 
   onValue(onlineRef, (snap) => {
@@ -923,7 +987,7 @@ try {
       let staleCount = 0;
       for (const key in data) {
         if (data[key].timestamp && (now - data[key].timestamp > 90000)) {
-          set(ref(db, `presence/online/${key}`), null);
+          set(ref(db, `presence/online/${key}`), null).catch(() => {});
           staleCount++;
         }
       }
@@ -932,13 +996,15 @@ try {
       onlineCountEl.textContent = '0';
     }
   });
+  
+  console.log('✅ Presence System inicializado correctamente');
+  
 } catch (err) {
-  console.error('Error en presence system:', err);
+  console.error('❌ Error crítico en presence system:', err);
+  myPresenceRef = null;
 }
 
-// ==========================================
 // VISITS COUNTER
-// ==========================================
 try {
   const visitsCountEl = document.getElementById('visits-count');
   const visitsRef = ref(db, 'stats/totalVisits');
@@ -957,9 +1023,7 @@ try {
   console.error('Error en visits counter:', err);
 }
 
-// ==========================================
 // LIKES / FAVORITES SYSTEM
-// ==========================================
 console.log('🔧 Configurando sistema de likes...');
 
 let currentUid = null;
@@ -970,6 +1034,7 @@ Object.defineProperty(window, 'currentUid', {
     currentUid = val; 
     window.AppState.currentUid = val;
     window._currentUid = val;
+    console.log('🔄 window.currentUid actualizado a:', val);
   }
 });
 
@@ -1010,7 +1075,7 @@ function spawnHeartParticle(btn) {
 
 // Handler principal de like
 window.handleLikeToggle = async (gameId, btnElement) => {
-  console.log('💖 handleLikeToggle llamado:', gameId);
+  console.log('💖 handleLikeToggle llamado:', gameId, '- currentUid:', currentUid);
   
   if (!currentUid) {
     window.showToast("Inicia sesión para dar like ❤️", "error");
@@ -1054,7 +1119,6 @@ window.handleLikeToggle = async (gameId, btnElement) => {
     });
     window.showToast(isFav ? "Eliminado de favoritos" : "Añadido a favoritos ❤️", "success");
   } catch (err) {
-    // Revertir en error
     const revertFavs = { ...window.AppState.userFavs };
     if (isFav) { revertFavs[gameId] = true; } else { delete revertFavs[gameId]; }
     window.AppState.updateFavs(revertFavs);
@@ -1067,9 +1131,7 @@ window.handleLikeToggle = async (gameId, btnElement) => {
 console.log('✅ Marcando Firebase como listo...');
 window.AppState.markFirebaseReady();
 
-// ==========================================
 // AUTH SYSTEM
-// ==========================================
 console.log('🔐 Configurando auth listener...');
 
 document.getElementById("btn-login-email").onclick = async () => {
@@ -1109,22 +1171,37 @@ document.getElementById("btn-login-google").onclick = async () => {
 };
 
 document.getElementById("btn-logout").onclick = async () => {
-  if (myPresenceRef) set(myPresenceRef, null);
+  if (myPresenceRef) {
+    await set(myPresenceRef, null).catch(() => {});
+  }
   await signOut(auth);
   window.showToast("Sesión cerrada", "info");
 };
 
-// AUTH STATE LISTENER
+// AUTH STATE LISTENER - CLAVE: Resuelve la promesa INMEDIATAMENTE
 onAuthStateChanged(auth, async (user) => {
-  console.log('🔄 Auth state changed:', user ? user.email : 'null');
+  console.log('🔄 Auth state changed:', user ? user.email : '(sin usuario)');
+  console.log('👤 User object completo:', user ? {uid: user.uid, email: user.email} : null);
   
   // SIEMPRE marcar auth como listo
   window.AppState.markAuthReady();
   
+  // ⭐ RESOLVER LA PROMESA INMEDIATAMENTE CON EL UID REAL
+  if (user) {
+    console.log('⭐ Llamando resolveAuth con UID:', user.uid);
+    window.AppState.resolveAuth(user.uid);  // <-- ESTO SOLUCIONA TODO
+    console.log('✅ AppState.currentUid DESPUÉS de resolveAuth:', window.AppState.currentUid);
+  } else {
+    console.log('⭐ Llamando resolveAuth con NULL (sin sesión)');
+    window.AppState.resolveAuth(null);     // Sin usuario
+  }
+  
   if (user) {
     if (BANNED_EMAILS.includes(user.email)) {
       window.showToast("Tu cuenta ha sido suspendida", "error");
-      if (myPresenceRef) set(myPresenceRef, null);
+      if (myPresenceRef) {
+        await set(myPresenceRef, null).catch(() => {});
+      }
       await signOut(auth);
       window.location.href = "https://www.google.com";
       return;
@@ -1157,7 +1234,9 @@ onAuthStateChanged(auth, async (user) => {
     
     const accepted = await window.showConfirm();
     if (!accepted) {
-      if (myPresenceRef) set(myPresenceRef, null);
+      if (myPresenceRef) {
+        await set(myPresenceRef, null).catch(() => {});
+      }
       window.location.href = "https://www.google.com";
     }
   }
@@ -1165,7 +1244,9 @@ onAuthStateChanged(auth, async (user) => {
 
 // Cleanup
 window.addEventListener('beforeunload', () => {
-  if (myPresenceRef) set(myPresenceRef, null);
+  if (myPresenceRef) {
+    set(myPresenceRef, null).catch(() => {});
+  }
 });
 </script>
 
