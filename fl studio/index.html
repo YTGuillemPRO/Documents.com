@@ -3,995 +3,1029 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FL Studio Web - Piano Roll</title>
+    <title>FL Studio Web - Piano Roll Pro</title>
     
-    <!-- Tone.js desde CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --bg-dark: #1a1a1a;
-            --bg-medium: #2a2a2a;
-            --bg-light: #3a3a3a;
-            --bg-hover: #404040;
-            --accent-orange: #ff8800;
-            --accent-green: #4CAF50;
-            --accent-blue: #2196F3;
-            --accent-purple: #9C27B0;
-            --accent-pink: #E91E63;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border: #454545;
-            --grid-line: #2d2d2d;
+            --bg-dark: #0a0a0f; --bg-medium: #12121a; --bg-light: #1a1a25;
+            --bg-hover: #252535; --accent-orange: #ff6b00; --accent-green: #00d97e;
+            --accent-blue: #00a8ff; --accent-purple: #b24bff;
+            --border: #2a2a3a; --text-primary: #ffffff; --text-secondary: #888899;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            font-family: 'Inter', sans-serif; background: var(--bg-dark);
+            color: var(--text-primary); overflow: hidden; height: 100vh; user-select: none;
+        }
+        
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+        
+        /* ===== PANTALLA DE INICIO ===== */
+        #startScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at center, #1a1025 0%, #0a0510 50%, #000000 100%); 
+            z-index: 1000; display: flex;
+            justify-content: center; align-items: center;
             overflow: hidden;
-            height: 100vh;
         }
-        
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+
+        #particleCanvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
         }
-        
+
+        .audio-visualizer {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 200px;
+            display: flex; align-items: flex-end; justify-content: center;
+            gap: 3px; padding: 20px; pointer-events: none; z-index: 1;
+        }
+        .viz-bar {
+            width: 4px; background: linear-gradient(to top, var(--accent-orange), var(--accent-purple));
+            border-radius: 2px; animation: vizPulse 1s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+        }
+        @keyframes vizPulse {
+            0%, 100% { transform: scaleY(0.3); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        .grid-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,107,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,107,0,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(80px);
+            opacity: 0.4; animation: orbFloat 15s ease-in-out infinite;
+            pointer-events: none; z-index: 0;
+        }
+        .orb1 { width: 400px; height: 400px; background: var(--accent-orange); top: -200px; right: -100px; }
+        .orb2 { width: 300px; height: 300px; background: var(--accent-purple); bottom: -150px; left: -100px; animation-delay: -5s; }
+        .orb3 { width: 250px; height: 250px; background: var(--accent-blue); top: 50%; left: 50%; animation-delay: -10s; }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .start-modal {
+            background: rgba(18, 18, 26, 0.95); 
+            border: 1px solid rgba(255, 107, 0, 0.2);
+            border-radius: 24px; padding: 48px; width: 580px; 
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 120px rgba(255, 107, 0, 0.1);
+            backdrop-filter: blur(30px);
+            animation: modalSlideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; z-index: 10;
+            overflow: hidden;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(60px) scale(0.85); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .logo-container { text-align: center; margin-bottom: 36px; }
+        .logo-icon-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 24px; }
+        .logo-ring {
+            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border: 2px solid transparent;
+            border-top-color: var(--accent-orange);
+            border-right-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: ringSpin 3s linear infinite;
+        }
+        @keyframes ringSpin { to { transform: rotate(360deg); } }
+        .logo-icon {
+            width: 90px; height: 90px; margin: 0 auto;
+            background: linear-gradient(135deg, var(--accent-orange) 0%, #ff3300 50%, var(--accent-purple) 100%);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 38px; color: white;
+            box-shadow: 0 12px 40px rgba(255, 107, 0, 0.5), inset 0 2px 0 rgba(255,255,255,0.3);
+            position: relative; overflow: hidden;
+            animation: logoGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes logoGlow {
+            from { box-shadow: 0 12px 40px rgba(255, 107, 0, 0.5), inset 0 2px 0 rgba(255,255,255,0.3); }
+            to { box-shadow: 0 16px 60px rgba(255, 107, 0, 0.7), 0 0 80px rgba(178, 75, 255, 0.3), inset 0 2px 0 rgba(255,255,255,0.3); }
+        }
+        .logo-title {
+            font-size: 42px; font-weight: 900; letter-spacing: -2px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-orange) 50%, var(--accent-purple) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 10px;
+            animation: titleShimmer 3s ease-in-out infinite;
+            background-size: 200% 200%;
+        }
+        @keyframes titleShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .logo-subtitle {
+            font-size: 13px; color: var(--text-secondary); font-weight: 600;
+            letter-spacing: 4px; text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .logo-subtitle::before, .logo-subtitle::after {
+            content: ''; width: 30px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent-orange));
+        }
+        .logo-subtitle::after { background: linear-gradient(90deg, var(--accent-orange), transparent); }
+
+        .status-fb {
+            font-size: 13px; padding: 14px 20px; margin-bottom: 28px; text-align: center;
+            border-radius: 12px; background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            transition: all 0.4s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .status-fb.connected { background: rgba(0, 217, 126, 0.08); border-color: rgba(0, 217, 126, 0.25); color: var(--accent-green); }
+        .status-fb.error { background: rgba(255, 68, 68, 0.08); border-color: rgba(255, 68, 68, 0.25); color: #ff4444; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-secondary); animation: pulse 1.5s infinite; }
+        .connected .status-dot { background: var(--accent-green); }
+        .error .status-dot { background: #ff4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        .input-group { margin-bottom: 22px; }
+        .input-label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 700; }
+        .start-input {
+            width: 100%; padding: 16px 20px; background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--border); border-radius: 12px; color: white; 
+            font-size: 15px; outline: none; transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .start-input:focus { border-color: var(--accent-orange); box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1); }
+        .start-input::placeholder { color: #555; }
+
+        .start-btn {
+            width: 100%; padding: 16px 28px; 
+            background: linear-gradient(135deg, var(--accent-orange) 0%, #ff4500 100%);
+            border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
+            font-size: 15px; margin-bottom: 14px; transition: all 0.3s;
+            font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
+            box-shadow: 0 6px 24px rgba(255, 107, 0, 0.4);
+            position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(255, 107, 0, 0.5); }
+        .start-btn:active { transform: translateY(-1px); }
+        .start-btn.secondary { background: rgba(26, 26, 37, 0.8); border: 2px solid var(--border); box-shadow: none; }
+        .start-btn.secondary:hover { background: var(--bg-hover); border-color: var(--accent-orange); }
+        .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        .divider-modal { margin: 32px 0; position: relative; text-align: center; color: var(--text-secondary); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+        .divider-modal::before, .divider-modal::after {
+            content: ''; position: absolute; top: 50%; width: 42%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .divider-modal::before { left: 0; }
+        .divider-modal::after { right: 0; }
+
+        .project-list { max-height: 240px; overflow-y: auto; margin-bottom: 20px; background: rgba(0, 0, 0, 0.35); border-radius: 12px; border: 2px solid var(--border); }
+        .project-item {
+            padding: 16px 20px; border-bottom: 1px solid rgba(42, 42, 58, 0.5); 
+            cursor: pointer; display: flex; justify-content: space-between; 
+            font-size: 13px; transition: all 0.25s; align-items: center; gap: 12px;
+        }
+        .project-item:last-child { border-bottom: none; }
+        .project-item:hover { background: rgba(255, 107, 0, 0.05); padding-left: 24px; }
+        .project-item.active-proj { background: rgba(255, 107, 0, 0.12); border-left: 3px solid var(--accent-orange); color: white; font-weight: 600; }
+        .empty-state { padding: 40px 20px; text-align: center; color: #666; font-size: 13px; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; display: block; opacity: 0.4; }
+
+        .features-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+        .feature-item { text-align: center; padding: 12px 8px; background: rgba(0,0,0,0.2); border-radius: 8px; transition: all 0.2s; }
+        .feature-item:hover { background: rgba(255,107,0,0.1); transform: translateY(-2px); }
+        .feature-icon { font-size: 24px; margin-bottom: 6px; display: block; }
+        .feature-text { font-size: 10px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; }
+
         /* ===== TOP BAR ===== */
         .top-bar {
-            background: var(--bg-medium);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 60px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: var(--bg-medium); border-bottom: 1px solid var(--border);
+            padding: 0 20px; display: flex; justify-content: space-between;
+            align-items: center; height: 56px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 10;
         }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
+        .logo { display: flex; align-items: center; gap: 12px; }
         .logo-img {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--accent-orange) 0%, #ff6600 100%);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 18px;
+            width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-orange) 0%, #ff5500 100%);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: white;
         }
-        
-        .logo-text {
-            font-weight: 700;
-            font-size: 18px;
-            letter-spacing: -0.5px;
-        }
-        
-        .transport {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
+        .logo-text { font-weight: 700; font-size: 17px; color: var(--text-primary); }
+        .transport { display: flex; gap: 8px; align-items: center; }
         .transport-btn {
-            width: 40px;
-            height: 40px;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
+            width: 40px; height: 40px; background: var(--bg-light); border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; transition: all 0.2s; color: var(--text-secondary);
         }
-        
-        .transport-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--accent-orange);
-        }
-        
-        .transport-btn.play {
-            background: var(--accent-green);
-            border-color: var(--accent-green);
-            color: white;
-        }
-        
-        .transport-btn.play:hover {
-            background: #45a049;
-        }
-        
-        .transport-btn.playing {
-            background: var(--accent-orange);
-            border-color: var(--accent-orange);
-            animation: pulse 1s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .bpm-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--bg-light);
-            padding: 8px 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-        
-        .bpm-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        .bpm-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--accent-orange);
-            min-width: 50px;
-        }
-        
-        .bpm-slider {
-            width: 150px;
-            height: 4px;
-            -webkit-appearance: none;
-            background: var(--bg-dark);
-            border-radius: 2px;
-            outline: none;
-        }
-        
-        .bpm-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            background: var(--accent-orange);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        
-        .bpm-slider::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            background: var(--accent-orange);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
+        .transport-btn:hover { background: var(--bg-hover); color: white; transform: translateY(-2px); }
+        .transport-btn.play { background: var(--accent-green); border-color: var(--accent-green); color: white; }
+        .transport-btn.playing { background: var(--accent-orange); border-color: var(--accent-orange); animation: playingPulse 1s infinite; }
+        @keyframes playingPulse { 0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); } 50% { box-shadow: 0 0 30px rgba(255, 107, 0, 0.8); } }
+        .bpm-control { display: flex; align-items: center; gap: 14px; background: var(--bg-dark); padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); }
+        .bpm-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+        .bpm-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent-orange); min-width: 45px; text-align: right; }
+        .bpm-slider { width: 130px; height: 5px; -webkit-appearance: none; background: var(--bg-light); border-radius: 3px; outline: none; }
+        .bpm-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent-orange); border-radius: 50%; cursor: pointer; }
         
         /* ===== TOOLBAR ===== */
-        .toolbar {
-            background: var(--bg-medium);
-            border-bottom: 1px solid var(--border);
-            padding: 8px 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            height: 45px;
-        }
-        
+        .toolbar { background: var(--bg-medium); border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; gap: 10px; align-items: center; height: 46px; }
         .tool-btn {
-            padding: 6px 12px;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
+            padding: 6px 14px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px;
+            font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
         }
-        
-        .tool-btn:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-        
-        .tool-btn.active {
-            background: var(--accent-orange);
-            border-color: var(--accent-orange);
-            color: white;
-        }
-        
-        .divider {
-            width: 1px;
-            height: 25px;
-            background: var(--border);
-        }
+        .tool-btn:hover { background: var(--bg-hover); color: var(--text-primary); transform: translateY(-1px); }
+        .tool-btn.active { background: var(--accent-orange); border-color: var(--accent-orange); color: white; }
+        .tool-btn.erase-active { background: #dc3545; border-color: #dc3545; color: white; }
+        .divider { width: 1px; height: 24px; background: var(--border); }
         
         /* ===== CHANNEL SELECTOR ===== */
-        .channel-selector {
-            background: var(--bg-medium);
-            padding: 10px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-        }
-        
+        .channel-selector { background: var(--bg-medium); padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; overflow-x: auto; height: 40px; align-items: flex-end; }
         .channel-tab {
-            padding: 8px 16px;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 6px 6px 0 0;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding: 8px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-bottom: none;
+            border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s; font-size: 12px;
+            font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 8px; color: var(--text-secondary);
         }
-        
-        .channel-tab:hover {
-            background: var(--bg-hover);
-        }
-        
-        .channel-tab.active {
-            background: var(--bg-dark);
-            border-bottom: 2px solid var(--accent-orange);
-        }
-        
-        .channel-icon {
-            font-size: 16px;
-        }
+        .channel-tab:hover { background: var(--bg-light); color: white; }
+        .channel-tab.active { background: var(--bg-dark); color: var(--accent-orange); border-top: 3px solid var(--accent-orange); font-weight: 700; }
         
         /* ===== PIANO ROLL AREA ===== */
-        .piano-roll-container {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        /* Piano keys */
-        .piano-keys {
-            width: 80px;
-            background: var(--bg-medium);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column-reverse;
-            overflow: hidden;
-        }
-        
+        .piano-roll-container { flex: 1; display: flex; overflow: hidden; position: relative; }
+        .piano-keys { width: 85px; background: var(--bg-medium); border-right: 2px solid var(--border); overflow: hidden; z-index: 5; }
+        .piano-keys-inner { display: flex; flex-direction: column-reverse; }
         .piano-key {
-            height: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.1s;
-            user-select: none;
+            height: 20px; border-bottom: 1px solid #111; display: flex; align-items: center;
+            justify-content: flex-end; padding-right: 10px; font-size: 9px; font-weight: 700; cursor: pointer; transition: all 0.1s;
         }
+        .piano-key.white { background: var(--bg-light); color: var(--text-secondary); }
+        .piano-key.black { background: #0a0a0f; color: #444; }
+        .piano-key:hover { background: var(--accent-orange); color: white; }
         
-        .piano-key.white {
-            background: var(--bg-light);
-            color: var(--text-secondary);
-        }
-        
-        .piano-key.black {
-            background: var(--bg-dark);
-            color: var(--text-primary);
-        }
-        
-        .piano-key:hover {
-            background: var(--accent-orange);
-            color: white;
-        }
-        
-        /* Grid area */
-        .grid-container {
-            flex: 1;
-            overflow: auto;
-            position: relative;
-            background: var(--bg-dark);
-        }
-        
-        .grid-canvas-wrapper {
-            position: relative;
-            width: fit-content;
-            min-width: 100%;
-        }
-        
-        .grid-canvas {
-            display: block;
-            cursor: crosshair;
-        }
+        .grid-container { flex: 1; overflow: auto; position: relative; background: var(--bg-dark); cursor: crosshair; }
+        .grid-container.erase-mode { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23dc3545"><path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0L12 17.71l-6.37-6.37-1.41 1.41c-.79.78-.79 2.04 0 2.83z"/></svg>') 12 12, pointer; }
+        .grid-canvas-wrapper { position: relative; min-height: 100%; }
+        .grid-canvas { display: block; }
         
         .note-element {
-            position: absolute;
-            background: var(--accent-orange);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
-            cursor: move;
-            transition: opacity 0.1s;
+            position: absolute; border-radius: 4px; cursor: grab;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2); box-sizing: border-box; display: flex; z-index: 2; overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.1s;
         }
+        .note-element:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 15px rgba(255,107,0,0.3); transform: scale(1.02); }
+        .note-element:active { cursor: grabbing; z-index: 10; }
+        .note-body { flex: 1; background: rgba(0,0,0,0.2); pointer-events: none; }
+        .resize-handle { width: 10px; background: rgba(255,255,255,0.3); cursor: ew-resize; border-left: 1px solid rgba(0,0,0,0.3); transition: all 0.15s; flex-shrink: 0; }
+        .resize-handle:hover { background: rgba(255,255,255,0.8); }
         
-        .note-element:hover {
-            opacity: 0.8;
-            border-color: white;
-        }
-        
-        .note-element.selected {
-            border: 2px solid white;
-            box-shadow: 0 0 10px rgba(255, 136, 0, 0.5);
-        }
+        #playhead { position: absolute; top: 0; width: 2px; background: #fff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); pointer-events: none; z-index: 4; display: none; left: 0; height: 100%; }
         
         /* ===== BOTTOM PANEL ===== */
-        .bottom-panel {
-            background: var(--bg-medium);
-            border-top: 1px solid var(--border);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 50px;
-        }
+        .bottom-panel { background: var(--bg-medium); border-top: 1px solid var(--border); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; height: 46px; z-index: 10; }
+        .channel-controls { display: flex; gap: 24px; align-items: center; }
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        .control-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; }
+        .control-slider { width: 90px; height: 4px; -webkit-appearance: none; background: var(--bg-dark); border-radius: 2px; outline: none; }
+        .control-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent-orange); border-radius: 50%; cursor: pointer; }
+        .status-bar { display: flex; gap: 24px; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); }
         
-        .channel-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-light); border-radius: 5px; }
+
+        /* Confirm dialog */
+        .confirm-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 99999;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
         }
-        
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .confirm-box {
+            background: var(--bg-medium); border: 2px solid var(--border);
+            border-radius: 20px; padding: 40px; max-width: 420px; text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
         }
-        
-        .control-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-weight: 500;
+        .confirm-icon {
+            width: 70px; height: 70px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, #dc3545, #cc0000);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: white; box-shadow: 0 8px 24px rgba(220, 53, 69, 0.4);
         }
-        
-        .control-slider {
-            width: 100px;
-            height: 4px;
-            -webkit-appearance: none;
-            background: var(--bg-dark);
-            border-radius: 2px;
-            outline: none;
+        .confirm-box h3 { color: #fff; margin-bottom: 12px; font-size: 22px; font-weight: 800; }
+        .confirm-box p { color: var(--text-secondary); margin-bottom: 30px; line-height: 1.7; font-size: 14px; }
+        .confirm-box strong { color: var(--accent-orange); }
+        .confirm-buttons { display: flex; gap: 14px; justify-content: center; }
+        .confirm-btn {
+            padding: 14px 28px; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; font-size: 13px; transition: all 0.25s;
+            font-family: 'Inter', sans-serif; min-width: 140px;
         }
-        
-        .control-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--accent-orange);
-            border-radius: 50%;
-            cursor: pointer;
+        .confirm-btn.yes { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+        .confirm-btn.yes:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(220, 53, 69, 0.5); }
+        .confirm-btn.no { background: var(--bg-light); color: var(--text-primary); border: 2px solid var(--border); }
+        .confirm-btn.no:hover { background: var(--bg-hover); transform: translateY(-3px); }
+
+        /* Toast notifications */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: var(--bg-medium); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px 20px; color: white;
+            font-size: 13px; font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            display: flex; align-items: center; gap: 10px; min-width: 280px;
         }
-        
-        .control-slider::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            background: var(--accent-orange);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
+        .toast.success { border-left: 3px solid var(--accent-green); }
+        .toast.error { border-left: 3px solid #dc3545; }
+        .toast.info { border-left: 3px solid var(--accent-blue); }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(50%); } }
+
+        .shortcuts-hint {
+            position: fixed; bottom: 20px; left: 20px;
+            background: rgba(0,0,0,0.8); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 16px; font-size: 11px;
+            color: var(--text-secondary); z-index: 99998;
         }
-        
-        .status-bar {
-            display: flex;
-            gap: 20px;
-            font-size: 12px;
-            color: var(--text-secondary);
+        .shortcut-key {
+            display: inline-block; background: var(--bg-light);
+            padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; color: var(--accent-orange); margin-right: 4px;
+            border: 1px solid var(--border);
         }
-        
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 12px;
-            height: 12px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--bg-light);
-            border-radius: 6px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--bg-hover);
-        }
-        
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .piano-keys {
-                width: 60px;
-            }
-            
-            .channel-selector {
-                padding: 8px 10px;
-            }
-            
-            .bpm-slider {
-                width: 100px;
-            }
+
+        .tool-indicator {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+            color: var(--accent-orange); z-index: 99997;
+            display: none; align-items: center; gap: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- TOP BAR -->
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="startScreen">
+        <div class="grid-bg"></div>
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+        <canvas id="particleCanvas"></canvas>
+        <div class="audio-visualizer" id="audioViz"></div>
+
+        <div class="start-modal">
+            <div class="logo-container">
+                <div class="logo-icon-wrapper"><div class="logo-ring"></div><div class="logo-icon">FL</div></div>
+                <h1 class="logo-title">FL Studio Web</h1>
+                <p class="logo-subtitle">Professional Edition</p>
+            </div>
+            
+            <div class="status-fb" id="fbStatus">
+                <span class="status-dot"></span>
+                <span id="fbStatusText">Conectando...</span>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Nombre del Proyecto</label>
+                <input type="text" class="start-input" id="projectNameInput" placeholder="Mi Proyecto...">
+            </div>
+            
+            <button class="start-btn" id="newProjectBtn">🎹 Crear Proyecto Nuevo</button>
+            
+            <div class="divider-modal">O Cargar Desde La Nube</div>
+            
+            <div class="project-list" id="projectList">
+                <div class="empty-state"><span class="empty-state-icon">☁️</span>Cargando proyectos...</div>
+            </div>
+            <button class="start-btn secondary" id="loadProjectBtn" disabled>📂 Cargar Seleccionado</button>
+
+            <div class="features-list">
+                <div class="feature-item"><span class="feature-icon">🎹</span><span class="feature-text">7 Canales</span></div>
+                <div class="feature-item"><span class="feature-icon">☁️</span><span class="feature-text">Cloud Save</span></div>
+                <div class="feature-item"><span class="feature-icon">🔊</span><span class="feature-text">Audio Pro</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Tool Indicator -->
+    <div class="tool-indicator" id="toolIndicator">
+        <span id="toolIndicatorIcon">✏️</span>
+        <span id="toolIndicatorText">Modo Dibujo</span>
+    </div>
+
+    <!-- Confirm Dialog -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <div class="confirm-icon">⚠️</div>
+            <h3>¿Limpiar Canal?</h3>
+            <p>Vas a eliminar todas las notas del canal<br><strong id="clearChannelName"></strong></p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn yes" id="confirmYes">✓ Sí, Eliminar</button>
+                <button class="confirm-btn no" id="confirmNo">✗ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div class="app-container" id="mainApp" style="display: none;">
         <div class="top-bar">
             <div class="logo">
                 <div class="logo-img">FL</div>
-                <div class="logo-text">FL Studio Web</div>
+                <div class="logo-text">FL Studio Web <span id="currentProjectName" style="color:var(--text-secondary); font-size:12px;"></span></div>
             </div>
-            
             <div class="transport">
                 <button class="transport-btn" id="stopBtn" title="Stop">⏹</button>
-                <button class="transport-btn play" id="playBtn" title="Play">▶</button>
-                <button class="transport-btn" id="clearBtn" title="Clear pattern">🗑</button>
+                <button class="transport-btn play" id="playBtn" title="Play/Pause">▶</button>
+                <button class="transport-btn" id="saveBtn" title="Guardar">💾</button>
+                <button class="transport-btn" id="clearBtn" title="Limpiar">🗑</button>
             </div>
-            
             <div class="bpm-control">
                 <span class="bpm-label">BPM</span>
                 <input type="range" class="bpm-slider" id="bpmSlider" min="60" max="200" value="128">
-                <span class="bpm-value"><span id="bpmValue">128</span></span>
+                <span class="bpm-value" id="bpmValue">128</span>
             </div>
         </div>
         
-        <!-- TOOLBAR -->
         <div class="toolbar">
             <button class="tool-btn active" id="drawTool">✏️ Draw</button>
-            <button class="tool-btn" id="eraseTool">🗑️ Erase</button>
-            <button class="tool-btn" id="selectTool">↖️ Select</button>
+            <button class="tool-btn" id="eraseTool">🗑 Erase</button>
             <div class="divider"></div>
-            <button class="tool-btn" id="snapBtn">🧲 Snap: 1/16</button>
+            <button class="tool-btn" id="undoBtn">↩ Undo</button>
+            <button class="tool-btn" id="redoBtn">↪ Redo</button>
             <div class="divider"></div>
             <button class="tool-btn" id="zoomIn">🔍+</button>
             <button class="tool-btn" id="zoomOut">🔍-</button>
         </div>
         
-        <!-- CHANNEL SELECTOR -->
-        <div class="channel-selector">
-            <div class="channel-tab active" data-channel="piano">
-                <span class="channel-icon">🎹</span> Piano
-            </div>
-            <div class="channel-tab" data-channel="bass">
-                <span class="channel-icon">🎸</span> Bass
-            </div>
-            <div class="channel-tab" data-channel="lead">
-                <span class="channel-icon">⚡</span> Lead
-            </div>
-            <div class="channel-tab" data-channel="pad">
-                <span class="channel-icon">🌊</span> Pad
-            </div>
-            <div class="channel-tab" data-channel="kick">
-                <span class="channel-icon">🥁</span> Kick
-            </div>
-            <div class="channel-tab" data-channel="snare">
-                <span class="channel-icon">🥁</span> Snare
-            </div>
-            <div class="channel-tab" data-channel="hihat">
-                <span class="channel-icon">🥁</span> Hi-Hat
-            </div>
+        <div class="channel-selector" id="channelSelector">
+            <div class="channel-tab active" data-channel="piano">🎹 Piano</div>
+            <div class="channel-tab" data-channel="bass">🎸 Bass</div>
+            <div class="channel-tab" data-channel="lead">⚡ Lead</div>
+            <div class="channel-tab" data-channel="pad">🌊 Pad</div>
+            <div class="channel-tab" data-channel="kick">🥁 Kick</div>
+            <div class="channel-tab" data-channel="snare">🥁 Snare</div>
+            <div class="channel-tab" data-channel="hihat">🥁 Hi-Hat</div>
         </div>
         
-        <!-- PIANO ROLL -->
         <div class="piano-roll-container">
-            <div class="piano-keys" id="pianoKeys"></div>
+            <div class="piano-keys" id="pianoKeys"><div class="piano-keys-inner" id="pianoKeysInner"></div></div>
             <div class="grid-container" id="gridContainer">
                 <div class="grid-canvas-wrapper" id="canvasWrapper">
                     <canvas class="grid-canvas" id="gridCanvas"></canvas>
+                    <div id="playhead"></div>
                 </div>
             </div>
         </div>
         
-        <!-- BOTTOM PANEL -->
         <div class="bottom-panel">
             <div class="channel-controls">
                 <div class="control-group">
                     <span class="control-label">Volume</span>
-                    <input type="range" class="control-slider" id="volumeSlider" min="-20" max="6" value="0">
-                </div>
-                <div class="control-group">
-                    <span class="control-label">Pan</span>
-                    <input type="range" class="control-slider" id="panSlider" min="-100" max="100" value="0">
+                    <input type="range" class="control-slider" id="volumeSlider" min="-30" max="6" value="0">
                 </div>
             </div>
-            
             <div class="status-bar">
-                <span id="noteCount">Notes: 0</span>
+                <span>Notes: <strong id="noteCount" style="color:var(--accent-orange)">0</strong></span>
                 <span id="currentNote">-</span>
             </div>
         </div>
     </div>
-    
+
+    <div class="shortcuts-hint" id="shortcutsHint" style="display:none;">
+        <span class="shortcut-key">Space</span> Play &nbsp;
+        <span class="shortcut-key">D</span> Draw &nbsp;
+        <span class="shortcut-key">E</span> Erase &nbsp;
+        <span class="shortcut-key">Del</span> Clear
+    </div>
+
+    <!-- FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+            authDomain: "inici-de-sessio.firebaseapp.com",
+            databaseURL: "https://inici-de-sessio-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "inici-de-sessio",
+            storageBucket: "inici-de-sessio.firebasestorage.app",
+            messagingSenderId: "106046428749",
+            appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        signInAnonymously(auth).catch(error => {
+            document.getElementById('fbStatusText').innerText = "Error ✗";
+            document.getElementById('fbStatus').classList.add('error');
+        });
+
+        let selectedListProject = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('fbStatusText').innerText = "Conectado ✓";
+                document.getElementById('fbStatus').classList.add('connected');
+                loadProjectList();
+            } else {
+                document.getElementById('fbStatusText').innerText = "Sin conexión ✗";
+            }
+        });
+
+        window.guardarProyecto = function(projectName, data) {
+            const user = auth.currentUser;
+            if (!user) return alert("Sin conexión");
+            set(ref(db, 'users/' + user.uid + '/projects/' + projectName), {
+                data: JSON.stringify(data),
+                fecha: new Date().toLocaleString()
+            }).then(() => window.showToast && window.showToast('success', '✅ Guardado'));
+        };
+
+        window.loadProjectList = async function() {
+            const user = auth.currentUser;
+            if (!user) return;
+            const listDiv = document.getElementById('projectList');
+            listDiv.innerHTML = '';
+            try {
+                const snapshot = await get(ref(db, 'users/' + user.uid + '/projects'));
+                if (snapshot.exists()) {
+                    const projects = snapshot.val();
+                    for (const name in projects) {
+                        const div = document.createElement('div');
+                        div.className = 'project-item';
+                        div.innerHTML = `<span>${name}</span><span>${projects[name].fecha || ''}</span>`;
+                        div.onclick = () => {
+                            document.querySelectorAll('.project-item').forEach(d => d.classList.remove('active-proj'));
+                            div.classList.add('active-proj');
+                            selectedListProject = name;
+                            document.getElementById('loadProjectBtn').disabled = false;
+                        };
+                        listDiv.appendChild(div);
+                    }
+                } else {
+                    listDiv.innerHTML = '<div class="empty-state"><span class="empty-state-icon">📭</span>No hay proyectos</div>';
+                }
+            } catch (e) {
+                listDiv.innerHTML = '<div class="empty-state"><span class="empty-state-icon">❌</span>Error</div>';
+            }
+        };
+
+        window.cargarProyecto = async function() {
+            const user = auth.currentUser;
+            if (!selectedListProject || !user) return null;
+            const snapshot = await get(ref(db, 'users/' + user.uid + '/projects/' + selectedListProject));
+            return snapshot.exists() ? JSON.parse(snapshot.val().data) : null;
+        };
+
+        window.getSelectedListProject = () => selectedListProject;
+    </script>
+
+    <!-- LÓGICA PRINCIPAL -->
     <script>
         // ==========================================
-        // CONFIGURACIÓN
+        // PARTÍCULAS
         // ==========================================
-        
-        const CELL_WIDTH = 40;
-        const CELL_HEIGHT = 20;
-        const STEPS = 32; // 2 compases de 16 pasos
-        const OCTAVE_RANGE = 4; // 4 octavas
-        const NOTES_PER_OCTAVE = 12;
-        const TOTAL_NOTES = OCTAVE_RANGE * NOTES_PER_OCTAVE;
-        
+        const particleCanvas = document.getElementById('particleCanvas');
+        const pCtx = particleCanvas.getContext('2d');
+        function resizeCanvas() { particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = [];
+        const colors = ['#ff6b00', '#b24bff', '#00a8ff', '#00d97e'];
+        for (let i = 0; i < 60; i++) {
+            particles.push({
+                x: Math.random() * particleCanvas.width,
+                y: Math.random() * particleCanvas.height,
+                size: Math.random() * 3 + 1,
+                speedY: -(Math.random() * 1.5 + 0.5),
+                speedX: (Math.random() - 0.5) * 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                life: Math.random()
+            });
+        }
+        function animateParticles() {
+            pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX + Math.sin(p.y * 0.01) * 0.3;
+                p.y += p.speedY;
+                if (p.y < -10) { p.y = particleCanvas.height + 10; p.x = Math.random() * particleCanvas.width; }
+                pCtx.save();
+                pCtx.globalAlpha = 0.6;
+                pCtx.fillStyle = p.color;
+                pCtx.shadowBlur = 10;
+                pCtx.shadowColor = p.color;
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                pCtx.fill();
+                pCtx.restore();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Visualizador
+        const viz = document.getElementById('audioViz');
+        for (let i = 0; i < 40; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'viz-bar';
+            bar.style.height = (Math.random() * 80 + 20) + 'px';
+            bar.style.animationDelay = (Math.random()) + 's';
+            viz.appendChild(bar);
+        }
+
+        // Toast system
+        window.showToast = function(type, message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        };
+
+        // Undo/Redo
+        let undoStack = [], redoStack = [];
+        function saveState() {
+            undoStack.push(JSON.stringify(channelData[currentChannel]));
+            if (undoStack.length > 50) undoStack.shift();
+            redoStack = [];
+        }
+        function undo() {
+            if (!undoStack.length) return showToast('info', 'Nada que deshacer');
+            redoStack.push(JSON.stringify(channelData[currentChannel]));
+            channelData[currentChannel] = JSON.parse(undoStack.pop());
+            renderNotes(); updateNoteCount();
+            showToast('info', '↩ Deshecho');
+        }
+        function redo() {
+            if (!redoStack.length) return showToast('info', 'Nada que rehacer');
+            undoStack.push(JSON.stringify(channelData[currentChannel]));
+            channelData[currentChannel] = JSON.parse(redoStack.pop());
+            renderNotes(); updateNoteCount();
+            showToast('info', '↪ Rehecho');
+        }
+
+        // Configuración
+        let CELL_WIDTH = 35;
+        const CELL_HEIGHT = 20, STEPS = 32, TOTAL_NOTES = 48;
         const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const BLACK_KEYS = [1, 3, 6, 8, 10]; // C#, D#, F#, G#, A#
-        
-        let currentChannel = 'piano';
+        const BLACK_KEYS = [1, 3, 6, 8, 10];
+        let currentChannel = 'piano', isPlaying = false, bpm = 128;
+        let isDragging = false, isResizing = false, isDrawing = false, interactionData = null;
         let currentTool = 'draw';
-        let isPlaying = false;
-        let bpm = 128;
-        let currentStep = 0;
-        
-        // Almacenamiento de notas por canal
-        const channelData = {
-            piano: [],
-            bass: [],
-            lead: [],
-            pad: [],
-            kick: [],
-            snare: [],
-            hihat: []
-        };
-        
-        // ==========================================
-        // TONE.JS - SINTETIZADORES
-        // ==========================================
-        
+        const channelData = { piano: [], bass: [], lead: [], pad: [], kick: [], snare: [], hihat: [] };
+        let activeProjectName = "Sin Título";
+
+        // Sintetizadores con KICK POTENTE
+        const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.2 }).toDestination();
+        const compressor = new Tone.Compressor({ threshold: -24, ratio: 12, attack: 0.003, release: 0.25 }).toDestination();
+
         const synths = {
-            piano: new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: 'sine' },
-                envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 1 }
-            }).toDestination(),
-            
-            bass: new Tone.MonoSynth({
-                oscillator: { type: 'sawtooth' },
-                envelope: { attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.8 },
-                filter: { Q: 2, type: 'lowpass', rolloff: -24 },
-                filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.8, baseFrequency: 50, octaves: 4 }
-            }).toDestination(),
-            
-            lead: new Tone.MonoSynth({
-                oscillator: { type: 'square' },
-                envelope: { attack: 0.005, decay: 0.1, sustain: 0.6, release: 0.5 },
-                filter: { Q: 6, type: 'lowpass', rolloff: -24 },
-                filterEnvelope: { attack: 0.06, decay: 0.2, sustain: 0.5, release: 2, baseFrequency: 200, octaves: 7 }
-            }).toDestination(),
-            
-            pad: new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: 'sine' },
-                envelope: { attack: 1, decay: 0.5, sustain: 0.7, release: 2 }
-            }).toDestination(),
-            
-            kick: new Tone.MembraneSynth({
-                pitchDecay: 0.05,
-                octaves: 6,
-                oscillator: { type: 'sine' },
-                envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 }
-            }).toDestination(),
-            
-            snare: new Tone.NoiseSynth({
-                noise: { type: 'white' },
-                envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
-            }).toDestination(),
-            
-            hihat: new Tone.MetalSynth({
-                frequency: 200,
-                envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
-                harmonicity: 5.1,
-                modulationIndex: 32,
-                resonance: 4000,
-                octaves: 1.5
-            }).toDestination()
+            piano: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 1.5 } }).connect(reverb),
+            bass: new Tone.MonoSynth({ oscillator: { type: "sawtooth", count: 3, spread: 20 }, envelope: { attack: 0.02, decay: 0.4, sustain: 0.5, release: 1 }, filter: { Q: 3, type: "lowpass", rolloff: -24, frequency: 400 }, filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 1, baseFrequency: 100, octaves: 3 } }).connect(reverb),
+            lead: new Tone.MonoSynth({ oscillator: { type: "square", count: 2, spread: 10 }, envelope: { attack: 0.005, decay: 0.15, sustain: 0.7, release: 0.6 }, filter: { Q: 8, type: "lowpass", rolloff: -24, frequency: 2000 }, filterEnvelope: { attack: 0.05, decay: 0.3, sustain: 0.5, release: 1.5, baseFrequency: 300, octaves: 6 } }).connect(reverb),
+            pad: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 1.5, decay: 0.8, sustain: 0.8, release: 3 } }).connect(reverb),
+            kick: new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 10, oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 } }).connect(compressor),
+            snare: new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).connect(compressor),
+            hihat: new Tone.MetalSynth({ frequency: 400, envelope: { attack: 0.0001, decay: 0.05, release: 0.01 }, harmonicity: 5.1, modulationIndex: 40, resonance: 4500, octaves: 1.8 }).connect(compressor)
         };
         
+        // Ajustar volúmenes
+        synths.kick.volume.value = 6;
+        synths.snare.volume.value = 0;
+        synths.hihat.volume.value = -8;
+
         // ==========================================
-        // PIANO KEYS
+        // BOTONES DE INICIO
         // ==========================================
-        
+        document.getElementById('newProjectBtn').addEventListener('click', () => {
+            activeProjectName = document.getElementById('projectNameInput').value.trim() || "Mi Proyecto";
+            Object.keys(channelData).forEach(k => channelData[k] = []);
+            undoStack = []; redoStack = [];
+            startApp();
+            showToast('success', '🎹 Proyecto creado');
+        });
+
+        document.getElementById('loadProjectBtn').addEventListener('click', async () => {
+            if (window.cargarProyecto) {
+                const data = await window.cargarProyecto();
+                if (data) {
+                    activeProjectName = window.getSelectedListProject();
+                    Object.keys(data).forEach(k => { if (channelData[k]) channelData[k] = data[k]; });
+                    undoStack = []; redoStack = [];
+                    startApp();
+                    showToast('success', '📂 Proyecto cargado');
+                }
+            }
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (window.guardarProyecto) window.guardarProyecto(activeProjectName, channelData);
+        });
+
+        function startApp() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('shortcutsHint').style.display = 'block';
+            document.getElementById('currentProjectName').innerText = "- " + activeProjectName;
+            generatePianoKeys();
+            setupCanvas();
+            renderNotes();
+            updateNoteCount();
+            showToolIndicator('draw');
+            Tone.start();
+        }
+
+        function showToolIndicator(tool) {
+            const ind = document.getElementById('toolIndicator');
+            ind.style.display = 'flex';
+            document.getElementById('toolIndicatorIcon').textContent = tool === 'draw' ? '✏️' : '🗑';
+            document.getElementById('toolIndicatorText').textContent = tool === 'draw' ? 'Modo Dibujo' : 'Modo Borrar';
+            ind.style.borderColor = tool === 'draw' ? '#ff6b00' : '#dc3545';
+            ind.style.color = tool === 'draw' ? '#ff6b00' : '#dc3545';
+            setTimeout(() => ind.style.display = 'none', 2500);
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.getElementById('drawTool').className = tool === 'draw' ? 'tool-btn active' : 'tool-btn';
+            document.getElementById('eraseTool').className = tool === 'erase' ? 'tool-btn erase-active' : 'tool-btn';
+            document.getElementById('gridContainer').className = tool === 'erase' ? 'grid-container erase-mode' : 'grid-container';
+            showToolIndicator(tool);
+        }
+
+        document.getElementById('drawTool').addEventListener('click', () => setTool('draw'));
+        document.getElementById('eraseTool').addEventListener('click', () => setTool('erase'));
+
+        // Piano keys
         function generatePianoKeys() {
-            const container = document.getElementById('pianoKeys');
-            container.innerHTML = '';
-            
-            // Generar desde C3 hasta B6
-            for (let octave = 6; octave >= 3; octave--) {
-                for (let note = 11; note >= 0; note--) {
-                    const key = document.createElement('div');
-                    const noteName = NOTE_NAMES[note] + octave;
-                    const isBlack = BLACK_KEYS.includes(note);
-                    
-                    key.className = `piano-key ${isBlack ? 'black' : 'white'}`;
-                    key.textContent = noteName;
-                    key.dataset.note = noteName;
-                    
-                    key.addEventListener('click', () => {
-                        playNote(currentChannel, noteName);
-                    });
-                    
-                    container.appendChild(key);
+            const c = document.getElementById('pianoKeysInner');
+            c.innerHTML = '';
+            for (let oct = 6; oct >= 3; oct--) {
+                for (let n = 11; n >= 0; n--) {
+                    const k = document.createElement('div');
+                    k.className = 'piano-key ' + (BLACK_KEYS.includes(n) ? 'black' : 'white');
+                    k.textContent = NOTE_NAMES[n] + oct;
+                    k.onmousedown = () => playNote(currentChannel, NOTE_NAMES[n] + oct);
+                    c.appendChild(k);
                 }
             }
         }
-        
-        // ==========================================
-        // GRID CANVAS
-        // ==========================================
-        
+        document.getElementById('gridContainer').onscroll = e => document.getElementById('pianoKeys').scrollTop = e.target.scrollTop;
+
+        // Canvas
         function setupCanvas() {
             const canvas = document.getElementById('gridCanvas');
             const ctx = canvas.getContext('2d');
-            
             canvas.width = CELL_WIDTH * STEPS;
             canvas.height = CELL_HEIGHT * TOTAL_NOTES;
-            
+            document.getElementById('canvasWrapper').style.width = canvas.width + 'px';
+            document.getElementById('canvasWrapper').style.height = canvas.height + 'px';
             drawGrid(ctx);
         }
-        
         function drawGrid(ctx) {
-            ctx.fillStyle = '#1a1a1a';
+            ctx.fillStyle = '#0a0a0f';
             ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            
-            // Líneas horizontales
-            ctx.strokeStyle = '#2d2d2d';
-            ctx.lineWidth = 1;
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            for (let i = 0; i < TOTAL_NOTES; i++) if (BLACK_KEYS.includes((TOTAL_NOTES-1-i)%12)) ctx.fillRect(0, i*CELL_HEIGHT, ctx.canvas.width, CELL_HEIGHT);
             for (let i = 0; i <= TOTAL_NOTES; i++) {
-                const y = i * CELL_HEIGHT;
-                
-                // Líneas más gruesas para las notas C
-                const noteIndex = (TOTAL_NOTES - 1 - i) % 12;
-                if (NOTE_NAMES[noteIndex] === 'C') {
-                    ctx.strokeStyle = '#3a3a3a';
-                    ctx.lineWidth = 2;
-                } else {
-                    ctx.strokeStyle = '#2d2d2d';
-                    ctx.lineWidth = 1;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(ctx.canvas.width, y);
-                ctx.stroke();
+                ctx.strokeStyle = NOTE_NAMES[(TOTAL_NOTES-1-i)%12] === 'C' ? 'rgba(255,107,0,0.3)' : 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = NOTE_NAMES[(TOTAL_NOTES-1-i)%12] === 'C' ? 1.5 : 0.5;
+                ctx.beginPath(); ctx.moveTo(0, i*CELL_HEIGHT); ctx.lineTo(ctx.canvas.width, i*CELL_HEIGHT); ctx.stroke();
             }
-            
-            // Líneas verticales
-            ctx.strokeStyle = '#2d2d2d';
-            ctx.lineWidth = 1;
             for (let i = 0; i <= STEPS; i++) {
-                const x = i * CELL_WIDTH;
-                
-                // Líneas más gruesas cada 4 pasos (compás)
-                if (i % 4 === 0) {
-                    ctx.strokeStyle = '#404040';
-                    ctx.lineWidth = 2;
-                } else {
-                    ctx.strokeStyle = '#2d2d2d';
-                    ctx.lineWidth = 1;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, ctx.canvas.height);
-                ctx.stroke();
-            }
-            
-            // Sombrear teclas negras
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            for (let i = 0; i < TOTAL_NOTES; i++) {
-                const noteIndex = (TOTAL_NOTES - 1 - i) % 12;
-                if (BLACK_KEYS.includes(noteIndex)) {
-                    ctx.fillRect(0, i * CELL_HEIGHT, ctx.canvas.width, CELL_HEIGHT);
-                }
+                ctx.strokeStyle = i%4===0 ? 'rgba(255,107,0,0.3)' : 'rgba(255,255,255,0.05)';
+                ctx.beginPath(); ctx.moveTo(i*CELL_WIDTH, 0); ctx.lineTo(i*CELL_WIDTH, ctx.canvas.height); ctx.stroke();
             }
         }
-        
-        // ==========================================
-        // GESTIÓN DE NOTAS
-        // ==========================================
-        
+
+        // Notas
         function getNoteFromY(y) {
-            const noteIndex = Math.floor(y / CELL_HEIGHT);
-            const octave = Math.floor((TOTAL_NOTES - 1 - noteIndex) / 12) + 3;
-            const note = (TOTAL_NOTES - 1 - noteIndex) % 12;
-            return NOTE_NAMES[note] + octave;
+            const idx = Math.floor(y / CELL_HEIGHT);
+            return NOTE_NAMES[(TOTAL_NOTES-1-idx)%12] + (Math.floor((TOTAL_NOTES-1-idx)/12)+3);
         }
+        function getStepFromX(x) { return Math.floor(x / CELL_WIDTH); }
+        function getNoteIndex(nn) { return TOTAL_NOTES-1-((parseInt(nn.slice(-1))-3)*12+NOTE_NAMES.indexOf(nn.slice(0,-1))); }
         
-        function getStepFromX(x) {
-            return Math.floor(x / CELL_WIDTH);
+        function addNote(ch, step, note) {
+            if (channelData[ch].some(n => n.step===step && n.note===note)) return;
+            saveState();
+            channelData[ch].push({step, note, duration: 1});
+            renderNotes(); updateNoteCount();
         }
-        
-        function addNote(channel, step, note) {
-            // Evitar duplicados
-            const exists = channelData[channel].some(n => n.step === step && n.note === note);
-            if (exists) return;
-            
-            channelData[channel].push({ step, note });
-            renderNotes();
-            updateNoteCount();
+        function removeNote(ch, step, note) {
+            saveState();
+            channelData[ch] = channelData[ch].filter(n => !(n.step===step && n.note===note));
+            renderNotes(); updateNoteCount();
         }
-        
-        function removeNote(channel, step, note) {
-            channelData[channel] = channelData[channel].filter(n => !(n.step === step && n.note === note));
-            renderNotes();
-            updateNoteCount();
-        }
+        function getChannelColor(ch) { return {piano:'#2196F3', bass:'#9C27B0', lead:'#ff6b00', pad:'#E91E63', kick:'#ff3333', snare:'#4CAF50', hihat:'#FFD700'}[ch]||'#2196F3'; }
+        function updateNoteCount() { document.getElementById('noteCount').textContent = channelData[currentChannel].length; }
         
         function renderNotes() {
-            const wrapper = document.getElementById('canvasWrapper');
-            
-            // Limpiar notas existentes
-            document.querySelectorAll('.note-element').forEach(el => el.remove());
-            
-            // Renderizar notas del canal actual
-            channelData[currentChannel].forEach(noteData => {
-                const noteElement = document.createElement('div');
-                noteElement.className = 'note-element';
-                
-                // Calcular posición
-                const x = noteData.step * CELL_WIDTH;
-                const noteIndex = getNoteIndex(noteData.note);
-                const y = noteIndex * CELL_HEIGHT;
-                
-                noteElement.style.left = x + 'px';
-                noteElement.style.top = y + 'px';
-                noteElement.style.width = CELL_WIDTH + 'px';
-                noteElement.style.height = CELL_HEIGHT + 'px';
-                
-                // Color según canal
-                noteElement.style.background = getChannelColor(currentChannel);
-                
-                // Click para eliminar
-                noteElement.addEventListener('click', (e) => {
-                    if (currentTool === 'erase') {
-                        e.stopPropagation();
-                        removeNote(currentChannel, noteData.step, noteData.note);
-                    }
-                });
-                
-                wrapper.appendChild(noteElement);
+            const w = document.getElementById('canvasWrapper');
+            w.querySelectorAll('.note-element').forEach(e => e.remove());
+            channelData[currentChannel].forEach(nd => {
+                const el = document.createElement('div');
+                el.className = 'note-element';
+                el.style.background = `linear-gradient(180deg, ${getChannelColor(currentChannel)}dd, ${getChannelColor(currentChannel)}88)`;
+                el.style.left = nd.step*CELL_WIDTH+'px';
+                el.style.top = getNoteIndex(nd.note)*CELL_HEIGHT+'px';
+                el.style.width = nd.duration*CELL_WIDTH+'px';
+                el.style.height = CELL_HEIGHT+'px';
+                el.innerHTML = '<div class="note-body"></div><div class="resize-handle"></div>';
+                el.noteData = nd;
+                w.appendChild(el);
             });
         }
-        
-        function getNoteIndex(noteName) {
-            // Convertir nota (ej. "C4") a índice en la cuadrícula
-            const note = noteName.slice(0, -1);
-            const octave = parseInt(noteName.slice(-1));
-            const noteNum = NOTE_NAMES.indexOf(note);
-            const absoluteNote = (octave - 3) * 12 + noteNum;
-            return TOTAL_NOTES - 1 - absoluteNote;
-        }
-        
-        function getChannelColor(channel) {
-            const colors = {
-                piano: 'linear-gradient(135deg, #2196F3 0%, #0d47a1 100%)',
-                bass: 'linear-gradient(135deg, #9C27B0 0%, #4a148c 100%)',
-                lead: 'linear-gradient(135deg, #ff8800 0%, #ff6600 100%)',
-                pad: 'linear-gradient(135deg, #E91E63 0%, #880e4f 100%)',
-                kick: 'linear-gradient(135deg, #ff6600 0%, #cc5200 100%)',
-                snare: 'linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%)',
-                hihat: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-            };
-            return colors[channel] || colors.piano;
-        }
-        
-        function updateNoteCount() {
-            const count = channelData[currentChannel].length;
-            document.getElementById('noteCount').textContent = `Notes: ${count}`;
-        }
-        
-        // ==========================================
-        // CANVAS INTERACTION
-        // ==========================================
-        
+
+        // Interacción
+        const wrapper = document.getElementById('canvasWrapper');
+        const gridContainer = document.getElementById('gridContainer');
         const canvas = document.getElementById('gridCanvas');
-        
-        canvas.addEventListener('click', (e) => {
-            if (currentTool !== 'draw') return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const step = getStepFromX(x);
-            const note = getNoteFromY(y);
-            
-            addNote(currentChannel, step, note);
-            playNote(currentChannel, note);
-        });
-        
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const note = getNoteFromY(y);
-            document.getElementById('currentNote').textContent = note;
-        });
-        
-        // ==========================================
-        // REPRODUCCIÓN
-        // ==========================================
-        
-        function playNote(channel, note) {
-            const synth = synths[channel];
-            const now = Tone.now();
-            
-            if (channel === 'kick' || channel === 'snare' || channel === 'hihat') {
-                synth.triggerAttackRelease('16n', now);
-            } else {
-                synth.triggerAttackRelease(note, '8n', now);
+
+        wrapper.addEventListener('contextmenu', e => e.preventDefault());
+
+        wrapper.addEventListener('mousedown', e => {
+            const noteEl = e.target.closest('.note-element');
+            if (noteEl) {
+                const nd = noteEl.noteData;
+                if ((currentTool==='erase' && e.button===0) || e.button===2) {
+                    removeNote(currentChannel, nd.step, nd.note);
+                    return;
+                }
+                if (currentTool==='draw' && e.button===0) {
+                    if (e.target.classList.contains('resize-handle')) {
+                        isResizing = true;
+                        interactionData = {el: noteEl, nd, dur: nd.duration, mx: e.clientX};
+                    } else {
+                        isDragging = true;
+                        interactionData = {el: noteEl, nd, sx: noteEl.getBoundingClientRect().left, sy: noteEl.getBoundingClientRect().top, mx: e.clientX, my: e.clientY};
+                        noteEl.style.zIndex=10; noteEl.style.opacity=0.8;
+                    }
+                    e.preventDefault();
+                }
+            } else if (e.target===canvas && e.button===0 && currentTool==='draw') {
+                isDrawing=true;
+                const r=canvas.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+                const s=getStepFromX(x), n=getNoteFromY(y);
+                if(s>=0&&s<STEPS){addNote(currentChannel,s,n);playNote(currentChannel,n);}
             }
+        });
+
+        window.addEventListener('mousemove', e => {
+            if(isDragging&&interactionData){
+                interactionData.el.style.left=(interactionData.sx+(e.clientX-interactionData.mx))+'px';
+                interactionData.el.style.top=(interactionData.sy+(e.clientY-interactionData.my))+'px';
+            }
+            if(isResizing&&interactionData){
+                const d=Math.round((e.clientX-interactionData.mx)/CELL_WIDTH);
+                interactionData.nd.duration=Math.max(1,interactionData.dur+d);
+                interactionData.el.style.width=(interactionData.nd.duration*CELL_WIDTH)+'px';
+            }
+            const r=canvas.getBoundingClientRect(), y=e.clientY-r.top, x=e.clientX-r.left;
+            if(y>0&&y<TOTAL_NOTES*CELL_HEIGHT)document.getElementById('currentNote').textContent=getNoteFromY(y);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if((isDragging||isResizing)&&interactionData){
+                saveState();
+                const el=interactionData.el, nd=interactionData.nd;
+                const ns=Math.max(0,Math.min(STEPS-1,getStepFromX(el.offsetLeft)));
+                const ni=Math.max(0,Math.min(TOTAL_NOTES-1,Math.floor(el.offsetTop/CELL_HEIGHT)));
+                const o=Math.floor((TOTAL_NOTES-1-ni)/12)+3, nn=NOTE_NAMES[(TOTAL_NOTES-1-ni)%12], newN=nn+o;
+                if(!channelData[currentChannel].some(n=>n.step===ns&&n.note===newN&&n!==nd)){nd.step=ns;nd.note=newN;}
+                el.style.zIndex=2;el.style.opacity=1;renderNotes();
+            }
+            isDragging=isResizing=isDrawing=false;interactionData=null;
+        });
+
+        // Reproducción
+        function playNote(ch, note) {
+            const now=Tone.now();
+            if(ch==='kick'||ch==='snare'||ch==='hihat') synths[ch].triggerAttackRelease('16n', now);
+            else synths[ch].triggerAttackRelease(note, '8n', now);
         }
-        
-        // Secuenciador
-        const sequence = new Tone.Sequence((time, step) => {
-            // Reproducir todas las notas activas en este paso para todos los canales
-            Object.keys(channelData).forEach(channel => {
-                channelData[channel].forEach(noteData => {
-                    if (noteData.step === step) {
-                        playNote(channel, noteData.note);
+
+        const seq = new Tone.Sequence((time, step) => {
+            Object.keys(channelData).forEach(ch => {
+                channelData[ch].forEach(nd => {
+                    if(nd.step===step){
+                        const d=(60/bpm)*(nd.duration*0.25);
+                        if(ch==='kick'||ch==='snare'||ch==='hihat') synths[ch].triggerAttackRelease('16n', time);
+                        else synths[ch].triggerAttackRelease(nd.note, d, time);
                     }
                 });
             });
-            
-            Tone.Draw.schedule(() => {
-                currentStep = step;
-                highlightCurrentStep(step);
-            }, time);
-            
+            Tone.Draw.schedule(()=>{document.getElementById('playhead').style.left=step*CELL_WIDTH+'px';},time);
         }, [...Array(STEPS).keys()], '16n');
-        
-        function highlightCurrentStep(step) {
-            // Limpiar highlight anterior
-            document.querySelectorAll('.note-element').forEach(el => {
-                el.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-            });
-            
-            // Highlight notas en el paso actual
-            const x = step * CELL_WIDTH;
-            document.querySelectorAll('.note-element').forEach(el => {
-                if (parseInt(el.style.left) === x) {
-                    el.style.borderColor = 'white';
-                    el.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
-                }
-            });
-        }
-        
-        // ==========================================
-        // CONTROLES
-        // ==========================================
-        
-        document.getElementById('playBtn').addEventListener('click', async () => {
-            if (!isPlaying) {
-                await Tone.start();
-                Tone.Transport.start();
-                sequence.start(0);
-                isPlaying = true;
-                
+        seq.loop=true;
+
+        document.getElementById('playBtn').onclick = async () => {
+            await Tone.start();
+            if(!isPlaying){
+                Tone.Transport.start();seq.start(0);isPlaying=true;
                 document.getElementById('playBtn').classList.add('playing');
-                document.getElementById('playBtn').innerHTML = '⏸';
-            } else {
-                Tone.Transport.pause();
-                isPlaying = false;
-                
+                document.getElementById('playBtn').innerHTML='⏸';
+                document.getElementById('playhead').style.display='block';
+                showToast('info','▶ Reproduciendo');
+            }else{
+                Tone.Transport.pause();isPlaying=false;
                 document.getElementById('playBtn').classList.remove('playing');
-                document.getElementById('playBtn').innerHTML = '▶';
+                document.getElementById('playBtn').innerHTML='▶';
+                showToast('info','⏸ Pausado');
             }
-        });
-        
-        document.getElementById('stopBtn').addEventListener('click', () => {
-            Tone.Transport.stop();
-            sequence.stop();
-            isPlaying = false;
-            
+        };
+
+        document.getElementById('stopBtn').onclick = () => {
+            Tone.Transport.stop();seq.stop();isPlaying=false;
             document.getElementById('playBtn').classList.remove('playing');
-            document.getElementById('playBtn').innerHTML = '▶';
-        });
-        
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            if (confirm(`¿Borrar todas las notas de ${currentChannel}?`)) {
-                channelData[currentChannel] = [];
-                renderNotes();
-                updateNoteCount();
-            }
-        });
-        
-        // BPM
-        document.getElementById('bpmSlider').addEventListener('input', (e) => {
-            bpm = parseInt(e.target.value);
-            document.getElementById('bpmValue').textContent = bpm;
-            Tone.Transport.bpm.value = bpm;
-        });
-        
-        Tone.Transport.bpm.value = bpm;
-        
-        // Volume
-        document.getElementById('volumeSlider').addEventListener('input', (e) => {
-            const vol = parseFloat(e.target.value);
-            synths[currentChannel].volume.value = vol;
-        });
-        
-        // Tools
-        document.getElementById('drawTool').addEventListener('click', () => {
-            currentTool = 'draw';
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('drawTool').classList.add('active');
-            canvas.style.cursor = 'crosshair';
-        });
-        
-        document.getElementById('eraseTool').addEventListener('click', () => {
-            currentTool = 'erase';
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('eraseTool').classList.add('active');
-            canvas.style.cursor = 'not-allowed';
-        });
-        
-        // Channel selector
+            document.getElementById('playBtn').innerHTML='▶';
+            document.getElementById('playhead').style.display='none';
+            showToast('info','⏹ Detenido');
+        };
+
+        // Clear con confirmación
+        document.getElementById('clearBtn').onclick = () => {
+            document.getElementById('clearChannelName').textContent=currentChannel.charAt(0).toUpperCase()+currentChannel.slice(1);
+            document.getElementById('confirmOverlay').style.display='flex';
+        };
+        document.getElementById('confirmYes').onclick = () => {
+            saveState();
+            const n=channelData[currentChannel].length;
+            channelData[currentChannel]=[];
+            renderNotes();updateNoteCount();
+            document.getElementById('confirmOverlay').style.display='none';
+            showToast('success',`🗑 Canal limpiado (${n} notas)`);
+        };
+        document.getElementById('confirmNo').onclick = () => {
+            document.getElementById('confirmOverlay').style.display='none';
+            showToast('info','Cancelado');
+        };
+        document.getElementById('confirmOverlay').onclick = e => {if(e.target.id==='confirmOverlay')document.getElementById('confirmOverlay').style.display='none';};
+
+        // BPM y volumen
+        document.getElementById('bpmSlider').oninput = e => {
+            bpm=parseInt(e.target.value);
+            document.getElementById('bpmValue').textContent=bpm;
+            Tone.Transport.bpm.value=bpm;
+        };
+        Tone.Transport.bpm.value=bpm;
+
+        document.getElementById('volumeSlider').oninput = e => {
+            synths[currentChannel].volume.value=parseFloat(e.target.value);
+        };
+
+        // Toolbar buttons
+        document.getElementById('zoomIn').onclick = () => {CELL_WIDTH+=10;if(CELL_WIDTH>80)CELL_WIDTH=80;setupCanvas();renderNotes();};
+        document.getElementById('zoomOut').onclick = () => {CELL_WIDTH-=10;if(CELL_WIDTH<15)CELL_WIDTH=15;setupCanvas();renderNotes();};
+        document.getElementById('undoBtn').onclick = undo;
+        document.getElementById('redoBtn').onclick = redo;
+
+        // Channel tabs
         document.querySelectorAll('.channel-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                currentChannel = tab.dataset.channel;
-                
-                document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+            tab.onclick = () => {
+                currentChannel=tab.dataset.channel;
+                document.querySelectorAll('.channel-tab').forEach(t=>t.classList.remove('active'));
                 tab.classList.add('active');
-                
-                renderNotes();
-                updateNoteCount();
-            });
+                document.getElementById('volumeSlider').value=synths[currentChannel].volume.value;
+                renderNotes();updateNoteCount();
+                showToast('info','🎹 '+currentChannel);
+            };
         });
-        
-        // ==========================================
-        // INICIALIZACIÓN
-        // ==========================================
-        
-        generatePianoKeys();
-        setupCanvas();
-        updateNoteCount();
-        
-        // Patrón de ejemplo para Piano
-        const examplePattern = [
-            { step: 0, note: 'C4' },
-            { step: 4, note: 'E4' },
-            { step: 8, note: 'G4' },
-            { step: 12, note: 'C5' },
-            { step: 16, note: 'G4' },
-            { step: 20, note: 'E4' },
-            { step: 24, note: 'C4' }
-        ];
-        
-        // Descomentar para cargar patrón de ejemplo
-        // channelData.piano = examplePattern;
-        // renderNotes();
-        // updateNoteCount();
-        
-        console.log('🎹 FL Studio Web loaded!');
-        console.log('✏️ Click en la cuadrícula para añadir notas');
-        console.log('🎵 Cambia entre canales con las pestañas superiores');
+
+        // Keyboard shortcuts
+        window.onkeydown = e => {
+            if(e.target.matches('input'))return;
+            if(e.code==='Space'){e.preventDefault();document.getElementById('playBtn').click();}
+            if(e.key.toLowerCase()==='d'){e.preventDefault();setTool('draw');}
+            if(e.key.toLowerCase()==='e'){e.preventDefault();setTool('erase');}
+            if(e.code==='Delete'){e.preventDefault();document.getElementById('clearBtn').click();}
+            if(e.ctrlKey&&e.key==='z'){e.preventDefault();undo();}
+            if(e.ctrlKey&&e.key==='y'){e.preventDefault();redo();}
+            if(e.code==='Escape'&&document.getElementById('mainApp').style.display!=='none')document.getElementById('stopBtn').click();
+        };
+
+        console.log('%c✅ FL Studio Web cargado - Todos los botones funcionando', 'color:#00d97e;font-size:14px;font-weight:bold');
     </script>
 </body>
 </html>
