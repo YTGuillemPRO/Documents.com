@@ -1,704 +1,1190 @@
-import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import { Zap, Shield, Crown, Crosshair, Home, ShoppingCart, Users, Play, Settings, ChevronDown, X } from 'lucide-react';
-
-const FortniteGame = () => {
-  const [currentScreen, setCurrentScreen] = useState('lobby');
-  const [gameStarted, setGameStarted] = useState(false);
-  const [landing, setLanding] = useState(true);
-  const [playerHealth, setPlayerHealth] = useState(100);
-  const [shield, setShield] = useState(0);
-  const [kills, setKills] = useState(0);
-  const [ammo, setAmmo] = useState(999);
-  const [selectedSkin, setSelectedSkin] = useState(0);
-  const [showStats, setShowStats] = useState(false);
-  const mountRef = useRef(null);
-  const sceneRef = useRef(null);
-  const playerRef = useRef(null);
-  const enemiesRef = useRef([]);
-  const cameraRef = useRef(null);
-  const keysPressed = useRef({});
-  const gameStateRef = useRef({
-    playerPos: new THREE.Vector3(0, 10, 0),
-    playerHealth: 100,
-    playerShield: 0,
-    kills: 0,
-    inAir: true,
-    speed: 0.2,
-  });
-
-  const skins = [
-    { id: 0, name: 'Astra', color: '#6B46C1' },
-    { id: 1, name: 'Shadowborne', color: '#1F2937' },
-    { id: 2, name: 'Nexus', color: '#06B6D4' },
-    { id: 3, name: 'Inferno', color: '#DC2626' },
-    { id: 4, name: 'Frostbyte', color: '#3B82F6' },
-  ];
-
-  // Initialize Three.js scene
-  useEffect(() => {
-    if (!gameStarted) return;
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    // Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB);
-    scene.fog = new THREE.Fog(0x87CEEB, 500, 1000);
-    sceneRef.current = scene;
-
-    // Camera
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
-    camera.position.set(0, 15, 30);
-    cameraRef.current = camera;
-
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowShadowMap;
-    mountRef.current.appendChild(renderer.domElement);
-
-    // Lights
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-    sunLight.position.set(100, 100, 100);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    scene.add(sunLight);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    // Create island terrain
-    const terrainGeometry = new THREE.ConeGeometry(150, 30, 32);
-    const terrainMaterial = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
-    const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
-    terrain.castShadow = true;
-    terrain.receiveShadow = true;
-    scene.add(terrain);
-
-    // Add some buildings/obstacles
-    for (let i = 0; i < 15; i++) {
-      const buildingGeometry = new THREE.BoxGeometry(10, 20, 10);
-      const buildingMaterial = new THREE.MeshPhongMaterial({ color: Math.random() * 0xffffff });
-      const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-      building.position.set(
-        (Math.random() - 0.5) * 200,
-        10,
-        (Math.random() - 0.5) * 200
-      );
-      building.castShadow = true;
-      building.receiveShadow = true;
-      scene.add(building);
-    }
-
-    // Create player
-    const playerGeometry = new THREE.CapsuleGeometry(1, 3, 4, 8);
-    const playerMaterial = new THREE.MeshPhongMaterial({ color: skins[selectedSkin].color });
-    const player = new THREE.Mesh(playerGeometry, playerMaterial);
-    player.position.copy(gameStateRef.current.playerPos);
-    player.castShadow = true;
-    player.receiveShadow = true;
-    scene.add(player);
-    playerRef.current = player;
-
-    // Create enemies
-    for (let i = 0; i < 5; i++) {
-      const enemyGeometry = new THREE.CapsuleGeometry(1, 3, 4, 8);
-      const enemyMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6B6B });
-      const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
-      enemy.position.set(
-        (Math.random() - 0.5) * 150,
-        15,
-        (Math.random() - 0.5) * 150
-      );
-      enemy.castShadow = true;
-      enemy.receiveShadow = true;
-      enemy.userData = {
-        health: 100,
-        name: ['ShadowKnight', 'NovaGhost', 'IceQueen', 'FireLord', 'VoidWalker'][i],
-        velocity: new THREE.Vector3(),
-      };
-      scene.add(enemy);
-      enemiesRef.current.push(enemy);
-    }
-
-    // Keyboard controls
-    const handleKeyDown = (e) => {
-      keysPressed.current[e.key.toLowerCase()] = true;
-      if (e.key === ' ') handleShoot();
-    };
-    const handleKeyUp = (e) => {
-      keysPressed.current[e.key.toLowerCase()] = false;
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    const handleShoot = () => {
-      if (ammo > 0) {
-        setAmmo((a) => a - 1);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortnite 3D - Batalla Real</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.0.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        // Raycast to check for hits
-        const raycaster = new THREE.Raycaster();
-        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        raycaster.set(camera.position, direction);
-
-        const intersects = raycaster.intersectObjects(enemiesRef.current);
-        if (intersects.length > 0) {
-          const hitEnemy = intersects[0].object;
-          hitEnemy.userData.health -= 25;
-          
-          if (hitEnemy.userData.health <= 0) {
-            scene.remove(hitEnemy);
-            enemiesRef.current = enemiesRef.current.filter((e) => e !== hitEnemy);
-            setKills((k) => k + 1);
-          }
-        }
-      }
-    };
-
-    // Game loop
-    const gameLoop = () => {
-      requestAnimationFrame(gameLoop);
-
-      // Player movement
-      const moveSpeed = 0.3;
-      if (keysPressed.current['w']) gameStateRef.current.playerPos.z -= moveSpeed;
-      if (keysPressed.current['s']) gameStateRef.current.playerPos.z += moveSpeed;
-      if (keysPressed.current['a']) gameStateRef.current.playerPos.x -= moveSpeed;
-      if (keysPressed.current['d']) gameStateRef.current.playerPos.x += moveSpeed;
-
-      // Gravity
-      if (gameStateRef.current.playerPos.y > 1) {
-        gameStateRef.current.playerPos.y -= 0.2;
-      } else {
-        gameStateRef.current.playerPos.y = 1;
-      }
-
-      // Constrain to island
-      const dist = gameStateRef.current.playerPos.length();
-      if (dist > 140) {
-        gameStateRef.current.playerPos.normalize().multiplyScalar(140);
-      }
-
-      if (playerRef.current) {
-        playerRef.current.position.copy(gameStateRef.current.playerPos);
-      }
-
-      // Update camera to follow player (3rd person)
-      const offset = new THREE.Vector3(0, 5, 20);
-      offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-      camera.position.lerp(
-        gameStateRef.current.playerPos.clone().add(offset),
-        0.1
-      );
-      camera.lookAt(gameStateRef.current.playerPos.clone().add(new THREE.Vector3(0, 2, 0)));
-
-      // Enemy AI
-      enemiesRef.current.forEach((enemy) => {
-        const direction = gameStateRef.current.playerPos.clone().sub(enemy.position);
-        const distance = direction.length();
-
-        if (distance < 100) {
-          direction.normalize().multiplyScalar(0.05);
-          enemy.position.add(direction);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: white;
         }
 
-        // Simple gravity for enemies
-        if (enemy.position.y > 1) {
-          enemy.position.y -= 0.2;
-        } else {
-          enemy.position.y = 1;
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         }
 
-        // Constrain enemies to island
-        const enemyDist = enemy.position.length();
-        if (enemyDist > 140) {
-          enemy.position.normalize().multiplyScalar(140);
+        .glass {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(6, 182, 212, 0.2);
         }
 
-        // Damage from enemy contact
-        const contactDist = gameStateRef.current.playerPos.distanceTo(enemy.position);
-        if (contactDist < 3) {
-          setPlayerHealth((h) => Math.max(0, h - 0.5));
+        .btn-game {
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
         }
-      });
 
-      renderer.render(scene, camera);
-    };
+        .btn-game:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.4);
+        }
 
-    gameLoop();
+        .btn-game:active {
+            transform: scale(0.95);
+        }
 
-    // Handle window resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener('resize', handleResize);
+        .btn-mode {
+            padding: 32px 24px;
+            border-radius: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 18px;
+        }
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('resize', handleResize);
-      renderer.dispose();
-      if (mountRef.current) mountRef.current.removeChild(renderer.domElement);
-    };
-  }, [gameStarted, selectedSkin, ammo]);
+        .btn-mode:hover {
+            transform: scale(1.05);
+        }
 
-  const handleQuitGame = () => {
-    setGameStarted(false);
-    setLanding(true);
-    setPlayerHealth(100);
-    setShield(0);
-    setKills(0);
-    setAmmo(999);
-    setCurrentScreen('lobby');
-  };
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
 
-  // 3D Game View
-  if (gameStarted) {
-    return (
-      <div className="w-full h-screen bg-black text-white overflow-hidden">
-        {/* Three.js Canvas */}
-        <div ref={mountRef} className="w-full h-full" />
+        .card:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+            transform: translateY(-4px);
+        }
 
-        {/* HUD Overlay */}
-        <div className="fixed inset-0 pointer-events-none">
-          {/* Top Left - Health & Shield */}
-          <div className="absolute top-6 left-6">
-            <div className="bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-cyan-500 border-opacity-50 w-72">
-              <div className="text-xs text-cyan-400 font-bold mb-3">HEALTH</div>
-              <div className="flex gap-2 mb-4">
-                <div className="flex-1">
-                  <div className="h-6 bg-gray-800 rounded border border-red-500 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all"
-                      style={{ width: `${Math.max(0, playerHealth)}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">{Math.max(0, Math.floor(playerHealth))}/100</div>
-                </div>
-              </div>
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
 
-              <div className="text-xs text-blue-400 font-bold mb-2">SHIELD</div>
-              <div className="h-4 bg-gray-800 rounded border border-blue-500 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
-                  style={{ width: `${shield}%` }}
-                />
-              </div>
-            </div>
-          </div>
+        .tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
 
-          {/* Top Right - Ammo & Stats */}
-          <div className="absolute top-6 right-6">
-            <div className="bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-purple-500 border-opacity-50 text-right">
-              <div className="text-4xl font-black text-purple-400">{kills}</div>
-              <div className="text-xs text-purple-300 font-bold">ELIMINATIONS</div>
-            </div>
+        .tab-btn.active {
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            color: white;
+        }
 
-            <div className="mt-3 bg-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg border border-yellow-500 border-opacity-50 text-right">
-              <div className="text-2xl font-black text-yellow-400">{ammo}</div>
-              <div className="text-xs text-yellow-300 font-bold">AMMO</div>
-            </div>
-          </div>
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
 
-          {/* Center - Crosshair */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <Crosshair className="w-8 h-8 text-cyan-400 opacity-60" />
-          </div>
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-          {/* Bottom - Controls */}
-          <div className="absolute bottom-6 left-6 bg-black bg-opacity-70 backdrop-blur-sm p-3 rounded-lg border border-cyan-500 border-opacity-50 text-xs text-cyan-300">
-            <div className="font-bold mb-2">CONTROLS</div>
-            <div>W/A/S/D - Move | SPACE - Shoot</div>
-          </div>
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(6, 182, 212, 0.2);
+            border-top-color: #06b6d4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-          {/* Bottom Right - Quit Button */}
-          <button
-            onClick={handleQuitGame}
-            className="absolute bottom-6 right-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold text-white transition-all pointer-events-auto flex items-center gap-2"
-          >
-            <X className="w-4 h-4" />
-            QUIT
-          </button>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-          {/* Death Screen */}
-          {playerHealth <= 0 && (
-            <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center pointer-events-auto">
-              <div className="text-center">
-                <div className="text-6xl font-black text-red-500 mb-4 animate-pulse">ELIMINATED</div>
-                <div className="text-2xl text-gray-300 mb-6">Final Score: {kills} Eliminations</div>
-                <button
-                  onClick={handleQuitGame}
-                  className="px-10 py-4 bg-cyan-500 hover:bg-cyan-600 rounded-lg font-bold text-white text-lg transition-all"
-                >
-                  RETURN TO LOBBY
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+        #game-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
 
-  return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white font-sans overflow-x-hidden">
-      {/* Animated background */}
-      <div className="fixed inset-0 -z-10 opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500 rounded-full filter blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl animate-pulse" />
-      </div>
+        #game-canvas {
+            display: block;
+        }
 
-      {/* Header */}
-      <header className="border-b border-cyan-500 border-opacity-30 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-bold text-sm">
-              F
-            </div>
-            <div>
-              <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                FORTNITE 3D
-              </h1>
-              <p className="text-xs text-cyan-300">ULTIMATE BATTLE ROYALE</p>
-            </div>
-          </div>
+        .hud-element {
+            position: absolute;
+            pointer-events: none;
+        }
 
-          <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-slate-700 rounded-lg transition">
-              <Settings className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </header>
+        .hud-button {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-      {/* Navigation */}
-      <div className="border-b border-cyan-500 border-opacity-30 bg-slate-900 bg-opacity-50 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex gap-6">
-          {[
-            { id: 'lobby', label: 'LOBBY', icon: Home },
-            { id: 'battle-pass', label: 'BATTLE PASS', icon: Crown },
-            { id: 'shop', label: 'ITEM SHOP', icon: ShoppingCart },
-            { id: 'squad', label: 'SQUAD', icon: Users },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setCurrentScreen(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                currentScreen === id
-                  ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold'
-                  : 'text-gray-300 hover:text-cyan-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* LOBBY SCREEN */}
-        {currentScreen === 'lobby' && (
-          <div className="space-y-8">
-            {/* Featured */}
-            <section className="relative overflow-hidden rounded-xl border border-cyan-500 border-opacity-30 bg-gradient-to-r from-slate-800 to-slate-900 p-8">
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full filter blur-3xl" />
-              </div>
-              <div className="relative z-10">
-                <p className="text-cyan-400 text-sm font-bold mb-2">NOW AVAILABLE</p>
-                <h2 className="text-4xl font-black mb-4 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-                  {skins[selectedSkin].name}
-                </h2>
-                <p className="text-gray-300 mb-6">Featured legendary outfit</p>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setCurrentScreen('shop')}
-                    className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold hover:opacity-90 transition flex items-center gap-2"
-                  >
-                    <ShoppingCart className="w-5 h-5" /> VIEW SHOP
-                  </button>
-                  <button className="px-8 py-3 border-2 border-cyan-500 rounded-lg font-bold hover:bg-cyan-500 hover:bg-opacity-10 transition">
-                    PREVIEW
-                  </button>
-                </div>
-              </div>
-            </section>
+        // Datos de skins
+        const SKINS = [
+            { id: 0, name: 'Astra', color: '#6B46C1', rarity: 'Legendario', price: 2000, emoji: '🌟' },
+            { id: 1, name: 'Sombrío', color: '#1F2937', rarity: 'Épico', price: 1500, emoji: '🌑' },
+            { id: 2, name: 'Nexus', color: '#06B6D4', rarity: 'Raro', price: 1200, emoji: '💎' },
+            { id: 3, name: 'Inferno', color: '#DC2626', rarity: 'Legendario', price: 2000, emoji: '🔥' },
+            { id: 4, name: 'Escarcha', color: '#3B82F6', rarity: 'Épico', price: 1500, emoji: '❄️' },
+            { id: 5, name: 'Fénix Dorado', color: '#F59E0B', rarity: 'Mítico', price: 3000, emoji: '🦅' },
+        ];
 
-            {/* Play Section */}
-            <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-cyan-500 border-opacity-30 p-8">
-              <h3 className="text-2xl font-black mb-6">READY TO FIGHT?</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { mode: 'Solo', players: '100', color: 'from-cyan-500 to-blue-600' },
-                  { mode: 'Duo', players: '50', color: 'from-purple-500 to-pink-600' },
-                  { mode: 'Squad', players: '25', color: 'from-orange-500 to-red-600' },
-                ].map((mode) => (
-                  <button
-                    key={mode.mode}
-                    onClick={() => {
-                      setGameStarted(true);
-                      setPlayerHealth(100);
-                      setKills(0);
-                    }}
-                    className={`bg-gradient-to-br ${mode.color} p-6 rounded-lg font-bold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all transform hover:scale-105`}
-                  >
-                    <Play className="w-6 h-6 mx-auto mb-2" />
-                    <div className="text-lg">{mode.mode}</div>
-                    <div className="text-sm opacity-90">{mode.players} Players</div>
-                  </button>
-                ))}
-              </div>
-            </section>
+        // Componente principal
+        function App() {
+            // Estados principales
+            const [pantalla, setPantalla] = useState('lobby');
+            const [jugando, setJugando] = useState(false);
+            const [cargando, setCargando] = useState(true);
+            
+            // Estados del jugador
+            const [vida, setVida] = useState(100);
+            const [escudo, setEscudo] = useState(50);
+            const [kills, setKills] = useState(0);
+            const [municion, setMunicion] = useState(999);
+            const [skinSeleccionado, setSkinSeleccionado] = useState(0);
+            const [nivel, setNivel] = useState(45);
+            const [nivelPase, setNivelPase] = useState(27);
+            
+            // UI States
+            const [mostrarConfig, setMostrarConfig] = useState(false);
+            const [notificacion, setNotificacion] = useState(null);
+            const [killFeed, setKillFeed] = useState([]);
+            const [tiempoJuego, setTiempoJuego] = useState(0);
+            const [jugadoresVivos, setJugadoresVivos] = useState(100);
 
-            {/* Stats */}
-            <section className="grid grid-cols-4 gap-4">
-              {[
-                { label: 'Level', value: playerLevel, icon: Shield },
-                { label: 'Matches Played', value: '47', icon: Users },
-                { label: 'Win Rate', value: '12%', icon: Crown },
-                { label: 'Total Kills', value: '156', icon: Zap },
-              ].map((stat, i) => {
-                const Icon = stat.icon;
+            // Refs
+            const mountRef = useRef(null);
+            const escenaRef = useRef(null);
+            const jugadorRef = useRef(null);
+            const enemigosRef = useRef([]);
+            const camaraRef = useRef(null);
+            const teclasRef = useRef({});
+            const estadoJuegoRef = useRef({
+                posicion: { x: 0, y: 10, z: 0 },
+                anguloX: 0,
+                anguloY: 0
+            });
+
+            // Efecto de carga inicial
+            useEffect(() => {
+                console.log('🎮 Iniciando aplicación...');
+                const timer = setTimeout(() => {
+                    setCargando(false);
+                    console.log('✅ Carga completada');
+                }, 1500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            // Mostrar notificación
+            const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+                console.log(`📢 Notificación: ${mensaje}`);
+                setNotificacion({ mensaje, tipo });
+                setTimeout(() => setNotificacion(null), 3000);
+            };
+
+            // Cambiar pantalla
+            const cambiarPantalla = (nuevaPantalla) => {
+                console.log(`📺 Cambiando a: ${nuevaPantalla}`);
+                setPantalla(nuevaPantalla);
+                mostrarNotificacion(`Pantalla: ${nuevaPantalla.toUpperCase()}`, 'info');
+            };
+
+            // Iniciar juego
+            const iniciarJuego = (modo, jugadores) => {
+                console.log(`▶️ Iniciando modo ${modo}...`);
+                setJugando(true);
+                setVida(100);
+                setEscudo(50);
+                setKills(0);
+                setMunicion(999);
+                setTiempoJuego(0);
+                setJugadoresVivos(jugadores);
+                setKillFeed([]);
+                mostrarNotificion(`¡Partida ${modo} iniciada!`, 'exito');
+            };
+
+            // Salir del juego
+            const salirJuego = () => {
+                console.log('🚪 Saliendo del juego...');
+                setJugando(false);
+                setVida(100);
+                setEscudo(50);
+                setKills(0);
+                setMunicion(999);
+                setPantalla('lobby');
+                enemigosRef.current = [];
+                mostrarNotificacion('¡Volviste al lobby!', 'info');
+            };
+
+            // Comprar skin
+            const comprarSkin = (skin) => {
+                console.log(`💰 Comprando ${skin.name}...`);
+                mostrarNotificacion(`¡${skin.name} comprado por ${skin.price} V-Bucks!`, 'exito');
+            };
+
+            // Subir nivel pase
+            const subirNivelPase = () => {
+                const nuevoNivel = Math.min(100, nivelPase + 5);
+                console.log(`⬆️ Subiendo nivel: ${nivelPase} → ${nuevoNivel}`);
+                setNivelPase(nuevoNivel);
+                mostrarNotificacion(`¡Subiste al nivel ${nuevoNivel}!`, 'exito');
+            };
+
+            // Invitar jugador
+            const invitarJugador = (nombre) => {
+                console.log(`📨 Invitando a ${nombre}...`);
+                mostrarNotificacion(`Invitación enviada a ${nombre}`, 'exito');
+            };
+
+            // Equipar item
+            const equiparItem = (tipo, nombre) => {
+                console.log(`🎒 Equipando ${tipo}: ${nombre}`);
+                mostrarNotificacion(`${tipo} equipado: ${nombre}`, 'info');
+            };
+
+            // Inicializar Three.js cuando empieza el juego
+            useEffect(() => {
+                if (!jugando || !mountRef.current) return;
+
+                console.log('🎮 Iniciando motor 3D...');
+                
+                let animacionId;
+                const ancho = window.innerWidth;
+                const alto = window.innerHeight;
+
+                // Crear escena
+                const escena = new THREE.Scene();
+                escena.background = new THREE.Color(0x87CEEB);
+                escena.fog = new THREE.Fog(0x87CEEB, 100, 500);
+                escenaRef.current = escena;
+
+                // Crear cámara
+                const camara = new THREE.PerspectiveCamera(75, ancho / alto, 0.1, 1000);
+                camara.position.set(0, 10, 20);
+                camaraRef.current = camara;
+
+                // Crear renderer
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(ancho, alto);
+                renderer.shadowMap.enabled = true;
+                
+                if (mountRef.current) {
+                    mountRef.current.innerHTML = '';
+                    mountRef.current.appendChild(renderer.domElement);
+                    console.log('✅ Canvas creado');
+                }
+
+                // Luz
+                const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.6);
+                escena.add(luzAmbiente);
+
+                const luzDireccional = new THREE.DirectionalLight(0xffffff, 0.8);
+                luzDireccional.position.set(50, 100, 50);
+                luzDireccional.castShadow = true;
+                escena.add(luzDireccional);
+
+                // Suelo/Terreno
+                const geometriaSuelo = new THREE.ConeGeometry(150, 20, 32);
+                const materialSuelo = new THREE.MeshStandardMaterial({ color: 0x4CAF50 });
+                const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
+                suelo.position.y = -10;
+                suelo.receiveShadow = true;
+                escena.add(suelo);
+
+                // Jugador
+                const geometriaJugador = new THREE.CapsuleGeometry(1, 2, 4, 8);
+                const materialJugador = new THREE.MeshStandardMaterial({ 
+                    color: SKINS[skinSeleccionado].color 
+                });
+                const jugador = new THREE.Mesh(geometriaJugador, materialJugador);
+                jugador.position.set(0, 2, 0);
+                jugador.castShadow = true;
+                escena.add(jugador);
+                jugadorRef.current = jugador;
+
+                // Enemigos
+                enemigosRef.current = [];
+                const nombresEnemigos = ['Oscuro', 'Fantasma', 'Hielo', 'Fuego', 'Vacío'];
+                
+                for (let i = 0; i < 5; i++) {
+                    const geometriaEnemigo = new THREE.CapsuleGeometry(1, 2, 4, 8);
+                    const materialEnemigo = new THREE.MeshStandardMaterial({ 
+                        color: 0xff6b6b 
+                    });
+                    const enemigo = new THREE.Mesh(geometriaEnemigo, materialEnemigo);
+                    
+                    const angulo = (i / 5) * Math.PI * 2;
+                    const radio = 40 + Math.random() * 30;
+                    enemigo.position.set(
+                        Math.cos(angulo) * radio,
+                        2,
+                        Math.sin(angulo) * radio
+                    );
+                    enemigo.castShadow = true;
+                    enemigo.userData = {
+                        vida: 100,
+                        nombre: nombresEnemigos[i]
+                    };
+                    
+                    escena.add(enemigo);
+                    enemigosRef.current.push(enemigo);
+                }
+
+                console.log(`✅ Escena lista con ${enemigosRef.current.length} enemigos`);
+
+                // Controles teclado
+                const handleKeyDown = (e) => {
+                    teclasRef.current[e.key.toLowerCase()] = true;
+                    if (e.key === ' ') e.preventDefault();
+                };
+                
+                const handleKeyUp = (e) => {
+                    teclasRef.current[e.key.toLowerCase()] = false;
+                };
+
+                window.addEventListener('keydown', handleKeyDown);
+                window.addEventListener('keyup', handleKeyUp);
+
+                // Disparo
+                const disparar = () => {
+                    if (municion > 0 && vida > 0) {
+                        setMunicion(prev => prev - 1);
+                        
+                        // Raycast simple hacia adelante
+                        const direccion = new THREE.Vector3(0, 0, -1);
+                        direccion.applyQuaternion(camara.quaternion);
+                        
+                        const raycaster = new THREE.Raycaster(camara.position, direccion);
+                        const intersecciones = raycaster.intersectObjects(enemigosRef.current);
+                        
+                        if (intersecciones.length > 0) {
+                            const objetivo = intersecciones[0].object;
+                            objetivo.userData.vida -= 25;
+                            
+                            // Feedback visual
+                            const colorOriginal = objetivo.material.color.getHex();
+                            objetivo.material.color.setHex(0xff0000);
+                            setTimeout(() => {
+                                if (objetivo.material) {
+                                    objetivo.material.color.setHex(colorOriginal);
+                                }
+                            }, 100);
+
+                            if (objetivo.userData.vida <= 0) {
+                                // Eliminar enemigo
+                                const nombreEliminado = objetivo.userData.nombre;
+                                setKillFeed(prev => [...prev.slice(-3), { 
+                                    killer: 'Tú', 
+                                    victim: nombreEliminado 
+                                }]);
+                                setKills(prev => prev + 1);
+                                setJugadoresVivos(prev => prev - 1);
+                                
+                                escena.remove(objetivo);
+                                enemigosRef.current = enemigosRef.current.filter(e => e !== objetivo);
+                                
+                                mostrarNotificacion(`¡Eliminaste a ${nombreEliminado}!`, 'exito');
+                            }
+                        }
+                    }
+                };
+
+                // Click para disparar
+                const handleClick = () => {
+                    if (document.pointerLockElement === renderer.domElement) {
+                        disparar();
+                    } else {
+                        renderer.domElement.requestPointerLock();
+                    }
+                };
+
+                renderer.domElement.addEventListener('click', handleClick);
+
+                // Game loop
+                let ultimoTiempo = performance.now();
+                
+                const loop = (tiempoActual) => {
+                    if (!jugando) return;
+                    
+                    animacionId = requestAnimationFrame(loop);
+                    
+                    const delta = (tiempoActual - ultimoTiempo) / 1000;
+                    ultimoTiempo = tiempoActual;
+
+                    // Actualizar tiempo
+                    setTiempoJuego(prev => prev + delta);
+
+                    // Movimiento jugador
+                    const velocidad = 10 * delta;
+                    
+                    if (teclasRef.current['w']) estadoJuegoRef.actual.posicion.z -= velocidad;
+                    if (teclasRef.current['s']) estadoJuegoRef.actual.posicion.z += velocidad;
+                    if (teclasRef.current['a']) estadoJuegoRef.actual.posicion.x -= velocidad;
+                    if (teclasRef.current['d']) estadoJuegoRef.actual.posicion.x += velocidad;
+
+                    // Gravedad
+                    if (estadoJuegoRef.actual.posicion.y > 2) {
+                        estadoJuegoRef.actual.posicion.y -= 10 * delta;
+                    } else {
+                        estadoJuegoRef.actual.posicion.y = 2;
+                    }
+
+                    // Salto
+                    if (teclasRef.current[' '] && estadoJuegoRef.actual.posicion.y <= 2.1) {
+                        estadoJuegoRef.actual.posicion.y += 6;
+                    }
+
+                    // Limitar a isla
+                    const distancia = Math.sqrt(
+                        estadoJuegoRef.actual.posicion.x ** 2 + 
+                        estadoJuegoRef.actual.posicion.z ** 2
+                    );
+                    if (distancia > 140) {
+                        const angulo = Math.atan2(
+                            estadoJuegoRef.actual.posicion.z,
+                            estadoJuegoRef.actual.posicion.x
+                        );
+                        estadoJuegoRef.actual.posicion.x = Math.cos(angulo) * 140;
+                        estadoJuegoRef.actual.posicion.z = Math.sin(angulo) * 140;
+                        
+                        // Daño fuera de zona segura
+                        setVida(prev => Math.max(0, prev - 5 * delta));
+                    }
+
+                    // Actualizar posición del mesh
+                    if (jugadorRef.current) {
+                        jugadorRef.current.position.set(
+                            estadoJuegoRef.actual.posicion.x,
+                            estadoJuegoRef.actual.posicion.y,
+                            estadoJuegoRef.actual.posicion.z
+                        );
+                    }
+
+                    // Cámara sigue al jugador
+                    camara.position.lerp(
+                        new THREE.Vector3(
+                            estadoJuegoRef.actual.posicion.x,
+                            estadoJuegoRef.actual.posicion.y + 8,
+                            estadoJuegoRef.actual.posicion.z + 15
+                        ),
+                        0.1
+                    );
+                    camara.lookAt(
+                        estadoJuegoRef.actual.posicion.x,
+                        estadoJuegoRef.actual.posicion.y + 2,
+                        estadoJuegoRef.actual.posicion.z
+                    );
+
+                    // IA enemigos simple
+                    enemigosRef.current.forEach(enemigo => {
+                        const dx = estadoJuegoRef.actual.posicion.x - enemigo.position.x;
+                        const dz = estadoJuegoRef.actual.posicion.z - enemigo.position.z;
+                        const dist = Math.sqrt(dx*dx + dz*dz);
+                        
+                        if (dist < 80 && dist > 3) {
+                            enemigo.position.x += (dx / dist) * 2 * delta;
+                            enemigo.position.z += (dz / dist) * 2 * delta;
+                        }
+                        
+                        // Gravedad enemigo
+                        if (enemigo.position.y > 2) {
+                            enemigo.position.y -= 10 * delta;
+                        }
+                    });
+
+                    renderer.render(escena, camara);
+                };
+
+                loop(performance.now());
+
+                // Resize handler
+                const handleResize = () => {
+                    camara.aspect = window.innerWidth / window.innerHeight;
+                    camara.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                };
+                window.addEventListener('resize', handleResize);
+
+                // Cleanup
+                return () => {
+                    console.log('🧹 Limpiando recursos 3D...');
+                    cancelAnimationFrame(animacionId);
+                    window.removeEventListener('keydown', handleKeyDown);
+                    window.removeEventListener('keyup', handleKeyUp);
+                    window.removeEventListener('resize', handleResize);
+                    renderer.domElement.removeEventListener('click', handleClick);
+                    
+                    if (mountRef.current && renderer.domElement.parentNode === mountRef.current) {
+                        mountRef.current.removeChild(renderer.domElement);
+                    }
+                    
+                    renderer.dispose();
+                };
+            }, [jugando, skinSeleccionado]);
+
+            // Pantalla de carga
+            if (cargando) {
                 return (
-                  <div
-                    key={i}
-                    className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-6 border border-cyan-500 border-opacity-30 hover:border-opacity-100 transition"
-                  >
-                    <Icon className="w-6 h-6 text-cyan-400 mb-3" />
-                    <div className="text-3xl font-black">{stat.value}</div>
-                    <div className="text-gray-400 text-sm">{stat.label}</div>
-                  </div>
+                    <div className="w-full h-screen gradient-bg flex items-center justify-center flex-col gap-6">
+                        <div className="loading-spinner"></div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                            CARGANDO FORTNITE 3D
+                        </h1>
+                        <p className="text-gray-400 animate-pulse">Preparando arena de batalla...</p>
+                    </div>
                 );
-              })}
-            </section>
-          </div>
-        )}
+            }
 
-        {/* BATTLE PASS SCREEN */}
-        {currentScreen === 'battle-pass' && (
-          <div>
-            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-              CHAPTER 6 BATTLE PASS
-            </h2>
+            // Vista del juego
+            if (jugando) {
+                return (
+                    <div id="game-container" className="bg-black relative overflow-hidden">
+                        {/* Canvas 3D */}
+                        <div ref={mountRef} id="game-canvas" className="w-full h-full absolute inset-0" />
 
-            <div className="grid grid-cols-2 gap-8 mb-8">
-              {/* Progress */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-cyan-500 border-opacity-30">
-                <h3 className="text-xl font-bold mb-4">YOUR PROGRESS</h3>
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-300">Tier {battlePassTier}</span>
-                    <span className="text-cyan-400 font-bold">100 Tiers Available</span>
-                  </div>
-                  <div className="w-full h-8 bg-slate-700 rounded-lg overflow-hidden border border-cyan-500 border-opacity-50">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all"
-                      style={{ width: `${(battlePassTier / 100) * 100}%` }}
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={() => setBattlePassTier(Math.min(100, battlePassTier + 5))}
-                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold hover:opacity-90 transition"
-                >
-                  LEVEL UP +5 TIERS (Demo)
-                </button>
-              </div>
+                        {/* HUD */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            
+                            {/* Vida y Escudo - Arriba Izquierda */}
+                            <div className="hud-element top-6 left-6 glass rounded-xl p-5 w-72">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-bold text-cyan-400">VIDA</span>
+                                    <span className="text-sm font-bold">{Math.floor(vida)} / 100</span>
+                                </div>
+                                <div className="h-6 bg-gray-900 rounded-lg overflow-hidden mb-4 border border-red-500/50">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all"
+                                        style={{ width: `${Math.max(0, vida)}%` }}
+                                    />
+                                </div>
 
-              {/* Stats */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-cyan-500 border-opacity-30">
-                <h3 className="text-xl font-bold mb-4">SEASON INFO</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Season Duration</span>
-                    <span className="text-cyan-300 font-bold">45 Days</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Pass Cost</span>
-                    <span className="text-cyan-300 font-bold">950 V-Bucks</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Total Rewards</span>
-                    <span className="text-cyan-300 font-bold">100+ Items</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t border-cyan-500 border-opacity-30">
-                    <span className="text-gray-400">Days Remaining</span>
-                    <span className="text-purple-300 font-bold">28 Days</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-bold text-blue-400">ESCUDO</span>
+                                    <span className="text-sm font-bold">{Math.floor(escudo)} / 100</span>
+                                </div>
+                                <div className="h-5 bg-gray-900 rounded-lg overflow-hidden border border-blue-500/50">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all"
+                                        style={{ width: `${escudo}%` }}
+                                    />
+                                </div>
+                            </div>
 
-            {/* Rewards Grid */}
-            <h3 className="text-2xl font-bold mb-4">TIER REWARDS</h3>
-            <div className="grid grid-cols-5 gap-4">
-              {battlePassRewards.map((reward) => (
-                <div
-                  key={reward.tier}
-                  className={`relative rounded-lg p-4 text-center border-2 transition-all ${
-                    battlePassTier >= reward.tier
-                      ? 'border-cyan-500 bg-gradient-to-b from-cyan-500 from-10% to-slate-900'
-                      : 'border-slate-600 bg-slate-800 opacity-50'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-gray-400 mb-2">TIER {reward.tier}</div>
-                  <div className={`text-sm font-bold mb-2 ${battlePassTier >= reward.tier ? 'text-yellow-300' : 'text-gray-300'}`}>
-                    {reward.item}
-                  </div>
-                  <div className="text-xs text-purple-300 uppercase">{reward.rarity}</div>
-                  {battlePassTier >= reward.tier && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold">
-                      ✓
+                            {/* Info partida - Arriba Centro */}
+                            <div className="hud-element top-6 left-1/2 transform -translate-x-1/2 glass rounded-full px-6 py-3 flex gap-6">
+                                <div className="flex items-center gap-2">
+                                    <i className="fas fa-users text-purple-400"></i>
+                                    <span className="font-bold">{jugadoresVivos}</span>
+                                </div>
+                                <div className="w-px h-6 bg-gray-600"></div>
+                                <div className="flex items-center gap-2">
+                                    <i className="fas fa-clock text-yellow-400"></i>
+                                    <span className="font-bold">{Math.floor(tiempoJuego / 60)}:{String(Math.floor(tiempoJuego % 60)).padStart(2, '0')}</span>
+                                </div>
+                                <div className="w-px h-6 bg-gray-600"></div>
+                                <div className="flex items-center gap-2">
+                                    <i className="fas fa-skull text-red-400"></i>
+                                    <span className="font-bold">{kills}</span>
+                                </div>
+                            </div>
+
+                            {/* Munición - Arriba Derecha */}
+                            <div className="hud-element top-6 right-6 glass rounded-xl p-4 text-right w-48">
+                                <div className="text-5xl font-black text-yellow-400">{municion}</div>
+                                <div className="text-xs font-bold text-yellow-300">MUNICIÓN</div>
+                            </div>
+
+                            {/* Mira - Centro */}
+                            <div className="hud-element top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                <svg width="40" height="40" viewBox="0 0 40 40">
+                                    <circle cx="20" cy="20" r="3" fill="#06b6d4" />
+                                    <line x1="20" y1="8" x2="20" y2="14" stroke="#06b6d4" strokeWidth="2" />
+                                    <line x1="20" y1="26" x2="20" y2="32" stroke="#06b6d4" strokeWidth="2" />
+                                    <line x1="8" y1="20" x2="14" y2="20" stroke="#06b6d4" strokeWidth="2" />
+                                    <line x1="26" y1="20" x2="32" y2="20" stroke="#06b6d4" strokeWidth="2" />
+                                </svg>
+                            </div>
+
+                            {/* Kill Feed - Derecha */}
+                            <div className="hud-element top-28 right-6 space-y-2 w-64">
+                                {killFeed.map((kill, i) => (
+                                    <div key={i} className="glass rounded-lg px-4 py-2 text-sm flex justify-between">
+                                        <span className="font-bold text-cyan-400">{kill.killer}</span>
+                                        <span className="text-red-400 mx-2">×</span>
+                                        <span className="font-bold text-red-400">{kill.victim}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Controles - Abajo Izquierda */}
+                            <div className="hud-element bottom-6 left-6 glass rounded-xl p-4">
+                                <div className="text-xs font-bold text-cyan-400 mb-2">CONTROLES</div>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">W A S D</kbd> Mover</div>
+                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">CLIC</kbd> Disparar</div>
+                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">ESPACIO</kbd> Saltar</div>
+                                </div>
+                            </div>
+
+                            {/* Botón Salir - Abajo Derecha */}
+                            <button 
+                                onClick={salirJuego}
+                                className="hud-element hud-button bottom-6 right-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-all hover:scale-105"
+                            >
+                                <i className="fas fa-door-open mr-2"></i>SALIR
+                            </button>
+
+                            {/* Pantalla de muerte */}
+                            {vida <= 0 && (
+                                <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
+                                    <div className="text-center">
+                                        <h1 className="text-7xl font-black text-red-500 mb-6 animate-pulse">ELIMINADO</h1>
+                                        <p className="text-2xl text-gray-300 mb-2">Posición: #{jugadoresVivos}</p>
+                                        <p className="text-xl text-cyan-400 mb-8">{kills} Eliminaciones</p>
+                                        
+                                        <div className="flex gap-4 justify-center">
+                                            <button 
+                                                onClick={() => {
+                                                    salirJuego();
+                                                    setTimeout(() => iniciarJuego('Solo', 100), 100);
+                                                }}
+                                                className="btn-game px-8 py-4 text-lg"
+                                            >
+                                                <i className="fas fa-redo mr-2"></i>JUGAR DE NUEVO
+                                            </button>
+                                            <button 
+                                                onClick={salirJuego}
+                                                className="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold transition-all"
+                                            >
+                                                <i className="fas fa-home mr-2"></i>LOBBY
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                  )}
+                );
+            }
+
+            // Vista principal (Lobby)
+            return (
+                <div className="min-h-screen gradient-bg">
+                    {/* Notificación flotante */}
+                    {notificacion && (
+                        <div 
+                            className={`notification ${
+                                notificacion.tipo === 'exito' ? 'bg-green-600' :
+                                notificacion.tipo === 'error' ? 'bg-red-600' : 'bg-cyan-600'
+                            }`}
+                        >
+                            <i className={`fas ${
+                                notificacion.tipo === 'exito' ? 'fa-check-circle' :
+                                notificacion.tipo === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                            } mr-2`}></i>
+                            {notificacion.mensaje}
+                        </div>
+                    )}
+
+                    {/* Header */}
+                    <header className="glass sticky top-0 z-50 border-b border-cyan-500/20">
+                        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center font-black text-xl">
+                                    F
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                        FORTNITE 3D
+                                    </h1>
+                                    <p className="text-xs text-cyan-400">BATALLA REAL DEFINITIVA</p>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={() => setMostrarConfig(true)}
+                                className="p-3 glass rounded-xl hover:bg-cyan-500/20 transition-all"
+                            >
+                                <i className="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Navegación */}
+                    <nav className="glass mx-6 mt-4 rounded-xl p-2">
+                        <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto">
+                            {[
+                                { id: 'lobby', label: 'LOBBY', icon: 'fa-home' },
+                                { id: 'pase', label: 'PASE DE BATALLA', icon: 'fa-crown' },
+                                { id: 'tienda', label: 'TIENDA', icon: 'fa-shopping-cart' },
+                                { id: 'escuadron', label: 'ESCUADRÓN', icon: 'fa-users' },
+                                { id: 'inventario', label: 'INVENTARIO', icon: 'fa-box' },
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => cambiarPantalla(tab.id)}
+                                    className={`tab-btn flex items-center gap-2 whitespace-nowrap ${
+                                        pantalla === tab.id ? 'active' : ''
+                                    }`}
+                                >
+                                    <i className={`fas ${tab.icon}`}></i>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+
+                    {/* Contenido principal */}
+                    <main className="max-w-7xl mx-auto px-6 py-8">
+                        
+                        {/* ===== PANTALLA LOBBY ===== */}
+                        {pantalla === 'lobby' && (
+                            <div className="space-y-8">
+                                {/* Hero Section */}
+                                <section className="card relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
+                                    
+                                    <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                                        <div>
+                                            <div className="inline-block px-4 py-1 bg-cyan-500/20 rounded-full text-cyan-400 text-xs font-bold mb-4">
+                                                TRAJE DESTACADO
+                                            </div>
+                                            <h2 className="text-5xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                                {SKINS[skinSeleccionado].name}
+                                            </h2>
+                                            <p className="text-gray-300 mb-6">
+                                                Traje {SKINS[skinSeleccionado].rarity.toLowerCase()} exclusivo
+                                            </p>
+                                            
+                                            <div className="flex gap-4">
+                                                <button 
+                                                    onClick={() => cambiarPantalla('tienda')}
+                                                    className="btn-game"
+                                                >
+                                                    <i className="fas fa-shopping-cart mr-2"></i>VER EN TIENDA
+                                                </button>
+                                                <button 
+                                                    onClick={() => mostrarNotificacion('Vista previa activada', 'info')}
+                                                    className="px-8 py-3 border-2 border-cyan-500 rounded-xl font-bold hover:bg-cyan-500/10 transition-all"
+                                                >
+                                                    <i className="fas fa-eye mr-2"></i>VISTA PREVIA
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex justify-center">
+                                            <div className="relative">
+                                                <div className="w-48 h-48 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 flex items-center justify-center text-8xl">
+                                                    {SKINS[skinSeleccionado].emoji}
+                                                </div>
+                                                <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-slate-900 rounded-full text-sm font-bold border border-cyan-500/50">
+                                                    {SKINS[skinSeleccionado].rarity}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Modos de Juego */}
+                                <section className="card">
+                                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                                        <i className="fas fa-gamepad text-cyan-400"></i>¿LISTO PARA LUCHAR?
+                                    </h3>
+                                    <div className="grid md:grid-cols-3 gap-6">
+                                        <button 
+                                            onClick={() => iniciarJuego('SOLO', 100)}
+                                            className="btn-mode bg-gradient-to-br from-cyan-500 to-blue-600"
+                                        >
+                                            <i className="fas fa-user-ninja text-3xl mb-3 block"></i>
+                                            <div className="text-2xl mb-1">SOLO</div>
+                                            <div className="text-sm opacity-90">100 Jugadores</div>
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => iniciarJuego('DÚO', 50)}
+                                            className="btn-mode bg-gradient-to-br from-purple-500 to-pink-600"
+                                        >
+                                            <i className="fas fa-user-friends text-3xl mb-3 block"></i>
+                                            <div className="text-2xl mb-1">DÚO</div>
+                                            <div className="text-sm opacity-90">50 Dúos</div>
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => iniciarJuego('ESCUADRÓN', 25)}
+                                            className="btn-mode bg-gradient-to-br from-orange-500 to-red-600"
+                                        >
+                                            <i className="fas fa-users text-3xl mb-3 block"></i>
+                                            <div className="text-2xl mb-1">ESCUADRÓN</div>
+                                            <div className="text-sm opacity-90">25 Escuadrones</div>
+                                        </button>
+                                    </div>
+                                </section>
+
+                                {/* Estadísticas */}
+                                <section>
+                                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                                        <i className="fas fa-chart-line text-cyan-400"></i>TUS ESTADÍSTICAS
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {[
+                                            { label: 'Nivel', value: nivel, icon: 'fa-shield-alt', color: 'text-cyan-400' },
+                                            { label: 'Partidas', value: '147', icon: 'fa-gamepad', color: 'text-purple-400' },
+                                            { label: 'Victorias', value: '12%', icon: 'fa-trophy', color: 'text-yellow-400' },
+                                            { label: 'Kills', value: '1,284', icon: 'fa-crosshairs', color: 'text-red-400' },
+                                        ].map((stat, i) => (
+                                            <div key={i} className="card text-center">
+                                                <i className={`fas ${stat.icon} text-2xl ${stat.color} mb-2 block`}></i>
+                                                <div className="text-3xl font-black mb-1">{stat.value}</div>
+                                                <div className="text-gray-400 text-sm">{stat.label}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+
+                        {/* ===== PANTALLA PASE DE BATALLA ===== */}
+                        {pantalla === 'pase' && (
+                            <div className="space-y-8">
+                                <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                    <i className="fas fa-crown text-yellow-400 mr-3"></i>PASE DE BATALLA
+                                </h2>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {/* Progreso */}
+                                    <div className="card">
+                                        <h3 className="text-xl font-bold mb-4">TU PROGRESO</h3>
+                                        <div className="mb-4">
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-2xl font-black text-cyan-400">Nivel {nivelPase}</span>
+                                                <span className="text-gray-400">/ 100</span>
+                                            </div>
+                                            <div className="h-8 bg-slate-800 rounded-xl overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 transition-all"
+                                                    style={{ width: `${nivelPase}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={subirNivelPase}
+                                            className="btn-game w-full"
+                                        >
+                                            <i className="fas fa-arrow-up mr-2"></i>SUBIR NIVEL (+5)
+                                        </button>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="card">
+                                        <h3 className="text-xl font-bold mb-4">INFO TEMPORADA</h3>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between py-2 border-b border-slate-700">
+                                                <span className="text-gray-400">Duración</span>
+                                                <span className="font-bold text-cyan-300">45 Días</span>
+                                            </div>
+                                            <div className="flex justify-between py-2 border-b border-slate-700">
+                                                <span className="text-gray-400">Precio</span>
+                                                <span className="font-bold text-yellow-300">950 V-Bucks</span>
+                                            </div>
+                                            <div className="flex justify-between py-2">
+                                                <span className="text-gray-400">Restantes</span>
+                                                <span className="font-bold text-purple-300">28 Días</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ===== PANTALLA TIENDA ===== */}
+                        {pantalla === 'tienda' && (
+                            <div className="space-y-8">
+                                <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                    <i className="fas fa-shopping-cart text-cyan-400 mr-3"></i>TIENDA DE OBJETOS
+                                </h2>
+
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4">TRAJES DISPONIBLES</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                        {SKINS.map(skin => (
+                                            <div 
+                                                key={skin.id}
+                                                className={`card overflow-hidden cursor-pointer ${
+                                                    skinSeleccionado === skin.id ? 'border-2 border-cyan-400' : ''
+                                                }`}
+                                                onClick={() => {
+                                                    setSkinSeleccionado(skin.id);
+                                                    equiparItem('Traje', skin.name);
+                                                }}
+                                            >
+                                                <div 
+                                                    className="aspect-square flex items-center justify-center text-5xl"
+                                                    style={{ background: `linear-gradient(135deg, ${skin.color}, ${skin.color}88)` }}
+                                                >
+                                                    {skin.emoji}
+                                                </div>
+                                                <div className="p-3 border-t border-slate-700">
+                                                    <div className="font-bold text-sm mb-1">{skin.name}</div>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-yellow-400 font-bold text-sm">
+                                                            <i className="fas fa-bolt text-xs mr-1"></i>{skin.price}
+                                                        </span>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                comprarSkin(skin);
+                                                            }}
+                                                            className="px-3 py-1 bg-cyan-500 hover:bg-cyan-600 rounded text-xs font-bold"
+                                                        >
+                                                            COMPRAR
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Mochilas */}
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4">MOCHILAS</h3>
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                        {[1,2,3,4,5,6].map(i => (
+                                            <div key={i} className="card text-center">
+                                                <div className="text-3xl mb-2">🎒</div>
+                                                <div className="text-xs font-bold mb-2">Pack {i}</div>
+                                                <div className="text-yellow-400 text-sm font-bold mb-2">
+                                                    <i className="fas fa-bolt text-xs"></i> 800
+                                                </div>
+                                                <button 
+                                                    onClick={() => mostrarNotificacion(`¡Mochila ${i} comprada!`, 'exito')}
+                                                    className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded text-xs font-bold"
+                                                >
+                                                    COMPRAR
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ===== PANTALLA ESCUADRÓN ===== */}
+                        {pantalla === 'escuadron' && (
+                            <div className="space-y-8">
+                                <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                    <i className="fas fa-users text-cyan-400 mr-3"></i>TU ESCUADRÓN
+                                </h2>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {[
+                                        { name: 'Tú', level: 45, status: 'Listo', skin: 'Astra', isYou: true },
+                                        { name: 'CaballeroOscuro', level: 52, status: 'Jugando', skin: 'Sombrío' },
+                                        { name: 'FantasmaNova', level: 38, status: 'Ausente', skin: 'Nexus' },
+                                        { name: 'ReyEscarcha', level: 41, status: 'Desconectado', skin: 'Escarcha' },
+                                    ].map((miembro, i) => (
+                                        <div key={i} className="card text-center">
+                                            <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 flex items-center justify-center text-4xl">
+                                                👤
+                                            </div>
+                                            <div className="font-bold text-lg mb-1">{miembro.name}</div>
+                                            <div className="text-sm text-gray-400 mb-3">{miembro.skin}</div>
+                                            <div className="flex justify-between text-xs mb-4 pb-4 border-b border-slate-700">
+                                                <span>Nivel {miembro.level}</span>
+                                                <span className={`font-bold ${
+                                                    miembro.status === 'Listo' ? 'text-green-400' :
+                                                    miembro.status === 'Jugando' ? 'text-yellow-400' :
+                                                    miembro.status === 'Ausente' ? 'text-gray-400' : 'text-red-400'
+                                                }`}>
+                                                    {miembro.status}
+                                                </span>
+                                            </div>
+                                            <button 
+                                                onClick={() => !miembro.isYou && invitarJugador(miembro.name)}
+                                                disabled={miembro.isYou}
+                                                className={`w-full py-2 rounded-lg font-bold text-sm ${
+                                                    miembro.isYou ? 'bg-gray-700 text-gray-400' : 'btn-game'
+                                                }`}
+                                            >
+                                                {miembro.isYou ? 'TÚ' : 'INVITAR'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ===== PANTALLA INVENTARIO ===== */}
+                        {pantalla === 'inventario' && (
+                            <div className="space-y-8">
+                                <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                                    <i className="fas fa-box text-cyan-400 mr-3"></i>INVENTARIO
+                                </h2>
+
+                                <div className="grid md:grid-cols-3 gap-6">
+                                    {/* Trajes */}
+                                    <div className="card">
+                                        <h3 className="text-lg font-bold mb-4">
+                                            <i className="fas fa-tshirt text-purple-400 mr-2"></i>TRAJES ({SKINS.length})
+                                        </h3>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {SKINS.map(skin => (
+                                                <div 
+                                                    key={skin.id}
+                                                    className="aspect-square rounded-lg flex items-center justify-center text-2xl cursor-pointer hover:scale-110 transition-transform"
+                                                    style={{ backgroundColor: `${skin.color}44` }}
+                                                    onClick={() => equiparItem('Traje', skin.name)}
+                                                    title={skin.name}
+                                                >
+                                                    {skin.emoji}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Mochilas */}
+                                    <div className="card">
+                                        <h3 className="text-lg font-bold mb-4">
+                                            <i className="fas fa-backpack text-green-400 mr-2"></i>MOCHILAS (12)
+                                        </h3>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[...Array(12)].map((_, i) => (
+                                                <div 
+                                                    key={i}
+                                                    className="aspect-square rounded-lg bg-slate-700/50 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition-transform"
+                                                    onClick={() => equiparItem('Mochila', `Pack ${i+1}`)}
+                                                >
+                                                    🎒
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Picos */}
+                                    <div className="card">
+                                        <h3 className="text-lg font-bold mb-4">
+                                            <i className="fas fa-hammer text-yellow-400 mr-2"></i>PICOS (8)
+                                        </h3>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[...Array(8)].map((_, i) => (
+                                                <div 
+                                                    key={i}
+                                                    className="aspect-square rounded-lg bg-slate-700/50 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition-transform"
+                                                    onClick={() => equiparItem('Pico', `Pico ${i+1}`)}
+                                                >
+                                                    ⛏️
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Modal Configuración */}
+                    {mostrarConfig && (
+                        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="card w-full max-w-md relative">
+                                <button 
+                                    onClick={() => setMostrarConfig(false)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                                >
+                                    <i className="fas fa-times text-xl"></i>
+                                </button>
+                                
+                                <h3 className="text-2xl font-bold mb-6">
+                                    <i className="fas fa-cog text-cyan-400 mr-2"></i>CONFIGURACIÓN
+                                </h3>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Volumen</label>
+                                        <input type="range" min="0" max="100" defaultValue="70" className="w-full accent-cyan-500" />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Sensibilidad</label>
+                                        <input type="range" min="1" max="10" defaultValue="5" className="w-full accent-purple-500" />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Calidad Gráfica</label>
+                                        <select className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2">
+                                            <option>Baja</option>
+                                            <option selected>Media</option>
+                                            <option>Alta</option>
+                                            <option>Ultra</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => {
+                                        setMostrarConfig(false);
+                                        mostrarNotificion('¡Cambios guardados!', 'exito');
+                                    }}
+                                    className="btn-game w-full mt-8"
+                                >
+                                    GUARDAR CAMBIOS
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <footer className="border-t border-cyan-500/20 mt-12 py-8 text-center text-gray-400 text-sm">
+                        <p>© 2024 FORTNITE ARENA DE BATALLA | Demo Oficial</p>
+                    </footer>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+            );
+        }
 
-        {/* SHOP SCREEN */}
-        {currentScreen === 'shop' && (
-          <div>
-            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-              ITEM SHOP
-            </h2>
-
-            <div className="mb-8">
-              <h3 className="text-xl font-bold mb-4">OUTFITS</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {skins.map((skin) => (
-                  <div
-                    key={skin.id}
-                    onClick={() => setSelectedSkin(skin.id)}
-                    className={`relative rounded-lg overflow-hidden cursor-pointer transition-all transform hover:scale-105 border-2 ${
-                      selectedSkin === skin.id ? 'border-cyan-400 shadow-lg shadow-cyan-500/50' : 'border-slate-600'
-                    }`}
-                  >
-                    {/* Skin Preview */}
-                    <div className={`bg-gradient-to-br ${skin.color} aspect-square flex items-center justify-center relative overflow-hidden group`}>
-                      <div className="absolute inset-0 opacity-20">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
-                      </div>
-                      <div className="relative z-10 text-center">
-                        <div className="text-4xl mb-2">👤</div>
-                        <div className="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition">PREVIEW</div>
-                      </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="bg-slate-900 p-3 border-t border-slate-700">
-                      <div className="font-bold text-sm mb-1">{skin.name}</div>
-                      <div className="text-xs text-purple-300 uppercase mb-2">{skin.rarity}</div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold flex items-center gap-1">
-                          <Zap className="w-4 h-4 text-yellow-400" />
-                          {skin.price}
-                        </span>
-                        <button className="px-3 py-1 bg-cyan-500 hover:bg-cyan-600 rounded text-xs font-bold transition">
-                          BUY
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Back Blings Section */}
-            <div>
-              <h3 className="text-xl font-bold mb-4">BACK BLINGS</h3>
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div
-                    key={item}
-                    className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-4 border border-slate-600 hover:border-purple-500 transition text-center"
-                  >
-                    <div className="text-3xl mb-2">🎒</div>
-                    <div className="text-xs font-bold mb-1">Cosmic Pack {item}</div>
-                    <div className="text-xs text-yellow-400 flex items-center justify-center gap-1 mb-2">
-                      <Zap className="w-3 h-3" /> 800
-                    </div>
-                    <button className="w-full px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs font-bold transition">
-                      BUY
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SQUAD SCREEN */}
-        {currentScreen === 'squad' && (
-          <div>
-            <h2 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-              SQUAD
-            </h2>
-
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { username: 'YourName', level: 45, status: 'Ready', skin: 'Astra' },
-                { username: 'ShadowKnight', level: 52, status: 'Playing', skin: 'Shadowborne' },
-                { username: 'NovaGhost', level: 38, status: 'Idle', skin: 'Nexus' },
-                { username: 'FrostKing', level: 41, status: 'Offline', skin: 'Frostbyte' },
-              ].map((member, i) => (
-                <div
-                  key={i}
-                  className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-6 border border-cyan-500 border-opacity-30 hover:border-opacity-100 transition"
-                >
-                  <div className="text-4xl text-center mb-3">👤</div>
-                  <div className="font-bold text-center mb-2">{member.username}</div>
-                  <div className="text-sm text-gray-400 text-center mb-3">{member.skin}</div>
-
-                  <div className="flex justify-between text-xs mb-3 pb-3 border-b border-slate-600">
-                    <span>Level {member.level}</span>
-                    <span
-                      className={`font-bold ${
-                        member.status === 'Ready'
-                          ? 'text-green-400'
-                          : member.status === 'Playing'
-                            ? 'text-yellow-400'
-                            : member.status === 'Idle'
-                              ? 'text-gray-400'
-                              : 'text-red-400'
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </div>
-
-                  <button className="w-full py-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded font-bold text-sm hover:opacity-90 transition">
-                    {i === 0 ? 'YOU' : 'INVITE'}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-cyan-500 border-opacity-30 bg-slate-900 bg-opacity-50 backdrop-blur mt-16">
-        <div className="max-w-7xl mx-auto px-6 py-8 text-center text-sm text-gray-400">
-          <p>© 2024 FORTNITE BATTLE ARENA | Official Game Engine Demo</p>
-        </div>
-      </footer>
-
-      {/* Keyboard hint for gameplay */}
-      <div className="fixed bottom-4 left-4 text-xs text-gray-400 pointer-events-none">
-        Press SPACEBAR to shoot during gameplay
-      </div>
-    </div>
-  );
-};
-
-export default FortniteGame;
+        // Renderizar app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
