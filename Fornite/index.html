@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #000;
@@ -19,25 +20,14 @@
             overflow-x: hidden;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(0, 200, 255, 0.5), 0 0 40px rgba(123, 47, 247, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(0, 200, 255, 0.8), 0 0 80px rgba(123, 47, 247, 0.5); }
+        .fortnite-gradient {
+            background: linear-gradient(135deg, #00c8ff 0%, #7b2ff7 100%);
         }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-
-        .fortnite-gradient { background: linear-gradient(135deg, #00c8ff 0%, #7b2ff7 100%); }
         
         .glass-panel {
-            background: linear-gradient(135deg, rgba(20, 25, 40, 0.9), rgba(10, 15, 25, 0.95));
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 200, 255, 0.15);
+            border: 1px solid rgba(0, 200, 255, 0.2);
         }
 
         .btn-fortnite {
@@ -47,8 +37,6 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -58,29 +46,20 @@
             box-shadow: 0 15px 40px rgba(0, 200, 255, 0.5);
         }
 
-        .btn-fortnite:active { transform: scale(0.95); }
-
-        .btn-fortnite::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
+        .btn-fortnite:active {
+            transform: scale(0.95);
         }
 
-        .btn-fortnite:hover::before { left: 100%; }
-
         .mode-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
             cursor: pointer;
             border: 2px solid transparent;
         }
 
         .mode-card:hover {
-            transform: scale(1.08) translateY(-10px);
+            transform: scale(1.05) translateY(-5px);
             border-color: #00c8ff;
-            box-shadow: 0 20px 60px rgba(0, 200, 255, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 200, 255, 0.3);
         }
 
         .skin-card {
@@ -90,54 +69,74 @@
         }
 
         .skin-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 50px rgba(123, 47, 247, 0.4);
-            border-color: rgba(123, 47, 247, 0.5);
+            transform: translateY(-5px);
+            border-color: rgba(123, 47, 247, 0.6);
+            box-shadow: 0 15px 40px rgba(123, 47, 247, 0.4);
         }
 
         .skin-card.selected {
             border-color: #00c8ff !important;
-            box-shadow: 0 0 30px rgba(0, 200, 255, 0.6), inset 0 0 30px rgba(0, 200, 255, 0.1) !important;
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.6) !important;
         }
 
-        .tab-item {
+        .tab-btn {
             transition: all 0.2s ease;
             cursor: pointer;
-            user-select: none;
         }
 
-        .tab-item:hover { background: rgba(0, 200, 255, 0.1); }
-        .tab-item.active { background: linear-gradient(135deg, #00c8ff, #7b2ff7); }
+        .tab-btn:hover {
+            background: rgba(0, 200, 255, 0.1);
+        }
 
-        .notification-toast { animation: slideInRight 0.4s ease-out; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00c8ff, #7b2ff7);
+        }
 
-        #lobby-canvas, #game-canvas { display: block; }
+        .notification {
+            animation: slideIn 0.4s ease-out;
+        }
 
-        .health-bar-fill { transition: width 0.3s ease; box-shadow: 0 0 10px currentColor; }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-        .loading-ring {
-            width: 80px; height: 80px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
             border: 4px solid rgba(0, 200, 255, 0.2);
             border-top-color: #00c8ff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
+        #lobby-3d {
+            width: 100%;
+            height: 500px;
+            background: radial-gradient(circle at center, #1a1f35 0%, #0a0e1a 100%);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #game-3d {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a1f2e; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00c8ff, #7b2ff7); border-radius: 4px; }
-
-        .legendary-glow { animation: legendaryPulse 2s infinite; }
-        @keyframes legendaryPulse {
-            0%, 100% { filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 20px #f59e0b); }
-            50% { filter: drop-shadow(0 0 20px #f59e0b) drop-shadow(0 0 40px #f59e0b); }
-        }
-
-        .mythic-glow { animation: mythicPulse 1.5s infinite; }
-        @keyframes mythicPulse {
-            0%, 100% { filter: drop-shadow(0 0 15px #ef4444) drop-shadow(0 0 30px #ef4444) drop-shadow(0 0 45px #fbbf24); }
-            50% { filter: drop-shadow(0 0 25px #ef4444) drop-shadow(0 0 50px #ef4444) drop-shadow(0 0 75px #fbbf24); }
-        }
     </style>
 </head>
 <body>
@@ -146,95 +145,20 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // ============================================
-        // SKINS ÉPICAS 3D ULTRA DETALLADAS
-        // ============================================
-        const SKINS_EPICAS = [
-            {
-                id: 0,
-                name: 'ASTRA COSMIC',
-                rarity: 'LEGENDARIO',
-                price: 2000,
-                emoji: '🌟',
-                colorPrimary: 0x9333ea,
-                colorSecondary: 0xc084fc,
-                colorAccent: 0xfbbf24,
-                effectType: 'cosmic',
-                description: 'Guardiana del cosmos con poderes estelares',
-                abilities: ['Campo estelar', 'Teleportación', 'Nova explosión']
-            },
-            {
-                id: 1,
-                name: 'SHADOW PHANTOM',
-                rarity: 'ÉPICO',
-                price: 1500,
-                emoji: '🌑',
-                colorPrimary: 0x1f2937,
-                colorSecondary: 0x374151,
-                colorAccent: 0x6366f1,
-                effectType: 'shadow',
-                description: 'Espíritu de las sombras, amo de la oscuridad',
-                abilities: ['Invisibilidad', 'Sombra portál', 'Devorar luz']
-            },
-            {
-                id: 2,
-                name: 'NEXUS CYBER',
-                rarity: 'RARO',
-                price: 1200,
-                emoji: '💎',
-                colorPrimary: 0x06b6d4,
-                colorSecondary: 0x22d3ee,
-                colorAccent: 0xa855f7,
-                effectType: 'cyber',
-                description: 'Guerrero cibernético del futuro digital',
-                abilities: ['Hackeo mental', 'Escudo digital', 'Rayo láser']
-            },
-            {
-                id: 3,
-                name: 'INFERNO LORD',
-                rarity: 'LEGENDARIO',
-                price: 2000,
-                emoji: '🔥',
-                colorPrimary: 0xdc2626,
-                colorSecondary: 0xf97316,
-                colorAccent: 0xfbbf24,
-                effectType: 'fire',
-                description: 'Señor supremo de los infiernos ardientes',
-                abilities: ['Llameada eterna', 'Meteoro devastador', 'Aura ígnea']
-            },
-            {
-                id: 4,
-                name: 'FROST QUEEN',
-                rarity: 'ÉPICO',
-                price: 1500,
-                emoji: '❄️',
-                colorPrimary: 0x3b82f6,
-                colorSecondary: 0x93c5fd,
-                colorAccent: 0xe0f2fe,
-                effectType: 'ice',
-                description: 'Reina absoluta del invierno eterno',
-                ['Congelamiento total', 'Tormenta de nieve', 'Muro de hielo']: []
-            },
-            {
-                id: 5,
-                name: 'PHOENIX IMMORTAL',
-                rarity: 'MÍTICO',
-                price: 3000,
-                emoji: '🦅',
-                colorPrimary: 0xf59e0b,
-                colorSecondary: 0xfbbf24,
-                colorAccent: 0xef4444,
-                effectType: 'phoenix',
-                description: 'Fénix renacido, ser de fuego inmortal',
-                abilities: ['Renacimiento', 'Lluvia de fuego', 'Alas de furia']
-            }
+        // SKINS DISPONIBLES
+        const SKINS = [
+            { id: 0, name: 'ASTRA COSMIC', rarity: 'LEGENDARIO', price: 2000, emoji: '🌟', color: '#9333ea', glowColor: '#c084fc' },
+            { id: 1, name: 'SHADOW PHANTOM', rarity: 'ÉPICO', price: 1500, emoji: '🌑', color: '#374151', glowColor: '#6366f1' },
+            { id: 2, name: 'NEXUS CYBER', rarity: 'RARO', price: 1200, emoji: '💎', color: '#06b6d4', glowColor: '#22d3ee' },
+            { id: 3, name: 'INFERNO LORD', rarity: 'LEGENDARIO', price: 2000, emoji: '🔥', color: '#dc2626', glowColor: '#f97316' },
+            { id: 4, name: 'FROST QUEEN', rarity: 'ÉPICO', price: 1500, emoji: '❄️', color: '#3b82f6', glowColor: '#93c5fd' },
+            { id: 5, name: 'PHOENIX IMMORTAL', rarity: 'MÍTICO', price: 3000, emoji: '🦅', color: '#f59e0b', glowColor: '#fbbf24' },
         ];
 
-        // COMPONENTE PRINCIPAL
-        function FortniteApp() {
+        function App() {
             // Estados
-            const [pantallaActual, setPantallaActual] = useState('lobby');
-            const [enPartida, setEnPartida] = useState(false);
+            const [pantalla, setPantalla] = useState('lobby');
+            const [jugando, setJugando] = useState(false);
             const [cargando, setCargando] = useState(true);
             
             const [vida, setVida] = useState(100);
@@ -242,1092 +166,741 @@
             const [kills, setKills] = useState(0);
             const [municion, setMunicion] = useState(999);
             const [skinActivo, setSkinActivo] = useState(0);
-            const [nivelJugador, setNivelJugador] = useState(45);
-            const [nivelPase, setNivelPase] = useState(27);
             
-            const [mostrarConfig, setMostrarConfig] = useState(false);
             const [notificacion, setNotificacion] = useState(null);
             const [killFeed, setKillFeed] = useState([]);
-            const [tiempoPartida, setTiempoPartida] = useState(0);
-            const [jugadoresVivos, setJugadoresVivos] = useState(100);
+            const [tiempo, setTiempo] = useState(0);
+            const [vivos, setVivos] = useState(100);
 
             // Refs
-            const lobbyCanvasRef = useRef(null);
-            const gameCanvasRef = useRef(null);
+            const lobbyRef = useRef(null);
+            const gameRef = useRef(null);
             const escenaLobbyRef = useRef(null);
             const jugadorRef = useRef(null);
             const enemigosRef = useRef([]);
             const camaraRef = useRef(null);
-            const teclasPulsadas = useRef({});
-            const estadoJuegoRef = useRef({ posicion: { x: 0, y: 5, z: 0 } });
-            const particulasRef = useRef([]);
-            const grupoPersonajeRef = useRef(null);
+            const teclasRef = useRef({});
+            const posRef = useRef({ x: 0, y: 2, z: 0 });
 
             // Carga inicial
             useEffect(() => {
-                setTimeout(() => setCargando(false), 2500);
+                console.log('🎮 Iniciando Fortnite...');
+                setTimeout(() => {
+                    setCargando(false);
+                    console.log('✅ Listo');
+                }, 1500);
             }, []);
 
-            // Notificación
-            const mostrarNotif = (msg, tipo = 'exito') => {
-                setNotificacion({ mensaje: msg, tipo });
-                setTimeout(() => setNotificacion(null), 3000);
+            // Mostrar notificación
+            const notif = (msg) => {
+                setNotificacion(msg);
+                setTimeout(() => setNotificacion(null), 2500);
             };
 
-            // Cambiar pantalla
-            const cambiarPantalla = (p) => setPantallaActual(p);
-
-            // Iniciar partida
-            const iniciarPartida = (modo, num) => {
-                setEnPartida(true);
-                setVida(100); setEscudo(50); setKills(0); setMunicion(999);
-                setTiempoPartida(0); setJugadoresVivos(num); setKillFeed([]);
-                mostrarNotif(`¡${modo} iniciado!`, 'exito');
+            // Iniciar juego
+            const iniciar = (modo, num) => {
+                console.log(`▶️ ${modo} iniciado`);
+                setJugando(true);
+                setVida(100);
+                setEscudo(50);
+                setKills(0);
+                setMunicion(999);
+                setTiempo(0);
+                setVivos(num);
+                setKillFeed([]);
+                notif(`¡${modo} comenzado!`);
             };
 
-            // Salir partida
-            const salirDePartida = () => {
-                setEnPartida(false);
-                setVida(100); setEscudo(50); setKills(0); setMunicion(999);
-                setPantallaActual('lobby');
+            // Salir
+            const salir = () => {
+                console.log('🚪 Saliendo...');
+                setJugando(false);
+                setPantalla('lobby');
+                setVida(100);
                 enemigosRef.current = [];
-                mostrarNotif('Volviste al lobby', 'info');
-            };
-
-            // Comprar skin
-            const comprarSkin = (skin) => mostrarNotif(`¡${skin.name} tuyo!`, 'exito');
-
-            // Subir nivel pase
-            const subirNivelPase = () => {
-                const nuevo = Math.min(100, nivelPase + 5);
-                setNivelPase(nuevo);
-                mostrarNotif(`¡Nivel ${nuevo}!`, 'exito');
+                notif('Volviste al lobby');
             };
 
             // ============================================
-            // CREAR PERSONAJE 3D ULTRA DETALLADO
-            // ============================================
-            const crearPersonajeEpico = (grupo, skin) => {
-                // Limpiar grupo anterior
-                while(grupo.children.length > 0) {
-                    const child = grupo.children[0];
-                    if(child.geometry) child.geometry.dispose();
-                    if(child.material) {
-                        if(Array.isArray(child.material)) child.material.forEach(m => m.dispose());
-                        else child.material.dispose();
-                    }
-                    grupo.remove(child);
-                }
-
-                const { colorPrimary, colorSecondary, colorAccent, effectType } = skin;
-
-                // Material principal con propiedades avanzadas
-                const materialPrincipal = new THREE.MeshPhysicalMaterial({
-                    color: colorPrimary,
-                    metalness: 0.4,
-                    roughness: 0.3,
-                    clearcoat: 0.3,
-                    clearcoatRoughness: 0.2,
-                    envMapIntensity: 1
-                });
-
-                const materialSecundario = new THREE.MeshPhysicalMaterial({
-                    color: colorSecondary,
-                    metalness: 0.6,
-                    roughness: 0.2,
-                    clearcoat: 0.5,
-                    emissive: colorSecondary,
-                    emissiveIntensity: 0.2
-                });
-
-                const materialAcento = new THREE.MeshStandardMaterial({
-                    color: colorAccent,
-                    emissive: colorAccent,
-                    emissiveIntensity: 0.5,
-                    metalness: 0.8,
-                    roughness: 0.1
-                });
-
-                // ======== CABEZA DETALLADA ========
-                const cabezaGrupo = new THREE.Group();
-
-                // Cráneo principal
-                const geoCabeza = new THREE.SphereGeometry(0.38, 32, 32);
-                const cabeza = new THREE.Mesh(geoCabeza, materialPrincipal);
-                cabeza.scale.set(1, 1.1, 1);
-                cabezaGrupo.add(cabeza);
-
-                // Ojos brillantes
-                const geoOjo = new THREE.SphereGeometry(0.08, 16, 16);
-                const matOjo = new THREE.MeshBasicMaterial({ 
-                    color: effectType === 'fire' ? 0xff4500 : 
-                          effectType === 'ice' ? 0x00ffff :
-                          effectType === 'phoenix' ? 0xffd700 : 0xffffff 
-                });
-                
-                const ojoIzq = new THREE.Mesh(geoOjo, matOjo);
-                ojoIzq.position.set(-0.13, 0.05, 0.32);
-                cabezaGrupo.add(ojoIzq);
-
-                const ojoDer = new THREE.Mesh(geoOjo, matOjo);
-                ojoDer.position.set(0.13, 0.05, 0.32);
-                cabezaGrupo.add(ojoDer);
-
-                // Brillo en ojos (point lights)
-                const luzOjoIzq = new THREE.PointLight(colorAccent, 0.5, 1);
-                luzOjoIzq.position.copy(ojoIzq.position);
-                cabezaGrupo.add(luzOjoIzq);
-
-                const luzOjoDer = new THREE.PointLight(colorAccent, 0.5, 1);
-                luzOjoDer.position.copy(ojoDer.position);
-                cabezaGrupo.add(luzOjoDer);
-
-                // Casco/Accesorio según skin
-                if(effectType === 'cosmic') {
-                    // Diadema cósmica
-                    const geoDiadema = new THREE.TorusGeometry(0.35, 0.04, 8, 32, Math.PI);
-                    const diadema = new THREE.Mesh(geoDiadema, materialAcento);
-                    diadema.position.y = 0.2;
-                    diadema.rotation.x = Math.PI / 2;
-                    cabezaGrupo.add(diadema);
-
-                    // Gema central
-                    const geoGema = new THREE.OctahedronGeometry(0.08);
-                    const gema = new THREE.Mesh(geoGema, materialAcento);
-                    gema.position.set(0, 0.2, 0.33);
-                    cabezaGrupo.add(gema);
-                } else if(effectType === 'shadow') {
-                    // Capucha oscura
-                    const geoCapucha = new THREE.ConeGeometry(0.42, 0.35, 8);
-                    const capucha = new THREE.Mesh(geoCapucha, new THREE.MeshBasicMaterial({
-                        color: 0x000000,
-                        transparent: true,
-                        opacity: 0.8
-                    }));
-                    capucha.position.y = 0.25;
-                    capucha.rotation.x = Math.PI;
-                    cabezaGrupo.add(capucha);
-                } else if(effectType === 'cyber') {
-                    // Visor tecnológico
-                    const geoVisor = new THREE.BoxGeometry(0.45, 0.12, 0.08);
-                    const visor = new THREE.Mesh(geoVisor, materialSecundario);
-                    visor.position.set(0, 0.02, 0.34);
-                    cabezaGrupo.add(visor);
-
-                    // Líneas de circuitos
-                    for(let i = 0; i < 5; i++) {
-                        const linea = new THREE.Mesh(
-                            new THREE.BoxGeometry(0.01, 0.15, 0.01),
-                            materialAcento
-                        );
-                        linea.position.set(-0.18 + i * 0.09, -0.15, 0.33);
-                        cabezaGrupo.add(linea);
-                    }
-                } else if(effectType === 'fire') {
-                    // Cuernos de fuego
-                    const geoCuerno = new THREE.ConeGeometry(0.06, 0.35, 8);
-                    const cuernoIzq = new THREE.Mesh(geoCuerno, materialAcento);
-                    cuernoIzq.position.set(-0.2, 0.35, 0);
-                    cuernoIzq.rotation.z = 0.3;
-                    cabezaGrupo.add(cuernoIzq);
-
-                    const cuernoDer = new THREE.Mesh(geoCuerno, materialAcento);
-                    cuernoDer.position.set(0.2, 0.35, 0);
-                    cuernoDer.rotation.z = -0.3;
-                    cabezaGrupo.add(cuernoDer);
-                } else if(effectType === 'ice') {
-                    // Corona de cristal
-                    const geoCorona = new THREE.TorusGeometry(0.38, 0.03, 8, 6);
-                    const corona = new THREE.Mesh(geoCorona, materialSecundario);
-                    corona.position.y = 0.28;
-                    corona.rotation.x = Math.PI / 2;
-                    cabezaGrupo.add(corona);
-
-                    // Picos de hielo
-                    for(let i = 0; i < 8; i++) {
-                        const pico = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.03, 0.12, 4),
-                            materialSecundario
-                        );
-                        const angulo = (i / 8) * Math.PI * 2;
-                        pico.position.set(
-                            Math.cos(angulo) * 0.35,
-                            0.3,
-                            Math.sin(angulo) * 0.35
-                        );
-                        pico.lookAt(0, 0.5, 0);
-                        cabezaGrupo.add(pico);
-                    }
-                } else if(effectType === 'phoenix') {
-                    // Corona de plumas doradas
-                    for(let i = 0; i < 12; i++) {
-                        const pluma = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.04, 0.2, 4),
-                            materialAcento
-                        );
-                        const angulo = (i / 12) * Math.PI * 2;
-                        pluma.position.set(
-                            Math.cos(angulo) * 0.38,
-                            0.25 + Math.random() * 0.1,
-                            Math.sin(angulo) * 0.38
-                        );
-                        pluma.rotation.x = -Math.PI / 4 + Math.random() * 0.3;
-                        pluma.rotation.z = angulo;
-                        cabezaGrupo.add(pluma);
-                    }
-                }
-
-                cabezaGrupo.position.y = 2.15;
-                grupo.add(cabezaGrupo);
-
-                // ======== TORSO DETALLADO ========
-                const torsoGrupo = new THREE.Group();
-
-                // Pecho principal
-                const geoTorso = new THREE.CapsuleGeometry(0.42, 0.9, 12, 24);
-                const torso = new THREE.Mesh(geoTorso, materialPrincipal);
-                torso.position.y = 1.25;
-                torsoGrupo.add(torso);
-
-                // Pectorales destacados
-                const geoPectoral = new THREE.SphereGeometry(0.15, 16, 16);
-                const pectoralIzq = new THREE.Mesh(geoPectoral, materialSecundario);
-                pectoralIzq.position.set(-0.18, 1.45, 0.28);
-                pectoralIzq.scale.set(1, 0.8, 0.6);
-                torsoGrupo.add(pectoralIzq);
-
-                const pectoralDer = new THREE.Mesh(geoPectoral, materialSecundario);
-                pectoralDer.position.set(0.18, 1.45, 0.28);
-                pectoralDer.scale.set(1, 0.8, 0.6);
-                torsoGrupo.add(pectoralDer);
-
-                // Cinturón/cintura
-                const geoCinturon = new THREE.CylinderGeometry(0.44, 0.42, 0.15, 24);
-                const cinturon = new THREE.Mesh(geoCinturon, materialAcento);
-                cinturon.position.y = 0.72;
-                torsoGrupo.add(cinturon);
-
-                // Hebilla del cinturón
-                const geoHebilla = new THREE.BoxGeometry(0.15, 0.12, 0.05);
-                const hebilla = new THREE.Mesh(geoHebrella, materialAcento);
-                hebilla.position.set(0, 0.72, 0.43);
-                torsoGrupo.add(heblla);
-
-                // Diseño en pecho según skin
-                if(effectType === 'cosmic') {
-                    // Símbolo estelar
-                    const geoEstrella = new THREE.OctahedronGeometry(0.15);
-                    const estrella = new THREE.Mesh(geoEstrella, materialAcento);
-                    estrella.position.set(0, 1.4, 0.35);
-                    estrella.scale.set(1, 1, 0.5);
-                    torsoGrupo.add(estrella);
-                } else if(effectType === 'fire') {
-                    // Llamas en pecho
-                    for(let i = 0; i < 3; i++) {
-                        const llama = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.06, 0.2 + Math.random() * 0.1, 6),
-                            materialAcento
-                        );
-                        llama.position.set(-0.1 + i * 0.1, 1.5, 0.34);
-                        torsoGrupo.add(llama);
-                    }
-                } else if(effectType === 'phoenix') {
-                    // Símbolo de fénix
-                    const alasShape = new THREE.Shape();
-                    alasShape.moveTo(0, 0);
-                    alasShape.lineTo(-0.2, -0.15);
-                    alasShape.lineTo(-0.15, 0.05);
-                    alasShape.lineTo(0, 0.1);
-                    alasShape.lineTo(0.15, 0.05);
-                    alasShape.lineTo(0.2, -0.15);
-                    alasShape.lineTo(0, 0);
-
-                    const alasGeo = new THREE.ExtrudeGeometry(alasShape, { depth: 0.03, bevelEnabled: false });
-                    const alasMesh = new THREE.Mesh(alasGeo, materialAcento);
-                    alasMesh.position.set(0, 1.35, 0.33);
-                    alasMesh.scale.set(1.2, 1.2, 1);
-                    torsoGrupo.add(alasMesh);
-                }
-
-                grupo.add(torsoGrupo);
-
-                // ======== BRAZOS DETALLADOS ========
-                const crearBrazo = (lado) => {
-                    const brazoGrupo = new THREE.Group();
-                    const dir = lado === 'izq' ? -1 : 1;
-
-                    // Hombro
-                    const geoHombro = new THREE.SphereGeometry(0.14, 16, 16);
-                    const hombro = new THREE.Mesh(geoHombro, materialSecundario);
-                    hombro.position.set(dir * 0.55, 1.65, 0);
-                    brazoGrupo.add(hombro);
-
-                    // Brazo superior
-                    const geoBrazoSup = new THREE.CapsuleGeometry(0.12, 0.45, 8, 16);
-                    const brazoSup = new THREE.Mesh(geoBrazoSup, materialPrincipal);
-                    brazoSup.position.set(dir * 0.58, 1.25, 0);
-                    brazoSup.rotation.z = dir * 0.2;
-                    brazoGrupo.add(brazoSup);
-
-                    // Codo
-                    const geoCodo = new THREE.SphereGeometry(0.11, 12, 12);
-                    const codo = new THREE.Mesh(geoCodo, materialSecundario);
-                    codo.position.set(dir * 0.68, 0.95, 0);
-                    brazoGrupo.add(codo);
-
-                    // Antebrazo
-                    const geoAntebrazo = new THREE.CapsuleGeometry(0.1, 0.45, 8, 16);
-                    const antebrazo = new THREE.Mesh(geoAntebrazo, materialPrincipal);
-                    antebrazo.position.set(dir * 0.72, 0.65, 0);
-                    brazoGrupo.add(antebrazo);
-
-                    // Mano
-                    const geoMano = new THREE.SphereGeometry(0.1, 12, 12);
-                    const mano = new THREE.Mesh(geoMano, new THREE.MeshStandardMaterial({ 
-                        color: 0xffdbac, roughness: 0.5 
-                    }));
-                    mano.position.set(dir * 0.74, 0.35, 0);
-                    mano.scale.set(1, 0.85, 0.85);
-                    brazoGrupo.add(mano);
-
-                    // Guantelete/brazalete
-                    const geoGuante = new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16);
-                    const guante = new THREE.Mesh(geoGuante, materialAcento);
-                    guante.position.set(dir * 0.73, 0.52, 0);
-                    brazoGrupo.add(guante);
-
-                    return brazoGrupo;
-                };
-
-                grupo.add(crearBrazo('izq'));
-                grupo.add(crearBrazo('der'));
-
-                // ======== PIERNAS DETALLADAS ========
-                const crearPierna = (lado) => {
-                    const piernaGrupo = new THREE.Group();
-                    const dir = lado === 'izq' ? -1 : 1;
-
-                    // Cadera/muslo superior
-                    const geoMuslo = new THREE.CapsuleGeometry(0.15, 0.5, 10, 16);
-                    const muslo = new new THREE.Mesh(geoMuslo, materialPrincipal);
-                    muslo.position.set(dir * 0.18, 0.45, 0);
-                    piernaGrupo.add(muslo);
-
-                    // Rodilla
-                    const geoRodilla = new THREE.SphereGeometry(0.13, 12, 12);
-                    const rodilla = new THREE.Mesh(geoRodilla, materialSecundario);
-                    rodilla.position.set(dir * 0.18, 0.12, 0);
-                    piernaGrupo.add(rodilla);
-
-                    // Pantorrilla
-                    const geoPantorrilla = new THREE.CapsuleGeometry(0.12, 0.48, 10, 16);
-                    const pantorrilla = new THREE.Mesh(geoPantorrilla, materialPrincipal);
-                    pantorrilla.position.set(dir * 0.18, -0.22, 0);
-                    piernaGrupo.add(pantorrilla);
-
-                    // Bota
-                    const geoBota = new THREE.BoxGeometry(0.14, 0.18, 0.22);
-                    const bota = new THREE.Mesh(geoBota, materialSecundario);
-                    bota.position.set(dir * 0.18, -0.5, 0.04);
-                    piernaGrupo.add(bota);
-
-                    return piernaGrupo;
-                };
-
-                grupo.add(crearPierna('izq'));
-                grupo.add(crearPierna('der'));
-
-                // ======== MOCHILA/ALAS ESPECIALES ========
-                if(effectType === 'cosmic') {
-                    // Mochila cósmica con orbe flotante
-                    const mochilaGeo = new THREE.BoxGeometry(0.45, 0.55, 0.25);
-                    const mochila = new THREE.Mesh(mochilaGeo, materialSecundario);
-                    mochila.position.set(0, 1.35, -0.42);
-                    grupo.add(mochila);
-
-                    // Orbe flotante
-                    const orbeGeo = new THREE.IcosahedronGeometry(0.15, 2);
-                    const orbeMat = new THREE.MeshBasicMaterial({
-                        color: colorAccent,
-                        transparent: true,
-                        opacity: 0.8
-                    });
-                    const orbe = new THREE.Mesh(orbeGeo, orbeMat);
-                    orbe.position.set(0, 1.8, -0.55);
-                    orbe.userData.esOrbe = true;
-                    orbe.userData.velocidadRotacion = 0.02;
-                    grupo.add(orbe);
-                } else if(effectType === 'shadow') {
-                    // Alas de sombra
-                    const crearAlaSombra = (lado) => {
-                        const alaGrupo = new THREE.Group();
-                        const dir = lado === 'izq' ? -1 : 1;
-
-                        const alaShape = new THREE.Shape();
-                        alaShape.moveTo(0, 0);
-                        alaShape.quadraticCurveTo(dir * 0.8, 0.3, dir * 1.2, 0);
-                        alaShape.quadraticCurveTo(dir * 0.8, -0.1, 0, -0.2);
-
-                        const alaGeo = new THREE.ShapeGeometry(alaShape);
-                        const alaMat = new THREE.MeshBasicMaterial({
-                            color: 0x000000,
-                            transparent: true,
-                            opacity: 0.6,
-                            side: THREE.DoubleSide
-                        });
-                        const ala = new THREE.Mesh(alaGeo, alaMat);
-                        ala.position.set(dir * 0.3, 1.4, -0.2);
-                        ala.rotation.y = lado === 'izq' ? -0.3 : 0.3;
-                        alaGrupo.add(ala);
-
-                        return alaGrupo;
-                    };
-
-                    grupo.add(crearAlaSombra('izq'));
-                    grupo.add(crearAlaSombra('der'));
-                } else if(effectType === 'cyber') {
-                    // Mochila tecnológica con antenas
-                    const mochilaCyber = new THREE.Group();
-
-                    const cuerpoMochila = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.4, 0.5, 0.2),
-                        materialSecundario
-                    );
-                    cuerpoMochila.position.set(0, 1.35, -0.4);
-                    mochilaCyber.add(cuerpoMochila);
-
-                    // Antenas
-                    for(let i = 0; i < 2; i++) {
-                        const antena = new THREE.Mesh(
-                            new THREE.CylinderGeometry(0.015, 0.015, 0.25, 8),
-                            materialPrincipal
-                        );
-                        antena.position.set(-0.12 + i * 0.24, 1.62, -0.4);
-                        mochilaCyber.add(antena);
-
-                        const punta = new THREE.Mesh(
-                            new THREE.SphereGeometry(0.03, 8, 8),
-                            materialAcento
-                        );
-                        punta.position.set(-0.12 + i * 0.24, 1.75, -0.4);
-                        mochilaCyber.add(punta);
-                    }
-
-                    grupo.add(mochilaCyber);
-                } else if(effectType === 'fire') {
-                    // Llamas en espalda
-                    for(let i = 0; i < 7; i++) {
-                        const llama = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.08 + Math.random() * 0.04, 0.4 + Math.random() * 0.2, 6),
-                            materialAcento
-                        );
-                        llama.position.set(
-                            -0.2 + i * 0.07 + Math.random() * 0.05,
-                            1.2 + Math.random() * 0.3,
-                            -0.35
-                        );
-                        llama.userData.esLlama = true;
-                        llama.userData.velocidadEscalado = 0.5 + Math.random();
-                        grupo.add(llama);
-                    }
-                } else if(effectType === 'ice') {
-                    // Alas de cristal de hielo
-                    const crearAlaHielo = (lado) => {
-                        const alaGrupo = new THREE.Group();
-                        const dir = lado === 'izq' ? -1 : 1;
-
-                        // Ala principal
-                        const alaGeo = new THREE.BufferGeometry();
-                        const vertices = new Float32Array([
-                            0, 0, 0,
-                            dir * 0.3, 0.5, 0,
-                            dir * 0.8, 0.3, 0,
-                            dir * 1.0, -0.1, 0,
-                            dir * 0.7, -0.4, 0,
-                            dir * 0.2, -0.3, 0
-                        ]);
-                        alaGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-                        alaGeo.computeVertexNormals();
-
-                        const ala = new THREE.Mesh(alaGeo, materialSecundario);
-                        ala.position.set(dir * 0.25, 1.3, -0.15);
-                        alaGrupo.add(ala);
-
-                        // Cristales adicionales
-                        for(let j = 0; j < 3; j++) {
-                            const cristal = new THREE.Mesh(
-                                new THREE.OctahedronGeometry(0.08 + Math.random() * 0.05),
-                                materialAcento
-                            );
-                            cristal.position.set(
-                                dir * (0.4 + j * 0.2 + Math.random() * 0.1),
-                                1.0 + Math.random() * 0.4,
-                                -0.2 + Math.random() * 0.1
-                            );
-                            cristal.rotation.set(Math.random(), Math.random(), Math.random());
-                            alaGrupo.add(cristal);
-                        }
-
-                        return alaGrupo;
-                    };
-
-                    grupo.add(crearAlaHielo('izq'));
-                    grupo.add(crearAlaHielo('der'));
-                } else if(effectType === 'phoenix') {
-                    // ALAS DE FÉNIX GRANDES Y DETALLADAS
-                    const crearAlaPhoenix = (lado) => {
-                        const alaGrupo = new THREE.Group();
-                        const dir = lado === 'izq' ? -1 : 1;
-
-                        // Estructura principal del ala
-                        for(let fila = 0; fila < 5; fila++) {
-                            const anchoPluma = 0.15 - fila * 0.02;
-                            const largoPluma = 0.8 - fila * 0.1;
-
-                            for(let col = 0; col < 4; col++) {
-                                const pluma = new THREE.Mesh(
-                                    new THREE.ConeGeometry(anchoPluma, largoPluma, 4),
-                                    new THREE.MeshStandardMaterial({
-                                        color: new THREE.Color().lerpColors(
-                                            new THREE.Color(colorPrimary),
-                                            new THREE.Color(colorAccent),
-                                            Math.random()
-                                        ),
-                                        metalness: 0.7,
-                                        roughness: 0.2,
-                                        emissive: colorAccent,
-                                        emissiveIntensity: 0.3
-                                    })
-                                );
-
-                                pluma.position.set(
-                                    dir * (0.3 + col * 0.25 + Math.random() * 0.1),
-                                    1.5 - fila * 0.15 + Math.random() * 0.08,
-                                    -0.1 - Math.random() * 0.15
-                                );
-
-                                pluma.rotation.set(
-                                    -Math.PI / 3 + Math.random() * 0.3,
-                                    dir * (Math.PI / 6 + Math.random() * 0.2),
-                                    dir * (Math.random() * 0.3)
-                                );
-
-                                pluma.userData.esPluma = true;
-                                pluma.userData.velocidadAleteo = 0.05 + Math.random() * 0.05;
-                                alaGrupo.add(pluma);
-                            }
-                        }
-
-                        // Plumas largas principales
-                        for(let i = 0; i < 3; i++) {
-                            const plumaPrincipal = new THREE.Mesh(
-                                new THREE.ConeGeometry(0.08, 1.2 - i * 0.2, 4),
-                                materialAcento
-                            );
-                            plumaPrincipal.position.set(
-                                dir * (0.5 + i * 0.3),
-                                1.3 - i * 0.15,
-                                -0.15
-                            );
-                            plumaPrincipal.rotation.set(
-                                -Math.PI / 4,
-                                dir * Math.PI / 8,
-                                dir * 0.2
-                            );
-                            plumaPrincipal.userData.esPluma = true;
-                            plumaPrincipal.userData.velocidadAleteo = 0.03;
-                            alaGrupo.add(plumaPrincipal);
-                        }
-
-                        alaGrupo.position.set(dir * 0.2, 0, 0);
-                        return alaGrupo;
-                    };
-
-                    const alaIzq = crearAlaPhoenix('izq');
-                    const alaDer = crearAlaPhoenix('der');
-                    alaIzq.userData.esAlaPhoenix = true;
-                    alaDer.userData.esAlaPhoenix = true;
-                    grupo.add(alaIzq);
-                    grupo.add(alaDer);
-                }
-
-                return grupo;
-            };
-
-            // ============================================
-            // ESCENA 3D DEL LOBBY (PERSONAJE ÉPICO)
+            // ESCENA 3D DEL LOBBY (PERSONAJE)
             // ============================================
             useEffect(() => {
-                if(!lobbyCanvasRef.current || enPartida) return;
+                if (!lobbyRef.current || jugando) return;
 
-                lobbyCanvasRef.current.innerHTML = '';
+                console.log('🎨 Creando personaje 3D...');
 
-                const escena = new THREE.Scene();
-                escena.background = new THREE.Color(0x050810);
-                escenaLobbyRef.current = escena;
+                try {
+                    // Limpiar
+                    lobbyRef.current.innerHTML = '';
 
-                const camara = new THREE.PerspectiveCamera(
-                    45,
-                    lobbyCanvasRef.current.clientWidth / lobbyCanvasRef.current.clientHeight,
-                    0.1,
-                    1000
-                );
-                camara.position.set(0, 2.5, 7);
-                camara.lookAt(0, 1.5, 0);
+                    // Escena
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x0a0e1a);
+                    escenaLobbyRef.current = scene;
 
-                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(lobbyCanvasRef.current.clientWidth, lobbyCanvasRef.current.clientHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                renderer.toneMappingExposure = 1.2;
-                lobbyCanvasRef.current.appendChild(renderer.domElement);
+                    // Cámara
+                    const camera = new THREE.PerspectiveCamera(
+                        45,
+                        lobbyRef.current.clientWidth / lobbyRef.current.clientHeight,
+                        0.1,
+                        1000
+                    );
+                    camera.position.set(0, 2, 6);
+                    camera.lookAt(0, 1.5, 0);
 
-                // Iluminación épica
-                const ambiente = new THREE.AmbientLight(0xffffff, 0.4);
-                escena.add(ambiente);
+                    // Renderer
+                    const renderer = new THREE.WebGLRenderer({ 
+                        antialias: true,
+                        alpha: true 
+                    });
+                    renderer.setSize(
+                        lobbyRef.current.clientWidth, 
+                        lobbyRef.current.clientHeight
+                    );
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    lobbyRef.current.appendChild(renderer.domElement);
+                    console.log('✅ Canvas creado');
 
-                const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-                keyLight.position.set(5, 10, 5);
-                keyLight.castShadow = true;
-                keyLight.shadow.mapSize.width = 2048;
-                keyLight.shadow.mapSize.height = 2048;
-                escena.add(keyLight);
+                    // Luces
+                    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                    
+                    const light1 = new THREE.DirectionalLight(0xffffff, 1);
+                    light1.position.set(5, 10, 5);
+                    scene.add(light1);
 
-                const fillLight = new THREE.PointLight(0x00c8ff, 0.6, 20);
-                fillLight.position.set(-4, 3, 3);
-                escena.add(fillLight);
+                    const light2 = new THREE.PointLight(0x00c8ff, 0.8, 20);
+                    light2.position.set(-3, 3, 3);
+                    scene.add(light2);
 
-                const rimLight = new THREE.PointLight(0x7b2ff7, 0.5, 20);
-                rimLight.position.set(4, 2, -3);
-                escena.add(rimLight);
+                    const light3 = new THREE.PointLight(0x7b2ff7, 0.6, 20);
+                    light3.position.set(3, 2, -3);
+                    scene.add(light3);
 
-                // Suelo reflectante
-                const sueloGeo = new THREE.CircleGeometry(6, 64);
-                const sueloMat = new THREE.MeshStandardMaterial({
-                    color: 0x0a0e1a,
-                    metalness: 0.95,
-                    roughness: 0.1
-                });
-                const suelo = new THREE.Mesh(sueloGeo, sueloMat);
-                suelo.rotation.x = -Math.PI / 2;
-                suelo.receiveShadow = true;
-                escena.add(suello);
+                    // Suelo
+                    const floorGeo = new THREE.CircleGeometry(4, 64);
+                    const floorMat = new THREE.MeshStandardMaterial({
+                        color: 0x1a1f2e,
+                        metalness: 0.9,
+                        roughness: 0.1
+                    });
+                    const floor = new THREE.Mesh(floorGeo, floorMat);
+                    floor.rotation.x = -Math.PI / 2;
+                    scene.add(floor);
 
-                // Anillo de energía bajo el personaje
-                const anilloGeo = new THREE.RingGeometry(1.2, 1.4, 64);
-                const anilloMat = new THREE.MeshBasicMaterial({
-                    color: SKINS_EPICAS[skinActivo].colorAccent,
-                    transparent: true,
-                    opacity: 0.6,
-                    side: THREE.DoubleSide
-                });
-                const anillo = new THREE.Mesh(anilloGeo, anilloMat);
-                anillo.rotation.x = -Math.PI / 2;
-                anillo.position.y = 0.01;
-                escena.add(anillo);
+                    // === PERSONAJE 3D ===
+                    const skin = SKINS[skinActivo];
+                    const group = new THREE.Group();
 
-                // Grupo del personaje
-                const grupoPersonaje = new THREE.Group();
-                crearPersonajeEpico(grupoPersonaje, SKINS_EPICAS[skinActivo]);
-                grupoPersonaje.position.y = 0;
-                escena.add(grupoPersonaje);
-                grupoPersonajeRef.current = grupoPersonaje;
+                    // Color principal
+                    const mainColor = new THREE.Color(skin.color);
+                    const glowColor = new THREE.Color(skin.glowColor);
 
-                // Partículas ambientales según skin
-                const particulasAmbiente = [];
-                const skin = SKINS_EPICAS[skinActivo];
+                    // Material principal
+                    const bodyMat = new THREE.MeshStandardMaterial({
+                        color: mainColor,
+                        metalness: 0.4,
+                        roughness: 0.3
+                    });
 
-                for(let i = 0; i < 60; i++) {
-                    let particulaGeo, particulaMat;
+                    // Material brillante (accesorios)
+                    const glowMat = new THREE.MeshStandardMaterial({
+                        color: glowColor,
+                        emissive: glowColor,
+                        emissiveIntensity: 0.5,
+                        metalness: 0.8,
+                        roughness: 0.1
+                    });
 
-                    if(skin.effectType === 'cosmic') {
-                        particulaGeo = new THREE.OctahedronGeometry(0.04 + Math.random() * 0.04);
-                        particulaMat = new THREE.MeshBasicMaterial({
-                            color: Math.random() > 0.5 ? skin.colorAccent : skin.colorPrimary,
-                            transparent: true,
-                            opacity: 0.7
-                        });
-                    } else if(skin.effectType === 'fire') {
-                        particulaGeo = new THREE.SphereGeometry(0.03 + Math.random() * 0.03, 8, 8);
-                        particulaMat = new THREE.MeshBasicMaterial({
-                            color: new THREE.Color().lerpColors(
-                                new THREE.Color(skin.colorPrimary),
-                                new THREE.Color(skin.colorAccent),
-                                Math.random()
-                            ),
-                            transparent: true,
-                            opacity: 0.8
-                        });
-                    } else if(skin.effectType === 'ice') {
-                        particulaGeo = new THREE.OctahedronGeometry(0.03 + Math.random() * 0.03);
-                        particulaMat = new THREE.MeshBasicMaterial({
-                            color: 0xffffff,
-                            transparent: true,
-                            opacity: 0.9
-                        });
-                    } else if(skin.effectType === 'phoenix') {
-                        particulaGeo = new THREE.TetrahedronGeometry(0.04 + Math.random() * 0.03);
-                        particulaMat = new THREE.MeshBasicMaterial({
-                            color: skin.colorAccent,
-                            transparent: true,
-                            opacity: 0.8
-                        });
-                    } else {
-                        particulaGeo = new THREE.SphereGeometry(0.025 + Math.random() * 0.025, 8, 8);
-                        particulaMat = new THREE.MeshBasicMaterial({
-                            color: skin.colorSecondary,
+                    // Material piel
+                    const skinMat = new THREE.MeshStandardMaterial({
+                        color: 0xffdbac,
+                        roughness: 0.5
+                    });
+
+                    // Cabeza
+                    const headGeo = new THREE.SphereGeometry(0.38, 32, 32);
+                    const head = new THREE.Mesh(headGeo, bodyMat);
+                    head.position.y = 2.15;
+                    head.scale.y = 1.1;
+                    group.add(head);
+
+                    // Ojos
+                    const eyeGeo = new THREE.SphereGeometry(0.07, 16, 16);
+                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    
+                    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+                    eyeL.position.set(-0.12, 2.18, 0.32);
+                    group.add(eyeL);
+
+                    const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+                    eyeR.position.set(0.12, 2.18, 0.32);
+                    group.add(eyeR);
+
+                    // Pupilas
+                    const pupilGeo = new THREE.SphereGeometry(0.03, 12, 12);
+                    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                    
+                    const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+                    pupilL.position.set(-0.12, 2.18, 0.38);
+                    group.add(pupilL);
+
+                    const pupilR = new THREE.Mesh(pupilGeo, pupilMat);
+                    pupilR.position.set(0.12, 2.18, 0.38);
+                    group.add(pupilR);
+
+                    // Accesorio cabeza según skin
+                    if (skin.id === 0) { // Astra - Diadema
+                        const diademGeo = new THREE.TorusGeometry(0.35, 0.04, 8, 32, Math.PI);
+                        const diadem = new THREE.Mesh(diademGeo, glowMat);
+                        diadem.position.y = 2.35;
+                        diadem.rotation.x = Math.PI / 2;
+                        group.add(diadem);
+
+                        const gemGeo = new THREE.OctahedronGeometry(0.08);
+                        const gem = new THREE.Mesh(gemGeo, glowMat);
+                        gem.position.set(0, 2.35, 0.33);
+                        group.add(gem);
+                    } else if (skin.id === 3) { // Inferno - Cuernos
+                        const hornGeo = new THREE.ConeGeometry(0.06, 0.35, 8);
+                        
+                        const hornL = new THREE.Mesh(hornGeo, glowMat);
+                        hornL.position.set(-0.2, 2.5, 0);
+                        hornL.rotation.z = 0.3;
+                        group.add(hornL);
+
+                        const hornR = new THREE.Mesh(hornGeo, glowMat);
+                        hornR.position.set(0.2, 2.5, 0);
+                        hornR.rotation.z = -0.3;
+                        group.add(hornR);
+                    } else if (skin.id === 5) { // Phoenix - Corona
+                        for (let i = 0; i < 8; i++) {
+                            const featherGeo = new THREE.ConeGeometry(0.04, 0.2, 4);
+                            const feather = new THREE.Mesh(featherGeo, glowMat);
+                            const angle = (i / 8) * Math.PI * 2;
+                            feather.position.set(
+                                Math.cos(angle) * 0.38,
+                                2.42,
+                                Math.sin(angle) * 0.38
+                            );
+                            feather.rotation.x = -Math.PI / 4;
+                            feather.rotation.z = angle;
+                            group.add(feather);
+                        }
+                    }
+
+                    // Torso
+                    const torsoGeo = new THREE.CapsuleGeometry(0.42, 0.9, 12, 24);
+                    const torso = new THREE.Mesh(torsoGeo, bodyMat);
+                    torso.position.y = 1.25;
+                    group.add(torso);
+
+                    // Brazos
+                    const armGeo = new THREE.CapsuleGeometry(0.13, 0.55, 8, 16);
+                    
+                    const armL = new THREE.Mesh(armGeo, bodyMat);
+                    armL.position.set(-0.58, 1.25, 0);
+                    armL.rotation.z = 0.2;
+                    group.add(armL);
+
+                    const armR = new THREE.Mesh(armGeo, bodyMat);
+                    armR.position.set(0.58, 1.25, 0);
+                    armR.rotation.z = -0.2;
+                    group.add(armR);
+
+                    // Manos
+                    const handGeo = new THREE.SphereGeometry(0.11, 16, 16);
+                    
+                    const handL = new THREE.Mesh(handGeo, skinMat);
+                    handL.position.set(-0.72, 0.82, 0);
+                    group.add(handL);
+
+                    const handR = new THREE.Mesh(handGeo, skinMat);
+                    handR.position.set(0.72, 0.82, 0);
+                    group.add(handR);
+
+                    // Piernas
+                    const legGeo = new THREE.CapsuleGeometry(0.16, 0.55, 10, 16);
+                    
+                    const legL = new THREE.Mesh(legGeo, bodyMat);
+                    legL.position.set(-0.2, 0.4, 0);
+                    group.add(legL);
+
+                    const legR = new THREE.Mesh(legGeo, bodyMat);
+                    legR.position.set(0.2, 0.4, 0);
+                    group.add(legR);
+
+                    // Botas
+                    const bootGeo = new THREE.BoxGeometry(0.17, 0.2, 0.25);
+                    const bootMat = new THREE.MeshStandardMaterial({ 
+                        color: 0x1f2937,
+                        roughness: 0.4 
+                    });
+                    
+                    const bootL = new THREE.Mesh(bootGeo, bootMat);
+                    bootL.position.set(-0.2, -0.08, 0.04);
+                    group.add(bootL);
+
+                    const bootR = new THREE.Mesh(bootGeo, bootMat);
+                    bootR.position.set(0.2, -0.08, 0.04);
+                    group.add(bootR);
+
+                    // Mochila/Accesorio espalda
+                    const backGeo = new THREE.BoxGeometry(0.48, 0.58, 0.28);
+                    const back = new THREE.Mesh(backGeo, glowMat);
+                    back.position.set(0, 1.35, -0.44);
+                    group.add(back);
+
+                    // Partículas alrededor
+                    for (let i = 0; i < 40; i++) {
+                        const pGeo = new THREE.SphereGeometry(0.04 + Math.random() * 0.03, 8, 8);
+                        const pMat = new THREE.MeshBasicMaterial({
+                            color: glowColor,
                             transparent: true,
                             opacity: 0.6
                         });
+                        const particle = new THREE.Mesh(pGeo, pMat);
+                        
+                        const radius = 1.5 + Math.random() * 2.5;
+                        const angle = Math.random() * Math.PI * 2;
+                        particle.position.set(
+                            Math.cos(angle) * radius,
+                            Math.random() * 5,
+                            Math.sin(angle) * radius
+                        );
+                        particle.userData = {
+                            speedY: 0.005 + Math.random() * 0.01,
+                            baseY: particle.position.y,
+                            angle: angle,
+                            radius: radius
+                        };
+                        scene.add(particle);
+                        group.userData.particles = group.userData.particles || [];
+                        group.userData.particles.push(particle);
                     }
 
-                    const particula = new THREE.Mesh(particulaGeo, particulaMat);
-                    
-                    const radio = 2 + Math.random() * 4;
-                    const angulo = Math.random() * Math.PI * 2;
-                    particula.position.set(
-                        Math.cos(angulo) * radio,
-                        Math.random() * 6,
-                        Math.sin(angulo) * radio
-                    );
+                    scene.add(group);
 
-                    particula.userData = {
-                        velocidadY: 0.008 + Math.random() * 0.015,
-                        velocidadRotacion: 0.01 + Math.random() * 0.02,
-                        inicioY: particula.position.y,
-                        anguloBase: angulo,
-                        radioBase: radio,
-                        offsetPhase: Math.random() * Math.PI * 2
+                    // Animación
+                    let time = 0;
+                    const animate = () => {
+                        if (jugando) return;
+                        requestAnimationFrame(animate);
+                        time += 0.016;
+
+                        // Rotación suave
+                        group.rotation.y = Math.sin(time * 0.5) * 0.4;
+
+                        // Respiración
+                        group.position.y = Math.sin(time * 2) * 0.04;
+
+                        // Partículas
+                        if (group.userData.particles) {
+                            group.userData.particles.forEach(p => {
+                                p.position.y += p.userData.speedY;
+                                p.rotation.x += 0.02;
+                                p.rotation.y += 0.02;
+
+                                if (p.position.y > p.userData.baseY + 2.5) {
+                                    p.position.y = p.userData.baseY - 1.5;
+                                }
+                            });
+                        }
+
+                        renderer.render(scene, camera);
+                    };
+                    animate();
+
+                    // Resize
+                    const handleResize = () => {
+                        if (lobbyRef.current) {
+                            camera.aspect = lobbyRef.current.clientWidth / lobbyRef.current.clientHeight;
+                            camera.updateProjectionMatrix();
+                            renderer.setSize(
+                                lobbyRef.current.clientWidth,
+                                lobbyRef.current.clientHeight
+                            );
+                        }
+                    };
+                    window.addEventListener('resize', handleResize);
+
+                    return () => {
+                        window.removeEventListener('resize', handleResize);
+                        renderer.dispose();
+                        scene.traverse(obj => {
+                            if (obj.geometry) obj.geometry.dispose();
+                            if (obj.material) obj.material.dispose();
+                        });
                     };
 
-                    escena.add(particula);
-                    particulasAmbiente.push(particula);
+                } catch (error) {
+                    console.error('❌ Error creando escena 3D:', error);
                 }
-                particulasRef.current = particulasAmbiente;
-
-                // Animación
-                let tiempo = 0;
-                const animar = () => {
-                    if(enPartida) return;
-                    requestAnimationFrame(animar);
-                    tiempo += 0.016;
-
-                    // Rotación suave del personaje
-                    grupoPersonaje.rotation.y = Math.sin(tiempo * 0.5) * 0.4;
-
-                    // Respiración
-                    grupoPersonaje.position.y = Math.sin(tiempo * 2) * 0.05;
-
-                    // Animar elementos especiales del personaje
-                    grupoPersonaje.traverse(child => {
-                        if(child.userData.esOrbe) {
-                            child.rotation.x += child.userData.velocidadRotacion;
-                            child.rotation.y += child.userData.velocidadRotacion;
-                            child.position.y = 1.8 + Math.sin(tiempo * 3) * 0.1;
-                        }
-                        if(child.userData.esLlama) {
-                            child.scale.y = 0.8 + Math.sin(tiempo * 8 + child.position.x) * 0.3;
-                            child.rotation.y += 0.05;
-                        }
-                        if(child.userData.esPluma) {
-                            child.rotation.z = Math.sin(tiempo * child.userData.velocidadAleteo * 60) * 0.3;
-                        }
-                        if(child.userData.esAlaPhoenix) {
-                            child.rotation.z = Math.sin(tiempo * 2) * 0.15;
-                        }
-                    });
-
-                    // Anillo de energía pulsante
-                    anillo.material.opacity = 0.4 + Math.sin(tiempo * 3) * 0.2;
-                    anillo.rotation.z += 0.005;
-
-                    // Partículas animadas
-                    particulasAmbiente.forEach(p => {
-                        p.position.y += p.userData.velocidadY;
-                        p.rotation.x += p.userData.velocidadRotacion;
-                        p.rotation.y += p.userData.velocidadRotacion;
-
-                        if(p.position.y > p.userData.inicioY + 3) {
-                            p.position.y = p.userData.inicioY - 2;
-                        }
-
-                        // Movimiento orbital sutil
-                        const offset = Math.sin(tiempo * 0.5 + p.userData.offsetPhase) * 0.3;
-                        p.position.x = Math.cos(p.userData.anguloBase) * (p.userData.radioBase + offset);
-                        p.position.z = Math.sin(p.userData.anguloBase) * (p.userData.radioBase + offset);
-                    });
-
-                    renderer.render(escena, camara);
-                };
-                animar();
-
-                // Actualizar skin
-                const intervalo = setInterval(() => {
-                    if(!enPartida && grupoPersonajeRef.current) {
-                        crearPersonajeEpico(grupoPersonajeRef.current, SKINS_EPICAS[skinActivo]);
-                        
-                        // Actualizar partículas
-                        particulasAmbiente.forEach(p => escena.remove(p));
-                        particulasAmbiente.length = 0;
-                        // Recrear partículas...
-                    }
-                }, 100);
-
-                const handleResize = () => {
-                    if(lobbyCanvasRef.current) {
-                        camara.aspect = lobbyCanvasRef.current.clientWidth / lobbyCanvasRef.current.clientHeight;
-                        camara.updateProjectionMatrix();
-                        renderer.setSize(lobbyCanvasRef.current.clientWidth, lobbyCanvasRef.current.clientHeight);
-                    }
-                };
-                window.addEventListener('resize', handleResize);
-
-                return () => {
-                    clearInterval(intervalo);
-                    window.removeEventListener('resize', handleResize);
-                    renderer.dispose();
-                    escena.traverse(obj => {
-                        if(obj.geometry) obj.geometry.dispose();
-                        if(obj.material) obj.material.dispose();
-                    });
-                };
-            }, [enPartida, skinActivo]);
+            }, [jugando, skinActivo]);
 
             // ============================================
             // ESCENA DEL JUEGO
             // ============================================
             useEffect(() => {
-                if(!enPartida || !gameCanvasRef.current) return;
+                if (!jugando || !gameRef.current) return;
 
-                gameCanvasRef.current.innerHTML = '';
+                console.log('🎮 Iniciando partida...');
 
-                const escena = new THREE.Scene();
-                escena.background = new THREE.Color(0x87ceeb);
-                escena.fog = new THREE.Fog(0x87ceeb, 50, 300);
+                try {
+                    gameRef.current.innerHTML = '';
 
-                const camara = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                camara.position.set(0, 8, 12);
-                camaraRef.current = camara;
+                    // Escena
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x87ceeb);
+                    scene.fog = new THREE.Fog(0x87ceeb, 50, 300);
 
-                const renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.shadowMap.enabled = true;
-                gameCanvasRef.current.appendChild(renderer.domElement);
-
-                // Luces
-                escena.add(new THREE.AmbientLight(0xffffff, 0.5));
-                const sol = new THREE.DirectionalLight(0xffffff, 1);
-                sol.position.set(50, 100, 50);
-                sol.castShadow = true;
-                escena.add(sol);
-
-                // Terreno
-                const terreno = new THREE.Mesh(
-                    new THREE.ConeGeometry(120, 15, 32),
-                    new THREE.MeshStandardMaterial({ color: 0x4ade80 })
-                );
-                terreno.position.y = -7.5;
-                terreno.receiveShadow = true;
-                escena.add(terreno);
-
-                // Agua
-                const agua = new THREE.Mesh(
-                    new THREE.PlaneGeometry(400, 400),
-                    new THREE.MeshStandardMaterial({ color: 0x0077be, transparent: true, opacity: 0.7 })
-                );
-                agua.rotation.x = -Math.PI / 2;
-                agua.position.y = -8;
-                escena.add(agua);
-
-                // Edificios
-                for(let i = 0; i < 15; i++) {
-                    const edificio = new THREE.Mesh(
-                        new THREE.BoxGeometry(8+Math.random()*12, 10+Math.random()*25, 8+Math.random()*12),
-                        new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff })
+                    // Cámara
+                    const camera = new THREE.PerspectiveCamera(
+                        75,
+                        window.innerWidth / window.innerHeight,
+                        0.1,
+                        1000
                     );
-                    const a = Math.random() * Math.PI * 2;
-                    const r = 25 + Math.random() * 80;
-                    edificio.position.set(Math.cos(a)*r, 10+Math.random()*12, Math.sin(a)*r);
-                    edificio.castShadow = true;
-                    escena.add(edificio);
-                }
+                    camera.position.set(0, 8, 12);
+                    camaraRef.current = camera;
 
-                // Jugador (versión simplificada para rendimiento)
-                const jugador = new THREE.Mesh(
-                    new THREE.CapsuleGeometry(0.6, 1.2, 8, 16),
-                    new THREE.MeshStandardMaterial({ color: SKINS_EPICAS[skinActivo].colorPrimary })
-                );
-                jugador.position.set(0, 2, 0);
-                jugador.castShadow = true;
-                escena.add(jugador);
-                jugadorRef.current = jugador;
+                    // Renderer
+                    const renderer = new THREE.WebGLRenderer({ antialias: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.shadowMap.enabled = true;
+                    gameRef.current.appendChild(renderer.domElement);
+                    console.log('✅ Canvas de juego creado');
 
-                // Enemigos
-                enemigosRef.current = [];
-                const nombres = ['SOMBRA', 'FANTASMA', 'HIELO', 'FUEGO', 'VACÍO'];
-                for(let i = 0; i < 5; i++) {
-                    const enemigo = new THREE.Mesh(
-                        new THREE.CapsuleGeometry(0.6, 1.2, 8, 16),
-                        new THREE.MeshStandardMaterial({ color: 0xef4444 })
-                    );
-                    const a = (i/5)*Math.PI*2;
-                    const r = 30+Math.random()*40;
-                    enemigo.position.set(Math.cos(a)*r, 2, Math.sin(a)*r);
-                    enemigo.castShadow = true;
-                    enemigo.userData = { vida: 100, nombre: nombres[i] };
-                    escena.add(enemigo);
-                    enemigosRef.current.push(enemigo);
-                }
+                    // Luces
+                    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                    
+                    const sun = new THREE.DirectionalLight(0xffffff, 1);
+                    sun.position.set(50, 100, 50);
+                    sun.castShadow = true;
+                    scene.add(sun);
 
-                // Controles
-                const onKeyDown = e => { teclasPulsadas.current[e.key.toLowerCase()] = true; if(e.key===' ')e.preventDefault(); };
-                const onKeyUp = e => { teclasPulsadas.current[e.key.toLowerCase()] = false; };
-                window.addEventListener('keydown', onKeyDown);
-                window.addEventListener('keyup', onKeyUp);
+                    // Terreno
+                    const groundGeo = new THREE.ConeGeometry(120, 15, 32);
+                    const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80 });
+                    const ground = new THREE.Mesh(groundGeo, groundMat);
+                    ground.position.y = -7.5;
+                    ground.receiveShadow = true;
+                    scene.add(ground);
 
-                const disparar = () => {
-                    if(municion > 0 && vida > 0) {
-                        setMunicion(prev=>prev-1);
-                        const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camara.quaternion);
-                        const hits = new THREE.Raycaster(camara.position, dir).intersectObjects(enemigosRef.current);
-                        if(hits.length > 0) {
-                            const obj = hits[0].object;
-                            obj.userData.vida -= 30;
-                            const c = obj.material.color.getHex();
-                            obj.material.color.setHex(0xffffff);
-                            setTimeout(()=>{if(obj.material)obj.material.color.setHex(c);},100);
-                            if(obj.userData.vida <= 0) {
-                                setKillFeed(prev=>[...prev.slice(-3),{killer:'Tú',victim:obj.userData.nombre}]);
-                                setKills(prev=>prev+1);
-                                setJugadoresVivos(prev=>prev-1);
-                                escena.remove(obj);
-                                enemigosRef.current=enemigosRef.current.filter(e=>e!==obj);
-                                mostrarNotif(`¡Eliminaste a ${obj.userData.nombre}!`,'exito');
+                    // Agua
+                    const waterGeo = new THREE.PlaneGeometry(400, 400);
+                    const waterMat = new THREE.MeshStandardMaterial({ 
+                        color: 0x0077be, 
+                        transparent: true, 
+                        opacity: 0.7 
+                    });
+                    const water = new THREE.Mesh(waterGeo, waterMat);
+                    water.rotation.x = -Math.PI / 2;
+                    water.position.y = -8;
+                    scene.add(water);
+
+                    // Edificios
+                    for (let i = 0; i < 15; i++) {
+                        const w = 8 + Math.random() * 12;
+                        const h = 10 + Math.random() * 25;
+                        const bldgGeo = new THREE.BoxGeometry(w, h, w);
+                        const bldgMat = new THREE.MeshStandardMaterial({ 
+                            color: new THREE.Color().setHSL(Math.random(), 0.3, 0.4)
+                        });
+                        const building = new THREE.Mesh(bldgGeo, bldgMat);
+                        const a = Math.random() * Math.PI * 2;
+                        const r = 25 + Math.random() * 80;
+                        building.position.set(Math.cos(a)*r, h/2-7.5, Math.sin(a)*r);
+                        building.castShadow = true;
+                        scene.add(building);
+                    }
+
+                    // Jugador
+                    const playerGeo = new THREE.CapsuleGeometry(0.6, 1.2, 8, 16);
+                    const playerMat = new THREE.MeshStandardMaterial({ 
+                        color: SKINS[skinActivo].color 
+                    });
+                    const player = new THREE.Mesh(playerGeo, playerMat);
+                    player.position.set(0, 2, 0);
+                    player.castShadow = true;
+                    scene.add(player);
+                    jugadorRef.current = player;
+
+                    // Enemigos
+                    enemigosRef.current = [];
+                    const names = ['SOMBRA', 'FANTASMA', 'HIELO', 'FUEGO', 'VACÍO'];
+                    for (let i = 0; i < 5; i++) {
+                        const enemyGeo = new THREE.CapsuleGeometry(0.6, 1.2, 8, 16);
+                        const enemyMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+                        const enemy = new THREE.Mesh(enemyGeo, enemyMat);
+                        const a = (i/5) * Math.PI * 2;
+                        const r = 30 + Math.random() * 40;
+                        enemy.position.set(Math.cos(a)*r, 2, Math.sin(a)*r);
+                        enemy.castShadow = true;
+                        enemy.userData = { vida: 100, nombre: names[i] };
+                        scene.add(enemy);
+                        enemigosRef.current.push(enemy);
+                    }
+
+                    console.log(`✅ Mapa listo con ${enemigosRef.current.length} enemigos`);
+
+                    // Controles
+                    const keyDown = (e) => { teclasRef.current[e.key.toLowerCase()] = true; if(e.key===' ') e.preventDefault(); };
+                    const keyUp = (e) => { teclasRef.current[e.key.toLowerCase()] = false; };
+                    window.addEventListener('keydown', keyDown);
+                    window.addEventListener('keyup', keyUp);
+
+                    // Disparo
+                    const shoot = () => {
+                        if (municion > 0 && vida > 0) {
+                            setMunicion(m => m - 1);
+                            
+                            const dir = new THREE.Vector3(0, 0, -1);
+                            dir.applyQuaternion(camera.quaternion);
+                            
+                            const raycaster = new THREE.Raycaster(camera.position, dir);
+                            const hits = raycaster.intersectObjects(enemigosRef.current);
+                            
+                            if (hits.length > 0) {
+                                const target = hits[0].object;
+                                target.userData.vida -= 30;
+                                
+                                const orig = target.material.color.getHex();
+                                target.material.color.setHex(0xffffff);
+                                setTimeout(() => {
+                                    if (target.material) target.material.color.setHex(orig);
+                                }, 100);
+
+                                if (target.userData.vida <= 0) {
+                                    setKillFeed(kf => [...kf.slice(-3), { killer: 'Tú', victim: target.userData.nombre }]);
+                                    setKills(k => k + 1);
+                                    setVivos(v => v - 1);
+                                    
+                                    scene.remove(target);
+                                    enemigosRef.current = enemigosRef.current.filter(e => e !== target);
+                                    
+                                    notif(`¡Eliminaste a ${target.userData.nombre}!`);
+                                }
                             }
                         }
-                    }
-                };
+                    };
 
-                const handleClick = () => {
-                    if(document.pointerLockElement===renderer.domElement) disparar();
-                    else renderer.domElement.requestPointerLock();
-                };
-                renderer.domElement.addEventListener('click',handleClick);
+                    const handleClick = () => {
+                        if (document.pointerLockElement === renderer.domElement) {
+                            shoot();
+                        } else {
+                            renderer.domElement.requestPointerLock();
+                        }
+                    };
+                    renderer.domElement.addEventListener('click', handleClick);
 
-                let ultTiempo = performance.now();
-                const loop = (t) => {
-                    if(!enPartida)return;
-                    requestAnimationFrame(loop);
-                    const dt=(t-ultTiempo)/1000;
-                    ultTiempo=t;
-                    setTiempoPartida(prev=>prev+dt);
+                    // Game Loop
+                    let lastTime = performance.now();
+                    const gameLoop = (now) => {
+                        if (!jugando) return;
+                        requestAnimationFrame(gameLoop);
+                        
+                        const dt = (now - lastTime) / 1000;
+                        lastTime = now;
 
-                    const pos=estadoJuegoRef.current.posicion;
-                    const vel=12*dt;
-                    if(teclasPulsadas.current['w'])pos.z-=vel;
-                    if(teclasPulsadas.current['s'])pos.z+=vel;
-                    if(teclasPulsadas.current['a'])pos.x-=vel;
-                    if(teclasPulsadas.current['d'])pos.x+=vel;
-                    if(pos.y>2)pos.y-=12*dt;
-                    else pos.y=2;
-                    if(teclasPulsadas.current[' ']&&pos.y<=2.1)pos.y+=7;
-                    if(Math.sqrt(pos.x**2+pos.z**2)>110){
-                        const a=Math.atan2(pos.z,pos.x);
-                        pos.x=Math.cos(a)*110;
-                        pos.z=Math.sin(a)*110;
-                        setVida(prev=>Math.max(0,prev-8*dt));
-                    }
-                    if(jugadorRef.current)jugadorRef.current.position.set(pos.x,pos.y,pos.z);
-                    camara.position.lerp(new THREE.Vector3(pos.x,pos.y+6,pos.z+10),0.08);
-                    camara.lookAt(pos.x,pos.y+1.5,pos.z);
+                        setTiempo(t => t + dt);
 
-                    enemigosRef.current.forEach(e=>{
-                        const dx=pos.x-e.position.x,dz=pos.z-e.position.z,d=Math.sqrt(dx*dx+dz*dz);
-                        if(d<70&&d>2.5){e.position.x+=(dx/d)*3*dt;e.position.z+=(dz/d)*3*dt;}
-                        if(e.position.y>2)e.position.y-=12*dt;
-                    });
+                        const pos = posRef.current;
+                        const spd = 12 * dt;
 
-                    agua.position.y=-8+Math.sin(t*0.001)*0.2;
-                    renderer.render(escena,camara);
-                };
-                loop(performance.now());
+                        if (teclasRef.current['w']) pos.z -= spd;
+                        if (teclasRef.current['s']) pos.z += spd;
+                        if (teclasRef.current['a']) pos.x -= spd;
+                        if (teclasRef.current['d']) pos.x += spd;
 
-                const resize = ()=>{camara.aspect=window.innerWidth/window.innerHeight;camara.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);};
-                window.addEventListener('resize',resize);
+                        // Gravedad
+                        if (pos.y > 2) pos.y -= 12 * dt;
+                        else pos.y = 2;
 
-                return()=>{
-                    window.removeEventListener('keydown',onKeyDown);
-                    window.removeEventListener('keyup',onKeyUp);
-                    window.removeEventListener('resize',resize);
-                    renderer.domElement.removeEventListener('click',handleClick);
-                    if(gameCanvasRef.current&&renderer.domElement.parentNode===gameCanvasRef.current)gameCanvasRef.current.removeChild(renderer.domElement);
-                    renderer.dispose();
-                    escena.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});
-                };
-            }, [enPartida, skinActivo]);
+                        // Salto
+                        if (teclasRef.current[' '] && pos.y <= 2.1) pos.y += 7;
+
+                        // Límites isla
+                        const dist = Math.sqrt(pos.x**2 + pos.z**2);
+                        if (dist > 110) {
+                            const ang = Math.atan2(pos.z, pos.x);
+                            pos.x = Math.cos(ang) * 110;
+                            pos.z = Math.sin(ang) * 110;
+                            setVida(v => Math.max(0, v - 8*dt));
+                        }
+
+                        // Actualizar jugador
+                        if (jugadorRef.current) {
+                            jugadorRef.current.position.set(pos.x, pos.y, pos.z);
+                        }
+
+                        // Cámara sigue
+                        const camTarget = new THREE.Vector3(pos.x, pos.y+6, pos.z+10);
+                        camera.position.lerp(camTarget, 0.08);
+                        camera.lookAt(pos.x, pos.y+1.5, pos.z);
+
+                        // IA Enemigos
+                        enemigosRef.current.forEach(enemy => {
+                            const dx = pos.x - enemy.position.x;
+                            const dz = pos.z - enemy.position.z;
+                            const d = Math.sqrt(dx*dx + dz*dz);
+                            
+                            if (d < 70 && d > 2.5) {
+                                enemy.position.x += (dx/d) * 3 * dt;
+                                enemy.position.z += (dz/d) * 3 * dt;
+                            }
+                            
+                            if (enemy.position.y > 2) enemy.position.y -= 12 * dt;
+                        });
+
+                        // Agua animada
+                        water.position.y = -8 + Math.sin(now * 0.001) * 0.2;
+
+                        renderer.render(scene, camera);
+                    };
+
+                    gameLoop(performance.now());
+
+                    // Resize
+                    const resize = () => {
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                    };
+                    window.addEventListener('resize', resize);
+
+                    // Cleanup
+                    return () => {
+                        window.removeEventListener('keydown', keyDown);
+                        window.removeEventListener('keyup', keyUp);
+                        window.removeEventListener('resize', resize);
+                        renderer.domElement.removeEventListener('click', handleClick);
+                        
+                        if (gameRef.current && renderer.domElement.parentNode === gameRef.current) {
+                            gameRef.current.removeChild(renderer.domElement);
+                        }
+                        
+                        renderer.dispose();
+                        scene.traverse(o => {
+                            if (o.geometry) o.geometry.dispose();
+                            if (o.material) o.material.dispose();
+                        });
+                    };
+
+                } catch (error) {
+                    console.error('❌ Error en juego:', error);
+                }
+            }, [jugando, skinActivo]);
 
             // Pantalla de carga
-            if(cargando) {
+            if (cargando) {
                 return (
-                    <div className="w-full h-screen bg-black flex items-center justify-center flex-col gap-8">
-                        <div className="loading-ring"></div>
-                        <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-pulse">
+                    <div className="w-full h-screen bg-black flex items-center justify-center flex-col gap-6">
+                        <div className="loading-spinner"></div>
+                        <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
                             FORTNITE
                         </h1>
-                        <p className="text-gray-400 text-lg">Cargando skins épicas...</p>
+                        <p className="text-gray-400">Cargando...</p>
                     </div>
                 );
             }
 
             // Vista del juego
-            if(enPartida) {
+            if (jugando) {
                 return (
                     <div className="relative w-full h-screen bg-black overflow-hidden">
-                        <div ref={gameCanvasRef} className="absolute inset-0" />
+                        <div ref={gameRef} id="game-3d" />
+
+                        {/* HUD */}
                         <div className="absolute inset-0 pointer-events-none">
-                            {/* HUD igual que antes... */}
+                            {/* Vida/Escudo */}
                             <div className="absolute top-6 left-6 glass-panel rounded-xl p-5 w-72 pointer-events-auto">
-                                <div className="flex justify-between mb-1"><span className="text-xs font-bold text-cyan-400">VIDA</span><span className="text-sm font-bold">{Math.floor(vida)}</span></div>
-                                <div className="h-6 bg-gray-900 rounded-lg overflow-hidden border-2 border-red-500/50 mb-3"><div className="h-full bg-gradient-to-r from-red-700 to-red-400 health-bar-fill" style={{width:`${Math.max(0,vida)}%`}}/></div>
-                                <div className="flex justify-between mb-1"><span className="text-xs font-bold text-blue-400">ESCUDO</span><span className="text-sm font-bold">{Math.floor(escudo)}</span></div>
-                                <div className="h-5 bg-gray-900 rounded-lg overflow-hidden border-2 border-blue-500/50"><div className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 health-bar-fill" style={{width:`${escudo}%`}}/></div>
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-xs font-bold text-cyan-400">VIDA</span>
+                                    <span className="font-bold">{Math.floor(vida)}</span>
+                                </div>
+                                <div className="h-6 bg-gray-900 rounded-lg overflow-hidden border-2 border-red-500/50 mb-3">
+                                    <div className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all" style={{width:`${Math.max(0,vida)}%`}}/>
+                                </div>
+
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-xs font-bold text-blue-400">ESCUDO</span>
+                                    <span className="font-bold">{Math.floor(escudo)}</span>
+                                </div>
+                                <div className="h-5 bg-gray-900 rounded-lg overflow-hidden border-2 border-blue-500/50">
+                                    <div className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all" style={{width:`${escudo}%`}}/>
+                                </div>
                             </div>
 
+                            {/* Info */}
                             <div className="absolute top-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-6 py-3 flex gap-6">
-                                <div className="flex items-center gap-2"><i className="fas fa-users text-purple-400"></i><span className="font-bold">{jugadoresVivos}</span></div>
+                                <div><i className="fas fa-users text-purple-400 mr-2"></i><span className="font-bold">{vivos}</span></div>
                                 <div className="w-px h-6 bg-gray-600"></div>
-                                <div className="flex items-center gap-2"><i className="fas fa-clock text-yellow-400"></i><span className="font-bold">{Math.floor(tiempoPartida/60)}:{String(Math.floor(tiempoPartida%60)).padStart(2,'0')}</span></div>
+                                <div><i className="fas fa-clock text-yellow-400 mr-2"></i><span className="font-bold">{Math.floor(tiempo/60)}:{String(Math.floor(tiempo%60)).padStart(2,'0')}</span></div>
                                 <div className="w-px h-6 bg-gray-600"></div>
-                                <div className="flex items-center gap-2"><i className="fas fa-skull text-red-400"></i><span className="font-bold">{kills}</span></div>
+                                <div><i className="fas fa-skull text-red-400 mr-2"></i><span className="font-bold">{kills}</span></div>
                             </div>
 
+                            {/* Munición */}
                             <div className="absolute top-6 right-6 glass-panel rounded-xl p-4 text-right w-44">
                                 <div className="text-5xl font-black text-yellow-400">{municion}</div>
                                 <div className="text-xs font-bold text-yellow-300">MUNICIÓN</div>
                             </div>
 
+                            {/* Mira */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-                                <svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="3" fill="#00c8ff"/><line x1="24" y1="10" x2="24" y2="17" stroke="#00c8ff" strokeWidth="2.5" strokeLinecap="round"/><line x1="24" y1="31" x2="24" y2="38" stroke="#00c8ff" strokeWidth="2.5" strokeLinecap="round"/><line x1="10" y1="24" x2="17" y2="24" stroke="#00c8ff" strokeWidth="2.5" strokeLinecap="round"/><line x1="31" y1="24" x2="38" y2="24" stroke="#00c8ff" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40">
+                                    <circle cx="20" cy="20" r="3" fill="#00c8ff"/>
+                                    <line x1="20" y1="8" x2="20" y2="14" stroke="#00c8ff" strokeWidth="2"/>
+                                    <line x1="20" y1="26" x2="20" y2="32" stroke="#00c8ff" strokeWidth="2"/>
+                                    <line x1="8" y1="20" x2="14" y2="20" stroke="#00c8ff" strokeWidth="2"/>
+                                    <line x1="26" y1="20" x2="32" y2="20" stroke="#00c8ff" strokeWidth="2"/>
+                                </svg>
                             </div>
 
+                            {/* Kill Feed */}
                             <div className="absolute top-28 right-6 space-y-2 w-64">
-                                {killFeed.map((k,i)=>(<div key={i} className="glass-panel rounded-lg px-4 py-2 text-sm flex justify-between notification-toast"><span className="font-bold text-cyan-400">{k.killer}</span><span className="text-red-400 mx-2">✕</span><span className="font-bold text-red-400">{k.victim}</span></div>))}
+                                {killFeed.map((k,i) => (
+                                    <div key={i} className="glass-panel rounded-lg px-4 py-2 text-sm flex justify-between notification">
+                                        <span className="font-bold text-cyan-400">{k.killer}</span>
+                                        <span className="text-red-400 mx-2">×</span>
+                                        <span className="font-bold text-red-400">{k.victim}</span>
+                                    </div>
+                                ))}
                             </div>
 
+                            {/* Controles */}
                             <div className="absolute bottom-6 left-6 glass-panel rounded-xl p-4 pointer-events-auto">
                                 <div className="text-xs font-bold text-cyan-400 mb-2">CONTROLES</div>
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
-                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">W A S D</kbd> Mover</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
+                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">WASD</kbd> Mover</div>
                                     <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">CLIC</kbd> Disparar</div>
-                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">ESPACIO</kbd> Saltar</div>
+                                    <div><kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-cyan-300">ESP</kbd> Saltar</div>
                                 </div>
                             </div>
 
-                            <button onClick={salirDePartida} className="absolute bottom-6 right-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold hover:scale-105 pointer-events-auto"><i className="fas fa-door-open mr-2"></i>SALIR</button>
+                            {/* Salir */}
+                            <button onClick={salir} className="absolute bottom-6 right-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold pointer-events-auto hover:scale-105">
+                                <i className="fas fa-door-open mr-2"/>SALIR
+                            </button>
 
-                            {vida<=0&&(<div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50"><div className="text-center"><h1 className="text-8xl font-black text-red-500 mb-6 animate-pulse">ELIMINADO</h1><p className="text-3xl text-gray-300 mb-2">Posición #{jugadoresVivos}</p><p className="text-xl text-cyan-400 mb-8">{kills} Eliminaciones</p><div className="flex gap-4 justify-center"><button onClick={()=>{salirDePartida();setTimeout(()=>iniciarPartida('Solo',100),100)}} className="btn-fortnite px-10 py-4 text-lg rounded-xl"><i className="fas fa-redo mr-2"></i>JUGAR DE NUEVO</button><button onClick={salirDePartida} className="px-10 py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold"><i className="fas fa-home mr-2"></i>LOBBY</button></div></div></div>)}
+                            {/* Muerte */}
+                            {vida <= 0 && (
+                                <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
+                                    <div className="text-center">
+                                        <h1 className="text-8xl font-black text-red-500 mb-6 animate-pulse">ELIMINADO</h1>
+                                        <p className="text-2xl text-gray-300 mb-2">Posición #{vivos}</p>
+                                        <p className="text-xl text-cyan-400 mb-8">{kills} Eliminaciones</p>
+                                        <div className="flex gap-4 justify-center">
+                                            <button onClick={() => { salir(); setTimeout(() => iniciar('SOLO', 100), 100); }} className="btn-fortnite px-8 py-4 rounded-xl text-lg">
+                                                <i className="fas fa-redo mr-2"/>JUGAR DE NUEVO
+                                            </button>
+                                            <button onClick={salir} className="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold">
+                                                <i className="fas fa-home mr-2"/>LOBBY
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -1335,140 +908,305 @@
 
             // Lobby Principal
             return (
-                <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1e] to-[#050810]">
-                    {notificacion&&(<div className={`fixed top-24 right-6 z-[9999] px-6 py-4 rounded-xl shadow-2xl notification-toast font-bold ${notificacion.tipo==='exito'?'bg-green-600':notificacion.tipo==='error'?'bg-red-600':'bg-cyan-600'}`}><i className={`fas ${notificacion.tipo==='exito'?'fa-check-circle':notificacion.tipo==='error'?'fa-times-circle':'fa-info-circle'} mr-2`}></i>{notificacion.mensaje}</div>)}
+                <div className="min-h-screen bg-gradient-to-br from-[#0a0e1a] via-[#111827] to-[#0a0e1a]">
+                    {/* Notificación */}
+                    {notificacion && (
+                        <div className="fixed top-24 right-6 z-50 px-6 py-4 rounded-xl bg-green-600 shadow-2xl notification font-bold">
+                            ✓ {notificacion}
+                        </div>
+                    )}
 
-                    <header className="glass-panel sticky top-0 z-50 border-b border-cyan-500/20">
+                    {/* Header */}
+                    <header className="glass-panel sticky top-0 z-40 border-b border-cyan-500/20">
                         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 fortnite-gradient rounded-xl flex items-center justify-center font-black text-2xl shadow-lg shadow-cyan-500/30" style={{animation:'pulse-glow 2s infinite'}}>F</div>
-                                <div><h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 leading-none">FORTNITE</h1><p className="text-xs text-cyan-400 tracking-widest mt-1">BATTLE ROYALE</p></div>
+                                <div className="w-12 h-12 fortnite-gradient rounded-xl flex items-center justify-center font-black text-xl">
+                                    F
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                        FORTNITE
+                                    </h1>
+                                    <p className="text-xs text-cyan-400">BATTLE ROYALE</p>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="hidden md:flex items-center gap-2 glass-panel px-4 py-2 rounded-lg"><i className="fas fa-coins text-yellow-400"></i><span className="font-bold text-yellow-400">2,450</span></div>
-                                <button onClick={()=>setMostrarConfig(true)} className="p-3 glass-panel rounded-xl hover:bg-cyan-500/20 transition-all"><i className="fas fa-cog text-xl"></i></button>
-                            </div>
+                            <button 
+                                onClick={() => notif('Configuración')}
+                                className="p-3 glass-panel rounded-xl hover:bg-cyan-500/20"
+                            >
+                                <i className="fas fa-cog"/>
+                            </button>
                         </div>
                     </header>
 
-                    <nav className="mx-6 mt-4"><div className="glass-panel rounded-xl p-2 max-w-7xl mx-auto flex gap-2 overflow-x-auto">
-                        {[{id:'lobby',label:'LOBBY',icon:'fa-home'},{id:'pase',label:'PASE DE BATALLA',icon:'fa-crown'},{id:'tienda',label:'TIENDA',icon:'fa-shopping-cart'},{id:'escuadron',label:'ESCUADRÓN',icon:'fa-users'},{id:'inventario',label:'INVENTARIO',icon:'fa-box'}].map(tab=>(<button key={tab.id} onClick={()=>cambiarPantalla(tab.id)} className={`tab-item flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold whitespace-nowrap ${pantallaActual===tab.id?'active text-white':'text-gray-400'}`}><i className={`fas ${tab.icon}`}></i>{tab.label}</button>))}
-                    </div></nav>
+                    {/* Navegación */}
+                    <nav className="mx-6 mt-4">
+                        <div className="glass-panel rounded-xl p-2 max-w-7xl mx-auto flex gap-2 overflow-x-auto">
+                            {[
+                                {id:'lobby', label:'LOBBY', icon:'fa-home'},
+                                {id:'tienda', label:'TIENDA', icon:'fa-shopping-cart'},
+                                {id:'pase', label:'PASE DE BATALLA', icon:'fa-crown'},
+                                {id:'escuadron', label:'ESCUADRÓN', icon:'fa-users'},
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => { setPantalla(tab.id); notif(`${tab.label}`); }}
+                                    className={`tab-btn flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold whitespace-nowrap ${
+                                        pantalla===tab.id ? 'active text-white' : 'text-gray-400'
+                                    }`}
+                                >
+                                    <i className={`fas ${tab.icon}`}/>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
 
+                    {/* Contenido Principal */}
                     <main className="max-w-7xl mx-auto px-6 py-8">
-                        {pantallaActual==='lobby'&&(<div className="grid lg:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                                <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
-                                    <div className="relative z-10">
-                                        <div className="inline-block px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-cyan-400 text-xs font-bold mb-3">TRAJE EQUIPADO</div>
-                                        <h2 className="text-4xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{SKINS_EPICAS[skinActivo].name}</h2>
-                                        <p className="text-gray-400 mb-2">{SKINS_EPICAS[skinActivo].rarity} • {SKINS_EPICAS[skinActivo].price.toLocaleString()} V-Bucks</p>
-                                        <p className="text-sm text-cyan-300/70 mb-4 italic">"{SKINS_EPICAS[skinActivo].description}"</p>
+                        {pantalla === 'lobby' && (
+                            <div className="grid lg:grid-cols-2 gap-8">
+                                {/* Izquierda: Info + Jugar */}
+                                <div className="space-y-6">
+                                    {/* Card Skin Activo */}
+                                    <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"/>
                                         
-                                        <div className="flex gap-2 mb-4 flex-wrap">
-                                            {SKINS_EPICAS[skinActivo].abilities.map((abil,i)=>(<span key={i} className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 rounded text-xs text-purple-300">{abil}</span>))}
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <button onClick={()=>cambiarPantalla('tienda')} className="btn-fortnite px-6 py-2.5 rounded-lg text-sm"><i className="fas fa-shopping-cart mr-2"></i>VER EN TIENDA</button>
-                                            <button onClick={()=>mostrarNotif('Preview activado','info')} className="px-6 py-2.5 border-2 border-cyan-500 rounded-lg text-sm font-bold hover:bg-cyan-500/10 transition-all">PREVIEW</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="glass-panel rounded-2xl p-6">
-                                    <h3 className="text-2xl font-bold mb-4 flex items-center gap-2"><i className="fas fa-gamepad text-cyan-400"></i>JUGAR</h3>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        {[{mode:'SOLO',num:100,color:'from-cyan-500 to-blue-600'},{mode:'DÚO',num:50,color:'from-purple-500 to-pink-600'},{mode:'ESCUADRÓN',num:25,color:'from-orange-500 to-red-600'}].map(m=>(<button key={m.mode} onClick={()=>iniciarPartida(m.mode,m.num)} className={`mode-card bg-gradient-to-br ${m.color} p-6 rounded-xl text-white text-center`}><i className={`fas ${m.mode==='SOLO'?'fa-user-ninja':m.mode==='DÚO'?'fa-user-friends':'fa-users'} text-3xl mb-2 block`}></i><div className="text-xl font-black">{m.mode}</div><div className="text-sm opacity-90">{m.num} jugadores</div></button>))}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4">
-                                    {[{l:'NIVEL',v:nivelJugador,i:'fa-shield-alt',c:'text-cyan-400'},{l:'PARTIDAS',v:'147',i:'fa-gamepad',c:'text-purple-400'},{l:'WINS',v:'12%',i:'fa-trophy',c:'text-yellow-400'}].map((s,i)=>(<div key={i} className="glass-panel rounded-xl p-4 text-center"><i className={`fas ${s.i} text-xl ${s.c} mb-2 block`}></i><div className="text-2xl font-black">{s.v}</div><div className="text-xs text-gray-400">{s.l}</div></div>))}
-                                </div>
-                            </div>
-
-                            <div className="glass-panel rounded-2xl overflow-hidden relative">
-                                <div className="absolute top-4 left-4 z-10 glass-panel px-3 py-1 rounded-lg text-xs font-bold text-cyan-400">TU PERSONAJE 3D</div>
-                                <div ref={lobbyCanvasRef} className="w-full h-[650px] lg:h-full"></div>
-                                
-                                <div className="absolute bottom-4 left-4 right-4 z-10 glass-panel rounded-xl p-4">
-                                    <div className="text-xs font-bold text-gray-400 mb-3">SKINS ÉPICAS DISPONIBLES:</div>
-                                    <div className="flex gap-3 overflow-x-auto pb-2">
-                                        {SKINS_EPICAS.map((skin,idx)=>(
-                                            <button key={skin.id} onClick={()=>{setSkinActivo(idx);mostrarNotif(`${skin.name} equipado`,'info')}} className={`flex-shrink-0 w-16 h-20 rounded-xl flex flex-col items-center justify-center transition-all ${skinActivo===idx?'ring-3 ring-cyan-400 scale-110 shadow-lg shadow-cyan-500/50':'opacity-70 hover:opacity-100 hover:scale-105'}`} style={{background:`linear-gradient(135deg,#${skin.colorPrimary.toString(16).padStart(6,'0')}44,#${skin.colorSecondary.toString(16).padStart(6,'0')}88)`}}>
-                                                <span className="text-3xl mb-1">{skin.emoji}</span>
-                                                <span className="text-[10px] font-bold text-white truncate w-full text-center px-1">{skin.name.split(' ')[0]}</span>
-                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${skin.rarity==='MÍTICO'?'bg-red-600':skin.rarity==='LEGENDARIO'?'bg-yellow-600':skin.rarity==='ÉPICO'?'bg-purple-600':'bg-blue-600'}`}>{skin.rarity}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>)}
-
-                        {pantallaActual==='tienda'&&(<div className="space-y-6">
-                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"><i className="fas fa-shopping-cart text-cyan-400 mr-3"></i>TIENDA DE OBJETOS</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
-                                {SKINS_EPICAS.map(skin=>(
-                                    <div key={skin.id} onClick()=>{setSkinActivo(skin.id);mostrarNotif(`${skin.name} seleccionado`,'info')}} className={`skin-card glass-panel rounded-2xl overflow-hidden ${skinActivo===skin.id?'selected':''}`}>
-                                        <div className="aspect-square relative overflow-hidden" style={{background:`linear-gradient(135deg,#${skin.colorPrimary.toString(16).padStart(6,'0')},#${skin.colorAccent.toString(16).padStart(6,'0')})`}}>
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                            <div className="absolute inset-0 flex items-center justify-center text-7xl">{skin.emoji}</div>
-                                            <div className={`absolute top-3 left-3 px-2 py-1 rounded-lg text-[10px] font-bold ${skin.rarity==='MÍTICO'?'bg-red-600 mythic-glow':skin.rarity==='LEGENDARIO'?'bg-yellow-600 legendary-glow':'bg-purple-600'}`}>{skin.rarity}</div>
-                                            {skinActivo===skin.id&&(<div className="absolute top-3 right-3 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center shadow-lg"><i className="fas fa-check text-white text-sm"></i></div>)}
-                                        </div>
-                                        <div className="p-4 border-t border-slate-700/50">
-                                            <div className="font-bold text-base mb-1">{skin.name}</div>
-                                            <p className="text-[11px] text-gray-400 mb-3 line-clamp-2">{skin.description}</p>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-yellow-400 font-bold"><i className="fas fa-bolt text-xs mr-1"></i>{skin.price.toLocaleString()}</span>
-                                                <button onClick={(e)=>{e.stopPropagation();comprarSkin(skin)}} className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 rounded-lg text-xs font-bold transition-all">COMPRAR</button>
+                                        <div className="relative z-10">
+                                            <div className="inline-block px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-cyan-400 text-xs font-bold mb-3">
+                                                TRAJE EQUIPADO
+                                            </div>
+                                            <h2 className="text-4xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                                                {SKINS[skinActivo].name}
+                                            </h2>
+                                            <p className="text-gray-400 mb-4">
+                                                {SKINS[skinActivo].rarity} • {SKINS[skinActivo].price.toLocaleString()} V-Bucks
+                                            </p>
+                                            
+                                            <div className="flex gap-3">
+                                                <button 
+                                                    onClick={() => setPantalla('tienda')}
+                                                    className="btn-fortnite px-6 py-2.5 rounded-lg"
+                                                >
+                                                    <i className="fas fa-shopping-cart mr-2"/>VER EN TIENDA
+                                                </button>
+                                                <button 
+                                                    onClick={() => notif('Preview activado')}
+                                                    className="px-6 py-2.5 border-2 border-cyan-500 rounded-lg font-bold hover:bg-cyan-500/10"
+                                                >
+                                                    PREVIEW
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </div>)}
 
-                        {pantallaActual==='pase'&&(<div className="space-y-6">
-                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"><i className="fas fa-crown text-yellow-400 mr-3"></i>PASE DE BATALLA</h2>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="glass-panel rounded-2xl p-6">
-                                    <h3 className="text-xl font-bold mb-4">PROGRESO</h3>
-                                    <div className="mb-4"><div className="flex justify-between mb-2"><span className="text-3xl font-black text-cyan-400">NIVEL {nivelPase}</span><span className="text-gray-400">/ 100</span></div><div className="h-10 bg-slate-800 rounded-xl overflow-hidden"><div className="h-full fortnite-gradient transition-all duration-500" style={{width:`${nivelPase}%`}}></div></div>
-                                    <button onClick={subirNivelPase} className="btn-fortnite w-full py-3 rounded-xl mt-4"><i className="fas fa-arrow-up mr-2"></i>SUBIR NIVEL (+5)</button>
+                                    {/* Modos de Juego */}
+                                    <div className="glass-panel rounded-2xl p-6">
+                                        <h3 className="text-2xl font-bold mb-4">
+                                            <i className="fas fa-gamepad text-cyan-400 mr-2"/>JUGAR
+                                        </h3>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <button onClick={() => iniciar('SOLO', 100)} className="mode-card bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-xl text-white text-center">
+                                                <i className="fas fa-user-ninja text-3xl mb-2 block"/>
+                                                <div className="text-xl font-black">SOLO</div>
+                                                <div className="text-sm opacity-90">100 jugadores</div>
+                                            </button>
+                                            <button onClick={() => iniciar('DÚO', 50)} className="mode-card bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-xl text-white text-center">
+                                                <i className="fas fa-user-friends text-3xl mb-2 block"/>
+                                                <div className="text-xl font-black">DÚO</div>
+                                                <div className="text-sm opacity-90">50 dúos</div>
+                                            </button>
+                                            <button onClick={() => iniciar('ESCUADRÓN', 25)} className="mode-card bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl text-white text-center">
+                                                <i className="fas fa-users text-3xl mb-2 block"/>
+                                                <div className="text-xl font-black">ESCUADRÓN</div>
+                                                <div className="text-sm opacity-90">25 equipos</div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {[
+                                            {l:'NIVEL', v:'45', i:'fa-shield-alt', c:'text-cyan-400'},
+                                            {l:'PARTIDAS', v:'147', i:'fa-gamepad', c:'text-purple-400'},
+                                            {l:'WINS', v:'12%', i:'fa-trophy', c:'text-yellow-400'},
+                                        ].map((s,i) => (
+                                            <div key={i} className="glass-panel rounded-xl p-4 text-center">
+                                                <i className={`fas ${s.i} text-xl ${s.c} mb-2 block`}/>
+                                                <div className="text-2xl font-black">{s.v}</div>
+                                                <div className="text-xs text-gray-400">{s.l}</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="glass-panel rounded-2xl p-6"><h3 className="text-xl font-bold mb-4">INFO TEMPORADA</h3><div className="space-y-3"><div className="flex justify-between py-2 border-b border-slate-700"><span className="text-gray-400">Duración</span><span className="font-bold text-cyan-300">45 Días</span></div><div className="flex justify-between py-2 border-b border-slate-700"><span className="text-gray-400">Precio</span><span className="font-bold text-yellow-300">950 V-Bucks</span></div><div className="flex justify-between py-2"><span className="text-gray-400">Restantes</span><span className="font-bold text-purple-300">28 Días</span></div></div></div>
-                            </div>
-                        </div>)}
 
-                        {pantallaActual==='escuadron'&&(<div className="space-y-6">
-                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"><i className="fas fa-users text-cyan-400 mr-3"></i>TU ESCUADRÓN</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {[{name:'Tú',level:45,status:'Listo',skin:SKINS_EPICAS[skinActivo].name,isYou:true},{name:'ShadowKnight',level:52,status:'En partida',skin:'SHADOW PHANTOM',isYou:false},{name:'NovaGhost',level:38,status:'Ausente',skin:'NEXUS CYBER',isYou:false},{name:'FrostKing',level:41,status:'Desconectado',skin:'FROST QUEEN',isYou:false}].map((m,i)=>(<div key={i} className="glass-panel rounded-2xl p-6 text-center"><div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 flex items-center justify-center text-4xl">👤</div><div className="font-bold text-lg mb-1">{m.name}</div><div className="text-sm text-gray-400 mb-3">{m.skin}</div><div className="flex justify-between text-xs mb-4 pb-4 border-b border-slate-700"><span>Nv.{m.level}</span><span className={`font-bold ${m.status==='Listo'?'text-green-400':m.status==='En partida'?'text-yellow-400':m.status==='Ausente'?'text-gray-400':'text-red-400'}`}>{m.status}</span></div><button onClick={()=>!m.isYou&&invitarAmigo(m.name)} disabled={m.isYou} className={`w-full py-2 rounded-lg font-bold text-sm ${m.isYou?'bg-gray-700 text-gray-400 cursor-not-allowed':'btn-fortnite'}`}>{m.isYou?'TÚ':'INVITAR'}</button></div>))}
-                            </div>
-                        </div>)}
+                                {/* Derecha: Personaje 3D */}
+                                <div className="glass-panel rounded-2xl overflow-hidden relative">
+                                    <div className="absolute top-4 left-4 z-10 glass-panel px-3 py-1 rounded-lg text-xs font-bold text-cyan-400">
+                                        TU PERSONAJE 3D
+                                    </div>
+                                    
+                                    <div ref={lobbyRef} id="lobby-3d"/>
 
-                        {pantallaActual==='inventario'&&(<div className="space-y-6">
-                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"><i className="fas fa-box text-cyan-400 mr-3"></i>INVENTARIO</h2>
-                            <div className="grid md:grid-cols-3 gap-6">
-                                <div className="glass-panel rounded-2xl p-6"><h3 className="text-lg font-bold mb-4"><i className="fas fa-tshirt text-purple-400 mr-2"></i>TRAJES ({SKINS_EPICAS.length})</h3><div className="grid grid-cols-4 gap-2">{SKINS_EPICAS.map(skin=>(<div key={skin.id} onClick()=>{setSkinActivo(skin.id);mostrarNotif(`${skin.name} equipado`,'info')} className="aspect-square rounded-lg flex items-center justify-center text-2xl cursor-pointer hover:scale-110 transition-transform" style={{backgroundColor:`${skin.colorPrimary}44`}} title={skin.name}>{skin.emoji}</div>))}</div></div>
-                                <div className="glass-panel rounded-2xl p-6"><h3 className="text-lg font-bold mb-4"><i className="fas fa-backpack text-green-400 mr-2"></i>MOCHILAS (12)</h3><div className="grid grid-cols-4 gap-2">{[...Array(12)].map((_,i)=><div key={i} className="aspect-square rounded-lg bg-slate-700/50 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition-transform" onClick={()=>mostrarNotif(`Mochila ${i+1} equipada`,'info')}>🎒</div>)}</div></div>
-                                <div className="glass-panel rounded-2xl p-6"><h3 className="text-lg font-bold mb-4"><i className="fas fa-hammer text-yellow-400 mr-2"></i>PICOS (8)</h3><div className="grid grid-cols-4 gap-2">{[...Array(8)].map((_,i)=><div key={i} className="aspect-square rounded-lg bg-slate-700/50 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition-transform" onClick={()=>mostrarNotif(`Pico ${i+1} equipado`,'info')}>⛏️</div>)}</div></div>
+                                    {/* Selector de Skins */}
+                                    <div className="absolute bottom-4 left-4 right-4 z-10 glass-panel rounded-xl p-4">
+                                        <div className="text-xs font-bold text-gray-400 mb-3">CAMBIAR TRAJE:</div>
+                                        <div className="flex gap-3 overflow-x-auto pb-2">
+                                            {SKINS.map((skin, idx) => (
+                                                <button
+                                                    key={skin.id}
+                                                    onClick={() => { setSkinActivo(idx); notif(`${skin.name} equipado`); }}
+                                                    className={`flex-shrink-0 w-14 h-18 rounded-xl flex flex-col items-center justify-center transition-all ${
+                                                        skinActivo===idx ? 'ring-2 ring-cyan-400 scale-110' : 'opacity-70 hover:opacity-100'
+                                                    }`}
+                                                    style={{background: `linear-gradient(135deg, ${skin.color}44, ${skin.glowColor}88)`}}
+                                                    title={skin.name}
+                                                >
+                                                    <span className="text-2xl mb-1">{skin.emoji}</span>
+                                                    <span className="text-[9px] font-bold text-white truncate w-full text-center px-1">
+                                                        {skin.name.split(' ')[0]}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>)}
+                        )}
+
+                        {pantalla === 'tienda' && (
+                            <div className="space-y-6">
+                                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                    <i className="fas fa-shopping-cart text-cyan-400 mr-3"/>TIENDA DE OBJETOS
+                                </h2>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                                    {SKINS.map(skin => (
+                                        <div
+                                            key={skin.id}
+                                            onClick={() => { setSkinActivo(skin.id); notif(`${skin.name} seleccionado`); }}
+                                            className={`skin-card glass-panel rounded-2xl overflow-hidden ${skinActivo===skin.id ? 'selected' : ''}`}
+                                        >
+                                            <div 
+                                                className="aspect-square flex items-center justify-center text-6xl relative"
+                                                style={{background: `linear-gradient(135deg, ${skin.color}, ${skin.glowColor})`}}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"/>
+                                                <span className="relative z-10">{skin.emoji}</span>
+                                                
+                                                <div className={`absolute top-3 left-3 px-2 py-1 rounded text-[10px] font-bold ${
+                                                    skin.rarity==='MÍTICO'?'bg-red-600':
+                                                    skin.rarity==='LEGENDARIO'?'bg-yellow-600':
+                                                    skin.rarity==='ÉPICO'?'bg-purple-600':'bg-blue-600'
+                                                }`}>
+                                                    {skin.rarity}
+                                                </div>
+
+                                                {skinActivo===skin.id && (
+                                                    <div className="absolute top-3 right-3 w-7 h-7 bg-cyan-500 rounded-full flex items-center justify-center">
+                                                        <i className="fas fa-check text-white text-xs"/>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="p-4 border-t border-slate-700/50">
+                                                <div className="font-bold text-sm mb-1">{skin.name}</div>
+                                                <div className="flex justify-between items-center mt-2">
+                                                    <span className="text-yellow-400 font-bold text-sm">
+                                                        <i className="fas fa-bolt text-xs mr-1"/>{skin.price.toLocaleString()}
+                                                    </span>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); notif(`¡${skin.name} comprado!`); }}
+                                                        className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 rounded-lg text-xs font-bold"
+                                                    >
+                                                        COMPRAR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {pantalla === 'pase' && (
+                            <div className="space-y-6 max-w-2xl">
+                                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                    <i className="fas fa-crown text-yellow-400 mr-3"/>PASE DE BATALLA
+                                </h2>
+                                
+                                <div className="glass-panel rounded-2xl p-8">
+                                    <h3 className="text-xl font-bold mb-4">TU PROGRESO</h3>
+                                    <div className="mb-6">
+                                        <div className="flex justify-between mb-2">
+                                            <span className="text-3xl font-black text-cyan-400">NIVEL 27</span>
+                                            <span className="text-gray-400">/ 100</span>
+                                        </div>
+                                        <div className="h-10 bg-slate-800 rounded-xl overflow-hidden">
+                                            <div className="h-full fortnite-gradient" style={{width:'27%'}}/>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => notif('¡Nivel aumentado!')}
+                                        className="btn-fortnite w-full py-3 rounded-xl"
+                                    >
+                                        <i className="fas fa-arrow-up mr-2"/>SUBIR NIVEL (+5)
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {pantalla === 'escuadron' && (
+                            <div className="space-y-6">
+                                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                    <i className="fas fa-users text-cyan-400 mr-3"/>TU ESCUADRÓN
+                                </h2>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {[
+                                        {name:'Tú', level:45, status:'Listo', isYou:true},
+                                        {name:'ShadowKnight', level:52, status:'En partida', isYou:false},
+                                        {name:'NovaGhost', level:38, status:'Ausente', isYou:false},
+                                        {name:'FrostKing', level:41, status:'Desconectado', isYou:false},
+                                    ].map((m,i) => (
+                                        <div key={i} className="glass-panel rounded-2xl p-6 text-center">
+                                            <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 flex items-center justify-center text-4xl">
+                                                👤
+                                            </div>
+                                            <div className="font-bold text-lg mb-1">{m.name}</div>
+                                            <div className="text-sm text-gray-400 mb-3">Nv.{m.level}</div>
+                                            <div className={`text-sm font-bold mb-4 pb-4 border-b border-slate-700 ${
+                                                m.status==='Listo'?'text-green-400':
+                                                m.status==='En partida'?'text-yellow-400':
+                                                m.status==='Ausente'?'text-gray-400':'text-red-400'
+                                            }`}>
+                                                {m.status.toUpperCase()}
+                                            </div>
+                                            <button 
+                                                disabled={m.isYou}
+                                                onClick={() => notif('Invitación enviada')}
+                                                className={`w-full py-2 rounded-lg font-bold text-sm ${
+                                                    m.isYou ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : 'btn-fortnite'
+                                                }`}
+                                            >
+                                                {m.isYou ? 'TÚ' : 'INVITAR'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </main>
 
-                    <footer className="mt-12 py-6 text-center text-gray-500 text-sm border-t border-cyan-500/10"><p>© 2024 FORTNITE | Demo Oficial • Todos los derechos reservados</p></footer>
-
-                    {mostrarConfig&&(<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="glass-panel rounded-2xl p-8 w-full max-w-md relative"><button onClick={()=>setMostrarConfig(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button><h3 className="text-2xl font-bold mb-6"><i className="fas fa-cog text-cyan-400 mr-2"></i>CONFIGURACIÓN</h3><div className="space-y-6"><div><label className="block text-sm font-bold mb-2 text-gray-300">Volumen</label><input type="range" min="0" max="100" defaultValue="70" className="w-full accent-cyan-500"/></div><div><label className="block text-sm font-bold mb-2 text-gray-300">Sensibilidad</label><input type="range" min="1" max="10" defaultValue="5" className="w-full accent-purple-500"/></div><div><label className="block text-sm font-bold mb-2 text-gray-300">Calidad Gráfica</label><select className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 focus:border-cyan-500 outline-none"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Ultra</option></select></div></div><button onClick={()=>{setMostrarConfig(false);mostrarNotif('Cambios guardados','exito')}} className="btn-fortnite w-full mt-8 py-3 rounded-xl">GUARDAR CAMBIOS</button></div></div>)}
+                    {/* Footer */}
+                    <footer className="mt-12 py-6 text-center text-gray-500 text-sm border-t border-cyan-500/10">
+                        © 2024 FORTNITE | Demo Oficial
+                    </footer>
                 </div>
             );
         }
 
-        ReactDOM.render(<FortniteApp />, document.getElementById('root'));
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
