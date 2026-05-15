@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LevelUp — Tu Portal de Juegos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <style>
@@ -27,13 +27,13 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
       min-height: 100vh;
     }
-    h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Poppins', sans-serif; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
@@ -60,7 +60,7 @@
       gap: 16px;
     }
     .nav-logo {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-weight: 800; font-size: 20px;
       background: linear-gradient(135deg, #a78bfa, #7c3aed);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -69,6 +69,19 @@
       flex-shrink: 0;
     }
     .nav-logo span { color: #f1f0ff; -webkit-text-fill-color: #f1f0ff; }
+    .nav-credit {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .nav-credit strong {
+      color: var(--accent2);
+      font-weight: 600;
+    }
     .nav-tabs {
       display: flex; gap: 4px; margin-left: auto;
     }
@@ -78,7 +91,7 @@
       color: var(--muted); cursor: pointer;
       transition: all 0.2s; border: none; background: none;
       display: flex; align-items: center; gap: 6px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
     .nav-tab.active { color: var(--accent3); background: rgba(124,58,237,0.12); }
@@ -94,7 +107,7 @@
       background: var(--accent); color: white;
       font-size: 13px; font-weight: 600;
       border: none; cursor: pointer;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .btn-auth:hover { background: #6d28d9; transform: translateY(-1px); }
     .user-chip {
@@ -117,7 +130,7 @@
       border: 2px solid transparent;
     }
     .user-chip .username {
-      font-size: 13px; font-weight: 600; max-width: 100px; truncate: true;
+      font-size: 13px; font-weight: 600; max-width: 100px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .user-chip .lv {
@@ -170,7 +183,7 @@
     .hero-title {
       font-size: clamp(42px, 8vw, 88px);
       font-weight: 800; line-height: 1;
-      letter-spacing: -3px;
+      letter-spacing: -2px;
       margin-bottom: 20px;
     }
     .hero-title .line1 { display: block; color: var(--text); }
@@ -195,7 +208,7 @@
     }
     .hero-stat:last-child { border-right: none; }
     .hero-stat-val {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 26px; font-weight: 800;
       background: linear-gradient(135deg, var(--accent2), var(--accent));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -237,7 +250,7 @@
       font-size: 13px; font-weight: 500; cursor: pointer;
       border: 1px solid var(--border); background: var(--surface);
       color: var(--muted); transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .cat-pill:hover { color: var(--text); border-color: rgba(124,58,237,0.3); }
     .cat-pill.active {
@@ -256,7 +269,7 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 14px;
       outline: none; transition: border-color 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .search-input::placeholder { color: var(--muted); }
     .search-input:focus { border-color: rgba(124,58,237,0.5); }
@@ -303,7 +316,7 @@
       border: 1px solid rgba(255,255,255,0.12); border-radius: 100px;
       padding: 5px 10px; display: flex; align-items: center; gap: 5px;
       cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 700;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .like-btn:hover { transform: scale(1.08); }
     .like-btn .icon-empty { display: inline-block; }
@@ -316,7 +329,7 @@
     }
     .like-btn.pop { animation: heartPop 0.4s ease-out; }
     .game-info { padding: 12px 14px; }
-    .game-name { font-size: 14px; font-weight: 600; truncate: true; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+    .game-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
     .game-cat {
       font-size: 11px; font-weight: 500;
       padding: 2px 8px; border-radius: 100px;
@@ -348,7 +361,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 36px;
     }
-    .shop-item .item-name { font-family: 'Syne',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .shop-item .item-name { font-family: 'Poppins',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
     .shop-item .item-type { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
     .shop-item .item-price {
       display: flex; align-items: center; justify-content: center; gap: 5px;
@@ -367,7 +380,7 @@
       width: 100%; margin-top: 12px; padding: 9px;
       border-radius: 8px; font-size: 12px; font-weight: 600;
       border: none; cursor: pointer; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .btn-buy.buy { background: var(--accent); color: white; }
     .btn-buy.buy:hover { background: #6d28d9; }
@@ -419,14 +432,14 @@
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 8px; color: var(--text); font-size: 13px;
       outline: none; transition: border-color 0.2s; margin-bottom: 10px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .friend-input:focus { border-color: rgba(124,58,237,0.5); }
     .btn-sm {
       width: 100%; padding: 9px;
       background: var(--accent); color: white;
       border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .btn-sm:hover { background: #6d28d9; }
     .req-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -440,13 +453,13 @@
       padding: 5px 12px; border-radius: 6px;
       background: var(--green); color: white;
       border: none; font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .btn-reject {
       padding: 5px 10px; border-radius: 6px;
       background: rgba(239,68,68,0.12); color: var(--red);
       border: 1px solid rgba(239,68,68,0.3); font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
 
     /* ─── PROFILE PAGE ─── */
@@ -462,8 +475,10 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 42px; font-weight: 800;
       border: 3px solid rgba(124,58,237,0.4);
-      position: relative;
+      position: relative; cursor: pointer;
+      transition: all 0.2s;
     }
+    .profile-avatar:hover { transform: scale(1.05); border-color: var(--accent2); }
     .profile-level-badge {
       position: absolute; bottom: -4px; right: -4px;
       background: var(--gold); color: #1a1100;
@@ -472,7 +487,13 @@
       border: 2px solid var(--bg);
     }
     .profile-info { flex: 1; min-width: 200px; }
-    .profile-name { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+    .profile-name { 
+      font-size: 26px; font-weight: 800; letter-spacing: -1px; 
+      margin-bottom: 4px; cursor: pointer;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .profile-name:hover { color: var(--accent2); }
     .profile-tag { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
     .profile-bio {
       font-size: 14px; color: #9ca3af; line-height: 1.5;
@@ -486,7 +507,7 @@
     }
     .profile-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-left: auto; }
     .p-stat { text-align: center; }
-    .p-stat-val { font-family: 'Syne',sans-serif; font-size: 22px; font-weight: 800; color: var(--accent2); }
+    .p-stat-val { font-family: 'Poppins',sans-serif; font-size: 22px; font-weight: 800; color: var(--accent2); }
     .p-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
     .xp-bar-wrap {
       background: var(--surface); border: 1px solid var(--border);
@@ -505,15 +526,59 @@
       padding: 6px 14px; border-radius: 8px;
       background: rgba(255,255,255,0.05); border: 1px solid var(--border);
       color: var(--muted); font-size: 12px; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .edit-bio-btn:hover { color: var(--text); }
     .bio-input {
       width: 100%; padding: 8px 12px;
       background: var(--surface2); border: 1px solid rgba(124,58,237,0.4);
       border-radius: 8px; color: var(--text); font-size: 13px;
-      outline: none; resize: none; font-family: 'DM Sans', sans-serif;
+      outline: none; resize: none; font-family: 'Inter', sans-serif;
     }
+
+    /* Edit Name Modal */
+    .edit-name-inline {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 4px;
+    }
+    .name-input-inline {
+      padding: 6px 12px;
+      background: var(--surface2); border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 8px; color: var(--text); font-size: 24px; font-weight: 800;
+      outline: none; font-family: 'Poppins', sans-serif;
+      width: 250px;
+    }
+    .name-input-inline:focus { border-color: var(--accent2); }
+
+    /* Avatar Picker */
+    .avatar-picker-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .avatar-picker-overlay.open { opacity: 1; pointer-events: all; }
+    .avatar-picker {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px; width: 90%; max-width: 480px;
+      transform: scale(0.95); transition: transform 0.3s;
+    }
+    .avatar-picker-overlay.open .avatar-picker { transform: scale(1); }
+    .avatar-picker h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .avatar-picker p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .avatar-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+      margin-bottom: 20px;
+    }
+    .avatar-option {
+      aspect-ratio: 1; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; cursor: pointer;
+      background: var(--surface2); border: 2px solid var(--border);
+      transition: all 0.2s;
+    }
+    .avatar-option:hover { border-color: rgba(124,58,237,0.4); transform: scale(1.05); }
+    .avatar-option.selected { border-color: var(--accent); background: rgba(124,58,237,0.1); }
 
     /* ─── MODALS ─── */
     .modal-overlay {
@@ -537,7 +602,7 @@
       padding: 10px 20px; font-size: 13px; font-weight: 600;
       cursor: pointer; color: var(--muted); border: none; background: none;
       border-bottom: 2px solid transparent; margin-bottom: -1px;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .modal-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
     .input-group { margin-bottom: 14px; }
@@ -547,7 +612,7 @@
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 14px;
       outline: none; transition: border-color 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .modal-input:focus { border-color: rgba(124,58,237,0.5); }
     .modal-input::placeholder { color: var(--muted); }
@@ -555,7 +620,7 @@
       width: 100%; padding: 12px; border-radius: 10px;
       background: var(--accent); color: white; font-weight: 600; font-size: 14px;
       border: none; cursor: pointer; transition: all 0.2s; margin-top: 4px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .btn-full:hover { background: #6d28d9; transform: translateY(-1px); }
     .btn-google-modal {
@@ -563,7 +628,7 @@
       background: white; color: #333; font-weight: 600; font-size: 14px;
       border: none; cursor: pointer; transition: all 0.2s;
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .btn-google-modal:hover { background: #f4f4f4; }
     .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
@@ -634,6 +699,27 @@
     }
     .xp-notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* ─── COINS PER MINUTE INDICATOR ─── */
+    .coins-min-indicator {
+      position: fixed; bottom: 24px; left: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 18px;
+      display: flex; align-items: center; gap: 10px;
+      z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      font-size: 13px; font-weight: 600;
+    }
+    .coins-min-indicator .timer-ring {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 3px solid var(--surface2);
+      border-top-color: var(--gold);
+      animation: spin 1s linear infinite;
+    }
+    .coins-min-indicator.paused .timer-ring {
+      border-top-color: var(--muted);
+      animation: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* ─── FOOTER ─── */
     footer {
       border-top: 1px solid var(--border);
@@ -648,6 +734,8 @@
       .friends-layout { grid-template-columns: 1fr; }
       .nav-tabs { display: none; }
       .hero-title { letter-spacing: -1px; }
+      .nav-credit { display: none; }
+      .coins-min-indicator { display: none; }
     }
 
     /* ─── ANIMATIONS ─── */
@@ -664,7 +752,7 @@
       border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 13px;
       z-index: 500; display: flex; align-items: center; gap: 8px;
       box-shadow: 0 6px 24px rgba(88,101,242,0.4); transition: all 0.3s;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .discord-btn:hover { transform: translateY(-3px); background: #4752C4; }
 
@@ -692,6 +780,18 @@
   <span id="xp-notif-text">+50 XP</span>
 </div>
 
+<!-- ─── COINS PER MINUTE INDICATOR ─── -->
+<div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;">
+  <div class="timer-ring"></div>
+  <div>
+    <div style="color:var(--gold);font-size:14px;display:flex;align-items:center;gap:4px;">
+      <span class="iconify" data-icon="mdi:bitcoin" data-width="16"></span>
+      <span id="coins-min-timer">60s</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);">+5 monedas/min</div>
+  </div>
+</div>
+
 <!-- ─── CONFIRM DIALOG ─── -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -701,8 +801,8 @@
     <h3 style="font-size:17px;font-weight:800;margin-bottom:8px;">¿Estás en casa?</h3>
     <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">Esta web es para jugar en casa. Si estás en un colegio, entras asumiendo tu responsabilidad.</p>
     <div style="display:flex;gap:10px;">
-      <button id="confirm-cancel" style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">Salir</button>
-      <button id="confirm-ok" style="flex:1;padding:10px;border-radius:8px;background:var(--accent);color:white;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;">Entendido ✓</button>
+      <button id="confirm-cancel" style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">Salir</button>
+      <button id="confirm-ok" style="flex:1;padding:10px;border-radius:8px;background:var(--accent);color:white;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;">Entendido ✓</button>
     </div>
   </div>
 </div>
@@ -758,9 +858,23 @@
   </div>
 </div>
 
+<!-- ─── AVATAR PICKER MODAL ─── -->
+<div class="avatar-picker-overlay" id="avatar-picker-overlay">
+  <div class="avatar-picker">
+    <button class="modal-close" onclick="closeAvatarPicker()" style="position:absolute;top:16px;right:16px;">
+      <span class="iconify" data-icon="mdi:close" data-width="18"></span>
+    </button>
+    <h3>Cambiar Avatar</h3>
+    <p>Selecciona un avatar de tu colección</p>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <button class="btn-full" onclick="saveAvatarSelection()">Guardar avatar</button>
+  </div>
+</div>
+
 <!-- ─── NAVBAR ─── -->
 <nav class="navbar">
   <div class="nav-logo">Level<span>Up</span></div>
+  <div class="nav-credit">Creado por <strong>Gh0st</strong></div>
   <div class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" data-page="home">
       <span class="iconify" data-icon="mdi:gamepad-variant" data-width="17"></span> Juegos
@@ -786,7 +900,7 @@
         <span id="coins-val">0</span>
       </div>
       <div class="user-chip" onclick="showPage('profile')">
-        <div class="avatar" id="nav-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">?</div>
+        <div class="avatar" id="nav-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;">?</div>
         <div>
           <div class="username" id="nav-username">Usuario</div>
           <div class="lv" id="nav-lv">LVL 1</div>
@@ -892,7 +1006,7 @@
 
     <div class="shop-grid" id="shop-grid"></div>
     <p style="text-align:center;margin-top:32px;font-size:12px;color:var(--muted);">
-      💡 Ganas <strong style="color:var(--gold)">10 monedas</strong> por abrir un juego y <strong style="color:var(--gold)">5 monedas</strong> por dar like a un juego
+      💡 Ganas <strong style="color:var(--gold)">10 monedas</strong> por abrir un juego, <strong style="color:var(--gold)">5 monedas</strong> por dar like y <strong style="color:var(--gold)">5 monedas/minuto</strong> jugando
     </p>
   </div>
 </div>
@@ -940,11 +1054,15 @@
   <div class="section">
     <div class="profile-hero">
       <div class="profile-avatar-wrap">
-        <div class="profile-avatar" id="profile-avatar-big" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Syne',sans-serif;">?</div>
+        <div class="profile-avatar" id="profile-avatar-big" onclick="openAvatarPicker()" title="Click para cambiar avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;">?
+          <div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.6);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0;transition:opacity 0.2s;" class="avatar-edit-hint">✏️</div>
+        </div>
         <div class="profile-level-badge" id="profile-lv-badge">LV 1</div>
       </div>
       <div class="profile-info">
-        <div class="profile-name" id="profile-name">Cargando...</div>
+        <div id="profile-name-wrap">
+          <div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">Cargando...</div>
+        </div>
         <div class="profile-tag" id="profile-tag">@usuario</div>
         <div id="profile-bio-wrap">
           <p class="profile-bio" id="profile-bio">Sin bio todavía.</p>
@@ -953,8 +1071,8 @@
         <div id="profile-bio-edit" style="display:none;margin-top:8px;">
           <textarea class="bio-input" id="bio-input" rows="2" maxlength="120" placeholder="Escribe tu bio..."></textarea>
           <div style="display:flex;gap:8px;margin-top:8px;">
-            <button style="flex:1;padding:7px;border-radius:7px;background:var(--accent);color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;" id="save-bio-btn">Guardar</button>
-            <button style="flex:1;padding:7px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;" id="cancel-bio-btn">Cancelar</button>
+            <button style="flex:1;padding:7px;border-radius:7px;background:var(--accent);color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;" id="save-bio-btn">Guardar</button>
+            <button style="flex:1;padding:7px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;" id="cancel-bio-btn">Cancelar</button>
           </div>
         </div>
         <div class="profile-badges" id="profile-badges" style="margin-top:14px;"></div>
@@ -969,7 +1087,7 @@
     <div class="xp-bar-wrap">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">Progresión</span>
+          <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;">Progresión</span>
           <span style="font-size:12px;color:var(--muted);margin-left:10px;" id="xp-text">0 / 200 XP</span>
         </div>
         <span style="font-size:12px;color:var(--accent2);font-weight:600;" id="xp-next-lv">Próximo nivel: 200 XP</span>
@@ -988,7 +1106,7 @@
 
 <!-- ─── DISCORD BTN ─── -->
 <a href="https://discord.gg/ngEsNyDCpz" target="_blank" class="discord-btn">
-  <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="white"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.21h0A105.73,105.73,0,0,0,32.47,96.36,77.7,77.7,0,0,0,39.2,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.73,11.1,105.33,105.33,0,0,0,32.05-16.15h0C130.46,50.45,121.48,26.72,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5.07-12.67,11.43-12.67S54,46,53.86,53,48.74,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.07-12.67,11.44-12.67S96.23,46,96.11,53,91,65.69,84.69,65.69Z"/></svg>
+  <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="white"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.21h0A105.73,105.73,0,0,0,32.47,96.36,77.7,77.7,0,0,0,39.2,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.73,11.1A105.33,105.33,0,0,0,32.05,80.15h0C130.46,50.45,121.48,26.72,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5.07-12.67,11.43-12.67S54,46,53.86,53,48.74,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.07-12.67,11.44-12.67S96.23,46,96.11,53,91,65.69,84.69,65.69Z"/></svg>
   Discord
 </a>
 
@@ -1090,7 +1208,6 @@ const State = {
   friendRequests: {},
   bio: '',
   gameLikes: {},
-  // Firebase refs (set after init)
   db: null,
   auth: null,
 };
@@ -1099,6 +1216,14 @@ window.State = State;
 let activeCat = 'all';
 let activeShopCat = 'all';
 let currentPage = 'home';
+
+// Coins per minute system
+let coinsMinuteTimer = null;
+let coinsSecondCount = 0;
+let isPlaying = false;
+
+// Avatar picker state
+let selectedAvatarId = null;
 
 // ========================================================
 // NAVIGATION
@@ -1118,6 +1243,13 @@ function showPage(page) {
   if (page === 'shop') renderShop();
   if (page === 'profile') renderProfile();
   if (page === 'friends') renderFriends();
+  
+  // Start/stop coins per minute based on page
+  if (page === 'home' && State.uid) {
+    startCoinsPerMinute();
+  } else {
+    stopCoinsPerMinute();
+  }
 }
 window.showPage = showPage;
 
@@ -1149,6 +1281,42 @@ function showXP(amount) {
   document.getElementById('xp-notif-text').textContent = `+${amount} XP`;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ========================================================
+// COINS PER MINUTE SYSTEM
+// ========================================================
+function startCoinsPerMinute() {
+  if (!State.uid) return;
+  isPlaying = true;
+  const indicator = document.getElementById('coins-min-indicator');
+  indicator.style.display = 'flex';
+  indicator.classList.remove('paused');
+  coinsSecondCount = 0;
+  
+  if (coinsMinuteTimer) clearInterval(coinsMinuteTimer);
+  coinsMinuteTimer = setInterval(() => {
+    coinsSecondCount++;
+    const remaining = 60 - coinsSecondCount;
+    document.getElementById('coins-min-timer').textContent = remaining + 's';
+    
+    if (coinsSecondCount >= 60) {
+      coinsSecondCount = 0;
+      awardXPandCoins(10, 5, 'Tiempo jugando');
+      toast('💰 +5 monedas por minuto jugado', 'success');
+    }
+  }, 1000);
+}
+
+function stopCoinsPerMinute() {
+  isPlaying = false;
+  if (coinsMinuteTimer) {
+    clearInterval(coinsMinuteTimer);
+    coinsMinuteTimer = null;
+  }
+  const indicator = document.getElementById('coins-min-indicator');
+  indicator.style.display = 'none';
+  indicator.classList.add('paused');
 }
 
 // ========================================================
@@ -1214,18 +1382,24 @@ function updateNavUser() {
     document.getElementById('nav-avatar').style.background = avBg;
     document.getElementById('nav-avatar').innerHTML = equippedAv
       ? `<span style="font-size:17px;">${avEmoji}</span>`
-      : `<span style="font-family:'Syne',sans-serif;font-weight:800;color:white;">${initial}</span>`;
+      : `<span style="font-family:'Poppins',sans-serif;font-weight:800;color:white;">${initial}</span>`;
     
     const displayName = State.username || State.email.split('@')[0];
     document.getElementById('nav-username').textContent = displayName;
     document.getElementById('nav-lv').textContent = `LVL ${State.level}`;
     document.getElementById('coins-val').textContent = State.coins;
     document.getElementById('shop-coins-val').textContent = State.coins;
+    
+    // Show/hide coins per minute indicator
+    if (currentPage === 'home') {
+      startCoinsPerMinute();
+    }
+  } else {
+    stopCoinsPerMinute();
   }
 }
 
 function xpToLevel(xp) {
-  // Each level needs level*200 XP
   let level = 1;
   let total = 0;
   while (total + level * 200 <= xp) {
@@ -1320,7 +1494,6 @@ document.getElementById('games-grid').addEventListener('click', async e => {
   }
   const card = e.target.closest('.game-card');
   if (card && card.dataset.path) {
-    // Award XP and coins for opening a game
     if (State.uid) await awardXPandCoins(50, 10, 'Abrir juego');
     window.location.href = card.dataset.path;
   }
@@ -1346,9 +1519,7 @@ async function toggleLike(gid, btn) {
     await set(ref(State.db, `userFavorites/${State.uid}/${gid}`), newFav ? true : null);
     await runTransaction(ref(State.db, `gameLikes/${gid}`), c => newFav ? (c||0)+1 : Math.max(0,(c||1)-1));
     toast(newFav ? '❤️ Añadido a favoritos' : 'Eliminado de favoritos', 'success');
-    // Award coins for liking
     if (newFav) await awardXPandCoins(20, 5, 'Like dado');
-    // Update counter on button
     const lc = btn.querySelector('.lc');
     if (lc) lc.textContent = Math.max(0, (State.gameLikes[gid]||0) + (newFav?1:-1));
   } catch(err) {
@@ -1507,6 +1678,136 @@ window.buyItem = buyItem;
 window.openAuth = openAuth;
 
 // ========================================================
+// AVATAR PICKER
+// ========================================================
+function openAvatarPicker() {
+  if (!State.uid) { toast('Inicia sesión para cambiar avatar','error'); openAuth(); return; }
+  
+  const grid = document.getElementById('avatar-grid');
+  grid.innerHTML = '';
+  
+  // Get owned avatars + default option
+  const avatars = SHOP_ITEMS.filter(i => i.type === 'avatar' && (State.owned[i.id] || i.free));
+  
+  // Add default option (initial)
+  const defaultOption = document.createElement('div');
+  defaultOption.className = `avatar-option ${!State.equipped.avatar ? 'selected' : ''}`;
+  defaultOption.dataset.id = 'default';
+  defaultOption.innerHTML = `<span style="font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;">${(State.username||'?')[0].toUpperCase()}</span>`;
+  defaultOption.onclick = () => selectAvatarOption('default');
+  grid.appendChild(defaultOption);
+  
+  avatars.forEach(av => {
+    const opt = document.createElement('div');
+    opt.className = `avatar-option ${State.equipped.avatar === av.id ? 'selected' : ''}`;
+    opt.dataset.id = av.id;
+    opt.innerHTML = av.emoji;
+    opt.style.background = av.bg;
+    opt.onclick = () => selectAvatarOption(av.id);
+    grid.appendChild(opt);
+  });
+  
+  selectedAvatarId = State.equipped.avatar || 'default';
+  document.getElementById('avatar-picker-overlay').classList.add('open');
+}
+
+function closeAvatarPicker() {
+  document.getElementById('avatar-picker-overlay').classList.remove('open');
+}
+
+function selectAvatarOption(id) {
+  selectedAvatarId = id;
+  document.querySelectorAll('.avatar-option').forEach(opt => {
+    opt.classList.toggle('selected', opt.dataset.id === id);
+  });
+}
+
+async function saveAvatarSelection() {
+  if (!State.uid) return;
+  try {
+    const { ref, set } = window._fbFns;
+    
+    if (selectedAvatarId === 'default' || !selectedAvatarId) {
+      State.equipped.avatar = null;
+      await set(ref(State.db, `users/${State.uid}/equipped/avatar`), null);
+    } else {
+      State.equipped.avatar = selectedAvatarId;
+      await set(ref(State.db, `users/${State.uid}/equipped/avatar`), selectedAvatarId);
+    }
+    
+    toast('✓ Avatar cambiado', 'success');
+    closeAvatarPicker();
+    updateNavUser();
+    renderProfile();
+  } catch(err) { toast('Error al guardar avatar','error'); console.error(err); }
+}
+
+window.openAvatarPicker = openAvatarPicker;
+window.closeAvatarPicker = closeAvatarPicker;
+window.saveAvatarSelection = saveAvatarSelection;
+
+// ========================================================
+// EDIT USERNAME
+// ========================================================
+function startEditName() {
+  if (!State.uid) { toast('Inicia sesión para cambiar tu nombre','error'); openAuth(); return; }
+  
+  const nameWrap = document.getElementById('profile-name-wrap');
+  const currentName = State.username || '';
+  
+  nameWrap.innerHTML = `
+    <div class="edit-name-inline">
+      <input type="text" class="name-input-inline" id="edit-name-input" value="${currentName}" maxlength="20" placeholder="Nuevo nombre...">
+      <button onclick="saveNewName()" style="padding:8px 14px;border-radius:8px;background:var(--accent);color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Guardar</button>
+      <button onclick="cancelEditName()" style="padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">Cancelar</button>
+    </div>
+  `;
+  
+  document.getElementById('edit-name-input').focus();
+  document.getElementById('edit-name-input').select();
+}
+
+async function saveNewName() {
+  if (!State.uid) return;
+  const newName = document.getElementById('edit-name-input').value.trim();
+  
+  if (!newName) { toast('El nombre no puede estar vacío','error'); return; }
+  if (newName.length < 3) { toast('Mínimo 3 caracteres','error'); return; }
+  
+  try {
+    const { ref, get, query, orderByChild, equalTo, set } = window._fbFns;
+    
+    // Check if username is taken (by another user)
+    const q = query(ref(State.db,'users'), orderByChild('username'), equalTo(newName));
+    const snap = await get(q);
+    
+    if (snap.exists()) {
+      let takenByOther = false;
+      snap.forEach(child => {
+        if (child.key !== State.uid) takenByOther = true;
+      });
+      if (takenByOther) { toast('Ese nombre ya está en uso','error'); return; }
+    }
+    
+    await set(ref(State.db, `users/${State.uid}/username`), newName);
+    State.username = newName;
+    
+    toast('✓ Nombre actualizado', 'success');
+    cancelEditName();
+    updateNavUser();
+  } catch(err) { toast('Error al guardar nombre','error'); console.error(err); }
+}
+
+function cancelEditName() {
+  const nameWrap = document.getElementById('profile-name-wrap');
+  nameWrap.innerHTML = `<div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">${State.username || 'Cargando...'}</div>`;
+}
+
+window.startEditName = startEditName;
+window.saveNewName = saveNewName;
+window.cancelEditName = cancelEditName;
+
+// ========================================================
 // PROFILE RENDER
 // ========================================================
 function renderProfile() {
@@ -1517,12 +1818,20 @@ function renderProfile() {
   const avBg = equippedAv ? equippedAv.bg : 'linear-gradient(135deg,#7c3aed,#a78bfa)';
   const avContent = equippedAv
     ? `<span style="font-size:40px;">${equippedAv.emoji}</span>`
-    : `<span style="font-family:'Syne',sans-serif;font-weight:800;color:white;font-size:36px;">${displayName[0].toUpperCase()}</span>`;
+    : `<span style="font-family:'Poppins',sans-serif;font-weight:800;color:white;font-size:36px;">${displayName[0].toUpperCase()}</span>`;
   
   document.getElementById('profile-avatar-big').style.background = avBg;
-  document.getElementById('profile-avatar-big').innerHTML = avContent;
+  document.getElementById('profile-avatar-big').innerHTML = avContent + `<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.6);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;" class="avatar-edit-hint">✏️</div>`;
   document.getElementById('profile-lv-badge').textContent = `LV ${State.level}`;
-  document.getElementById('profile-name').textContent = displayName;
+  
+  // Reset name edit if needed
+  const nameWrap = document.getElementById('profile-name-wrap');
+  if (!document.getElementById('profile-name')) {
+    nameWrap.innerHTML = `<div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">${displayName}</div>`;
+  } else {
+    document.getElementById('profile-name').textContent = displayName;
+  }
+  
   document.getElementById('profile-tag').textContent = `@${(State.username||'').toLowerCase() || State.email.split('@')[0]}`;
   document.getElementById('profile-bio').textContent = State.bio || 'Sin bio todavía.';
   document.getElementById('bio-input').value = State.bio || '';
@@ -1616,7 +1925,7 @@ function renderFriends() {
       const d = document.createElement('div');
       d.className = 'req-card';
       d.innerHTML = `
-        <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
+        <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
         <div>
           <div style="font-size:13px;font-weight:600;">${data.username||'Usuario'}</div>
           <div style="font-size:11px;color:var(--muted);">Quiere ser tu amigo</div>
@@ -1644,7 +1953,7 @@ function renderFriends() {
     d.className = 'friend-card';
     d.innerHTML = `
       <div class="friend-status ${data.online?'online':'offline'}"></div>
-      <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
+      <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
       <div class="friend-info">
         <div class="friend-name">${data.username||'Usuario'}</div>
         <div class="friend-sub">${data.online ? '🟢 En línea' : '⚫ Desconectado'} · Lv ${data.level||1}</div>
@@ -1690,7 +1999,6 @@ async function searchAndAddFriend(username) {
       return;
     }
 
-    // Send friend request
     await set(ref(State.db, `users/${targetUid}/friendRequests/${State.uid}`), {
       username: State.username || State.email.split('@')[0],
       uid: State.uid,
@@ -1904,13 +2212,11 @@ document.getElementById('btn-register').addEventListener('click', async () => {
   if (pw.length < 6) { toast('La contraseña debe tener al menos 6 caracteres','error'); return; }
   
   try {
-    // Check if username is taken
     const q = query(ref(db,'users'), orderByChild('username'), equalTo(username));
     const snap = await get(q);
     if (snap.exists()) { toast('Ese nombre de usuario ya está en uso','error'); return; }
 
     const cred = await createUserWithEmailAndPassword(auth, em, pw);
-    // Save user profile
     await set(ref(db, `users/${cred.user.uid}`), {
       username, email: em,
       level: 1, xp: 0, coins: 100,
@@ -1928,7 +2234,6 @@ document.getElementById('btn-register').addEventListener('click', async () => {
 const googleSignIn = async () => {
   try {
     const cred = await signInWithPopup(auth, provider);
-    // If new user, set up profile
     const snap = await get(ref(db, `users/${cred.user.uid}`));
     if (!snap.exists()) {
       const emailUser = cred.user.email.split('@')[0];
@@ -1957,6 +2262,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   State.friends = {}; State.friendRequests = {};
   State.coins = 0; State.xp = 0; State.level = 1;
   updateNavUser();
+  stopCoinsPerMinute();
   showPage('home');
   toast('Sesión cerrada','info');
 });
@@ -1974,14 +2280,12 @@ onAuthStateChanged(auth, async (user) => {
     State.email = user.email;
     await loadUserData(user.uid);
 
-    // Set online presence for friends
     await set(ref(db, `users/${user.uid}/online`), true);
     onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
 
     updateNavUser();
     if (currentPage !== 'home') renderProfile();
   } else {
-    // Show confirm for non-logged users
     const ok = await showConfirm();
     if (!ok) {
       if (myPresenceRef) await set(myPresenceRef, null).catch(()=>{});
@@ -1993,6 +2297,7 @@ onAuthStateChanged(auth, async (user) => {
 window.addEventListener('beforeunload', () => {
   if (myPresenceRef) set(myPresenceRef, null).catch(()=>{});
   if (State.uid) set(ref(db, `users/${State.uid}/online`), false).catch(()=>{});
+  stopCoinsPerMinute();
 });
 </script>
 
