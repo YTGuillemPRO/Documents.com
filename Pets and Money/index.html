@@ -6,8 +6,6 @@
 <title>Pet Simulator Ultra</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -49,6 +47,7 @@ h1{
   font-family:'Russo One',sans-serif;font-size:17px;letter-spacing:0.5px;
   background:linear-gradient(135deg,#fbbf24,#f59e0b,#fde68a);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  cursor:pointer;
 }
 .hdr-btns{display:flex;gap:6px}
 .hdr-btn{
@@ -184,7 +183,7 @@ h1{
 .ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}
 .ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}
 
-/* RANKING MEJORADO */
+/* RANKING */
 .rk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px;flex-wrap:wrap;gap:6px}
 .rk-name-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
 .rk-name-wrap i{color:#fbbf24;font-size:12px;flex-shrink:0}
@@ -195,17 +194,12 @@ h1{
   transition:border-color .2s;
 }
 .rk-name-input:focus{border-color:rgba(251,191,36,0.4)}
-
-/* Panel de Player ID */
 .rk-id-panel{
   display:flex;align-items:center;gap:4px;margin-bottom:8px;
   padding:6px 8px;border-radius:8px;
   background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);
 }
-.rk-id-label{
-  font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
-  color:#a78bfa;white-space:nowrap;
-}
+.rk-id-label{font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#a78bfa;white-space:nowrap}
 .rk-id-input{
   flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(139,92,246,0.3);
   border-radius:5px;padding:3px 6px;color:#c4b5fd;font-family:'Courier New',monospace;
@@ -219,10 +213,7 @@ h1{
   transition:all .15s;flex-shrink:0;
 }
 .rk-id-copy:hover{background:rgba(139,92,246,0.3);color:#fff}
-.rk-id-hint{
-  font-size:7px;color:#64748b;font-weight:600;margin-top:2px;
-}
-
+.rk-id-hint{font-size:7px;color:#64748b;font-weight:600;margin-top:2px}
 .rk-live{display:flex;align-items:center;gap:4px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
 .rk-live-dot{width:5px;height:5px;border-radius:50%;animation:livePulse 1.5s ease-in-out infinite}
 .rk-live-dot.on{background:#10b981}
@@ -230,12 +221,10 @@ h1{
 .rk-live-txt{color:#64748b}
 .rk-live-txt.on{color:#10b981}
 @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px currentColor}50%{opacity:.4;box-shadow:none}}
-
 .rk-my{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;margin-bottom:8px;border-radius:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12)}
 .rk-my-l{font-size:9px;font-weight:700;color:#7a8ba8}
 .rk-my-v{font-size:14px;font-weight:900;color:#10b981}
 .rk-my-e{font-size:10px;font-weight:800;color:#fbbf24;margin-left:auto}
-
 .rk-list{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
 .rk-list::-webkit-scrollbar{width:3px}
 .rk-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
@@ -255,6 +244,20 @@ h1{
 .rk-pc{font-size:8px;font-weight:600;color:#64748b}
 .rk-earn{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
 
+/* RANKING STATUS BAR */
+.rk-status{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:5px 8px;margin-bottom:8px;border-radius:8px;
+  background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.1);
+  font-size:8px;font-weight:700;color:#4b6080;
+}
+.rk-status.loading{color:#fbbf24;border-color:rgba(251,191,36,0.15)}
+.rk-status.ok{color:#10b981;border-color:rgba(16,185,129,0.2)}
+.rk-status.err{color:#f43f5e;border-color:rgba(244,63,94,0.15)}
+.rk-spinner{width:8px;height:8px;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* OVERLAY HATCH */
 #overlay{position:absolute;inset:0;background:rgba(4,10,22,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;border-radius:26px}
 #obox{background:rgba(12,24,48,0.95);border:1.5px solid rgba(255,255,255,0.08);border-radius:24px;padding:28px 22px;width:270px;text-align:center;color:#f1f5f9}
 #oegg{width:80px;height:105px;border-radius:50% 50% 42% 42%;margin:0 auto 14px}
@@ -265,6 +268,109 @@ h1{
 #oclose{margin-top:16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.08);color:#f1f5f9;padding:8px 24px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.4px;transition:all .2s}
 #oclose:hover{background:rgba(255,255,255,0.12)}
 
+/* ADMIN PANEL */
+#adminOverlay{
+  position:absolute;inset:0;background:rgba(2,5,15,0.98);
+  display:none;flex-direction:column;z-index:200;border-radius:26px;
+  padding:16px;overflow:hidden;
+}
+#adminOverlay.show{display:flex}
+.admin-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.admin-title{
+  display:flex;align-items:center;gap:7px;
+  font-family:'Russo One',sans-serif;font-size:14px;
+}
+.admin-title i{color:#f43f5e;font-size:13px}
+.admin-title span{
+  background:linear-gradient(135deg,#f43f5e,#fb923c);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.admin-badge{
+  font-size:7px;font-weight:900;padding:2px 6px;border-radius:4px;
+  background:rgba(244,63,94,0.15);color:#f43f5e;border:1px solid rgba(244,63,94,0.2);
+  letter-spacing:.4px;text-transform:uppercase;margin-left:4px;
+}
+.admin-close{
+  background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);
+  color:#f43f5e;width:28px;height:28px;border-radius:8px;
+  cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.admin-close:hover{background:rgba(244,63,94,0.25)}
+.admin-stats-row{
+  display:flex;gap:6px;margin-bottom:12px;
+}
+.admin-stat{
+  flex:1;text-align:center;padding:8px 4px;border-radius:10px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+}
+.admin-stat-v{display:block;font-size:15px;font-weight:900;color:#f1f5f9}
+.admin-stat-l{display:block;font-size:7px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.admin-actions{display:flex;gap:6px;margin-bottom:10px}
+.admin-btn{
+  flex:1;padding:8px 4px;font-family:inherit;font-size:9px;font-weight:800;
+  letter-spacing:.3px;border:none;border-radius:9px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.admin-btn:active{transform:scale(0.96)}
+.admin-btn-refresh{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:#38bdf8}
+.admin-btn-refresh:hover{background:rgba(56,189,248,0.2)}
+.admin-btn-clear{background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:#f43f5e}
+.admin-btn-clear:hover{background:rgba(244,63,94,0.2)}
+.admin-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
+.admin-list::-webkit-scrollbar{width:3px}
+.admin-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+.admin-player{
+  display:flex;align-items:center;gap:6px;padding:8px 8px;margin-bottom:4px;
+  border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);
+}
+.admin-pos{
+  width:20px;font-size:10px;font-weight:900;color:#7a8ba8;text-align:center;flex-shrink:0;
+}
+.admin-player-info{flex:1;min-width:0}
+.admin-player-name{display:block;font-size:10px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-player-sub{display:block;font-size:7px;font-weight:600;color:#7a8ba8;margin-top:1px}
+.admin-player-id{display:block;font-size:7px;color:#4b6080;font-family:'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-player-earn{font-size:10px;font-weight:900;color:#10b981;white-space:nowrap;flex-shrink:0}
+.admin-del{
+  width:22px;height:22px;border:1px solid rgba(244,63,94,0.2);
+  background:rgba(244,63,94,0.08);color:#f43f5e;border-radius:6px;
+  cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.admin-del:hover{background:rgba(244,63,94,0.25);transform:scale(1.1)}
+.admin-empty{text-align:center;padding:20px;color:#4b6080;font-size:11px;font-weight:600}
+.admin-footer{
+  margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);
+  text-align:center;font-size:7px;color:#2a3a50;font-weight:600;letter-spacing:.3px;
+}
+
+/* CONFIRM DIALOG */
+#confirmBox{
+  position:absolute;inset:0;background:rgba(2,5,15,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:300;border-radius:26px;
+}
+#confirmBox.show{display:flex}
+.confirm-card{
+  background:rgba(15,25,50,0.95);border:1.5px solid rgba(244,63,94,0.2);
+  border-radius:18px;padding:24px 20px;width:250px;text-align:center;
+}
+.confirm-icon{font-size:32px;margin-bottom:10px}
+.confirm-title{font-family:'Russo One',sans-serif;font-size:14px;color:#f43f5e;margin-bottom:6px}
+.confirm-msg{font-size:11px;font-weight:600;color:#7a8ba8;margin-bottom:16px;line-height:1.4}
+.confirm-btns{display:flex;gap:8px}
+.confirm-btn{
+  flex:1;padding:8px;font-family:inherit;font-size:10px;font-weight:800;
+  border:none;border-radius:9px;cursor:pointer;transition:all .2s;
+}
+.confirm-yes{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}
+.confirm-no{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#7a8ba8}
+
 @keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-16deg) scale(1.04)}30%{transform:rotate(14deg) scale(1.04)}45%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}75%{transform:rotate(-5deg)}}
 @keyframes brk{0%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}100%{transform:scale(1.8);opacity:0}}
 @keyframes rev{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.15) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
@@ -272,10 +378,11 @@ h1{
 .brk{animation:brk .5s forwards ease-out}
 .rev{animation:rev .5s forwards ease-out}
 
-#toasts{position:absolute;bottom:14px;left:14px;right:14px;z-index:200;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none}
+#toasts{position:absolute;bottom:14px;left:14px;right:14px;z-index:400;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none}
 .toast{padding:8px 10px;border-radius:9px;font-size:10px;font-weight:700;color:#fff;animation:tin .25s ease,tout .25s ease 2.5s forwards;pointer-events:auto}
 .t-ok{background:rgba(16,185,129,0.88)}.t-err{background:rgba(244,63,94,0.88)}
 .t-inf{background:rgba(56,189,248,0.88)}.t-rwd{background:rgba(251,191,36,0.92);color:#1a1a1a}
+.t-adm{background:rgba(244,63,94,0.92)}
 @keyframes tin{from{transform:translateY(14px);opacity:0}to{transform: translateY(0);opacity:1}}
 @keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-6px)}}
 
@@ -294,7 +401,7 @@ h1{
 
 <div id="game">
   <header>
-    <h1>PET SIMULATOR ULTRA</h1>
+    <h1 id="gameTitle">PET SIMULATOR ULTRA</h1>
     <div class="hdr-btns">
       <button class="hdr-btn" id="btnMute" aria-label="Sonido"><i class="fas fa-volume-high"></i></button>
       <button class="hdr-btn" id="btnReset" aria-label="Reset"><i class="fas fa-rotate-left"></i></button>
@@ -313,6 +420,7 @@ h1{
     <button class="tab" data-t="rank">RANKING</button>
   </nav>
 
+  <!-- GAME PANEL -->
   <section id="pGame" class="panel on">
     <div class="eggs" id="navEggs">
       <button class="egg on" data-e="basic"><div class="egg-shape egg-b"></div><span class="egg-n">Basico</span><span class="egg-p" id="pB">$10</span></button>
@@ -328,12 +436,14 @@ h1{
     <div id="petList" class="plist"></div>
   </section>
 
+  <!-- INDEX PANEL -->
   <section id="pIndex" class="panel">
     <div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div>
     <div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div>
     <div id="idxList" class="igrid"></div>
   </section>
 
+  <!-- RANKING PANEL -->
   <section id="pRank" class="panel">
     <div class="rk-hd">
       <div class="rk-name-wrap">
@@ -341,19 +451,20 @@ h1{
         <input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false" aria-label="Nombre de tu base">
       </div>
       <div class="rk-live" id="rkLive">
-        <span class="rk-live-dot off" id="rkDot"></span>
-        <span class="rk-live-txt" id="rkTxt">Sin conexion</span>
+        <span class="rk-live-dot on" id="rkDot"></span>
+        <span class="rk-live-txt on" id="rkTxt">En vivo</span>
       </div>
     </div>
-    
-    <!-- Panel de Player ID Global -->
     <div class="rk-id-panel">
       <span class="rk-id-label"><i class="fas fa-fingerprint"></i> ID:</span>
       <input type="text" class="rk-id-input" id="rkPlayerId" maxlength="20" spellcheck="false" placeholder="Tu ID unico...">
       <button class="rk-id-copy" id="btnCopyId" title="Copiar ID"><i class="fas fa-copy"></i></button>
     </div>
     <div class="rk-id-hint" style="text-align:center;padding:0 4px 6px;">Usa el mismo ID en otros dispositivos para unificar tu ranking</div>
-    
+    <div class="rk-status loading" id="rkStatus">
+      <span class="rk-spinner"></span>
+      <span id="rkStatusTxt">Cargando ranking...</span>
+    </div>
     <div class="rk-my">
       <span class="rk-my-l">Tu posicion:</span>
       <span class="rk-my-v" id="rkPos">#--</span>
@@ -362,6 +473,7 @@ h1{
     <div id="rkList" class="rk-list"></div>
   </section>
 
+  <!-- HATCH OVERLAY -->
   <div id="overlay">
     <div id="obox">
       <div id="oegg"></div>
@@ -373,22 +485,53 @@ h1{
     </div>
   </div>
 
+  <!-- ADMIN PANEL OVERLAY -->
+  <div id="adminOverlay">
+    <div class="admin-hd">
+      <div class="admin-title">
+        <i class="fas fa-shield-halved"></i>
+        <span>ADMIN PANEL</span>
+        <span class="admin-badge">Acceso restringido</span>
+      </div>
+      <button class="admin-close" id="adminClose"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="admin-stats-row" id="adminStatsRow">
+      <div class="admin-stat"><span class="admin-stat-v" id="adminTotalPlayers">0</span><span class="admin-stat-l">Jugadores</span></div>
+      <div class="admin-stat"><span class="admin-stat-v" id="adminTopEarn">$0</span><span class="admin-stat-l">Top Ingreso</span></div>
+      <div class="admin-stat"><span class="admin-stat-v" id="adminTotalPets">0</span><span class="admin-stat-l">Total Pets</span></div>
+    </div>
+    <div class="admin-actions">
+      <button class="admin-btn admin-btn-refresh" id="adminRefresh"><i class="fas fa-rotate"></i> ACTUALIZAR</button>
+      <button class="admin-btn admin-btn-clear" id="adminClearAll"><i class="fas fa-trash"></i> LIMPIAR TODO</button>
+    </div>
+    <div class="admin-list" id="adminList"></div>
+    <div class="admin-footer">guillevarelacors@gmail.com · Acceso de administrador</div>
+  </div>
+
+  <!-- CONFIRM DIALOG -->
+  <div id="confirmBox">
+    <div class="confirm-card">
+      <div class="confirm-icon" id="confirmIcon">⚠️</div>
+      <div class="confirm-title" id="confirmTitle">Confirmar</div>
+      <div class="confirm-msg" id="confirmMsg">Esta accion no se puede deshacer.</div>
+      <div class="confirm-btns">
+        <button class="confirm-btn confirm-yes" id="confirmYes">CONFIRMAR</button>
+        <button class="confirm-btn confirm-no" id="confirmNo">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toasts"></div>
 </div>
 
 <script>
-// ==================== CONFIGURACIÓN ====================
-var firebaseConfig = {
-  apiKey: "TU_API_KEY_AQUI",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_ID",
-  appId: "TU_APP_ID"
-};
+// ==================== ADMIN CONFIG ====================
+var ADMIN_PASS = 'GVC_ADMIN_2024';
+var titleClickCount = 0, titleClickTimer = null;
+var isAdmin = false;
+var confirmCallback = null;
 
-// Datos de mascotas
+// ==================== PETS DATA ====================
 var PETS = [
   {i:'🐭',n:'Raton de Campo',r:'common',e:2,eg:['basic']},
   {i:'🐶',n:'Perro Fiel',r:'common',e:4,eg:['basic']},
@@ -448,7 +591,6 @@ var PETS = [
   {i:'☠️',n:'Muerte',r:'og',e:25000,eg:['infernal']}
 ];
 
-// Pesos de rareza por tipo de huevo
 var WEIGHTS = {
   basic:{common:65,rare:25,epic:8,god:2},
   golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:0.5,og:0.1},
@@ -457,28 +599,22 @@ var WEIGHTS = {
   divine:{god:10,legendary:25,mythic:40,secret:1.5,og:0.8},
   infernal:{legendary:5,mythic:35,secret:3,og:2}
 };
-
-// Colores y nombres de rareza
 var RCOL = {common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
 var RNAME = {common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
 var RORD = {common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 var RKEYS = ['common','rare','epic','god','legendary','mythic','secret','og'];
 
-// Estado global del juego
+// ==================== GAME STATE ====================
 var G = {
   money:10, rb:0, mult:1, pets:[], disc:[],
   pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
   tot:0, te:0, mut:false, nid:1, pname:'Mi Base',
-  autoOpen:false, autoOn:false,
-  playerId:'',
-  fbId:''
+  autoOpen:false, autoOn:false, playerId:'', fbId:''
 };
-
-// Variables de estado
 var selEgg='basic', rbConf=false, rbTmr=null, activeTab='game';
-var fbDb=null, fbOk=false, rankCache=[];
+var rankCache=[], rankFetching=false, rankLastFetch=0;
 
-// ==================== SISTEMA DE SONIDO ====================
+// ==================== SOUND ====================
 var snd = {
   cx:null,
   go:function(){
@@ -491,31 +627,26 @@ var snd = {
     if(!this.cx||G.mut) return;
     try{
       var o=this.cx.createOscillator(), g=this.cx.createGain();
-      o.type=tp||'sine';
-      o.frequency.setValueAtTime(f,this.cx.currentTime);
+      o.type=tp||'sine';o.frequency.setValueAtTime(f,this.cx.currentTime);
       g.gain.setValueAtTime(v||0.1,this.cx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.001,this.cx.currentTime+d);
-      o.connect(g);
-      g.connect(this.cx.destination);
-      o.start();
-      o.stop(this.cx.currentTime+d);
+      o.connect(g);g.connect(this.cx.destination);o.start();o.stop(this.cx.currentTime+d);
     }catch(e){}
   },
   hatch:function(r){
-    this.go();
-    var x=RKEYS.indexOf(r), s=this;
-    if(x<=1){ this.t(523,0.12); setTimeout(function(){ s.t(659,0.15)},80); }
-    else if(x===2){ this.t(523,0.1); setTimeout(function(){ s.t(659,0.1)},70); setTimeout(function(){ s.t(784,0.2)},140); }
-    else if(x===3){ this.t(659,0.1); setTimeout(function(){ s.t(784,0.1)},70); setTimeout(function(){ s.t(988,0.15)},140); setTimeout(function(){ s.t(1047,0.25)},210); }
-    else{ [523,659,784,988,1047,1175,1319].forEach(function(f,i){ setTimeout(function(){ s.t(f,0.2,'triangle',0.08)},i*60); }); }
+    this.go(); var x=RKEYS.indexOf(r), s=this;
+    if(x<=1){this.t(523,0.12);setTimeout(function(){s.t(659,0.15)},80);}
+    else if(x===2){this.t(523,0.1);setTimeout(function(){s.t(659,0.1)},70);setTimeout(function(){s.t(784,0.2)},140);}
+    else if(x===3){this.t(659,0.1);setTimeout(function(){s.t(784,0.1)},70);setTimeout(function(){s.t(988,0.15)},140);setTimeout(function(){s.t(1047,0.25)},210);}
+    else{[523,659,784,988,1047,1175,1319].forEach(function(f,i){setTimeout(function(){s.t(f,0.2,'triangle',0.08)},i*60);});}
   },
-  click:function(){ this.go(); this.t(800,0.05,'square',0.04); },
-  sell:function(){ this.go(); this.t(400,0.1,'sawtooth',0.05); },
-  up:function(){ this.go(); this.t(600,0.08); var s=this; setTimeout(function(){ s.t(900,0.12)},60); },
-  err:function(){ this.go(); this.t(200,0.2,'sawtooth',0.05); }
+  click:function(){this.go();this.t(800,0.05,'square',0.04);},
+  sell:function(){this.go();this.t(400,0.1,'sawtooth',0.05);},
+  up:function(){this.go();this.t(600,0.08);var s=this;setTimeout(function(){s.t(900,0.12)},60);},
+  err:function(){this.go();this.t(200,0.2,'sawtooth',0.05);}
 };
 
-// ==================== FUNCIONES UTILITARIAS ====================
+// ==================== UTILS ====================
 function fmt(n){
   if(n===undefined||n===null||isNaN(n)||!isFinite(n)) return '0';
   n=Number(n);
@@ -525,122 +656,92 @@ function fmt(n){
   if(n>=1e3) return (n/1e3).toFixed(1)+'K';
   return Math.floor(n).toLocaleString();
 }
-
-function esc(s){
-  var d=document.createElement('div');
-  d.textContent=s;
-  return d.innerHTML;
-}
-
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function toast(msg,type){
   var c=document.getElementById('toasts');
   var t=document.createElement('div');
   t.className='toast t-'+(type||'inf');
   t.textContent=msg;
   c.appendChild(t);
-  setTimeout(function(){
-    if(t.parentNode) t.parentNode.removeChild(t);
-  },3000);
+  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);
 }
-
 function floatM(amt){
-  var el=document.createElement('div');
-  el.className='fm';
+  var el=document.createElement('div');el.className='fm';
   el.textContent='+$'+fmt(amt);
-  el.style.left=(Math.random()*140+100)+'px';
-  el.style.top='65px';
+  el.style.left=(Math.random()*140+100)+'px';el.style.top='65px';
   document.getElementById('game').appendChild(el);
-  setTimeout(function(){
-    if(el.parentNode) el.parentNode.removeChild(el);
-  },1100);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1100);
 }
 
-// ==================== SISTEMA DE GUARDADO ====================
-var SAVE_KEY='PetSimUltra_v12';
+// ==================== CONFIRM DIALOG ====================
+function showConfirm(icon, title, msg, onYes) {
+  document.getElementById('confirmIcon').textContent = icon;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  confirmCallback = onYes;
+  document.getElementById('confirmBox').classList.add('show');
+}
+function hideConfirm() {
+  document.getElementById('confirmBox').classList.remove('show');
+  confirmCallback = null;
+}
 
+// ==================== SAVE/LOAD ====================
+var SAVE_KEY='PetSimUltra_v12';
 function save(){
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({
-      money:G.money,
-      rb:G.rb,
-      mult:G.mult,
-      pets:G.pets,
-      disc:G.disc,
-      pr:G.pr,
-      tot:G.tot,
-      te:G.te,
-      mut:G.mut,
-      nid:G.nid,
-      pname:G.pname,
-      autoOpen:G.autoOpen,
-      autoOn:G.autoOn,
-      playerId:G.playerId,
-      fbId:G.fbId
+      money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,
+      tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pname:G.pname,
+      autoOpen:G.autoOpen,autoOn:G.autoOn,playerId:G.playerId,fbId:G.fbId
     }));
   }catch(e){}
 }
-
 function load(){
-  // Limpiar versiones antiguas
-  for(var v=0;v<=11;v++){
-    try{ localStorage.removeItem('PetSimUltra'+(v>1?'_v'+v:'')); }catch(e){}
-  }
-  
+  for(var v=0;v<=11;v++){try{localStorage.removeItem('PetSimUltra'+(v>1?'_v'+v:''));}catch(e){}}
   var raw=null;
-  try{ raw=localStorage.getItem(SAVE_KEY); }catch(e){ return; }
+  try{raw=localStorage.getItem(SAVE_KEY);}catch(e){return;}
   if(!raw) return;
-  
   try{
     var d=JSON.parse(raw);
-    if(!d || typeof d.money!=='number') return;
-    
-    G.money = (isNaN(d.money)||!isFinite(d.money)) ? 10 : d.money;
-    G.rb = (typeof d.rb==='number'&&isFinite(d.rb)) ? Math.max(0,d.rb) : 0;
-    G.mult = (typeof d.mult==='number'&&isFinite(d.mult)&&d.mult>=1) ? d.mult : 1;
-    G.mut = !!d.mut;
-    G.tot = Math.max(0, d.tot||0);
-    G.te = Math.max(0, d.te||0);
-    G.nid = Math.max(1, d.nid||1);
-    G.pname = (typeof d.pname==='string'&&d.pname.length) ? d.pname.slice(0,14) : 'Mi Base';
-    G.autoOpen = !!d.autoOpen;
-    G.autoOn = !!d.autoOn;
-    G.playerId = (typeof d.playerId==='string') ? d.playerId : '';
-    G.fbId = (typeof d.fbId==='string') ? d.fbId : '';
-    
-    if(d.pr && typeof d.pr.basic==='number'){
+    if(!d||typeof d.money!=='number') return;
+    G.money=(isNaN(d.money)||!isFinite(d.money))?10:d.money;
+    G.rb=(typeof d.rb==='number'&&isFinite(d.rb))?Math.max(0,d.rb):0;
+    G.mult=(typeof d.mult==='number'&&isFinite(d.mult)&&d.mult>=1)?d.mult:1;
+    G.mut=!!d.mut;G.tot=Math.max(0,d.tot||0);G.te=Math.max(0,d.te||0);
+    G.nid=Math.max(1,d.nid||1);
+    G.pname=(typeof d.pname==='string'&&d.pname.length)?d.pname.slice(0,14):'Mi Base';
+    G.autoOpen=!!d.autoOpen;G.autoOn=!!d.autoOn;
+    G.playerId=(typeof d.playerId==='string')?d.playerId:'';
+    G.fbId=(typeof d.fbId==='string')?d.fbId:'';
+    if(d.pr&&typeof d.pr.basic==='number'){
       G.pr=d.pr;
       if(!G.pr.void) G.pr.void=50000;
       if(!G.pr.divine) G.pr.divine=250000;
       if(!G.pr.infernal) G.pr.infernal=1000000;
     }
-    
-    G.disc = Array.isArray(d.disc) ? d.disc : [];
-    G.pets = [];
-    
+    G.disc=Array.isArray(d.disc)?d.disc:[];
+    G.pets=[];
     if(Array.isArray(d.pets)){
       for(var i=0;i<d.pets.length;i++){
         var p=d.pets[i];
-        if(!p || !p.i || !p.n || !p.r) continue;
-        var be = (typeof p.be==='number'&&isFinite(p.be)&&p.be>0) ? p.be : (p.e||1);
-        var lv = (typeof p.lv==='number'&&p.lv>=1) ? Math.min(99,Math.floor(p.lv)) : 1;
-        var id = (typeof p.id==='number'&&p.id>0) ? Math.floor(p.id) : G.nid++;
+        if(!p||!p.i||!p.n||!p.r) continue;
+        var be=(typeof p.be==='number'&&isFinite(p.be)&&p.be>0)?p.be:(p.e||1);
+        var lv=(typeof p.lv==='number'&&p.lv>=1)?Math.min(99,Math.floor(p.lv)):1;
+        var id=(typeof p.id==='number'&&p.id>0)?Math.floor(p.id):G.nid++;
         G.pets.push({i:p.i,n:p.n,r:p.r,be:be,lv:lv,id:id});
       }
     }
   }catch(e){}
 }
-
 function resetGame(){
-  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
-  var oldFb=G.fbId, oldPid=G.playerId;
-  G={
-    money:10,rb:0,mult:1,pets:[],disc:[],
+  try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+  var oldPid=G.playerId;
+  G={money:10,rb:0,mult:1,pets:[],disc:[],
     pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
     tot:0,te:0,mut:false,nid:1,pname:'Mi Base',
-    autoOpen:false,autoOn:false,playerId:oldPid,fbId:oldFb
-  };
-  selEgg='basic';
-  rbConf=false;
+    autoOpen:false,autoOn:false,playerId:oldPid,fbId:oldPid};
+  selEgg='basic';rbConf=false;
   if(rbTmr) clearTimeout(rbTmr);
   document.getElementById('rkName').value='Mi Base';
   document.getElementById('rkPlayerId').value=G.playerId;
@@ -648,74 +749,45 @@ function resetGame(){
   toast('Juego reiniciado','inf');
 }
 
-// ==================== LÓGICA DEL JUEGO ====================
-function petEarn(p){
-  return (p.be||1)*(1+0.2*((p.lv||1)-1))*(G.mult||1);
-}
-
-function totInc(){
-  var s=0;
-  for(var i=0;i<G.pets.length;i++) s+=petEarn(G.pets[i]);
-  return s;
-}
-
-function rbCost(){
-  return Math.floor(500000*Math.pow(2,G.rb));
-}
-
-function upCost(p){
-  return Math.floor((p.be||1)*25*(p.lv||1));
-}
+// ==================== GAME LOGIC ====================
+function petEarn(p){return (p.be||1)*(1+0.2*((p.lv||1)-1))*(G.mult||1);}
+function totInc(){var s=0;for(var i=0;i<G.pets.length;i++) s+=petEarn(G.pets[i]);return s;}
+function rbCost(){return Math.floor(500000*Math.pow(2,G.rb));}
+function upCost(p){return Math.floor((p.be||1)*25*(p.lv||1));}
 
 function roll(egg){
-  var w=WEIGHTS[egg];
-  if(!w) return PETS[0];
-  
-  var keys=Object.keys(w), total=0;
+  var w=WEIGHTS[egg];if(!w) return PETS[0];
+  var keys=Object.keys(w),total=0;
   for(var i=0;i<keys.length;i++) total+=w[keys[i]];
-  
-  var r=Math.random()*total, chosen=keys[0];
-  for(var i=0;i<keys.length;i++){
-    r-=w[keys[i]];
-    if(r<=0){ chosen=keys[i]; break; }
-  }
-  
+  var r=Math.random()*total,chosen=keys[0];
+  for(var i=0;i<keys.length;i++){r-=w[keys[i]];if(r<=0){chosen=keys[i];break;}}
   var pool=[];
   for(var i=0;i<PETS.length;i++){
-    if(PETS[i].r===chosen && PETS[i].eg.indexOf(egg)!==-1) pool.push(PETS[i]);
+    if(PETS[i].r===chosen&&PETS[i].eg.indexOf(egg)!==-1) pool.push(PETS[i]);
   }
-  
   if(!pool.length){
-    for(var i=0;i<PETS.length;i++){
-      if(PETS[i].eg.indexOf(egg)!==-1) return PETS[i];
-    }
+    for(var i=0;i<PETS.length;i++){if(PETS[i].eg.indexOf(egg)!==-1) return PETS[i];}
     return PETS[0];
   }
-  
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
 function openEgg(silent){
   var cost=G.pr[selEgg];
   if(G.money<cost){
-    if(!silent){ snd.err(); toast('Sin dinero suficiente','err'); }
-    if(G.autoOn && G.money<cost){ G.autoOn=false; updateUI(); }
+    if(!silent){snd.err();toast('Sin dinero suficiente','err');}
+    if(G.autoOn&&G.money<cost){G.autoOn=false;updateUI();}
     return false;
   }
-  
   G.money-=cost;
   var scales={basic:1.15,golden:1.2,cosmic:1.25,void:1.28,divine:1.3,infernal:1.35};
   G.pr[selEgg]=Math.floor(G.pr[selEgg]*(scales[selEgg]||1.15));
-  
   var tpl=roll(selEgg);
   var np={i:tpl.i,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++};
-  G.pets.push(np);
-  G.tot++;
+  G.pets.push(np);G.tot++;
   if(G.disc.indexOf(tpl.n)===-1) G.disc.push(tpl.n);
-  
-  save();
-  updateUI();
-  if(!silent){ snd.go(); showHatch(np); }
+  save();updateUI();
+  if(!silent){snd.go();showHatch(np);}
   return true;
 }
 
@@ -723,39 +795,21 @@ function showHatch(pet){
   var ov=document.getElementById('overlay');
   var egg=document.getElementById('oegg');
   var ico=document.getElementById('oicon');
-  
   ov.style.display='flex';
-  
   var clsMap={basic:'egg-b',golden:'egg-g',cosmic:'egg-c',void:'egg-v',divine:'egg-d',infernal:'egg-i'};
-  egg.className=clsMap[selEgg]||'egg-b';
-  egg.style.display='block';
-  ico.style.display='none';
-  ico.className='';
-  
+  egg.className=clsMap[selEgg]||'egg-b';egg.style.display='block';
+  ico.style.display='none';ico.className='';
   document.getElementById('oname').textContent='';
-  document.getElementById('orar').textContent='';
-  document.getElementById('orar').style.color='';
+  document.getElementById('orar').textContent='';document.getElementById('orar').style.color='';
   document.getElementById('oinfo').textContent='';
-  
-  egg.classList.add('shk');
-  snd.hatch(pet.r);
-  
-  var tier=RKEYS.indexOf(pet.r);
-  var dur=tier>=3?2000:1500;
-  
+  egg.classList.add('shk');snd.hatch(pet.r);
+  var tier=RKEYS.indexOf(pet.r),dur=tier>=3?2000:1500;
   setTimeout(function(){
-    egg.classList.remove('shk');
-    egg.classList.add('brk');
-    
+    egg.classList.remove('shk');egg.classList.add('brk');
     setTimeout(function(){
-      egg.style.display='none';
-      egg.classList.remove('brk');
-      
-      ico.style.display='block';
-      ico.textContent=pet.i;
-      ico.style.color=RCOL[pet.r]||'#fff';
-      ico.classList.add('rev');
-      
+      egg.style.display='none';egg.classList.remove('brk');
+      ico.style.display='block';ico.textContent=pet.i;
+      ico.style.color=RCOL[pet.r]||'#fff';ico.classList.add('rev');
       document.getElementById('oname').textContent=pet.n;
       document.getElementById('orar').textContent=RNAME[pet.r]||pet.r;
       document.getElementById('orar').style.color=RCOL[pet.r]||'#fff';
@@ -763,243 +817,169 @@ function showHatch(pet){
     },500);
   },dur);
 }
-
 function closeHatch(){
   document.getElementById('overlay').style.display='none';
   document.getElementById('oegg').className='';
-  document.getElementById('oicon').className='';
-  document.getElementById('oicon').style.display='none';
+  document.getElementById('oicon').className='';document.getElementById('oicon').style.display='none';
 }
 
 function doUpgrade(id){
   var pet=null;
-  for(var i=0;i<G.pets.length;i++){
-    if(G.pets[i].id===id){ pet=G.pets[i]; break; }
-  }
-  
-  if(!pet || pet.lv>=99) return;
-  
+  for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){pet=G.pets[i];break;}}
+  if(!pet||pet.lv>=99) return;
   var c=upCost(pet);
-  if(G.money<c){ snd.err(); toast('Dinero insuficiente','err'); return; }
-  
-  G.money-=c;
-  pet.lv++;
-  snd.up();
-  toast(pet.n+' Nivel '+pet.lv,'ok');
-  save();
-  updateUI();
+  if(G.money<c){snd.err();toast('Dinero insuficiente','err');return;}
+  G.money-=c;pet.lv++;snd.up();toast(pet.n+' Nivel '+pet.lv,'ok');save();updateUI();
 }
-
 function doSell(id){
   var idx=-1;
-  for(var i=0;i<G.pets.length;i++){
-    if(G.pets[i].id===id){ idx=i; break; }
-  }
-  
+  for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break;}}
   if(idx===-1) return;
-  
-  var pet=G.pets[idx];
-  var val=Math.floor(petEarn(pet)*10);
-  
-  G.money+=val;
-  G.pets.splice(idx,1);
-  snd.sell();
-  toast(pet.n+' vendido $'+fmt(val),'inf');
-  save();
-  updateUI();
+  var pet=G.pets[idx];var val=Math.floor(petEarn(pet)*10);
+  G.money+=val;G.pets.splice(idx,1);snd.sell();
+  toast(pet.n+' vendido $'+fmt(val),'inf');save();updateUI();
 }
-
 function doRb(){
-  snd.go();
-  var cost=rbCost();
-  
+  snd.go();var cost=rbCost();
   if(rbConf){
-    clearTimeout(rbTmr);
-    rbConf=false;
-    G.rb++;
-    G.mult*=1.8;
-    G.money=10;
-    G.pets=[];
+    clearTimeout(rbTmr);rbConf=false;
+    G.rb++;G.mult*=1.8;G.money=10;G.pets=[];
     G.pr={basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000};
-    snd.hatch('og');
-    toast('REBIRTH '+G.rb+' — x'+G.mult.toFixed(1),'rwd');
-    save();
-    updateUI();
+    snd.hatch('og');toast('REBIRTH '+G.rb+' — x'+G.mult.toFixed(1),'rwd');save();updateUI();
   } else {
-    if(G.money<cost){ snd.err(); toast('Necesitas $'+fmt(cost),'err'); return; }
-    
+    if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return;}
     rbConf=true;
     var btn=document.getElementById('btnRb');
     btn.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';
-    btn.classList.add('yes');
-    btn.disabled=false;
-    snd.click();
-    
-    rbTmr=setTimeout(function(){
-      rbConf=false;
-      updateUI();
-    },3000);
+    btn.classList.add('yes');btn.disabled=false;snd.click();
+    rbTmr=setTimeout(function(){rbConf=false;updateUI();},3000);
   }
 }
-
 function handleAuto(){
   snd.click();
-  
   if(!G.autoOpen){
-    if(G.money<1e9){ snd.err(); toast('Necesitas $1.0B','err'); return; }
-    
-    G.money-=1e9;
-    G.autoOpen=true;
-    G.autoOn=true;
-    toast('Auto Apertura activada!','rwd');
-    save();
-    updateUI();
+    if(G.money<1e9){snd.err();toast('Necesitas $1.0B','err');return;}
+    G.money-=1e9;G.autoOpen=true;G.autoOn=true;
+    toast('Auto Apertura activada!','rwd');save();updateUI();
   } else {
-    G.autoOn=!G.autoOn;
-    toast('Auto: '+(G.autoOn?'ON':'OFF'),'inf');
-    save();
-    updateUI();
+    G.autoOn=!G.autoOn;toast('Auto: '+(G.autoOn?'ON':'OFF'),'inf');save();updateUI();
   }
 }
 
-// ==================== PLAYER ID GLOBAL ====================
+// ==================== PLAYER ID ====================
 function ensurePlayerId(){
-  if(!G.playerId || G.playerId.trim().length < 3){
-    G.playerId = 'player_' + Math.random().toString(36).substr(2,6) + Date.now().toString(36).substr(-4);
+  if(!G.playerId||G.playerId.trim().length<3){
+    G.playerId='player_'+Math.random().toString(36).substr(2,6)+Date.now().toString(36).substr(-4);
   }
-  G.playerId = G.playerId.replace(/[^a-zA-Z0-9_]/g, '_').substring(0,20);
-  G.fbId = G.playerId;
-  save();
-  return G.playerId;
+  G.playerId=G.playerId.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);
+  G.fbId=G.playerId;save();return G.playerId;
 }
-
 function copyPlayerId(){
-  var idInput = document.getElementById('rkPlayerId');
-  var idText = idInput.value || G.playerId;
-  
-  if(idText && navigator.clipboard){
+  var idText=G.playerId;
+  if(idText&&navigator.clipboard){
     navigator.clipboard.writeText(idText).then(function(){
-      toast('ID copiado: ' + idText, 'ok');
-      var btn = document.getElementById('btnCopyId');
-      btn.innerHTML = '<i class="fas fa-check"></i>';
-      setTimeout(function(){ btn.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
-    }).catch(function(){
-      toast('Error al copiar', 'err');
-    });
+      toast('ID copiado: '+idText,'ok');
+      var btn=document.getElementById('btnCopyId');
+      btn.innerHTML='<i class="fas fa-check"></i>';
+      setTimeout(function(){btn.innerHTML='<i class="fas fa-copy"></i>';},1500);
+    }).catch(function(){document.getElementById('rkPlayerId').select();document.execCommand('copy');toast('ID copiado','ok');});
   } else {
-    idInput.select();
-    document.execCommand('copy');
-    toast('ID copiado: ' + idText, 'ok');
+    document.getElementById('rkPlayerId').select();document.execCommand('copy');toast('ID copiado','ok');
   }
 }
 
-// ==================== FIREBASE ====================
-function initFirebase(){
-  if(!firebaseConfig.databaseURL || firebaseConfig.databaseURL.indexOf('TU_PROYECTO')!==-1){
-    fbOk=false;
-    setLive(false);
-    return;
-  }
-  
+// ==================== STORAGE RANKING ====================
+var RANK_PREFIX = 'rank_';
+
+async function pushRank(){
+  if(!G.playerId) return;
   try{
-    firebase.initializeApp(firebaseConfig);
-    fbDb=firebase.database();
-    fbOk=true;
-    setLive(true);
-    
-    ensurePlayerId();
-    
-    fbDb.ref('rankings').orderByChild('earn').limitToLast(100).on('value',function(snap){
-      var data=snap.val()||{};
-      rankCache=[];
-      var keys=Object.keys(data);
-      
-      for(var i=0;i<keys.length;i++){
-        var d=data[keys[i]];
-        rankCache.push({
-          id:keys[i],
-          name:(typeof d.name==='string')?d.name:'???',
-          earn:typeof d.earn==='number'?d.earn:0,
-          rb:typeof d.rb==='number'?d.rb:0,
-          pets:typeof d.pets==='number'?d.pets:0,
-          isMe:(keys[i]===G.fbId)
-        });
-      }
-      
-      rankCache.sort(function(a,b){ return b.earn-a.earn; });
-      if(activeTab==='rank') renderRank();
-    });
-    
-    toast('Ranking global conectado','ok');
+    var entry = {
+      name: G.pname||'Mi Base',
+      earn: Math.floor(totInc()),
+      rb: G.rb,
+      pets: G.pets.length,
+      ts: Date.now(),
+      playerId: G.playerId
+    };
+    await window.storage.set(RANK_PREFIX+G.playerId, JSON.stringify(entry), true);
   }catch(e){
-    fbOk=false;
-    setLive(false);
+    console.error('pushRank error:',e);
   }
 }
 
-function setLive(on){
-  document.getElementById('rkDot').className='rk-live-dot '+(on?'on':'off');
-  var t=document.getElementById('rkTxt');
-  t.className='rk-live-txt'+(on?' on':'');
-  t.textContent=on?'En vivo':'Sin conexion';
+async function fetchRank(){
+  if(rankFetching) return;
+  rankFetching=true;
+  setRankStatus('loading','Cargando ranking...');
+  try{
+    var keysResult = await window.storage.list(RANK_PREFIX, true);
+    if(!keysResult||!Array.isArray(keysResult.keys)){
+      rankCache=[];setRankStatus('ok','0 jugadores');rankFetching=false;return;
+    }
+    var newCache=[];
+    for(var i=0;i<keysResult.keys.length;i++){
+      try{
+        var result = await window.storage.get(keysResult.keys[i], true);
+        if(result&&result.value){
+          var d=JSON.parse(result.value);
+          if(d&&d.playerId){
+            newCache.push({
+              id:d.playerId,
+              name:(typeof d.name==='string')?d.name:'???',
+              earn:typeof d.earn==='number'?d.earn:0,
+              rb:typeof d.rb==='number'?d.rb:0,
+              pets:typeof d.pets==='number'?d.pets:0,
+              isMe:(d.playerId===G.playerId)
+            });
+          }
+        }
+      }catch(e){}
+    }
+    newCache.sort(function(a,b){return b.earn-a.earn;});
+    rankCache=newCache;
+    setRankStatus('ok',rankCache.length+' jugadores · Actualizado');
+    if(activeTab==='rank') renderRank();
+    if(isAdmin) renderAdminPanel();
+  }catch(e){
+    setRankStatus('err','Error al cargar');
+    console.error('fetchRank error:',e);
+  }
+  rankFetching=false;
 }
 
-function pushRank(){
-  if(!fbOk || !fbDb || !G.fbId) return;
-  
-  fbDb.ref('rankings/'+G.fbId).set({
-    name: G.pname || 'Mi Base',
-    earn: Math.floor(totInc()),
-    rb: G.rb,
-    pets: G.pets.length,
-    ts: firebase.database.ServerValue.TIMESTAMP,
-    playerId: G.playerId
-  });
+function setRankStatus(type,msg){
+  var el=document.getElementById('rkStatus');
+  var txt=document.getElementById('rkStatusTxt');
+  if(!el||!txt) return;
+  el.className='rk-status '+type;
+  txt.textContent=msg;
+  el.innerHTML=(type==='loading'?'<span class="rk-spinner"></span>':'<i class="fas fa-'+(type==='ok'?'circle-check':type==='err'?'circle-exclamation':'clock')+'"></i>')+' <span id="rkStatusTxt">'+msg+'</span>';
 }
 
 function renderRank(){
   var myEarn=Math.floor(totInc());
   var entries=rankCache.slice();
   var found=false;
-  
   for(var i=0;i<entries.length;i++){
-    if(entries[i].id===G.fbId){
-      entries[i].isMe=true;
-      found=true;
-    } else {
-      entries[i].isMe=false;
-    }
+    if(entries[i].id===G.playerId){entries[i].isMe=true;found=true;}
+    else entries[i].isMe=false;
   }
-  
-  if(!found && G.fbId){
-    entries.push({
-      name:G.pname||'Mi Base',
-      earn:myEarn,
-      rb:G.rb,
-      pets:G.pets.length,
-      isMe:true,
-      id:G.fbId
-    });
+  if(!found&&G.playerId){
+    entries.push({name:G.pname||'Mi Base',earn:myEarn,rb:G.rb,pets:G.pets.length,isMe:true,id:G.playerId});
   }
-  
-  entries.sort(function(a,b){ return b.earn-a.earn; });
-
+  entries.sort(function(a,b){return b.earn-a.earn;});
   var myPos=-1;
-  for(var i=0;i<entries.length;i++){
-    if(entries[i].isMe){ myPos=i+1; break; }
-  }
-  
+  for(var i=0;i<entries.length;i++){if(entries[i].isMe){myPos=i+1;break;}}
   document.getElementById('rkPos').textContent='#'+(myPos>0?myPos:'--');
   document.getElementById('rkMyEarn').textContent='$'+fmt(myEarn)+'/s';
-
   var html='';
   if(!entries.length){
-    html+='<div class="empty"><i class="fas fa-trophy"></i><p>Sin jugadores todavia</p></div>';
+    html='<div class="empty"><i class="fas fa-trophy"></i><p>Sin jugadores todavia<br><small style="font-size:9px;opacity:.6">Juega un rato para aparecer</small></p></div>';
   }
-  
   var top=entries.slice(0,20);
   for(var i=0;i<top.length;i++){
-    var e=top[i], pos=i+1, posC=pos<=3?' p'+pos:'', meC=e.isMe?' me':'';
+    var e=top[i],pos=i+1,posC=pos<=3?' p'+pos:'',meC=e.isMe?' me':'';
     html+='<div class="rk-i'+meC+'">'+
       '<div class="rk-pos'+posC+'">'+pos+'</div>'+
       '<div class="rk-body">'+
@@ -1014,110 +994,150 @@ function renderRank(){
       '</div>'+
     '</div>';
   }
-  
   document.getElementById('rkList').innerHTML=html;
 }
 
-// ==================== RENDERIZADO DE UI ====================
+// ==================== ADMIN PANEL ====================
+function showAdminPanel(){
+  isAdmin=true;
+  fetchRank().then(function(){renderAdminPanel();});
+  document.getElementById('adminOverlay').classList.add('show');
+  toast('Bienvenido, Administrador 🛡️','adm');
+}
+function hideAdminPanel(){
+  document.getElementById('adminOverlay').classList.remove('show');
+}
+
+function renderAdminPanel(){
+  var entries=rankCache.slice().sort(function(a,b){return b.earn-a.earn;});
+  var totalPets=0;
+  for(var i=0;i<entries.length;i++) totalPets+=entries[i].pets;
+  document.getElementById('adminTotalPlayers').textContent=entries.length;
+  document.getElementById('adminTopEarn').textContent=entries.length?'$'+fmt(entries[0].earn)+'/s':'$0';
+  document.getElementById('adminTotalPets').textContent=totalPets;
+  var html='';
+  if(!entries.length){
+    html='<div class="admin-empty"><i class="fas fa-users-slash" style="font-size:24px;display:block;margin-bottom:8px;opacity:.3"></i>No hay jugadores todavia</div>';
+  }
+  for(var i=0;i<entries.length;i++){
+    var e=entries[i],pos=i+1;
+    var meTag=e.isMe?' <span style="font-size:7px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 4px;border-radius:3px;">TU</span>':'';
+    var ts=e.ts?new Date(e.ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'';
+    html+='<div class="admin-player">'+
+      '<span class="admin-pos">'+pos+'</span>'+
+      '<div class="admin-player-info">'+
+        '<span class="admin-player-name">'+esc(e.name)+meTag+'</span>'+
+        '<span class="admin-player-sub">RB '+e.rb+' · '+e.pets+' mascotas'+(ts?' · '+ts:'')+'</span>'+
+        '<span class="admin-player-id">'+esc(e.id)+'</span>'+
+      '</div>'+
+      '<span class="admin-player-earn">$'+fmt(e.earn)+'/s</span>'+
+      (e.isMe?'<span style="width:22px;flex-shrink:0"></span>':'<button class="admin-del" data-pid="'+esc(e.id)+'" title="Eliminar jugador"><i class="fas fa-trash-can"></i></button>')+
+    '</div>';
+  }
+  document.getElementById('adminList').innerHTML=html;
+  
+  // Delete listeners
+  document.querySelectorAll('.admin-del').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var pid=this.getAttribute('data-pid');
+      var ename=this.closest('.admin-player').querySelector('.admin-player-name').textContent.replace('TU','').trim();
+      showConfirm('🗑️','Eliminar jugador','Eliminar a "'+ename+'" del ranking? No se puede deshacer.',function(){
+        adminDeletePlayer(pid);
+      });
+    });
+  });
+}
+
+async function adminDeletePlayer(playerId){
+  try{
+    await window.storage.delete(RANK_PREFIX+playerId, true);
+    toast('Jugador eliminado del ranking','ok');
+    await fetchRank();
+    renderAdminPanel();
+  }catch(e){
+    toast('Error al eliminar: '+e.message,'err');
+  }
+}
+
+async function adminClearAll(){
+  try{
+    var keysResult = await window.storage.list(RANK_PREFIX, true);
+    if(keysResult&&Array.isArray(keysResult.keys)){
+      for(var i=0;i<keysResult.keys.length;i++){
+        try{await window.storage.delete(keysResult.keys[i], true);}catch(e){}
+      }
+    }
+    rankCache=[];
+    toast('Ranking limpiado completamente','ok');
+    renderRank();renderAdminPanel();
+  }catch(e){
+    toast('Error al limpiar: '+e.message,'err');
+  }
+}
+
+// ==================== ADMIN ACCESS via title clicks ====================
+function handleTitleClick(){
+  titleClickCount++;
+  clearTimeout(titleClickTimer);
+  titleClickTimer=setTimeout(function(){titleClickCount=0;},1500);
+  if(titleClickCount>=5){
+    titleClickCount=0;
+    var pwd=prompt('🔐 Contraseña de administrador:');
+    if(pwd===null) return;
+    if(pwd===ADMIN_PASS){
+      showAdminPanel();
+    } else {
+      snd.err();toast('Contraseña incorrecta ❌','err');
+    }
+  }
+}
+
+// ==================== UI RENDERING ====================
 function updateUI(){
-  // Actualizar stats principales
   document.getElementById('sMoney').textContent='$'+fmt(G.money);
   document.getElementById('sInc').textContent='$'+fmt(totInc())+'/s';
   document.getElementById('sPets').textContent=G.pets.length;
-  
-  // Actualizar precios de huevos
   var eggIds={basic:'pB',golden:'pG',cosmic:'pC',void:'pV',divine:'pD',infernal:'pI'};
-  for(var k in eggIds){
-    var el=document.getElementById(eggIds[k]);
-    if(el) el.textContent='$'+fmt(G.pr[k]);
-  }
-  
-  // Botón comprar huevo
+  for(var k in eggIds){var el=document.getElementById(eggIds[k]);if(el) el.textContent='$'+fmt(G.pr[k]);}
   var bb=document.getElementById('btnBuy');
-  if(G.money>=G.pr[selEgg]){
-    bb.classList.add('can');
-    bb.classList.remove('no');
-  } else {
-    bb.classList.remove('can');
-    bb.classList.add('no');
-  }
-  
-  // Botón auto apertura
+  if(G.money>=G.pr[selEgg]){bb.classList.add('can');bb.classList.remove('no');}
+  else{bb.classList.remove('can');bb.classList.add('no');}
   var ba=document.getElementById('btnAuto');
   if(!G.autoOpen){
     ba.innerHTML='<i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)';
-    if(G.money>=1e9){
-      ba.classList.add('can');
-      ba.classList.remove('no','on');
-    } else {
-      ba.classList.add('no');
-      ba.classList.remove('can','on');
-    }
+    if(G.money>=1e9){ba.classList.add('can');ba.classList.remove('no','on');}
+    else{ba.classList.add('no');ba.classList.remove('can','on');}
   } else {
-    if(G.autoOn){
-      ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';
-      ba.classList.add('on');
-      ba.classList.remove('no','can');
-    } else {
-      ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';
-      ba.classList.add('can');
-      ba.classList.remove('on','no');
-    }
+    if(G.autoOn){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can');}
+    else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no');}
   }
-  
-  // Botón rebirth
   if(!rbConf){
     var rb=document.getElementById('btnRb');
     rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCost())+')';
-    rb.disabled=G.money<rbCost();
-    rb.classList.remove('yes');
+    rb.disabled=G.money<rbCost();rb.classList.remove('yes');
   }
-  
   renderPets();
   if(activeTab==='rank') renderRank();
 }
 
 function renderPets(){
   var el=document.getElementById('petList');
-  
-  if(!G.pets.length){
-    el.innerHTML='<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo para empezar</p></div>';
-    return;
-  }
-  
-  var sorted=G.pets.slice().sort(function(a,b){
-    var rd=(RORD[b.r]||0)-(RORD[a.r]||0);
-    return rd!==0 ? rd : petEarn(b)-petEarn(a);
-  });
-  
+  if(!G.pets.length){el.innerHTML='<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo para empezar</p></div>';return;}
+  var sorted=G.pets.slice().sort(function(a,b){var rd=(RORD[b.r]||0)-(RORD[a.r]||0);return rd!==0?rd:petEarn(b)-petEarn(a);});
   var h='';
   for(var i=0;i<sorted.length;i++){
-    var p=sorted[i];
-    var earn=petEarn(p);
-    var uc=p.lv<99 ? upCost(p) : 0;
-    
+    var p=sorted[i],earn=petEarn(p),uc=p.lv<99?upCost(p):0;
     h+='<div class="pc '+p.r+'">'+
-      '<div class="pc-l">'+
-        '<span class="pc-i">'+p.i+'</span>'+
-        '<div class="pc-t">'+
-          '<span class="pc-n">'+p.n+'</span>'+
-          '<span class="pc-m">Nvl.'+p.lv+' · '+(RNAME[p.r]||p.r)+(uc?' · Up $'+fmt(uc):'')+'</span>'+
-        '</div>'+
-      '</div>'+
-      '<div class="pc-r">'+
-        '<span class="pc-e">$'+fmt(earn)+'/s</span>'+
-        '<div class="pc-a">';
-        
-    if(p.lv<99){
-      h+='<button class="ab ab-u" data-act="up" data-id="'+p.id+'"><i class="fas fa-arrow-up"></i></button>';
-    }
-    
+      '<div class="pc-l"><span class="pc-i">'+p.i+'</span>'+
+      '<div class="pc-t"><span class="pc-n">'+p.n+'</span>'+
+      '<span class="pc-m">Nvl.'+p.lv+' · '+(RNAME[p.r]||p.r)+(uc?' · Up $'+fmt(uc):'')+'</span>'+
+      '</div></div>'+
+      '<div class="pc-r"><span class="pc-e">$'+fmt(earn)+'/s</span>'+
+      '<div class="pc-a">';
+    if(p.lv<99) h+='<button class="ab ab-u" data-act="up" data-id="'+p.id+'"><i class="fas fa-arrow-up"></i></button>';
     h+='<button class="ab ab-s" data-act="sell" data-id="'+p.id+'"><i class="fas fa-coins"></i></button>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
+      '</div></div></div>';
   }
-  
   el.innerHTML=h;
 }
 
@@ -1125,197 +1145,148 @@ function renderIdx(){
   var pct=Math.round((G.disc.length/PETS.length)*100);
   document.getElementById('idxPct').textContent=pct+'%';
   document.getElementById('idxBar').style.width=pct+'%';
-  
-  var sorted=PETS.slice().sort(function(a,b){ return (RORD[a.r]||0)-(RORD[b.r]||0); });
-  
+  var sorted=PETS.slice().sort(function(a,b){return(RORD[a.r]||0)-(RORD[b.r]||0);});
   var h='';
   for(var i=0;i<sorted.length;i++){
-    var p=sorted[i];
-    var d=G.disc.indexOf(p.n)!==-1;
+    var p=sorted[i],d=G.disc.indexOf(p.n)!==-1;
     h+='<div class="ii '+p.r+(d?'':' off')+'">'+
       '<span class="ic">'+(d?p.i:'?')+'</span>'+
       '<span class="in">'+(d?p.n:'???')+'</span>'+
-      '<span class="ir '+p.r+'">'+(RNAME[p.r]||p.p)+'</span>'+
-    '</div>';
+      '<span class="ir '+p.r+'">'+(RNAME[p.r]||p.r)+'</span></div>';
   }
-  
   document.getElementById('idxList').innerHTML=h;
 }
 
-// ==================== NAVEGACIÓN ====================
+// ==================== NAVIGATION ====================
 function setTab(t){
-  snd.click();
-  activeTab=t;
-  
+  snd.click();activeTab=t;
   var panels=document.querySelectorAll('.panel');
   var btns=document.querySelectorAll('.tab');
-  
   for(var i=0;i<panels.length;i++) panels[i].classList.remove('on');
   for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
-  
   var map={game:'pGame',index:'pIndex',rank:'pRank'};
-  var pel=document.getElementById(map[t]);
-  if(pel) pel.classList.add('on');
-  
-  var bel=document.querySelector('.tab[data-t="'+t+'"]');
-  if(bel) bel.classList.add('on');
-  
+  var pel=document.getElementById(map[t]);if(pel) pel.classList.add('on');
+  var bel=document.querySelector('.tab[data-t="'+t+'"]');if(bel) bel.classList.add('on');
   if(t==='index') renderIdx();
   if(t==='rank'){
     renderRank();
     document.getElementById('rkPlayerId').value=G.playerId;
+    var now=Date.now();
+    if(now-rankLastFetch>20000){rankLastFetch=now;fetchRank();}
   }
 }
-
 function setEgg(e){
-  snd.click();
-  selEgg=e;
-  
-  var btns=document.querySelectorAll('.egg');
-  for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
-  
-  var bel=document.querySelector('.egg[data-e="'+e+'"]');
-  if(bel) bel.classList.add('on');
-  
+  snd.click();selEgg=e;
+  var btns=document.querySelectorAll('.egg');for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
+  var bel=document.querySelector('.egg[data-e="'+e+'"]');if(bel) bel.classList.add('on');
   updateUI();
 }
 
-// ==================== INICIALIZACIÓN ====================
+// ==================== INIT ====================
 function init(){
   try{
     load();
     ensurePlayerId();
-    
-    // Configurar input de nombre
     var nameInput=document.getElementById('rkName');
     nameInput.value=G.pname||'Mi Base';
-    
-    // Configurar input de Player ID
     var idInput=document.getElementById('rkPlayerId');
     idInput.value=G.playerId;
-    
-    // Event listeners - NOMBRE
+
+    // Nombre
     nameInput.addEventListener('input',function(){
       G.pname=this.value.trim().slice(0,14)||'Mi Base';
-      save();
-      if(activeTab==='rank') renderRank();
+      save();if(activeTab==='rank') renderRank();
     });
-    nameInput.addEventListener('click',function(e){ e.stopPropagation(); });
+    nameInput.addEventListener('click',function(e){e.stopPropagation();});
     
-    // Event listeners - PLAYER ID
+    // Player ID
     idInput.addEventListener('input',function(){
-      var newId=this.value.replace(/[^a-zA-Z0-9_]/g, '_').substring(0,20);
-      this.value=newId;
-      G.playerId=newId;
-      G.fbId=newId;
-      save();
+      var newId=this.value.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);
+      this.value=newId;G.playerId=newId;G.fbId=newId;save();
     });
-    idInput.addEventListener('click',function(e){ e.stopPropagation(); });
-    
-    // Botón copiar ID
-    document.getElementById('btnCopyId').addEventListener('click',function(e){
-      e.stopPropagation();
-      copyPlayerId();
-    });
-    
-    // Botón mute
+    idInput.addEventListener('click',function(e){e.stopPropagation();});
+    document.getElementById('btnCopyId').addEventListener('click',function(e){e.stopPropagation();copyPlayerId();});
+
+    // Mute
     var mb=document.getElementById('btnMute');
     mb.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';
-    mb.onclick=function(){
-      G.mut=!G.mut;
-      this.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';
-      save();
-    };
-    
-    // Botón reset
+    mb.onclick=function(){G.mut=!G.mut;this.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';save();};
+
+    // Reset
     document.getElementById('btnReset').onclick=function(){
-      if(confirm('Reiniciar todo el progreso?\n\nTu Player ID se conservara para mantener tu ranking global.')){
-        resetGame();
-      }
+      showConfirm('⚠️','Reiniciar Juego','Perderás todo el progreso. Tu Player ID se mantendrá para el ranking global.',function(){resetGame();});
     };
-    
-    // Tabs de navegación
+
+    // Title: 5 clicks para admin
+    document.getElementById('gameTitle').addEventListener('click',handleTitleClick);
+
+    // Tabs
     document.getElementById('navTabs').onclick=function(ev){
-      var btn=ev.target.closest('.tab');
-      if(btn) setTab(btn.getAttribute('data-t'));
+      var btn=ev.target.closest('.tab');if(btn) setTab(btn.getAttribute('data-t'));
     };
     
-    // Selección de huevos
+    // Eggs
     document.getElementById('navEggs').onclick=function(ev){
-      var btn=ev.target.closest('.egg');
-      if(btn) setEgg(btn.getAttribute('data-e'));
+      var btn=ev.target.closest('.egg');if(btn) setEgg(btn.getAttribute('data-e'));
     };
-    
-    // Botón COMPRAR HUEVO
-    document.getElementById('btnBuy').onclick=function(){
-      openEgg(false);
-    };
-    
-    // Botón AUTO APERTURA
+
+    // Buttons
+    document.getElementById('btnBuy').onclick=function(){openEgg(false);};
     document.getElementById('btnAuto').onclick=handleAuto;
-    
-    // Botón REBIRTH
     document.getElementById('btnRb').onclick=doRb;
-    
-    // Botón CERRAR OVERLAY
     document.getElementById('oclose').onclick=closeHatch;
     
-    // *** CORREGIDO: Acciones de mascotas (upgrade/sell) ***
+    // Pet actions
     document.getElementById('petList').onclick=function(ev){
-      var btn=ev.target.closest('[data-act]');
-      if(!btn) return;
-      
-      // CORRECCIÓN AQUÍ: Obtener atributos correctamente
-      var action = btn.getAttribute('data-act');  // 'up' o 'sell'
-      var petId = parseInt(btn.getAttribute('data-id'), 10);
-      
-      console.log('Acción:', action, 'ID mascota:', petId); // Debug
-      
-      if(action === 'up'){
-        doUpgrade(petId);
-      } else if(action === 'sell'){
-        doSell(petId);
-      }
+      var btn=ev.target.closest('[data-act]');if(!btn) return;
+      var action=btn.getAttribute('data-act');
+      var petId=parseInt(btn.getAttribute('data-id'),10);
+      if(action==='up') doUpgrade(petId);
+      else if(action==='sell') doSell(petId);
     };
-    
-    // Inicializar Firebase
-    initFirebase();
+
+    // Admin panel events
+    document.getElementById('adminClose').onclick=hideAdminPanel;
+    document.getElementById('adminRefresh').onclick=function(){
+      rankLastFetch=Date.now();fetchRank().then(renderAdminPanel);
+    };
+    document.getElementById('adminClearAll').onclick=function(){
+      showConfirm('🗑️','Limpiar TODO el Ranking','Esta acción eliminará TODOS los jugadores del ranking global. No se puede deshacer.',function(){adminClearAll();});
+    };
+
+    // Confirm dialog
+    document.getElementById('confirmYes').onclick=function(){
+      hideConfirm();if(confirmCallback) confirmCallback();
+    };
+    document.getElementById('confirmNo').onclick=hideConfirm;
+
+    // Initial fetch
+    fetchRank();
     updateUI();
-    
-    // Loop principal del juego
+
+    // GAME LOOP
     var tickN=0;
     setInterval(function(){
       var inc=totInc();
-      if(inc>0){
-        G.money+=inc;
-        G.te+=inc;
-        if(inc>=10 && Math.random()<0.15) floatM(inc);
-      }
-      
-      if(G.autoOn && G.money>=G.pr[selEgg]){
-        openEgg(true);
-      }
-      
+      if(inc>0){G.money+=inc;G.te+=inc;if(inc>=10&&Math.random()<0.15) floatM(inc);}
+      if(G.autoOn&&G.money>=G.pr[selEgg]) openEgg(true);
       tickN++;
-      if(tickN%15===0) pushRank();
-      
+      // Push rank every 60s, fetch every 90s
+      if(tickN%60===0) pushRank();
+      if(tickN%90===0){rankLastFetch=Date.now();fetchRank();}
       updateUI();
     },1000);
-    
-    // Auto-guardado cada 8 segundos
+
+    // Push initial rank after 5s
+    setTimeout(function(){pushRank();},5000);
     setInterval(save,8000);
-    
-  }catch(e){
-    console.error('Init error:',e);
-  }
+
+  }catch(e){console.error('Init error:',e);}
 }
 
-// Iniciar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded',init);
-
-// Habilitar audio al primer click/touch
-document.addEventListener('click',function(){ snd.go(); },{once:true});
-document.addEventListener('touchstart',function(){ snd.go(); },{once:true});
+document.addEventListener('click',function(){snd.go();},{once:true});
+document.addEventListener('touchstart',function(){snd.go();},{once:true});
 </script>
 </body>
 </html>
