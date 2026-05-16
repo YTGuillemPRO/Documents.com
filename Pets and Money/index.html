@@ -3,1283 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pet Simulator Ultra</title>
+<title>Pet Simulator Ultra PRO</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:'Plus Jakarta Sans',sans-serif;
-  height:100vh;overflow:hidden;
-  background:#060e1a;
-  display:flex;justify-content:center;align-items:center;
-  user-select:none;
-}
-body::before,body::after{
-  content:'';position:fixed;border-radius:50%;pointer-events:none;filter:blur(80px);
-}
-body::before{
-  width:500px;height:500px;top:-150px;left:-100px;
-  background:rgba(16,185,129,0.12);
-  animation:drift1 18s ease-in-out infinite;
-}
-body::after{
-  width:400px;height:400px;bottom:-100px;right:-80px;
-  background:rgba(251,191,36,0.1);
-  animation:drift2 22s ease-in-out infinite;
-}
-@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
-@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-80px)}}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Plus Jakarta Sans',sans-serif;height:100vh;overflow:hidden;background:#060e1a;display:flex;justify-content:center;align-items:center;user-select:none}#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}#game{position:relative;z-index:1;width:390px;height:90vh;max-height:800px;background:rgba(8,16,35,0.88);border:1.5px solid rgba(255,255,255,0.08);border-radius:28px;box-shadow:0 0 80px var(--wg,rgba(16,185,129,0.1)),0 30px 70px rgba(0,0,0,0.6);padding:14px 14px 10px;display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(16px);transition:box-shadow .8s}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}h1{font-family:'Russo One',sans-serif;font-size:15px;letter-spacing:.5px;background:linear-gradient(135deg,var(--wa,#fbbf24),var(--wa2,#f59e0b));-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer}.world-badge{font-size:8px;font-weight:900;padding:2px 7px;border-radius:6px;background:var(--wabg,rgba(16,185,129,0.12));color:var(--wa,#10b981);border:1px solid var(--wbd,rgba(16,185,129,0.2));letter-spacing:.4px;text-transform:uppercase;margin-left:6px;animation:wbPulse 2s ease-in-out infinite}@keyframes wbPulse{0%,100%{opacity:1;box-shadow:0 0 5px var(--wsh,rgba(16,185,129,0.3))}50%{opacity:.8;box-shadow:0 0 15px var(--wsh,rgba(16,185,129,0.5))}}.hdr-btns{display:flex;gap:6px}.hdr-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#7a8ba8;width:30px;height:30px;border-radius:9px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .2s}.hdr-btn:hover{background:rgba(255,255,255,0.12);color:#f1f5f9;transform:scale(1.1)}#habitat{width:100%;height:115px;border-radius:16px;margin-bottom:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);overflow:hidden;position:relative;box-shadow:inset 0 0 30px rgba(0,0,0,0.3)}#habCanvas{width:100%;height:100%;display:block}.habitat-label{position:absolute;bottom:4px;left:8px;font-size:7px;font-weight:800;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:.5px;pointer-events:none}.stats{display:flex;gap:4px;margin-bottom:6px}.st{flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:5px 3px;text-align:center;position:relative;overflow:hidden}.st::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);animation:shimmerStat 3s infinite}@keyframes shimmerStat{0%{left:-100%}100%{left:100%}}.st i{font-size:10px;margin-bottom:1px;display:block}.st-money i{color:#10b981}.st-inc i{color:#fbbf24}.st-pets i{color:#c084fc}.st-wb i{color:var(--wa,#06b6d4)}.st-v{display:block;font-size:12px;font-weight:900;color:#f1f5f9}.st-l{display:block;font-size:6px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}.tabs{display:flex;gap:2px;margin-bottom:8px}.tab{flex:1;padding:6px 1px;font-family:inherit;font-size:8.5px;font-weight:800;letter-spacing:.3px;border:1.5px solid rgba(255,255,255,0.06);border-radius:9px;cursor:pointer;background:rgba(255,255,255,0.03);color:#7a8ba8;transition:all .2s;position:relative;overflow:hidden}.tab.on{background:linear-gradient(135deg,var(--wa,#059669),var(--wa2,#10b981));border-color:transparent;color:#fff;box-shadow:0 3px 15px var(--wsh,rgba(16,185,129,0.4))}.panel{display:none;flex:1;overflow:hidden;flex-direction:column}.panel.on{display:flex;animation:panelIn .4s cubic-bezier(.175,.885,.32,1.275)}@keyframes panelIn{from{opacity:0;transform:translateY(10px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}.eggs{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}.egg{flex:1 1 28%;min-width:0;padding:5px 2px 4px;border-radius:10px;border:2px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);cursor:pointer;text-align:center;transition:all .2s;color:#f1f5f9;position:relative;overflow:hidden}.egg.on{border-color:var(--wa,#fbbf24);background:rgba(251,191,36,0.06);box-shadow:0 0 15px var(--wsh,rgba(251,191,36,0.15))}.egg:hover{transform:translateY(-2px)}.egg-shape{width:22px;height:28px;border-radius:50% 50% 42% 42%;margin:0 auto 3px}.egg-b{background:linear-gradient(145deg,#f8fafc,#cbd5e1);border:2px solid #94a3b8}.egg-g{background:linear-gradient(145deg,#fef3c7,#f59e0b);border:2px solid #d97706;box-shadow:0 0 8px rgba(251,191,36,0.2)}.egg-c{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4);border:2px solid #8b5cf6;box-shadow:0 0 10px rgba(139,92,246,0.25);animation:eggC 2.5s ease-in-out infinite}.egg-v{background:linear-gradient(145deg,#1a1a2e,#4a044e,#0f0f23);border:2px solid #6b21a8;box-shadow:0 0 10px rgba(107,2,168,0.3);animation:eggV 3s ease-in-out infinite}.egg-d{background:linear-gradient(145deg,#fef9c3,#fde68a,#fff);border:2px solid #fbbf24;box-shadow:0 0 12px rgba(253,224,71,0.35);animation:eggD 2s ease-in-out infinite}.egg-i{background:linear-gradient(145deg,#7f1d1d,#dc2626,#f97316);border:2px solid #ef4444;box-shadow:0 0 12px rgba(239,68,68,0.35);animation:eggI 1.5s ease-in-out infinite}.egg-nat{background:linear-gradient(145deg,#065f46,#10b981,#84cc16);border:2px solid #10b981;box-shadow:0 0 10px rgba(16,185,129,0.25);animation:eggC 2s ease-in-out infinite}.egg-mar{background:linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee);border:2px solid #06b6d4;box-shadow:0 0 10px rgba(6,182,212,0.25);animation:eggV 2.5s ease-in-out infinite}.egg-mag{background:linear-gradient(145deg,#7c2d12,#ea580c,#facc15);border:2px solid #f97316;box-shadow:0 0 10px rgba(249,115,22,0.25);animation:eggD 1.8s ease-in-out infinite}.egg-est{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899);border:2px solid #a855f7;box-shadow:0 0 12px rgba(168,85,247,0.3);animation:eggI 2s ease-in-out infinite}.egg-umb{background:linear-gradient(145deg,#0f0f23,#312e81,#000);border:2px solid #6366f1;box-shadow:0 0 12px rgba(99,102,241,0.35);animation:eggV 3s ease-in-out infinite}@keyframes eggC{0%,100%{box-shadow:0 0 8px rgba(139,92,246,0.2)}50%{box-shadow:0 0 20px rgba(6,182,212,0.4)}}@keyframes eggV{0%,100%{box-shadow:0 0 8px rgba(107,2,168,0.25)}50%{box-shadow:0 0 22px rgba(168,85,247,0.5)}}@keyframes eggD{0%,100%{box-shadow:0 0 10px rgba(253,224,71,0.3)}50%{box-shadow:0 0 25px rgba(251,191,36,0.6)}}@keyframes eggI{0%,100%{box-shadow:0 0 10px rgba(239,68,68,0.3)}50%{box-shadow:0 0 25px rgba(249,115,22,0.6)}}.egg-n{display:block;font-size:8px;font-weight:800}.egg-p{display:block;font-size:9px;font-weight:900;color:#10b981;margin-top:1px}.btn{width:100%;padding:10px;font-family:inherit;font-size:12px;font-weight:900;letter-spacing:.5px;border:none;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden}.btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,0.2);border-radius:50%;transform:translate(-50%,-50%);transition:width .4s,height .4s}.btn:active::after{width:300px;height:300px}.btn:active{transform:scale(0.97)}.btn-buy{background:linear-gradient(135deg,var(--wa,#fbbf24),var(--wa2,#d97706));color:#1a1a1a;box-shadow:0 4px 15px var(--wsh,rgba(251,191,36,0.3));margin-bottom:4px}.btn-buy.can{animation:bpulse 2s ease-in-out infinite}.btn-buy.no{opacity:.3;filter:saturate(0.2);animation:none;cursor:not-allowed}@keyframes bpulse{0%,100%{box-shadow:0 4px 15px var(--wsh,rgba(251,191,36,0.3));transform:scale(1)}50%{box-shadow:0 6px 25px var(--wsh,rgba(251,191,36,0.6));transform:scale(1.01)}}.btn-auto{background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.15);color:#10b981;margin-bottom:4px;box-shadow:none;font-size:10px;padding:8px}.btn-auto.can{background:rgba(16,185,129,0.12);animation:autoPulse 2.5s ease-in-out infinite}.btn-auto.on{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:transparent;box-shadow:0 4px 15px rgba(16,185,129,0.3)}.btn-auto.no{opacity:.3;filter:saturate(0.2);animation:none;color:#64748b;cursor:not-allowed}@keyframes autoPulse{0%,100%{box-shadow:0 0 8px rgba(16,185,129,0.12)}50%{box-shadow:0 0 20px rgba(16,185,129,0.3)}}.btn-rb{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3);margin-bottom:6px;font-size:10px;padding:8px}.btn-rb:disabled{background:rgba(100,116,139,0.12);color:#64748b;box-shadow:none;cursor:not-allowed;opacity:.4}.btn-rb.yes{background:linear-gradient(135deg,#f43f5e,#e11d48)!important;box-shadow:0 4px 20px rgba(244,63,94,0.5)!important;animation:rbpulse .5s ease-in-out infinite!important;opacity:1!important}@keyframes rbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}.plist{flex:1;overflow-y:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}.plist::-webkit-scrollbar{width:3px}.plist::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}.empty{text-align:center;padding:24px 12px;color:#64748b}.empty i{font-size:24px;margin-bottom:6px;display:block;opacity:.3}.empty p{font-size:11px;font-weight:600}.pc{display:flex;align-items:center;justify-content:space-between;padding:7px 8px;margin-bottom:3px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);transition:all .2s;position:relative;overflow:hidden}.pc:hover{background:rgba(255,255,255,0.06);transform:translateX(2px)}.pc-l{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.pc-i{font-size:18px;flex-shrink:0;transition:transform .2s}.pc:hover .pc-i{transform:scale(1.2) rotate(-5deg)}.pc-t{min-width:0}.pc-n{display:block;font-size:10px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-m{display:block;font-size:7px;font-weight:700;color:#7a8ba8;margin-top:1px}.pc-r{display:flex;align-items:center;gap:4px;flex-shrink:0}.pc-e{font-size:9px;font-weight:900;color:#10b981;white-space:nowrap}.pc-a{display:flex;gap:3px}.ab{width:22px;height:22px;border:none;border-radius:6px;cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;transition:all .15s}.ab:hover{transform:scale(1.15)}.ab-u{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.12)}.ab-s{background:rgba(244,63,94,0.1);color:#f43f5e;border:1px solid rgba(244,63,94,0.12)}.pc.common{border-left:3px solid #9ca3af}.pc.rare{border-left:3px solid #38bdf8;background:rgba(56,189,248,0.03)}.pc.epic{border-left:3px solid #c084fc;background:rgba(192,132,252,0.03)}.pc.god{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.04)}.pc.legendary{border-left:3px solid #f87171;background:rgba(248,113,113,0.04)}.pc.mythic{border-left:3px solid #f472b6;background:rgba(244,114,182,0.04)}.pc.secret{border-left:3px solid #22d3ee;background:rgba(34,211,238,0.04)}.pc.og{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2)}.pc.og::before,.pc.secret::before,.pc.mythic::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);animation:shimmer 2.5s infinite}@keyframes shimmer{0%{left:-100%}100%{left:100%}}.wmap{flex:1;overflow-y:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}.wmap::-webkit-scrollbar{width:3px}.wmap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}.wcard{position:relative;padding:14px 12px;margin-bottom:8px;border-radius:16px;background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:all .3s;overflow:hidden}.wcard::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;border-radius:50%;filter:blur(40px);opacity:.1;pointer-events:none;transition:opacity .3s}.wcard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.15)}.wcard.active{border-color:var(--wa,#10b981);box-shadow:0 0 30px var(--wsh,rgba(16,185,129,0.2))}.wcard.locked{opacity:.35;filter:saturate(0.2);cursor:not-allowed}.wcard.locked:hover{transform:none}.wcard-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}.wcard-icon{font-size:32px;filter:drop-shadow(0 0 8px currentColor);transition:transform .3s}.wcard:hover .wcard-icon{transform:scale(1.15) rotate(-5deg)}.wcard-info{flex:1;min-width:0}.wcard-name{font-family:'Russo One',sans-serif;font-size:13px;color:#f1f5f9;margin-bottom:2px}.wcard-desc{font-size:8px;font-weight:600;color:#7a8ba8;line-height:1.3}.wcard-lock{font-size:9px;font-weight:800;color:#f43f5e;display:flex;align-items:center;gap:4px;margin-top:4px}.wcard-stats{display:flex;gap:8px;margin-top:8px}.wcard-st{font-size:8px;font-weight:700;color:#64748b}.wcard-st span{color:var(--wa,#10b981);font-weight:900}.wcard-bonus{position:absolute;top:10px;right:10px;font-size:9px;font-weight:900;padding:3px 10px;border-radius:8px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.15)}.wcard-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:16px}.wparticle{position:absolute;border-radius:50%;opacity:.3;animation:wfloat linear infinite}@keyframes wfloat{0%{transform:translateY(0) scale(1);opacity:.3}50%{opacity:.6}100%{transform:translateY(-80px) scale(0);opacity:0}}.idx-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;padding:0 2px}.idx-hd span:first-child{font-size:11px;font-weight:800;color:#7a8ba8}.idx-hd span:last-child{font-size:13px;font-weight:900;color:#fbbf24}.bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.04);margin-bottom:8px;overflow:hidden}.bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--wa,#10b981),#fbbf24);transition:width .4s}.igrid{flex:1;overflow-y:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}.ii{display:flex;align-items:center;gap:6px;padding:4px 7px;margin-bottom:2px;border-radius:6px;border-left:3px solid;background:rgba(255,255,255,0.02)}.ii.off{opacity:.15}.ii .ic{font-size:14px;width:20px;text-align:center;flex-shrink:0}.ii .in{font-size:9px;font-weight:700;color:#f1f5f9;flex:1}.ii .ir{font-size:6px;font-weight:800;padding:1px 4px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px}.ir.common{color:#9ca3af;background:rgba(156,163,175,0.08)}.ir.rare{color:#38bdf8;background:rgba(56,189,248,0.08)}.ir.epic{color:#c084fc;background:rgba(192,132,252,0.08)}.ir.god{color:#fbbf24;background:rgba(251,191,36,0.08)}.ir.legendary{color:#f87171;background:rgba(248,113,113,0.08)}.ir.mythic{color:#f472b6;background:rgba(244,114,182,0.08)}.ir.secret{color:#22d3ee;background:rgba(34,211,238,0.08)}.ir.og{color:#fbbf24;background:rgba(251,191,36,0.1)}.ii.common{border-left-color:#9ca3af}.ii.rare{border-left-color:#38bdf8}.ii.epic{border-left-color:#c084fc}.ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}.ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}.rk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px}.rk-name-wrap{display:flex;align-items:center;gap:4px;flex:1;min-width:0}.rk-name-wrap i{color:#fbbf24;font-size:11px}.rk-name-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:3px 6px;color:#f1f5f9;font-family:inherit;font-size:10px;font-weight:700;width:100%;max-width:100px;outline:none}.rk-id-panel{display:flex;align-items:center;gap:3px;margin-bottom:6px;padding:4px 6px;border-radius:7px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15)}.rk-id-label{font-size:6px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#a78bfa}.rk-id-input{flex:1;background:rgba(0,0,0,0.25);border:1px solid rgba(139,92,246,0.2);border-radius:4px;padding:2px 5px;color:#c4b5fd;font-family:'Courier New',monospace;font-size:8px;outline:none}.rk-id-copy{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#a78bfa;width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;transition:all .15s}.rk-id-copy:hover{background:rgba(139,92,246,0.25);color:#fff}.rk-live{display:flex;align-items:center;gap:3px;font-size:7px;font-weight:800;text-transform:uppercase}.rk-live-dot{width:5px;height:5px;border-radius:50%;animation:livePulse 1.5s ease-in-out infinite}.rk-live-dot.on{background:#10b981}@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.4}}.rk-status{display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 6px;margin-bottom:6px;border-radius:7px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.08);font-size:7px;font-weight:700;color:#4b6080}.rk-status.loading{color:#fbbf24;border-color:rgba(251,191,36,0.12)}.rk-status.ok{color:#10b981;border-color:rgba(16,185,129,0.15)}.rk-status.err{color:#f43f5e;border-color:rgba(244,63,94,0.12)}.rk-spinner{width:7px;height:7px;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}@keyframes spin{to{transform:rotate(360deg)}}.rk-my{display:flex;align-items:center;justify-content:center;gap:4px;padding:6px;margin-bottom:6px;border-radius:10px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.1)}.rk-my-l{font-size:8px;font-weight:700;color:#7a8ba8}.rk-my-v{font-size:14px;font-weight:900;color:#10b981}.rk-my-e{font-size:10px;font-weight:800;color:#fbbf24;margin-left:auto}.rk-list{flex:1;overflow-y:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}.rk-list::-webkit-scrollbar{width:3px}.rk-i{display:flex;align-items:center;gap:6px;padding:7px;margin-bottom:3px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);transition:all .15s}.rk-i:hover{background:rgba(255,255,255,0.05)}.rk-i.me{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.2);box-shadow:0 0 12px rgba(16,185,129,0.08)}.rk-pos{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#64748b;background:rgba(255,255,255,0.04)}.rk-pos.p1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;box-shadow:0 2px 8px rgba(251,191,36,0.4)}.rk-pos.p2{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a1a1a}.rk-pos.p3{background:linear-gradient(135deg,#d97706,#92400e);color:#fef3c7}.rk-body{flex:1;min-width:0}.rk-top{display:flex;align-items:center;justify-content:space-between;gap:3px;margin-bottom:1px}.rk-n{font-size:10px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.rk-you{font-size:6px;font-weight:900;padding:1px 3px;border-radius:2px;background:rgba(16,185,129,0.12);color:#10b981}.rk-rb{font-size:6px;font-weight:800;padding:1px 4px;border-radius:2px;background:rgba(124,58,237,0.1);color:#a78bfa}.rk-bot{display:flex;align-items:center;justify-content:space-between}.rk-pc{font-size:7px;font-weight:600;color:#64748b}.rk-earn{font-size:10px;font-weight:900;color:#10b981}
 
-#game{
-  position:relative;z-index:1;
-  width:390px;height:86vh;max-height:760px;
-  background:rgba(10,20,40,0.92);
-  border:1.5px solid rgba(255,255,255,0.07);
-  border-radius:26px;
-  box-shadow:0 30px 70px rgba(0,0,0,0.6);
-  padding:20px 18px 16px;
-  display:flex;flex-direction:column;overflow:hidden;
-}
+/* HATCH OVERLAY */
+#overlay{position:absolute;inset:0;background:rgba(2,8,18,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;border-radius:28px;backdrop-filter:blur(8px);cursor:pointer}#hatchCanvas{position:absolute;inset:0;pointer-events:none;z-index:101;border-radius:28px}#obox{position:relative;z-index:102;background:rgba(12,24,48,0.85);border:1px solid rgba(255,255,255,0.06);border-radius:22px;padding:22px 20px 18px;width:280px;text-align:center;color:#f1f5f9;backdrop-filter:blur(10px);box-shadow:0 0 40px rgba(0,0,0,0.3);pointer-events:none}.egg-3d-container{perspective:800px;width:110px;height:140px;margin:0 auto 10px;position:relative}.egg-3d{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:eggFloat3d 3s ease-in-out infinite}.egg-3d-body{width:100%;height:100%;border-radius:50% 50% 42% 42%;position:absolute;top:0;left:0;box-shadow:inset -15px -15px 30px rgba(0,0,0,0.4),inset 10px 10px 20px rgba(255,255,255,0.1),0 20px 40px rgba(0,0,0,0.3);overflow:hidden}.egg-3d-shine{position:absolute;top:15%;left:20%;width:25%;height:35%;background:radial-gradient(circle,rgba(255,255,255,0.6),transparent);border-radius:50%;filter:blur(4px);z-index:4;pointer-events:none}#crackContainer{position:absolute;inset:0;border-radius:50% 50% 42% 42%;overflow:hidden;z-index:3;pointer-events:none}.crack-line{position:absolute;height:2px;background:rgba(255,255,255,0.85);box-shadow:0 0 8px rgba(255,255,200,0.9),0 0 3px #fff;transform-origin:center;animation:crackIn .15s ease-out forwards;z-index:3;border-radius:1px}.crack-line.thick{height:3px;box-shadow:0 0 12px rgba(255,200,100,1),0 0 4px #fff;background:rgba(255,230,150,0.95)}@keyframes crackIn{0%{transform:scaleX(0);opacity:0}60%{transform:scaleX(1.3);opacity:1}100%{transform:scaleX(1);opacity:0.9}}.egg-3d-shadow{position:absolute;bottom:-15px;left:10%;width:80%;height:20px;background:radial-gradient(ellipse,rgba(0,0,0,0.4),transparent);border-radius:50%;animation:shadowPulse 3s ease-in-out infinite}@keyframes eggFloat3d{0%,100%{transform:translateY(0) rotateY(0deg) rotateX(5deg)}25%{transform:translateY(-8px) rotateY(10deg) rotateX(-3deg)}50%{transform:translateY(-12px) rotateY(0deg) rotateX(-5deg)}75%{transform:translateY(-8px) rotateY(-10deg) rotateX(3deg)}}@keyframes shadowPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(0.8);opacity:.2}}.egg-shake-1 .egg-3d{animation:eggShake1 .12s infinite alternate!important}.egg-shake-2 .egg-3d{animation:eggShake2 .1s infinite alternate!important}.egg-shake-3 .egg-3d{animation:eggShake3 .08s infinite alternate!important}.egg-shake-4 .egg-3d{animation:eggShake4 .06s infinite alternate!important}@keyframes eggShake1{0%{transform:translateY(0) rotate(-2deg)}100%{transform:translateY(1px) rotate(2deg) scale(1.01)}}@keyframes eggShake2{0%{transform:translateY(0) rotate(-4deg)}100%{transform:translateY(2px) rotate(4deg) scale(1.02)}}@keyframes eggShake3{0%{transform:translateY(-1px) rotate(-6deg)}100%{transform:translateY(3px) rotate(6deg) scale(1.03)}}@keyframes eggShake4{0%{transform:translateY(-2px) rotate(-10deg)}100%{transform:translateY(4px) rotate(10deg) scale(1.05)}}.egg-squish .egg-3d{animation:eggSquish .12s ease-out!important}@keyframes eggSquish{0%{transform:scale(1,1)}40%{transform:scale(1.18,0.82)}70%{transform:scale(0.94,1.06)}100%{transform:scale(1,1)}}.egg-burst .egg-3d{animation:eggBurst .5s forwards cubic-bezier(.175,.885,.32,1.275)!important}@keyframes eggBurst{0%{transform:scale(1);opacity:1;filter:brightness(1)}30%{transform:scale(1.3);filter:brightness(2)}100%{transform:scale(0);opacity:0;filter:brightness(3)}}.egg-glow-1 .egg-3d-body{box-shadow:inset -15px -15px 30px rgba(0,0,0,0.4),inset 10px 10px 20px rgba(255,255,255,0.1),0 0 20px rgba(255,200,50,0.3),0 20px 40px rgba(0,0,0,0.3)!important}.egg-glow-2 .egg-3d-body{box-shadow:inset -15px -15px 30px rgba(0,0,0,0.4),inset 10px 10px 20px rgba(255,255,255,0.1),0 0 35px rgba(255,200,50,0.5),0 20px 40px rgba(0,0,0,0.3)!important}.egg-glow-3 .egg-3d-body{box-shadow:inset -15px -15px 30px rgba(0,0,0,0.4),inset 10px 10px 20px rgba(255,255,255,0.1),0 0 50px rgba(255,200,50,0.7),0 20px 40px rgba(0,0,0,0.3)!important}.egg-glow-4 .egg-3d-body{box-shadow:inset -15px -15px 30px rgba(0,0,0,0.4),inset 10px 10px 20px rgba(255,255,255,0.1),0 0 70px rgba(255,150,30,1),0 20px 40px rgba(0,0,0,0.3)!important}.tap-hint{font-size:12px;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;animation:hintPulse 1.5s ease-in-out infinite}@keyframes hintPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.05)}}.tap-progress{display:flex;gap:5px;justify-content:center;margin-bottom:12px;min-height:10px}.pip{width:8px;height:8px;border-radius:50%;transition:all .15s;background:rgba(255,255,255,0.12)}.pip.filled{background:var(--wa,#fbbf24);box-shadow:0 0 8px var(--wa,#fbbf24);transform:scale(1.3)}.pip.filled.just{animation:pipFill .25s ease-out}@keyframes pipFill{0%{transform:scale(0)}60%{transform:scale(1.6)}100%{transform:scale(1.3)}}.click-flash{position:absolute;inset:0;background:rgba(255,255,255,0.08);border-radius:28px;pointer-events:none;z-index:103;animation:clickFlash .15s ease-out forwards}@keyframes clickFlash{0%{opacity:1}100%{opacity:0}}.screen-shake{animation:screenShake .15s ease-out}@keyframes screenShake{0%,100%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-1px)}}#oicon{font-size:60px;display:none;margin:0 auto 8px;filter:drop-shadow(0 0 16px currentColor)}#oname{font-family:'Russo One',sans-serif;font-size:17px;color:#fbbf24;margin-bottom:3px}#orar{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px}#oinfo{font-size:12px;font-weight:700;color:#7a8ba8}#oclose{margin-top:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.08);color:#f1f5f9;padding:8px 24px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:10px;font-weight:800;letter-spacing:.5px;transition:all .2s;pointer-events:auto;display:none}#oclose:hover{background:rgba(255,255,255,0.12);transform:translateY(-2px)}#oclose.visible{display:inline-block;animation:btnAppear .3s cubic-bezier(.175,.885,.32,1.275)}@keyframes btnAppear{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes iconReveal{0%{transform:scale(0) rotate(-360deg);opacity:0}60%{transform:scale(1.2) rotate(15deg);opacity:1}80%{transform:scale(0.95) rotate(-5deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-h1{
-  font-family:'Russo One',sans-serif;font-size:17px;letter-spacing:0.5px;
-  background:linear-gradient(135deg,#fbbf24,#f59e0b,#fde68a);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  cursor:pointer;
-}
-.hdr-btns{display:flex;gap:6px}
-.hdr-btn{
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
-  color:#7a8ba8;width:32px;height:32px;border-radius:10px;
-  cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-.hdr-btn:hover{background:rgba(255,255,255,0.12);color:#f1f5f9}
-
-.stats{display:flex;gap:5px;margin-bottom:10px}
-.st{
-  flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
-  border-radius:12px;padding:7px 4px;text-align:center;
-}
-.st i{font-size:11px;margin-bottom:2px;display:block}
-.st-money i{color:#10b981}.st-inc i{color:#fbbf24}.st-pets i{color:#c084fc}
-.st-v{display:block;font-size:13px;font-weight:900;color:#f1f5f9}
-.st-l{display:block;font-size:7px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
-
-.tabs{display:flex;gap:3px;margin-bottom:10px}
-.tab{
-  flex:1;padding:7px 2px;font-family:inherit;font-size:9.5px;font-weight:800;
-  letter-spacing:.3px;border:1.5px solid rgba(255,255,255,0.07);border-radius:10px;
-  cursor:pointer;background:rgba(255,255,255,0.04);color:#7a8ba8;transition:all .2s;
-}
-.tab.on{background:linear-gradient(135deg,#059669,#10b981);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(16,185,129,0.3)}
-.tab:not(.on):hover{background:rgba(255,255,255,0.08);color:#f1f5f9}
-
-.panel{display:none;flex:1;overflow:hidden;flex-direction:column}
-.panel.on{display:flex}
-
-.eggs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.egg{
-  flex:1 1 30%;min-width:0;padding:7px 2px 5px;border-radius:12px;border:2px solid rgba(255,255,255,0.07);
-  background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all .2s;color:#f1f5f9;
-}
-.egg.on{border-color:#fbbf24;background:rgba(251,191,36,0.07);box-shadow:0 0 12px rgba(251,191,36,0.12)}
-.egg:hover{transform:scale(1.03)}
-.egg-shape{width:26px;height:34px;border-radius:50% 50% 42% 42%;margin:0 auto 4px}
-.egg-b{background:linear-gradient(145deg,#f8fafc,#cbd5e1);border:2px solid #94a3b8}
-.egg-g{background:linear-gradient(145deg,#fef3c7,#f59e0b);border:2px solid #d97706;box-shadow:0 0 8px rgba(251,191,36,0.15)}
-.egg-c{background:linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4);border:2px solid #8b5cf6;box-shadow:0 0 10px rgba(139,92,246,0.2);animation:eggGlow 2.5s ease-in-out infinite}
-.egg-v{background:linear-gradient(145deg,#1a1a2e,#4a044e,#0f0f23);border:2px solid #6b21a8;box-shadow:0 0 10px rgba(107,2,168,0.25);animation:eggV 3s ease-in-out infinite}
-.egg-d{background:linear-gradient(145deg,#fef9c3,#fde68a,#fff);border:2px solid #fbbf24;box-shadow:0 0 12px rgba(253,224,71,0.3);animation:eggD 2s ease-in-out infinite}
-.egg-i{background:linear-gradient(145deg,#7f1d1d,#dc2626,#f97316);border:2px solid #ef4444;box-shadow:0 0 12px rgba(239,68,68,0.3);animation:eggI 1.5s ease-in-out infinite}
-@keyframes eggGlow{0%,100%{box-shadow:0 0 10px rgba(139,92,246,0.2)}50%{box-shadow:0 0 18px rgba(6,182,212,0.3)}}
-@keyframes eggV{0%,100%{box-shadow:0 0 10px rgba(107,2,168,0.25)}50%{box-shadow:0 0 20px rgba(168,85,247,0.4)}}
-@keyframes eggD{0%,100%{box-shadow:0 0 12px rgba(253,224,71,0.3)}50%{box-shadow:0 0 22px rgba(251,191,36,0.5)}}
-@keyframes eggI{0%,100%{box-shadow:0 0 12px rgba(239,68,68,0.3)}50%{box-shadow:0 0 22px rgba(249,115,22,0.5)}}
-.egg-n{display:block;font-size:9px;font-weight:800}
-.egg-p{display:block;font-size:10px;font-weight:900;color:#10b981;margin-top:1px}
-
-.btn{
-  width:100%;padding:11px;font-family:inherit;font-size:13px;font-weight:900;
-  letter-spacing:.4px;border:none;border-radius:12px;cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
-}
-.btn:active{transform:scale(0.97)}
-.btn-buy{background:linear-gradient(135deg,#fbbf24,#d97706);color:#1a1a1a;box-shadow:0 4px 14px rgba(251,191,36,0.3);margin-bottom:5px}
-.btn-buy.can{animation:bpulse 2s ease-in-out infinite}
-.btn-buy.no{opacity:.4;filter:saturate(0.4);animation:none}
-@keyframes bpulse{0%,100%{box-shadow:0 4px 14px rgba(251,191,36,0.3)}50%{box-shadow:0 4px 22px rgba(251,191,36,0.55)}}
-
-.btn-auto{background:rgba(16,185,129,0.1);border:1.5px solid rgba(16,185,129,0.2);color:#10b981;margin-bottom:5px;box-shadow:none;font-size:11px;padding:9px}
-.btn-auto.can{background:rgba(16,185,129,0.15);animation:autoPulse 2.5s ease-in-out infinite}
-.btn-auto.on{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(16,185,129,0.3)}
-.btn-auto.no{opacity:.4;filter:saturate(0.4);animation:none;color:#64748b}
-@keyframes autoPulse{0%,100%{box-shadow:0 0 10px rgba(16,185,129,0.15)}50%{box-shadow:0 0 20px rgba(16,185,129,0.3)}}
-
-.btn-rb{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,0.3);margin-bottom:8px;font-size:11px;padding:9px}
-.btn-rb:disabled{background:rgba(100,116,139,0.15);color:#64748b;box-shadow:none;cursor:not-allowed;opacity:.5}
-.btn-rb.yes{background:linear-gradient(135deg,#f43f5e,#e11d48)!important;box-shadow:0 4px 18px rgba(244,63,94,0.4)!important;animation:rbpulse .5s ease-in-out infinite!important;opacity:1!important}
-@keyframes rbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-
-.plist{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
-.plist::-webkit-scrollbar{width:3px}
-.plist::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.empty{text-align:center;padding:30px 15px;color:#64748b}
-.empty i{font-size:28px;margin-bottom:8px;display:block;opacity:.4}
-.empty p{font-size:12px;font-weight:600}
-
-.pc{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 9px;margin-bottom:4px;border-radius:10px;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
-  transition:all .15s;
-}
-.pc:hover{background:rgba(255,255,255,0.07)}
-.pc-l{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
-.pc-i{font-size:20px;flex-shrink:0}
-.pc-t{min-width:0}
-.pc-n{display:block;font-size:11px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-m{display:block;font-size:8px;font-weight:700;color:#7a8ba8;margin-top:1px}
-.pc-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.pc-e{font-size:10px;font-weight:900;color:#10b981;white-space:nowrap}
-.pc-a{display:flex;gap:3px}
-.ab{
-  width:24px;height:24px;border:none;border-radius:6px;cursor:pointer;font-size:9px;
-  display:flex;align-items:center;justify-content:center;transition:all .15s;
-}
-.ab:hover{transform:scale(1.15)}
-.ab-u{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.15)}
-.ab-s{background:rgba(244,63,94,0.12);color:#f43f5e;border:1px solid rgba(244,63,94,0.15)}
-
-.pc.common{border-left:3px solid #9ca3af}
-.pc.rare{border-left:3px solid #38bdf8;background:rgba(56,189,248,0.04)}
-.pc.epic{border-left:3px solid #c084fc;background:rgba(192,132,252,0.04)}
-.pc.god{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.04)}
-.pc.legendary{border-left:3px solid #f87171;background:rgba(248,113,113,0.04)}
-.pc.mythic{border-left:3px solid #f472b6;background:rgba(244,114,182,0.04)}
-.pc.secret{border-left:3px solid #22d3ee;background:rgba(34,211,238,0.04)}
-.pc.og{border-left:3px solid #fbbf24;background:rgba(251,191,36,0.06);border:1.5px solid rgba(251,191,36,0.25);box-shadow:0 0 12px rgba(251,191,36,0.08)}
-
-.idx-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 2px}
-.idx-hd span:first-child{font-size:12px;font-weight:800;color:#7a8ba8}
-.idx-hd span:last-child{font-size:14px;font-weight:900;color:#fbbf24}
-.bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.05);margin-bottom:10px;overflow:hidden}
-.bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#10b981,#fbbf24);transition:width .4s}
-.igrid{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
-.igrid::-webkit-scrollbar{width:3px}
-.igrid::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.ii{display:flex;align-items:center;gap:7px;padding:5px 9px;margin-bottom:3px;border-radius:7px;border-left:3px solid;background:rgba(255,255,255,0.03)}
-.ii.off{opacity:.25}
-.ii .ic{font-size:16px;width:22px;text-align:center;flex-shrink:0}
-.ii .in{font-size:10px;font-weight:700;color:#f1f5f9;flex:1}
-.ii .ir{font-size:7px;font-weight:800;padding:2px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
-.ir.common{color:#9ca3af;background:rgba(156,163,175,0.1)}.ir.rare{color:#38bdf8;background:rgba(56,189,248,0.1)}
-.ir.epic{color:#c084fc;background:rgba(192,132,252,0.1)}.ir.god{color:#fbbf24;background:rgba(251,191,36,0.1)}
-.ir.legendary{color:#f87171;background:rgba(248,113,113,0.1)}.ir.mythic{color:#f472b6;background:rgba(244,114,182,0.1)}
-.ir.secret{color:#22d3ee;background:rgba(34,211,238,0.1)}.ir.og{color:#fbbf24;background:rgba(251,191,36,0.12)}
-.ii.common{border-left-color:#9ca3af}.ii.rare{border-left-color:#38bdf8}.ii.epic{border-left-color:#c084fc}
-.ii.god{border-left-color:#fbbf24}.ii.legendary{border-left-color:#f87171}.ii.mythic{border-left-color:#f472b6}
-.ii.secret{border-left-color:#22d3ee}.ii.og{border-left-color:#fbbf24}
-
-/* RANKING */
-.rk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px;flex-wrap:wrap;gap:6px}
-.rk-name-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
-.rk-name-wrap i{color:#fbbf24;font-size:12px;flex-shrink:0}
-.rk-name-input{
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-  border-radius:7px;padding:4px 7px;color:#f1f5f9;font-family:inherit;
-  font-size:11px;font-weight:700;width:100%;max-width:110px;outline:none;
-  transition:border-color .2s;
-}
-.rk-name-input:focus{border-color:rgba(251,191,36,0.4)}
-.rk-id-panel{
-  display:flex;align-items:center;gap:4px;margin-bottom:8px;
-  padding:6px 8px;border-radius:8px;
-  background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);
-}
-.rk-id-label{font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#a78bfa;white-space:nowrap}
-.rk-id-input{
-  flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(139,92,246,0.3);
-  border-radius:5px;padding:3px 6px;color:#c4b5fd;font-family:'Courier New',monospace;
-  font-size:9px;font-weight:600;outline:none;min-width:0;
-}
-.rk-id-input:focus{border-color:#8b5cf6}
-.rk-id-copy{
-  background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);
-  color:#a78bfa;width:24px;height:24px;border-radius:5px;
-  cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;flex-shrink:0;
-}
-.rk-id-copy:hover{background:rgba(139,92,246,0.3);color:#fff}
-.rk-id-hint{font-size:7px;color:#64748b;font-weight:600;margin-top:2px}
-.rk-live{display:flex;align-items:center;gap:4px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
-.rk-live-dot{width:5px;height:5px;border-radius:50%;animation:livePulse 1.5s ease-in-out infinite}
-.rk-live-dot.on{background:#10b981}
-.rk-live-dot.off{background:#f43f5e;animation:none}
-.rk-live-txt{color:#64748b}
-.rk-live-txt.on{color:#10b981}
-@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px currentColor}50%{opacity:.4;box-shadow:none}}
-.rk-my{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;margin-bottom:8px;border-radius:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12)}
-.rk-my-l{font-size:9px;font-weight:700;color:#7a8ba8}
-.rk-my-v{font-size:14px;font-weight:900;color:#10b981}
-.rk-my-e{font-size:10px;font-weight:800;color:#fbbf24;margin-left:auto}
-.rk-list{flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
-.rk-list::-webkit-scrollbar{width:3px}
-.rk-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
-.rk-i{display:flex;align-items:center;gap:8px;padding:8px 9px;margin-bottom:4px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);transition:all .15s}
-.rk-i:hover{background:rgba(255,255,255,0.06)}
-.rk-i.me{background:rgba(16,185,129,0.06);border:1.5px solid rgba(16,185,129,0.2);box-shadow:0 0 12px rgba(16,185,129,0.08)}
-.rk-pos{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#64748b;background:rgba(255,255,255,0.05)}
-.rk-pos.p1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;box-shadow:0 2px 6px rgba(251,191,36,0.3)}
-.rk-pos.p2{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a1a1a;box-shadow:0 2px 6px rgba(148,163,184,0.2)}
-.rk-pos.p3{background:linear-gradient(135deg,#d97706,#92400e);color:#fef3c7;box-shadow:0 2px 6px rgba(217,119,6,0.2)}
-.rk-body{flex:1;min-width:0}
-.rk-top{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px}
-.rk-n{font-size:11px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-.rk-you{font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(16,185,129,0.15);color:#10b981;letter-spacing:.2px;flex-shrink:0}
-.rk-rb{font-size:7px;font-weight:800;padding:2px 5px;border-radius:3px;background:rgba(124,58,237,0.12);color:#a78bfa;flex-shrink:0}
-.rk-bot{display:flex;align-items:center;justify-content:space-between}
-.rk-pc{font-size:8px;font-weight:600;color:#64748b}
-.rk-earn{font-size:11px;font-weight:900;color:#10b981;white-space:nowrap}
-
-/* RANKING STATUS BAR */
-.rk-status{
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  padding:5px 8px;margin-bottom:8px;border-radius:8px;
-  background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.1);
-  font-size:8px;font-weight:700;color:#4b6080;
-}
-.rk-status.loading{color:#fbbf24;border-color:rgba(251,191,36,0.15)}
-.rk-status.ok{color:#10b981;border-color:rgba(16,185,129,0.2)}
-.rk-status.err{color:#f43f5e;border-color:rgba(244,63,94,0.15)}
-.rk-spinner{width:8px;height:8px;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* OVERLAY HATCH */
-#overlay{position:absolute;inset:0;background:rgba(4,10,22,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;border-radius:26px}
-#obox{background:rgba(12,24,48,0.95);border:1.5px solid rgba(255,255,255,0.08);border-radius:24px;padding:28px 22px;width:270px;text-align:center;color:#f1f5f9}
-#oegg{width:80px;height:105px;border-radius:50% 50% 42% 42%;margin:0 auto 14px}
-#oicon{font-size:56px;display:none;margin:0 auto 8px;filter:drop-shadow(0 0 14px currentColor)}
-#oname{font-family:'Russo One',sans-serif;font-size:17px;color:#fbbf24;margin-bottom:3px}
-#orar{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-#oinfo{font-size:12px;font-weight:700;color:#7a8ba8}
-#oclose{margin-top:16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.08);color:#f1f5f9;padding:8px 24px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.4px;transition:all .2s}
-#oclose:hover{background:rgba(255,255,255,0.12)}
-
-/* ADMIN PANEL */
-#adminOverlay{
-  position:absolute;inset:0;background:rgba(2,5,15,0.98);
-  display:none;flex-direction:column;z-index:200;border-radius:26px;
-  padding:16px;overflow:hidden;
-}
-#adminOverlay.show{display:flex}
-.admin-hd{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;padding-bottom:10px;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-}
-.admin-title{
-  display:flex;align-items:center;gap:7px;
-  font-family:'Russo One',sans-serif;font-size:14px;
-}
-.admin-title i{color:#f43f5e;font-size:13px}
-.admin-title span{
-  background:linear-gradient(135deg,#f43f5e,#fb923c);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.admin-badge{
-  font-size:7px;font-weight:900;padding:2px 6px;border-radius:4px;
-  background:rgba(244,63,94,0.15);color:#f43f5e;border:1px solid rgba(244,63,94,0.2);
-  letter-spacing:.4px;text-transform:uppercase;margin-left:4px;
-}
-.admin-close{
-  background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);
-  color:#f43f5e;width:28px;height:28px;border-radius:8px;
-  cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-.admin-close:hover{background:rgba(244,63,94,0.25)}
-.admin-stats-row{
-  display:flex;gap:6px;margin-bottom:12px;
-}
-.admin-stat{
-  flex:1;text-align:center;padding:8px 4px;border-radius:10px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
-}
-.admin-stat-v{display:block;font-size:15px;font-weight:900;color:#f1f5f9}
-.admin-stat-l{display:block;font-size:7px;font-weight:700;color:#7a8ba8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
-.admin-actions{display:flex;gap:6px;margin-bottom:10px}
-.admin-btn{
-  flex:1;padding:8px 4px;font-family:inherit;font-size:9px;font-weight:800;
-  letter-spacing:.3px;border:none;border-radius:9px;cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:4px;
-}
-.admin-btn:active{transform:scale(0.96)}
-.admin-btn-refresh{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:#38bdf8}
-.admin-btn-refresh:hover{background:rgba(56,189,248,0.2)}
-.admin-btn-clear{background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:#f43f5e}
-.admin-btn-clear:hover{background:rgba(244,63,94,0.2)}
-.admin-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
-.admin-list::-webkit-scrollbar{width:3px}
-.admin-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
-.admin-player{
-  display:flex;align-items:center;gap:6px;padding:8px 8px;margin-bottom:4px;
-  border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);
-}
-.admin-pos{
-  width:20px;font-size:10px;font-weight:900;color:#7a8ba8;text-align:center;flex-shrink:0;
-}
-.admin-player-info{flex:1;min-width:0}
-.admin-player-name{display:block;font-size:10px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.admin-player-sub{display:block;font-size:7px;font-weight:600;color:#7a8ba8;margin-top:1px}
-.admin-player-id{display:block;font-size:7px;color:#4b6080;font-family:'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.admin-player-earn{font-size:10px;font-weight:900;color:#10b981;white-space:nowrap;flex-shrink:0}
-.admin-del{
-  width:22px;height:22px;border:1px solid rgba(244,63,94,0.2);
-  background:rgba(244,63,94,0.08);color:#f43f5e;border-radius:6px;
-  cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;flex-shrink:0;
-}
-.admin-del:hover{background:rgba(244,63,94,0.25);transform:scale(1.1)}
-.admin-empty{text-align:center;padding:20px;color:#4b6080;font-size:11px;font-weight:600}
-.admin-footer{
-  margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);
-  text-align:center;font-size:7px;color:#2a3a50;font-weight:600;letter-spacing:.3px;
-}
-
-/* CONFIRM DIALOG */
-#confirmBox{
-  position:absolute;inset:0;background:rgba(2,5,15,0.97);
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  z-index:300;border-radius:26px;
-}
-#confirmBox.show{display:flex}
-.confirm-card{
-  background:rgba(15,25,50,0.95);border:1.5px solid rgba(244,63,94,0.2);
-  border-radius:18px;padding:24px 20px;width:250px;text-align:center;
-}
-.confirm-icon{font-size:32px;margin-bottom:10px}
-.confirm-title{font-family:'Russo One',sans-serif;font-size:14px;color:#f43f5e;margin-bottom:6px}
-.confirm-msg{font-size:11px;font-weight:600;color:#7a8ba8;margin-bottom:16px;line-height:1.4}
-.confirm-btns{display:flex;gap:8px}
-.confirm-btn{
-  flex:1;padding:8px;font-family:inherit;font-size:10px;font-weight:800;
-  border:none;border-radius:9px;cursor:pointer;transition:all .2s;
-}
-.confirm-yes{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}
-.confirm-no{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#7a8ba8}
-
-@keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-16deg) scale(1.04)}30%{transform:rotate(14deg) scale(1.04)}45%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}75%{transform:rotate(-5deg)}}
-@keyframes brk{0%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}100%{transform:scale(1.8);opacity:0}}
-@keyframes rev{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.15) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
-.shk{animation:shake .35s infinite ease-in-out}
-.brk{animation:brk .5s forwards ease-out}
-.rev{animation:rev .5s forwards ease-out}
-
-#toasts{position:absolute;bottom:14px;left:14px;right:14px;z-index:400;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none}
-.toast{padding:8px 10px;border-radius:9px;font-size:10px;font-weight:700;color:#fff;animation:tin .25s ease,tout .25s ease 2.5s forwards;pointer-events:auto}
-.t-ok{background:rgba(16,185,129,0.88)}.t-err{background:rgba(244,63,94,0.88)}
-.t-inf{background:rgba(56,189,248,0.88)}.t-rwd{background:rgba(251,191,36,0.92);color:#1a1a1a}
-.t-adm{background:rgba(244,63,94,0.92)}
-@keyframes tin{from{transform:translateY(14px);opacity:0}to{transform: translateY(0);opacity:1}}
-@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-6px)}}
-
-.fm{position:absolute;font-size:12px;font-weight:900;color:#10b981;pointer-events:none;animation:fup 1s ease-out forwards;z-index:50;text-shadow:0 2px 6px rgba(0,0,0,0.5)}
-@keyframes fup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-35px)}}
-
-@media(max-height:680px){
-  #game{height:95vh;padding:10px 12px 8px;border-radius:18px}
-  h1{font-size:15px}.stats{margin-bottom:6px}.st{padding:5px 3px}.st-v{font-size:11px}
-  .tabs{margin-bottom:6px}.btn{padding:8px;font-size:11px}
-}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* ADMIN & CONFIRM */
+#adminOverlay{position:absolute;inset:0;background:rgba(2,5,15,0.98);display:none;flex-direction:column;z-index:200;border-radius:28px;padding:14px;overflow:hidden}#adminOverlay.show{display:flex}.admin-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)}.admin-title{display:flex;align-items:center;gap:6px;font-family:'Russo One',sans-serif;font-size:13px}.admin-title i{color:#f43f5e;font-size:12px}.admin-title span{background:linear-gradient(135deg,#f43f5e,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.admin-badge{font-size:6px;font-weight:900;padding:1px 5px;border-radius:3px;background:rgba(244,63,94,0.12);color:#f43f5e;border:1px solid rgba(244,63,94,0.15);margin-left:3px}.admin-close{background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.15);color:#f43f5e;width:26px;height:26px;border-radius:7px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center}.admin-close:hover{background:rgba(244,63,94,0.2)}.admin-stats-row{display:flex;gap:5px;margin-bottom:10px}.admin-stat{flex:1;text-align:center;padding:6px 3px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)}.admin-stat-v{display:block;font-size:13px;font-weight:900;color:#f1f5f9}.admin-stat-l{display:block;font-size:6px;font-weight:700;color:#7a8ba8;text-transform:uppercase;margin-top:1px}.admin-actions{display:flex;gap:5px;margin-bottom:8px}.admin-btn{flex:1;padding:6px;font-family:inherit;font-size:8px;font-weight:800;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px}.admin-btn-refresh{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:#38bdf8}.admin-btn-clear{background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.15);color:#f43f5e}.admin-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}.admin-player{display:flex;align-items:center;gap:5px;padding:6px;margin-bottom:3px;border-radius:7px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}.admin-pos{width:18px;font-size:9px;font-weight:900;color:#7a8ba8;text-align:center}.admin-player-info{flex:1;min-width:0}.admin-player-name{display:block;font-size:9px;font-weight:800;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admin-player-sub{display:block;font-size:6px;font-weight:600;color:#7a8ba8;margin-top:1px}.admin-player-earn{font-size:9px;font-weight:900;color:#10b981;white-space:nowrap}.admin-del{width:20px;height:20px;border:1px solid rgba(244,63,94,0.15);background:rgba(244,63,94,0.06);color:#f43f5e;border-radius:5px;cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center}.admin-del:hover{background:rgba(244,63,94,0.2)}.admin-empty{text-align:center;padding:18px;color:#4b6080;font-size:10px}.admin-footer{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;font-size:6px;color:#2a3a50}#confirmBox{position:absolute;inset:0;background:rgba(2,5,15,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;border-radius:28px}#confirmBox.show{display:flex}.confirm-card{background:rgba(15,25,50,0.9);border:1.5px solid rgba(244,63,94,0.15);border-radius:18px;padding:22px 20px;width:250px;text-align:center;box-shadow:0 0 30px rgba(244,63,94,0.1)}.confirm-icon{font-size:30px;margin-bottom:8px}.confirm-title{font-family:'Russo One',sans-serif;font-size:14px;color:#f43f5e;margin-bottom:5px}.confirm-msg{font-size:10px;font-weight:600;color:#7a8ba8;margin-bottom:14px;line-height:1.4}.confirm-btns{display:flex;gap:8px}.confirm-btn{flex:1;padding:8px;font-family:inherit;font-size:9px;font-weight:800;border:none;border-radius:9px;cursor:pointer}.confirm-yes{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}.confirm-no{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#7a8ba8}#toasts{position:absolute;bottom:12px;left:12px;right:12px;z-index:400;display:flex;flex-direction:column-reverse;gap:3px;pointer-events:none}.toast{padding:6px 10px;border-radius:8px;font-size:9px;font-weight:700;color:#fff;animation:tin .3s cubic-bezier(.175,.885,.32,1.275),tout .3s ease 2.5s forwards;pointer-events:auto}.t-ok{background:rgba(16,185,129,0.9)}.t-err{background:rgba(244,63,94,0.9)}.t-inf{background:rgba(56,189,248,0.9)}.t-rwd{background:rgba(251,191,36,0.95);color:#1a1a1a}.t-adm{background:rgba(244,63,94,0.9)}@keyframes tin{from{transform:translateY(15px) scale(0.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-8px)}}.fm{position:absolute;font-size:12px;font-weight:900;color:#10b981;pointer-events:none;animation:fup 1.2s ease-out forwards;z-index:50;text-shadow:0 2px 8px rgba(0,0,0,0.5)}@keyframes fup{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-20px) scale(1.2)}100%{opacity:0;transform:translateY(-40px) scale(0.8)}}.world-flash{animation:wflash .5s ease-out}@keyframes wflash{0%{filter:brightness(2.5)}100%{filter:brightness(1)}}@media(max-height:680px){#game{height:95vh;padding:8px 10px 6px}#habitat{height:80px}h1{font-size:13px}}
 </style>
 </head>
 <body>
-
+<canvas id="bgCanvas"></canvas>
 <div id="game">
-  <header>
-    <h1 id="gameTitle">PET SIMULATOR ULTRA</h1>
-    <div class="hdr-btns">
-      <button class="hdr-btn" id="btnMute" aria-label="Sonido"><i class="fas fa-volume-high"></i></button>
-      <button class="hdr-btn" id="btnReset" aria-label="Reset"><i class="fas fa-rotate-left"></i></button>
-    </div>
-  </header>
-
-  <div class="stats">
-    <div class="st st-money"><i class="fas fa-coins"></i><span class="st-v" id="sMoney">$10</span><span class="st-l">Dinero</span></div>
-    <div class="st st-inc"><i class="fas fa-chart-line"></i><span class="st-v" id="sInc">$0/s</span><span class="st-l">Ingreso</span></div>
-    <div class="st st-pets"><i class="fas fa-paw"></i><span class="st-v" id="sPets">0</span><span class="st-l">Mascotas</span></div>
-  </div>
-
-  <nav class="tabs" id="navTabs">
-    <button class="tab on" data-t="game">JUEGO</button>
-    <button class="tab" data-t="index">INDEX</button>
-    <button class="tab" data-t="rank">RANKING</button>
-  </nav>
-
-  <!-- GAME PANEL -->
-  <section id="pGame" class="panel on">
-    <div class="eggs" id="navEggs">
-      <button class="egg on" data-e="basic"><div class="egg-shape egg-b"></div><span class="egg-n">Basico</span><span class="egg-p" id="pB">$10</span></button>
-      <button class="egg" data-e="golden"><div class="egg-shape egg-g"></div><span class="egg-n">Dorado</span><span class="egg-p" id="pG">$500</span></button>
-      <button class="egg" data-e="cosmic"><div class="egg-shape egg-c"></div><span class="egg-n">Cosmico</span><span class="egg-p" id="pC">$5K</span></button>
-      <button class="egg" data-e="void"><div class="egg-shape egg-v"></div><span class="egg-n">Void</span><span class="egg-p" id="pV">$50K</span></button>
-      <button class="egg" data-e="divine"><div class="egg-shape egg-d"></div><span class="egg-n">Divino</span><span class="egg-p" id="pD">$250K</span></button>
-      <button class="egg" data-e="infernal"><div class="egg-shape egg-i"></div><span class="egg-n">Infernal</span><span class="egg-p" id="pI">$1M</span></button>
-    </div>
-    <button class="btn btn-buy can" id="btnBuy"><i class="fas fa-egg"></i> ABRIR HUEVO</button>
-    <button class="btn btn-auto no" id="btnAuto"><i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)</button>
-    <button class="btn btn-rb" id="btnRb" disabled><i class="fas fa-bolt"></i> REBIRTH ($500K)</button>
-    <div id="petList" class="plist"></div>
-  </section>
-
-  <!-- INDEX PANEL -->
-  <section id="pIndex" class="panel">
-    <div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div>
-    <div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div>
-    <div id="idxList" class="igrid"></div>
-  </section>
-
-  <!-- RANKING PANEL -->
-  <section id="pRank" class="panel">
-    <div class="rk-hd">
-      <div class="rk-name-wrap">
-        <i class="fas fa-fort-awesome"></i>
-        <input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false" aria-label="Nombre de tu base">
-      </div>
-      <div class="rk-live" id="rkLive">
-        <span class="rk-live-dot on" id="rkDot"></span>
-        <span class="rk-live-txt on" id="rkTxt">En vivo</span>
-      </div>
-    </div>
-    <div class="rk-id-panel">
-      <span class="rk-id-label"><i class="fas fa-fingerprint"></i> ID:</span>
-      <input type="text" class="rk-id-input" id="rkPlayerId" maxlength="20" spellcheck="false" placeholder="Tu ID unico...">
-      <button class="rk-id-copy" id="btnCopyId" title="Copiar ID"><i class="fas fa-copy"></i></button>
-    </div>
-    <div class="rk-id-hint" style="text-align:center;padding:0 4px 6px;">Usa el mismo ID en otros dispositivos para unificar tu ranking</div>
-    <div class="rk-status loading" id="rkStatus">
-      <span class="rk-spinner"></span>
-      <span id="rkStatusTxt">Cargando ranking...</span>
-    </div>
-    <div class="rk-my">
-      <span class="rk-my-l">Tu posicion:</span>
-      <span class="rk-my-v" id="rkPos">#--</span>
-      <span class="rk-my-e" id="rkMyEarn">$0/s</span>
-    </div>
-    <div id="rkList" class="rk-list"></div>
-  </section>
-
-  <!-- HATCH OVERLAY -->
-  <div id="overlay">
-    <div id="obox">
-      <div id="oegg"></div>
-      <div id="oicon"></div>
-      <h2 id="oname"></h2>
-      <p id="orar"></p>
-      <p id="oinfo"></p>
-      <button id="oclose">CONTINUAR</button>
-    </div>
-  </div>
-
-  <!-- ADMIN PANEL OVERLAY -->
-  <div id="adminOverlay">
-    <div class="admin-hd">
-      <div class="admin-title">
-        <i class="fas fa-shield-halved"></i>
-        <span>ADMIN PANEL</span>
-        <span class="admin-badge">Acceso restringido</span>
-      </div>
-      <button class="admin-close" id="adminClose"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="admin-stats-row" id="adminStatsRow">
-      <div class="admin-stat"><span class="admin-stat-v" id="adminTotalPlayers">0</span><span class="admin-stat-l">Jugadores</span></div>
-      <div class="admin-stat"><span class="admin-stat-v" id="adminTopEarn">$0</span><span class="admin-stat-l">Top Ingreso</span></div>
-      <div class="admin-stat"><span class="admin-stat-v" id="adminTotalPets">0</span><span class="admin-stat-l">Total Pets</span></div>
-    </div>
-    <div class="admin-actions">
-      <button class="admin-btn admin-btn-refresh" id="adminRefresh"><i class="fas fa-rotate"></i> ACTUALIZAR</button>
-      <button class="admin-btn admin-btn-clear" id="adminClearAll"><i class="fas fa-trash"></i> LIMPIAR TODO</button>
-    </div>
-    <div class="admin-list" id="adminList"></div>
-    <div class="admin-footer">guillevarelacors@gmail.com · Acceso de administrador</div>
-  </div>
-
-  <!-- CONFIRM DIALOG -->
-  <div id="confirmBox">
-    <div class="confirm-card">
-      <div class="confirm-icon" id="confirmIcon">⚠️</div>
-      <div class="confirm-title" id="confirmTitle">Confirmar</div>
-      <div class="confirm-msg" id="confirmMsg">Esta accion no se puede deshacer.</div>
-      <div class="confirm-btns">
-        <button class="confirm-btn confirm-yes" id="confirmYes">CONFIRMAR</button>
-        <button class="confirm-btn confirm-no" id="confirmNo">CANCELAR</button>
-      </div>
-    </div>
-  </div>
-
+  <header><div style="display:flex;align-items:center"><h1 id="gameTitle">PET SIMULATOR ULTRA</h1><span class="world-badge" id="worldBadge">BOSQUE</span></div><div class="hdr-btns"><button class="hdr-btn" id="btnMute" aria-label="Sonido"><i class="fas fa-volume-high"></i></button><button class="hdr-btn" id="btnReset" aria-label="Reset"><i class="fas fa-rotate-left"></i></button></div></header>
+  <div id="habitat"><canvas id="habCanvas"></canvas><span class="habitat-label" id="habLabel">Habitat - Bosque Encantado</span></div>
+  <div class="stats"><div class="st st-money"><i class="fas fa-coins"></i><span class="st-v" id="sMoney">$10</span><span class="st-l">Dinero</span></div><div class="st st-inc"><i class="fas fa-chart-line"></i><span class="st-v" id="sInc">$0/s</span><span class="st-l">Ingreso</span></div><div class="st st-pets"><i class="fas fa-paw"></i><span class="st-v" id="sPets">0</span><span class="st-l">Mascotas</span></div><div class="st st-wb"><i class="fas fa-globe"></i><span class="st-v" id="sWB">x1.0</span><span class="st-l">Mundo</span></div></div>
+  <nav class="tabs" id="navTabs"><button class="tab on" data-t="game">JUEGO</button><button class="tab" data-t="worlds">MUNDOS</button><button class="tab" data-t="index">INDEX</button><button class="tab" data-t="rank">RANK</button></nav>
+  <section id="pGame" class="panel on"><div class="eggs" id="navEggs"></div><button class="btn btn-buy can" id="btnBuy"><i class="fas fa-egg"></i> ABRIR HUEVO</button><button class="btn btn-auto no" id="btnAuto"><i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)</button><button class="btn btn-rb" id="btnRb" disabled><i class="fas fa-bolt"></i> REBIRTH ($500K)</button><div id="petList" class="plist"></div></section>
+  <section id="pWorlds" class="panel"><div id="worldMap" class="wmap"></div></section>
+  <section id="pIndex" class="panel"><div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div><div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div><div id="idxList" class="igrid"></div></section>
+  <section id="pRank" class="panel"><div class="rk-hd"><div class="rk-name-wrap"><i class="fas fa-fort-awesome"></i><input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false"></div><div class="rk-live"><span class="rk-live-dot on"></span><span style="color:#10b981;font-size:7px;font-weight:800">En vivo</span></div></div><div class="rk-id-panel"><span class="rk-id-label"><i class="fas fa-fingerprint"></i> ID:</span><input type="text" class="rk-id-input" id="rkPlayerId" maxlength="20" spellcheck="false" placeholder="Tu ID..."><button class="rk-id-copy" id="btnCopyId"><i class="fas fa-copy"></i></button></div><div class="rk-status loading" id="rkStatus"><span class="rk-spinner"></span><span>Cargando...</span></div><div class="rk-my"><span class="rk-my-l">Tu posicion:</span><span class="rk-my-v" id="rkPos">#--</span><span class="rk-my-e" id="rkMyEarn">$0/s</span></div><div id="rkList" class="rk-list"></div></section>
+  <div id="overlay"><canvas id="hatchCanvas"></canvas><div id="obox"><div class="egg-3d-container" id="oegg3d"><div class="egg-3d" id="egg3d"><div class="egg-3d-body" id="egg3dBody"></div><div class="egg-3d-shine"></div><div id="crackContainer"></div></div><div class="egg-3d-shadow"></div></div><div class="tap-hint" id="tapHint">Toca para romper!</div><div class="tap-progress" id="tapProgress"></div><div id="oicon"></div><h2 id="oname"></h2><p id="orar"></p><p id="oinfo"></p><button id="oclose">CONTINUAR</button></div></div>
+  <div id="adminOverlay"><div class="admin-hd"><div class="admin-title"><i class="fas fa-shield-halved"></i><span>ADMIN PANEL</span><span class="admin-badge">Restringido</span></div><button class="admin-close" id="adminClose"><i class="fas fa-xmark"></i></button></div><div class="admin-stats-row"><div class="admin-stat"><span class="admin-stat-v" id="adminTotalPlayers">0</span><span class="admin-stat-l">Jugadores</span></div><div class="admin-stat"><span class="admin-stat-v" id="adminTopEarn">$0</span><span class="admin-stat-l">Top Ingreso</span></div><div class="admin-stat"><span class="admin-stat-v" id="adminTotalPets">0</span><span class="admin-stat-l">Total Pets</span></div></div><div class="admin-actions"><button class="admin-btn admin-btn-refresh" id="adminRefresh"><i class="fas fa-rotate"></i> ACTUALIZAR</button><button class="admin-btn admin-btn-clear" id="adminClearAll"><i class="fas fa-trash"></i> LIMPIAR TODO</button></div><div class="admin-list" id="adminList"></div><div class="admin-footer">Admin Panel</div></div>
+  <div id="confirmBox"><div class="confirm-card"><div class="confirm-icon" id="confirmIcon">⚠️</div><div class="confirm-title" id="confirmTitle">Confirmar</div><div class="confirm-msg" id="confirmMsg">Esta accion no se puede deshacer.</div><div class="confirm-btns"><button class="confirm-btn confirm-yes" id="confirmYes">CONFIRMAR</button><button class="confirm-btn confirm-no" id="confirmNo">CANCELAR</button></div></div></div>
   <div id="toasts"></div>
 </div>
-
 <script>
-// ==================== ADMIN CONFIG ====================
-var ADMIN_PASS = 'GVC_ADMIN_2024';
-var titleClickCount = 0, titleClickTimer = null;
-var isAdmin = false;
-var confirmCallback = null;
+var ADMIN_PASS='GVC_ADMIN_2024',titleClickCount=0,titleClickTimer=null,isAdmin=false,confirmCallback=null;
+var WORLDS=[{id:'bosque',name:'Bosque Encantado',icon:'🌲',desc:'Un bosque magico.',color:'#10b981',color2:'#84cc16',bonus:1.0,unlock:{type:'default'},eggs:['basic','golden','natural'],particles:'leaves'},{id:'oceano',name:'Oceano Profundo',icon:'🌊',desc:'Bestias legendarias.',color:'#06b6d4',color2:'#3b82f6',bonus:1.2,unlock:{type:'pets',val:10},eggs:['cosmic','void','marino'],particles:'bubbles'},{id:'volcan',name:'Volcan Infernal',icon:'🌋',desc:'Rios de lava.',color:'#f97316',color2:'#ef4444',bonus:1.5,unlock:{type:'rb',val:1},eggs:['divine','infernal','magmatico'],particles:'embers'},{id:'cosmos',name:'Cosmos Infinito',icon:'🪐',desc:'El vacio entre estrellas.',color:'#a855f7',color2:'#ec4899',bonus:2.0,unlock:{type:'rb',val:3},eggs:['cosmic','estelar'],particles:'stars'},{id:'sombra',name:'Reino Sombra',icon:'🌑',desc:'La dimension oscura.',color:'#7c3aed',color2:'#06b6d4',bonus:3.0,unlock:{type:'rb',val:5},eggs:['infernal','umbral'],particles:'wisps'}];
+var PETS=[{i:'🐭',n:'Raton',r:'common',e:2,eg:['basic']},{i:'🐶',n:'Perro',r:'common',e:4,eg:['basic']},{i:'🐱',n:'Gato',r:'common',e:5,eg:['basic']},{i:'🐰',n:'Conejo',r:'common',e:6,eg:['basic']},{i:'🐥',n:'Pollito',r:'common',e:8,eg:['basic']},{i:'🦆',n:'Pato',r:'common',e:10,eg:['basic']},{i:'🐷',n:'Cerdo',r:'common',e:7,eg:['basic']},{i:'🦊',n:'Zorro',r:'rare',e:15,eg:['basic']},{i:'🐻',n:'Oso',r:'rare',e:20,eg:['basic']},{i:'🐼',n:'Panda',r:'rare',e:25,eg:['basic']},{i:'🐨',n:'Koala',r:'rare',e:30,eg:['basic']},{i:'🦙',n:'Llama',r:'rare',e:35,eg:['basic']},{i:'🐯',n:'Tigre',r:'epic',e:50,eg:['basic']},{i:'🦁',n:'Leon',r:'epic',e:65,eg:['basic']},{i:'🐺',n:'Lobo',r:'epic',e:80,eg:['basic']},{i:'🐲',n:'Dragon',r:'god',e:120,eg:['basic']},{i:'🦅',n:'Aguila',r:'rare',e:40,eg:['golden']},{i:'🦁',n:'Leon Dorado',r:'epic',e:110,eg:['golden']},{i:'🦄',n:'Unicornio',r:'god',e:150,eg:['golden']},{i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},{i:'🔥',n:'Fenix',r:'mythic',e:1000,eg:['golden']},{i:'🦙',n:'Llama Cosmica',r:'rare',e:42,eg:['cosmic']},{i:'🦄',n:'Unicornio Arcano',r:'god',e:280,eg:['cosmic']},{i:'⚡',n:'Zeus',r:'mythic',e:2200,eg:['cosmic']},{i:'👾',n:'Glitch',r:'secret',e:3500,eg:['cosmic']},{i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']},{i:'🐙',n:'Kraken',r:'legendary',e:900,eg:['void']},{i:'👻',n:'Fantasma',r:'mythic',e:2400,eg:['void']},{i:'🕊️',n:'Paloma',r:'epic',e:100,eg:['divine']},{i:'👼',n:'Serafin',r:'mythic',e:2800,eg:['divine']},{i:'🦂',n:'Escorpion',r:'god',e:300,eg:['infernal']},{i:'😈',n:'Diablo',r:'mythic',e:3000,eg:['infernal']},{i:'☠️',n:'Muerte',r:'og',e:25000,eg:['infernal']},{i:'🦌',n:'Ciervo',r:'common',e:5,eg:['natural']},{i:'🌳',n:'Arbol',r:'epic',e:80,eg:['natural']},{i:'🌿',n:'Nature',r:'secret',e:7000,eg:['natural']},{i:'🐠',n:'Pez',r:'common',e:8,eg:['marino']},{i:'🧜',n:'Sirena',r:'god',e:350,eg:['marino']},{i:'🐚',n:'Perla',r:'secret',e:8500,eg:['marino']},{i:'🦎',n:'Salamandra',r:'rare',e:75,eg:['magmatico']},{i:'🌋',n:'Titan',r:'legendary',e:1300,eg:['magmatico']},{i:'🛸',n:'OVNI',r:'epic',e:280,eg:['estelar']},{i:'🌌',n:'Big Bang',r:'og',e:28000,eg:['estelar']},{i:'🌑',n:'Entidad',r:'mythic',e:5200,eg:['umbral']},{i:'♾️',n:'Vacio Absoluto',r:'og',e:35000,eg:['umbral']}];
+var WEIGHTS={basic:{common:65,rare:25,epic:8,god:2},golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:0.5,og:0.1},cosmic:{god:5,legendary:15,mythic:35,secret:2,og:1},void:{epic:10,god:15,legendary:35,mythic:25,secret:1,og:0.5},divine:{god:10,legendary:25,mythic:40,secret:1.5,og:0.8},infernal:{legendary:5,mythic:35,secret:3,og:2},natural:{common:45,rare:28,epic:16,god:8,legendary:2.5,mythic:0.4,secret:0.08},marino:{common:10,rare:25,epic:25,god:22,legendary:12,mythic:4,secret:0.8,og:0.1},magmatico:{rare:8,epic:20,god:30,legendary:25,mythic:12,secret:2,og:0.3},estelar:{epic:8,god:18,legendary:30,mythic:28,secret:6,og:1},umbral:{god:8,legendary:22,mythic:38,secret:12,og:4}};
+var RCOL={common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};var RNAME={common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};var RORD={common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};var RKEYS=['common','rare','epic','god','legendary','mythic','secret','og'];
+var EGG_STYLES={basic:'egg-b',golden:'egg-g',cosmic:'egg-c',void:'egg-v',divine:'egg-d',infernal:'egg-i',natural:'egg-nat',marino:'egg-mar',magmatico:'egg-mag',estelar:'egg-est',umbral:'egg-umb'};var EGG_NAMES={basic:'Basico',golden:'Dorado',cosmic:'Cosmico',void:'Void',divine:'Divino',infernal:'Infernal',natural:'Natural',marino:'Marino',magmatico:'Magmatico',estelar:'Estelar',umbral:'Umbral'};
+var EGG_3D_GRAD={basic:'linear-gradient(145deg,#f8fafc,#cbd5e1,#94a3b8)',golden:'linear-gradient(145deg,#fef3c7,#f59e0b,#d97706)',cosmic:'linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4)',void:'linear-gradient(145deg,#1a1a2e,#4a044e,#0f0f23)',divine:'linear-gradient(145deg,#fef9c3,#fde68a,#fff)',infernal:'linear-gradient(145deg,#7f1d1d,#dc2626,#f97316)',natural:'linear-gradient(145deg,#065f46,#10b981,#84cc16)',marino:'linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee)',magmatico:'linear-gradient(145deg,#7c2d12,#ea580c,#facc15)',estelar:'linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899)',umbral:'linear-gradient(145deg,#0f0f23,#312e81,#000)'};
+var CLICKS_NEEDED={common:3,rare:4,epic:5,god:6,legendary:7,mythic:9,secret:11,og:14};
 
-// ==================== PETS DATA ====================
-var PETS = [
-  {i:'🐭',n:'Raton de Campo',r:'common',e:2,eg:['basic']},
-  {i:'🐶',n:'Perro Fiel',r:'common',e:4,eg:['basic']},
-  {i:'🐱',n:'Gato Curioso',r:'common',e:5,eg:['basic']},
-  {i:'🐰',n:'Conejo Saltarin',r:'common',e:6,eg:['basic']},
-  {i:'🐥',n:'Pollito Dorado',r:'common',e:8,eg:['basic']},
-  {i:'🦆',n:'Pato Real',r:'common',e:10,eg:['basic']},
-  {i:'🐷',n:'Cerdo Feliz',r:'common',e:7,eg:['basic']},
-  {i:'🦊',n:'Zorro Astuto',r:'rare',e:15,eg:['basic']},
-  {i:'🐻',n:'Oso Pardo',r:'rare',e:20,eg:['basic']},
-  {i:'🐼',n:'Panda Gigante',r:'rare',e:25,eg:['basic']},
-  {i:'🐨',n:'Koala Dormilon',r:'rare',e:30,eg:['basic']},
-  {i:'🦙',n:'Llama Dorada',r:'rare',e:35,eg:['basic']},
-  {i:'🐯',n:'Tigre Bengal',r:'epic',e:50,eg:['basic']},
-  {i:'🦁',n:'Leon Rey',r:'epic',e:65,eg:['basic']},
-  {i:'🐺',n:'Lobo Alpha',r:'epic',e:80,eg:['basic']},
-  {i:'🐲',n:'Dragon Joven',r:'god',e:120,eg:['basic']},
-  {i:'🦅',n:'Aguila Real',r:'rare',e:40,eg:['golden']},
-  {i:'🐺',n:'Lobo Gris',r:'rare',e:45,eg:['golden']},
-  {i:'🐯',n:'Tigre Blanco',r:'epic',e:90,eg:['golden']},
-  {i:'🦁',n:'Leon Dorado',r:'epic',e:110,eg:['golden']},
-  {i:'🦄',n:'Unicornio Mistico',r:'god',e:150,eg:['golden']},
-  {i:'🐲',n:'Dragon Fenix',r:'legendary',e:400,eg:['golden']},
-  {i:'🦅',n:'Halcon de Fuego',r:'legendary',e:500,eg:['golden']},
-  {i:'🔥',n:'Fenix Menor',r:'mythic',e:1000,eg:['golden']},
-  {i:'🦙',n:'Llama Cosmica',r:'rare',e:42,eg:['cosmic']},
-  {i:'🐲',n:'Dragon Ancestral',r:'god',e:220,eg:['golden','cosmic']},
-  {i:'🦄',n:'Unicornio Arcano',r:'god',e:280,eg:['cosmic']},
-  {i:'⚡',n:'Trueno Divino',r:'god',e:350,eg:['cosmic']},
-  {i:'🐲',n:'Dragon Celestial',r:'legendary',e:600,eg:['cosmic']},
-  {i:'🐍',n:'Hidra de Nueve Cabezas',r:'legendary',e:800,eg:['cosmic']},
-  {i:'🦅',n:'Aguila Imperial',r:'legendary',e:700,eg:['cosmic']},
-  {i:'🔥',n:'Fenix Primordial',r:'mythic',e:1400,eg:['cosmic']},
-  {i:'🔱',n:'Poseidon',r:'mythic',e:1800,eg:['cosmic']},
-  {i:'⚡',n:'Zeus',r:'mythic',e:2200,eg:['cosmic']},
-  {i:'🌋',n:'Volcan Viviente',r:'mythic',e:2600,eg:['cosmic']},
-  {i:'👾',n:'Glitch',r:'secret',e:3500,eg:['cosmic']},
-  {i:'🌌',n:'Galaxia',r:'secret',e:5000,eg:['cosmic']},
-  {i:'💎',n:'Diamante Infinito',r:'secret',e:6500,eg:['cosmic']},
-  {i:'👁️',n:'Illuminati',r:'secret',e:8000,eg:['cosmic']},
-  {i:'🦖',n:'T-Rex OG',r:'og',e:12000,eg:['cosmic']},
-  {i:'👑',n:'EL REY OG',r:'og',e:18000,eg:['cosmic']},
-  {i:'🦇',n:'Murcielago Sombra',r:'rare',e:55,eg:['void']},
-  {i:'🐺',n:'Lobo Espectral',r:'epic',e:120,eg:['void']},
-  {i:'🐙',n:'Kraken',r:'legendary',e:900,eg:['void']},
-  {i:'👻',n:'Fantasma',r:'mythic',e:2400,eg:['void']},
-  {i:'🕳️',n:'Agujero Negro',r:'secret',e:7500,eg:['void']},
-  {i:'🕊️',n:'Paloma Sagrada',r:'epic',e:100,eg:['divine']},
-  {i:'🦚',n:'Pavo Real Celestial',r:'god',e:200,eg:['divine']},
-  {i:'🦋',n:'Mariposa Dimensional',r:'legendary',e:850,eg:['divine']},
-  {i:'👼',n:'Serafin',r:'mythic',e:2800,eg:['divine']},
-  {i:'✨',n:'Estrella Fugaz',r:'secret',e:9000,eg:['divine']},
-  {i:'🦂',n:'Escorpion Infernal',r:'god',e:300,eg:['infernal']},
-  {i:'🐍',n:'Serpiente del Eden',r:'legendary',e:950,eg:['infernal']},
-  {i:'😈',n:'Diablo Menor',r:'mythic',e:3000,eg:['infernal']},
-  {i:'🔥',n:'Demonio Ancestral',r:'secret',e:11000,eg:['infernal']},
-  {i:'☠️',n:'Muerte',r:'og',e:25000,eg:['infernal']}
-];
+var G={money:10,displayMoney:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000,natural:25,marino:8000,magmatico:100000,estelar:2000000,umbral:10000000},tot:0,te:0,mut:false,nid:1,pname:'Mi Base',autoOpen:false,autoOn:false,playerId:'',fbId:'',world:'bosque'};
+var selEgg='basic',rbConf=false,rbTmr=null,activeTab='game',rankCache=[],rankFetching=false,rankLastFetch=0;
+var hatchState={pet:null,clicks:0,clicksNeeded:3,revealed:false,bursting:false};
 
-var WEIGHTS = {
-  basic:{common:65,rare:25,epic:8,god:2},
-  golden:{rare:10,epic:28,god:35,legendary:18,mythic:6,secret:0.5,og:0.1},
-  cosmic:{god:5,legendary:15,mythic:35,secret:2,og:1},
-  void:{epic:10,god:15,legendary:35,mythic:25,secret:1,og:0.5},
-  divine:{god:10,legendary:25,mythic:40,secret:1.5,og:0.8},
-  infernal:{legendary:5,mythic:35,secret:3,og:2}
-};
-var RCOL = {common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
-var RNAME = {common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
-var RORD = {common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
-var RKEYS = ['common','rare','epic','god','legendary','mythic','secret','og'];
+var bgCtx,bgW,bgH,bgParticles=[],habCtx,habW,habH,habPets=[],habFrame=0,hatchCtx,hatchParticles=[];
+function initBgCanvas(){var c=document.getElementById('bgCanvas');bgCtx=c.getContext('2d');function rs(){c.width=window.innerWidth;c.height=window.innerHeight;bgW=c.width;bgH=c.height;}rs();window.addEventListener('resize',rs);for(var i=0;i<60;i++)bgParticles.push(mkBgP());}
+function mkBgP(){var w=getWorld();return{x:Math.random()*bgW,y:Math.random()*bgH,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.3-0.1,size:Math.random()*3+1,alpha:Math.random()*0.4+0.1,color:w.color,life:Math.random()*200+100,maxLife:300,type:w.particles};}
+function drawBg(){if(!bgCtx)return;var w=getWorld();bgCtx.clearRect(0,0,bgW,bgH);var grd=bgCtx.createRadialGradient(bgW/2,bgH/2,0,bgW/2,bgH/2,bgW*0.7);grd.addColorStop(0,w.color+'18');grd.addColorStop(0.5,'#060e1a');grd.addColorStop(1,'#030810');bgCtx.fillStyle=grd;bgCtx.fillRect(0,0,bgW,bgH);for(var i=0;i<bgParticles.length;i++){var p=bgParticles[i];p.x+=p.vx;p.y+=p.vy;p.life--;if(p.life<=0||p.x<-10||p.x>bgW+10||p.y<-10||p.y>bgH+10){bgParticles[i]=mkBgP();bgParticles[i].y=bgH+5;bgParticles[i].life=bgParticles[i].maxLife;continue;}var a=p.alpha*(p.life/p.maxLife);bgCtx.globalAlpha=a;if(p.type==='leaves'){bgCtx.fillStyle=p.color;bgCtx.beginPath();bgCtx.ellipse(p.x,p.y,p.size*2,p.size,Math.sin(p.life*0.05)*0.5,0,Math.PI*2);bgCtx.fill();}else if(p.type==='bubbles'){bgCtx.strokeStyle=p.color;bgCtx.lineWidth=0.5;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.size*1.5,0,Math.PI*2);bgCtx.stroke();}else if(p.type==='embers'){bgCtx.fillStyle=p.color;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.size,0,Math.PI*2);bgCtx.fill();bgCtx.globalAlpha=a*0.3;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.size*3,0,Math.PI*2);bgCtx.fill();}else if(p.type==='stars'){var tw=Math.sin(p.life*0.1)*0.3+0.7;bgCtx.globalAlpha=a*tw;bgCtx.fillStyle='#fff';bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.size*0.7,0,Math.PI*2);bgCtx.fill();}else if(p.type==='wisps'){bgCtx.fillStyle=p.color;bgCtx.beginPath();bgCtx.arc(p.x+Math.sin(p.life*0.08)*8,p.y,p.size*1.5,0,Math.PI*2);bgCtx.fill();}}bgCtx.globalAlpha=1;requestAnimationFrame(drawBg);}
+function initHabCanvas(){var c=document.getElementById('habCanvas');var r=c.parentElement.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;habCtx=c.getContext('2d');habCtx.scale(2,2);habW=r.width;habH=r.height;refreshHabPets();}
+function refreshHabPets(){habPets=[];var s=G.pets.slice().sort(function(a,b){return petEarn(b)-petEarn(a);}).slice(0,10);for(var i=0;i<s.length;i++){habPets.push({emoji:s[i].i,x:Math.random()*(habW-30)+15,y:0,vx:(Math.random()-0.5)*1.5,targetY:30+Math.random()*(habH-60),bob:Math.random()*Math.PI*2,size:RORD[s[i].r]>=7?20:RORD[s[i].r]>=5?17:15,rare:s[i].r});}}
+function drawHabitat(){if(!habCtx)return;habFrame++;var w=getWorld();habCtx.clearRect(0,0,habW,habH);var g=habCtx.createLinearGradient(0,0,0,habH);g.addColorStop(0,'#0a1a0f');g.addColorStop(1,'#1a3a20');habCtx.fillStyle=g;habCtx.fillRect(0,0,habW,habH);var gy=habH*0.75;habCtx.strokeStyle=w.color+'25';habCtx.lineWidth=1;habCtx.beginPath();habCtx.moveTo(0,gy);for(var x=0;x<=habW;x+=5)habCtx.lineTo(x,gy+Math.sin((x+habFrame*0.5)*0.05)*3);habCtx.stroke();for(var i=0;i<habPets.length;i++){var p=habPets[i];p.y+=(p.targetY-p.y)*0.03;p.x+=p.vx;if(p.x<15||p.x>habW-15)p.vx*=-1;p.bob+=0.04;var by=p.y+Math.sin(p.bob)*3;if(RORD[p.rare]>=5){habCtx.globalAlpha=0.12;habCtx.fillStyle=RCOL[p.rare];habCtx.beginPath();habCtx.arc(p.x,by,p.size*1.2,0,Math.PI*2);habCtx.fill();}habCtx.globalAlpha=1;habCtx.font=p.size+'px serif';habCtx.textAlign='center';habCtx.textBaseline='middle';habCtx.fillText(p.emoji,p.x,by);}habCtx.globalAlpha=1;requestAnimationFrame(drawHabitat);}
+function spawnHatchParticles(rarity){var c=document.getElementById('hatchCanvas');var r=c.parentElement.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;hatchCtx=c.getContext('2d');hatchCtx.scale(2,2);var w=r.width,h=r.height,col=RCOL[rarity]||'#fff';var count=RORD[rarity]>=5?100:40;hatchParticles=[];for(var i=0;i<count;i++){var angle=Math.random()*Math.PI*2,spd=Math.random()*8+2;hatchParticles.push({x:w/2,y:h/2,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,size:Math.random()*5+1,color:col,life:Math.random()*50+30,maxLife:80,gravity:0.06});}animHatch(w,h);}
+function animHatch(w,h){if(!hatchCtx||!hatchParticles.length)return;hatchCtx.clearRect(0,0,w,h);var alive=false;for(var i=0;i<hatchParticles.length;i++){var p=hatchParticles[i];if(p.life<=0)continue;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=p.gravity;p.life--;p.vx*=0.98;var a=p.life/p.maxLife;hatchCtx.globalAlpha=a;hatchCtx.fillStyle=p.color;hatchCtx.beginPath();hatchCtx.arc(p.x,p.y,Math.max(0.5,p.size*a),0,Math.PI*2);hatchCtx.fill();}hatchCtx.globalAlpha=1;if(alive)requestAnimationFrame(function(){animHatch(w,h);});}
 
-// ==================== GAME STATE ====================
-var G = {
-  money:10, rb:0, mult:1, pets:[], disc:[],
-  pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
-  tot:0, te:0, mut:false, nid:1, pname:'Mi Base',
-  autoOpen:false, autoOn:false, playerId:'', fbId:''
-};
-var selEgg='basic', rbConf=false, rbTmr=null, activeTab='game';
-var rankCache=[], rankFetching=false, rankLastFetch=0;
+var snd={cx:null,go:function(){try{if(!this.cx)this.cx=new(window.AudioContext||window.webkitAudioContext)();if(this.cx.state==='suspended')this.cx.resume();}catch(e){}},t:function(f,d,tp,v){if(!this.cx||G.mut)return;try{var o=this.cx.createOscillator(),g=this.cx.createGain();o.type=tp||'sine';o.frequency.setValueAtTime(f,this.cx.currentTime);g.gain.setValueAtTime(v||0.08,this.cx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,this.cx.currentTime+d);o.connect(g);g.connect(this.cx.destination);o.start();o.stop(this.cx.currentTime+d);}catch(e){}},hatch:function(r){this.go();var x=RKEYS.indexOf(r),s=this;if(x<=1){this.t(523,0.12);setTimeout(function(){s.t(659,0.15)},80);}else if(x<=3){this.t(659,0.1);setTimeout(function(){s.t(784,0.1)},70);setTimeout(function(){s.t(988,0.15)},140);}else{[523,659,784,988,1047,1175,1319].forEach(function(f,i){setTimeout(function(){s.t(f,0.2,'triangle',0.06)},i*50);});}},crack:function(n,max){this.go();this.t(300+(n/max)*800,0.06,'square',0.05);},burst:function(){this.go();var s=this;[800,1000,1200].forEach(function(f,i){setTimeout(function(){s.t(f,0.15,'triangle',0.07)},i*40);});},click:function(){this.go();this.t(800,0.04,'square',0.03);},err:function(){this.go();this.t(200,0.15,'sawtooth',0.04);},world:function(){this.go();var s=this;[440,554,659,880].forEach(function(f,i){setTimeout(function(){s.t(f,0.15,'triangle',0.06)},i*80);});}};
 
-// ==================== SOUND ====================
-var snd = {
-  cx:null,
-  go:function(){
-    try{
-      if(!this.cx) this.cx=new(window.AudioContext||window.webkitAudioContext)();
-      if(this.cx.state==='suspended') this.cx.resume();
-    }catch(e){}
-  },
-  t:function(f,d,tp,v){
-    if(!this.cx||G.mut) return;
-    try{
-      var o=this.cx.createOscillator(), g=this.cx.createGain();
-      o.type=tp||'sine';o.frequency.setValueAtTime(f,this.cx.currentTime);
-      g.gain.setValueAtTime(v||0.1,this.cx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001,this.cx.currentTime+d);
-      o.connect(g);g.connect(this.cx.destination);o.start();o.stop(this.cx.currentTime+d);
-    }catch(e){}
-  },
-  hatch:function(r){
-    this.go(); var x=RKEYS.indexOf(r), s=this;
-    if(x<=1){this.t(523,0.12);setTimeout(function(){s.t(659,0.15)},80);}
-    else if(x===2){this.t(523,0.1);setTimeout(function(){s.t(659,0.1)},70);setTimeout(function(){s.t(784,0.2)},140);}
-    else if(x===3){this.t(659,0.1);setTimeout(function(){s.t(784,0.1)},70);setTimeout(function(){s.t(988,0.15)},140);setTimeout(function(){s.t(1047,0.25)},210);}
-    else{[523,659,784,988,1047,1175,1319].forEach(function(f,i){setTimeout(function(){s.t(f,0.2,'triangle',0.08)},i*60);});}
-  },
-  click:function(){this.go();this.t(800,0.05,'square',0.04);},
-  sell:function(){this.go();this.t(400,0.1,'sawtooth',0.05);},
-  up:function(){this.go();this.t(600,0.08);var s=this;setTimeout(function(){s.t(900,0.12)},60);},
-  err:function(){this.go();this.t(200,0.2,'sawtooth',0.05);}
-};
-
-// ==================== UTILS ====================
-function fmt(n){
-  if(n===undefined||n===null||isNaN(n)||!isFinite(n)) return '0';
-  n=Number(n);
-  if(n>=1e12) return (n/1e12).toFixed(1)+'T';
-  if(n>=1e9) return (n/1e9).toFixed(1)+'B';
-  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
-  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
-  return Math.floor(n).toLocaleString();
-}
+function fmt(n){if(isNaN(n)||!isFinite(n))return'0';n=Number(n);if(n>=1e12)return(n/1e12).toFixed(1)+'T';if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n).toLocaleString();}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-function toast(msg,type){
-  var c=document.getElementById('toasts');
-  var t=document.createElement('div');
-  t.className='toast t-'+(type||'inf');
-  t.textContent=msg;
-  c.appendChild(t);
-  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);
-}
-function floatM(amt){
-  var el=document.createElement('div');el.className='fm';
-  el.textContent='+$'+fmt(amt);
-  el.style.left=(Math.random()*140+100)+'px';el.style.top='65px';
-  document.getElementById('game').appendChild(el);
-  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1100);
-}
+function toast(msg,type){var c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast t-'+(type||'inf');t.textContent=msg;c.appendChild(t);setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);}
+function floatM(amt){var el=document.createElement('div');el.className='fm';el.textContent='+$'+fmt(amt);el.style.left=(Math.random()*130+90)+'px';el.style.top='160px';document.getElementById('game').appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1200);}
+function showConfirm(icon,title,msg,onYes){document.getElementById('confirmIcon').textContent=icon;document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMsg').textContent=msg;confirmCallback=onYes;document.getElementById('confirmBox').classList.add('show');}
+function hideConfirm(){document.getElementById('confirmBox').classList.remove('show');confirmCallback=null;}
+function getWorld(){for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===G.world)return WORLDS[i];return WORLDS[0];}
+function isWorldUnlocked(w){if(w.unlock.type==='default')return true;if(w.unlock.type==='pets')return G.pets.length>=w.unlock.val;if(w.unlock.type==='rb')return G.rb>=w.unlock.val;return false;}
+function getWorldUnlockText(w){if(w.unlock.type==='default')return'';if(w.unlock.type==='pets')return'<i class="fas fa-lock"></i> '+w.unlock.val+' mascotas';if(w.unlock.type==='rb')return'<i class="fas fa-lock"></i> RB '+w.unlock.val;return'';}
+function setWorld(wid){if(wid===G.world)return;var w=null;for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===wid){w=WORLDS[i];break;}if(!w||!isWorldUnlocked(w)){snd.err();toast('Bloqueado','err');return;}G.world=wid;snd.world();selEgg=w.eggs[0];bgParticles=[];for(var i=0;i<60;i++)bgParticles.push(mkBgP());applyWorldTheme();refreshHabPets();document.getElementById('game').classList.add('world-flash');setTimeout(function(){document.getElementById('game').classList.remove('world-flash');},500);save();updateUI();toast('Mundo: '+w.name,'rwd');}
+function applyWorldTheme(){var w=getWorld(),r=document.documentElement;r.style.setProperty('--wa',w.color);r.style.setProperty('--wa2',w.color2);r.style.setProperty('--wabg',w.color+'18');r.style.setProperty('--wbd',w.color+'30');r.style.setProperty('--wsh',w.color+'40');r.style.setProperty('--wg',w.color+'20');document.getElementById('worldBadge').textContent=w.name.split(' ')[0].toUpperCase();document.getElementById('worldBadge').style.color=w.color;document.getElementById('game').classList.add('world-glow');document.getElementById('habLabel').textContent='Habitat - '+w.name;document.getElementById('sWB').textContent='x'+w.bonus.toFixed(1);}
 
-// ==================== CONFIRM DIALOG ====================
-function showConfirm(icon, title, msg, onYes) {
-  document.getElementById('confirmIcon').textContent = icon;
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent = msg;
-  confirmCallback = onYes;
-  document.getElementById('confirmBox').classList.add('show');
-}
-function hideConfirm() {
-  document.getElementById('confirmBox').classList.remove('show');
-  confirmCallback = null;
-}
+var SAVE_KEY='PetSimUltra_v18';
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pname:G.pname,autoOpen:G.autoOpen,autoOn:G.autoOn,playerId:G.playerId,fbId:G.fbId,world:G.world}));}catch(e){}}
+function load(){var raw=null;try{raw=localStorage.getItem(SAVE_KEY);}catch(e){return;}if(!raw)return;try{var d=JSON.parse(raw);if(!d)return;G.money=d.money||10;G.displayMoney=G.money;G.rb=d.rb||0;G.mult=d.mult||1;G.mut=!!d.mut;G.tot=d.tot||0;G.te=d.te||0;G.nid=d.nid||1;G.pname=d.pname||'Mi Base';G.autoOpen=!!d.autoOpen;G.autoOn=!!d.autoOn;G.playerId=d.playerId||'';G.fbId=d.fbId||'';G.world=d.world||'bosque';if(d.pr)G.pr=d.pr;G.disc=d.disc||[];G.pets=[];if(d.pets){for(var i=0;i<d.pets.length;i++){var p=d.pets[i];if(!p)continue;G.pets.push({i:p.i,n:p.n,r:p.r,be:p.be||p.e||1,lv:p.lv||1,id:p.id||G.nid++});}}}catch(e){}}
+function resetGame(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}var oldPid=G.playerId;G={money:10,displayMoney:10,rb:0,mult:1,pets:[],disc:[],pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000,natural:25,marino:8000,magmatico:100000,estelar:2000000,umbral:10000000},tot:0,te:0,mut:false,nid:1,pname:'Mi Base',autoOpen:false,autoOn:false,playerId:oldPid,fbId:oldPid,world:'bosque'};selEgg='basic';rbConf=false;applyWorldTheme();refreshHabPets();updateUI();toast('Reiniciado','inf');}
 
-// ==================== SAVE/LOAD ====================
-var SAVE_KEY='PetSimUltra_v12';
-function save(){
-  try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify({
-      money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,
-      tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pname:G.pname,
-      autoOpen:G.autoOpen,autoOn:G.autoOn,playerId:G.playerId,fbId:G.fbId
-    }));
-  }catch(e){}
-}
-function load(){
-  for(var v=0;v<=11;v++){try{localStorage.removeItem('PetSimUltra'+(v>1?'_v'+v:''));}catch(e){}}
-  var raw=null;
-  try{raw=localStorage.getItem(SAVE_KEY);}catch(e){return;}
-  if(!raw) return;
-  try{
-    var d=JSON.parse(raw);
-    if(!d||typeof d.money!=='number') return;
-    G.money=(isNaN(d.money)||!isFinite(d.money))?10:d.money;
-    G.rb=(typeof d.rb==='number'&&isFinite(d.rb))?Math.max(0,d.rb):0;
-    G.mult=(typeof d.mult==='number'&&isFinite(d.mult)&&d.mult>=1)?d.mult:1;
-    G.mut=!!d.mut;G.tot=Math.max(0,d.tot||0);G.te=Math.max(0,d.te||0);
-    G.nid=Math.max(1,d.nid||1);
-    G.pname=(typeof d.pname==='string'&&d.pname.length)?d.pname.slice(0,14):'Mi Base';
-    G.autoOpen=!!d.autoOpen;G.autoOn=!!d.autoOn;
-    G.playerId=(typeof d.playerId==='string')?d.playerId:'';
-    G.fbId=(typeof d.fbId==='string')?d.fbId:'';
-    if(d.pr&&typeof d.pr.basic==='number'){
-      G.pr=d.pr;
-      if(!G.pr.void) G.pr.void=50000;
-      if(!G.pr.divine) G.pr.divine=250000;
-      if(!G.pr.infernal) G.pr.infernal=1000000;
-    }
-    G.disc=Array.isArray(d.disc)?d.disc:[];
-    G.pets=[];
-    if(Array.isArray(d.pets)){
-      for(var i=0;i<d.pets.length;i++){
-        var p=d.pets[i];
-        if(!p||!p.i||!p.n||!p.r) continue;
-        var be=(typeof p.be==='number'&&isFinite(p.be)&&p.be>0)?p.be:(p.e||1);
-        var lv=(typeof p.lv==='number'&&p.lv>=1)?Math.min(99,Math.floor(p.lv)):1;
-        var id=(typeof p.id==='number'&&p.id>0)?Math.floor(p.id):G.nid++;
-        G.pets.push({i:p.i,n:p.n,r:p.r,be:be,lv:lv,id:id});
-      }
-    }
-  }catch(e){}
-}
-function resetGame(){
-  try{localStorage.removeItem(SAVE_KEY);}catch(e){}
-  var oldPid=G.playerId;
-  G={money:10,rb:0,mult:1,pets:[],disc:[],
-    pr:{basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000},
-    tot:0,te:0,mut:false,nid:1,pname:'Mi Base',
-    autoOpen:false,autoOn:false,playerId:oldPid,fbId:oldPid};
-  selEgg='basic';rbConf=false;
-  if(rbTmr) clearTimeout(rbTmr);
-  document.getElementById('rkName').value='Mi Base';
-  document.getElementById('rkPlayerId').value=G.playerId;
-  updateUI();
-  toast('Juego reiniciado','inf');
-}
-
-// ==================== GAME LOGIC ====================
-function petEarn(p){return (p.be||1)*(1+0.2*((p.lv||1)-1))*(G.mult||1);}
-function totInc(){var s=0;for(var i=0;i<G.pets.length;i++) s+=petEarn(G.pets[i]);return s;}
+function petEarn(p){return(p.be||1)*(1+0.2*((p.lv||1)-1))*(G.mult||1)*(getWorld().bonus||1);}
+function totInc(){var s=0;for(var i=0;i<G.pets.length;i++)s+=petEarn(G.pets[i]);return s;}
 function rbCost(){return Math.floor(500000*Math.pow(2,G.rb));}
 function upCost(p){return Math.floor((p.be||1)*25*(p.lv||1));}
+function roll(egg){var w=WEIGHTS[egg];if(!w)return PETS[0];var keys=Object.keys(w),total=0;for(var i=0;i<keys.length;i++)total+=w[keys[i]];var r=Math.random()*total,chosen=keys[0];for(var i=0;i<keys.length;i++){r-=w[keys[i]];if(r<=0){chosen=keys[i];break;}}var pool=[];for(var i=0;i<PETS.length;i++){if(PETS[i].r===chosen&&PETS[i].eg.indexOf(egg)!==-1)pool.push(PETS[i]);}if(!pool.length)return PETS[0];return pool[Math.floor(Math.random()*pool.length)];}
 
-function roll(egg){
-  var w=WEIGHTS[egg];if(!w) return PETS[0];
-  var keys=Object.keys(w),total=0;
-  for(var i=0;i<keys.length;i++) total+=w[keys[i]];
-  var r=Math.random()*total,chosen=keys[0];
-  for(var i=0;i<keys.length;i++){r-=w[keys[i]];if(r<=0){chosen=keys[i];break;}}
-  var pool=[];
-  for(var i=0;i<PETS.length;i++){
-    if(PETS[i].r===chosen&&PETS[i].eg.indexOf(egg)!==-1) pool.push(PETS[i]);
-  }
-  if(!pool.length){
-    for(var i=0;i<PETS.length;i++){if(PETS[i].eg.indexOf(egg)!==-1) return PETS[i];}
-    return PETS[0];
-  }
-  return pool[Math.floor(Math.random()*pool.length)];
-}
+function openEgg(silent){var cost=G.pr[selEgg];if(G.money<cost){if(!silent){snd.err();toast('Sin dinero','err');}if(G.autoOn){G.autoOn=false;updateUI();}return false;}G.money-=cost;var scales={basic:1.15,golden:1.2,cosmic:1.25,void:1.28,divine:1.3,infernal:1.35,natural:1.12,marino:1.22,magmatico:1.28,estelar:1.32,umbral:1.38};G.pr[selEgg]=Math.floor(G.pr[selEgg]*(scales[selEgg]||1.15));var tpl=roll(selEgg);var np={i:tpl.i,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++};G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)===-1)G.disc.push(tpl.n);save();updateUI();refreshHabPets();if(!silent){snd.go();showHatch(np);}return true;}
 
-function openEgg(silent){
-  var cost=G.pr[selEgg];
-  if(G.money<cost){
-    if(!silent){snd.err();toast('Sin dinero suficiente','err');}
-    if(G.autoOn&&G.money<cost){G.autoOn=false;updateUI();}
-    return false;
-  }
-  G.money-=cost;
-  var scales={basic:1.15,golden:1.2,cosmic:1.25,void:1.28,divine:1.3,infernal:1.35};
-  G.pr[selEgg]=Math.floor(G.pr[selEgg]*(scales[selEgg]||1.15));
-  var tpl=roll(selEgg);
-  var np={i:tpl.i,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++};
-  G.pets.push(np);G.tot++;
-  if(G.disc.indexOf(tpl.n)===-1) G.disc.push(tpl.n);
-  save();updateUI();
-  if(!silent){snd.go();showHatch(np);}
-  return true;
-}
+function showHatch(pet){hatchState={pet:pet,clicks:0,clicksNeeded:CLICKS_NEEDED[pet.r]||3,revealed:false,bursting:false};var ov=document.getElementById('overlay'),e3d=document.getElementById('oegg3d'),e3dBody=document.getElementById('egg3dBody');ov.style.display='flex';ov.style.cursor='pointer';e3d.style.display='block';e3dBody.style.background=EGG_3D_GRAD[selEgg]||EGG_3D_GRAD.basic;e3d.className='egg-3d-container';document.getElementById('egg3d').className='egg-3d';document.getElementById('crackContainer').innerHTML='';document.getElementById('oicon').style.display='none';document.getElementById('tapHint').style.display='block';document.getElementById('tapProgress').style.display='flex';document.getElementById('oclose').style.display='none';document.getElementById('oclose').classList.remove('visible');document.getElementById('oname').textContent='';document.getElementById('orar').textContent='';document.getElementById('orar').style.color='';document.getElementById('oinfo').textContent='';updateTapProgress();snd.hatch(pet.r);}
 
-function showHatch(pet){
-  var ov=document.getElementById('overlay');
-  var egg=document.getElementById('oegg');
-  var ico=document.getElementById('oicon');
-  ov.style.display='flex';
-  var clsMap={basic:'egg-b',golden:'egg-g',cosmic:'egg-c',void:'egg-v',divine:'egg-d',infernal:'egg-i'};
-  egg.className=clsMap[selEgg]||'egg-b';egg.style.display='block';
-  ico.style.display='none';ico.className='';
-  document.getElementById('oname').textContent='';
-  document.getElementById('orar').textContent='';document.getElementById('orar').style.color='';
-  document.getElementById('oinfo').textContent='';
-  egg.classList.add('shk');snd.hatch(pet.r);
-  var tier=RKEYS.indexOf(pet.r),dur=tier>=3?2000:1500;
-  setTimeout(function(){
-    egg.classList.remove('shk');egg.classList.add('brk');
-    setTimeout(function(){
-      egg.style.display='none';egg.classList.remove('brk');
-      ico.style.display='block';ico.textContent=pet.i;
-      ico.style.color=RCOL[pet.r]||'#fff';ico.classList.add('rev');
-      document.getElementById('oname').textContent=pet.n;
-      document.getElementById('orar').textContent=RNAME[pet.r]||pet.r;
-      document.getElementById('orar').style.color=RCOL[pet.r]||'#fff';
-      document.getElementById('oinfo').textContent='+$'+fmt(petEarn(pet))+'/s';
-    },500);
-  },dur);
-}
-function closeHatch(){
-  document.getElementById('overlay').style.display='none';
-  document.getElementById('oegg').className='';
-  document.getElementById('oicon').className='';document.getElementById('oicon').style.display='none';
-}
+function hatchClick(){if(hatchState.revealed||hatchState.bursting)return;hatchState.clicks++;var n=hatchState.clicks,max=hatchState.clicksNeeded,progress=n/max;snd.crack(n,max);if(navigator.vibrate)navigator.vibrate(30);addCrackLines(progress);var e3d=document.getElementById('oegg3d');e3d.classList.remove('egg-squish');void e3d.offsetWidth;e3d.classList.add('egg-squish');setTimeout(function(){e3d.classList.remove('egg-squish');},150);e3d.className='egg-3d-container';if(progress<0.25)e3d.classList.add('egg-shake-1');else if(progress<0.5)e3d.classList.add('egg-shake-2');else if(progress<0.75)e3d.classList.add('egg-shake-3');else e3d.classList.add('egg-shake-4');e3d.classList.remove('egg-glow-1','egg-glow-2','egg-glow-3','egg-glow-4');if(progress>=0.75)e3d.classList.add('egg-glow-4');else if(progress>=0.5)e3d.classList.add('egg-glow-3');else if(progress>=0.25)e3d.classList.add('egg-glow-2');else e3d.classList.add('egg-glow-1');var flash=document.createElement('div');flash.className='click-flash';document.getElementById('overlay').appendChild(flash);setTimeout(function(){if(flash.parentNode)flash.parentNode.removeChild(flash);},200);if(progress>=0.5){var game=document.getElementById('game');game.classList.remove('screen-shake');void game.offsetWidth;game.classList.add('screen-shake');setTimeout(function(){game.classList.remove('screen-shake');},200);}updateTapProgress();if(n>=max)hatchBurst();}
 
-function doUpgrade(id){
-  var pet=null;
-  for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){pet=G.pets[i];break;}}
-  if(!pet||pet.lv>=99) return;
-  var c=upCost(pet);
-  if(G.money<c){snd.err();toast('Dinero insuficiente','err');return;}
-  G.money-=c;pet.lv++;snd.up();toast(pet.n+' Nivel '+pet.lv,'ok');save();updateUI();
-}
-function doSell(id){
-  var idx=-1;
-  for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break;}}
-  if(idx===-1) return;
-  var pet=G.pets[idx];var val=Math.floor(petEarn(pet)*10);
-  G.money+=val;G.pets.splice(idx,1);snd.sell();
-  toast(pet.n+' vendido $'+fmt(val),'inf');save();updateUI();
-}
-function doRb(){
-  snd.go();var cost=rbCost();
-  if(rbConf){
-    clearTimeout(rbTmr);rbConf=false;
-    G.rb++;G.mult*=1.8;G.money=10;G.pets=[];
-    G.pr={basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000};
-    snd.hatch('og');toast('REBIRTH '+G.rb+' — x'+G.mult.toFixed(1),'rwd');save();updateUI();
-  } else {
-    if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return;}
-    rbConf=true;
-    var btn=document.getElementById('btnRb');
-    btn.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';
-    btn.classList.add('yes');btn.disabled=false;snd.click();
-    rbTmr=setTimeout(function(){rbConf=false;updateUI();},3000);
-  }
-}
-function handleAuto(){
-  snd.click();
-  if(!G.autoOpen){
-    if(G.money<1e9){snd.err();toast('Necesitas $1.0B','err');return;}
-    G.money-=1e9;G.autoOpen=true;G.autoOn=true;
-    toast('Auto Apertura activada!','rwd');save();updateUI();
-  } else {
-    G.autoOn=!G.autoOn;toast('Auto: '+(G.autoOn?'ON':'OFF'),'inf');save();updateUI();
-  }
-}
+function addCrackLines(progress){var container=document.getElementById('crackContainer');var count=progress>=0.7?3:progress>=0.4?2:1;for(var i=0;i<count;i++){var line=document.createElement('div');line.className='crack-line'+(progress>=0.6?' thick':'');line.style.top=(15+Math.random()*65)+'%';line.style.left=(5+Math.random()*85)+'%';line.style.width=(8+Math.random()*22)+'px';line.style.transform='rotate('+(Math.random()*360)+'deg)';container.appendChild(line);}}
+function updateTapProgress(){var html='';for(var i=0;i<hatchState.clicksNeeded;i++){html+='<span class="pip'+(i<hatchState.clicks?' filled':'')+(i===hatchState.clicks-1?' just':'')+'"></span>';}document.getElementById('tapProgress').innerHTML=html;}
 
-// ==================== PLAYER ID ====================
-function ensurePlayerId(){
-  if(!G.playerId||G.playerId.trim().length<3){
-    G.playerId='player_'+Math.random().toString(36).substr(2,6)+Date.now().toString(36).substr(-4);
-  }
-  G.playerId=G.playerId.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);
-  G.fbId=G.playerId;save();return G.playerId;
-}
-function copyPlayerId(){
-  var idText=G.playerId;
-  if(idText&&navigator.clipboard){
-    navigator.clipboard.writeText(idText).then(function(){
-      toast('ID copiado: '+idText,'ok');
-      var btn=document.getElementById('btnCopyId');
-      btn.innerHTML='<i class="fas fa-check"></i>';
-      setTimeout(function(){btn.innerHTML='<i class="fas fa-copy"></i>';},1500);
-    }).catch(function(){document.getElementById('rkPlayerId').select();document.execCommand('copy');toast('ID copiado','ok');});
-  } else {
-    document.getElementById('rkPlayerId').select();document.execCommand('copy');toast('ID copiado','ok');
-  }
-}
+function hatchBurst(){hatchState.bursting=true;var e3d=document.getElementById('oegg3d'),ov=document.getElementById('overlay');document.getElementById('tapHint').style.display='none';document.getElementById('tapProgress').style.display='none';ov.style.cursor='default';e3d.className='egg-3d-container egg-burst';snd.burst();spawnHatchParticles(hatchState.pet.r);if(navigator.vibrate)navigator.vibrate([50,30,80]);setTimeout(function(){e3d.style.display='none';var ico=document.getElementById('oicon');ico.style.display='block';ico.textContent=hatchState.pet.i;ico.style.color=RCOL[hatchState.pet.r]||'#fff';ico.style.animation='iconReveal .6s cubic-bezier(.175,.885,.32,1.275) forwards';document.getElementById('oname').textContent=hatchState.pet.n;document.getElementById('orar').textContent=RNAME[hatchState.pet.r]||hatchState.pet.r;document.getElementById('orar').style.color=RCOL[hatchState.pet.r]||'#fff';document.getElementById('oinfo').textContent='+$'+fmt(petEarn(hatchState.pet))+'/s';setTimeout(function(){hatchState.revealed=true;hatchState.bursting=false;var cb=document.getElementById('oclose');cb.style.display='inline-block';cb.classList.add('visible');},600);},500);}
 
-// ==================== STORAGE RANKING ====================
-var RANK_PREFIX = 'rank_';
+function closeHatch(){if(!hatchState.revealed)return;document.getElementById('overlay').style.display='none';document.getElementById('oegg3d').style.display='none';document.getElementById('oegg3d').className='egg-3d-container';document.getElementById('egg3d').className='egg-3d';document.getElementById('crackContainer').innerHTML='';document.getElementById('oicon').style.display='none';document.getElementById('oicon').style.animation='';document.getElementById('oclose').style.display='none';document.getElementById('oclose').classList.remove('visible');document.getElementById('tapProgress').style.display='flex';hatchParticles=[];hatchState.revealed=false;}
 
-async function pushRank(){
-  if(!G.playerId) return;
-  try{
-    var entry = {
-      name: G.pname||'Mi Base',
-      earn: Math.floor(totInc()),
-      rb: G.rb,
-      pets: G.pets.length,
-      ts: Date.now(),
-      playerId: G.playerId
-    };
-    await window.storage.set(RANK_PREFIX+G.playerId, JSON.stringify(entry), true);
-  }catch(e){
-    console.error('pushRank error:',e);
-  }
-}
+function doUpgrade(id){var pet=null;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){pet=G.pets[i];break;}}if(!pet||pet.lv>=99)return;var c=upCost(pet);if(G.money<c){snd.err();toast('Sin dinero','err');return;}G.money-=c;pet.lv++;toast(pet.n+' Nv.'+pet.lv,'ok');save();updateUI();}
+function doSell(id){var idx=-1;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break;}}if(idx===-1)return;var pet=G.pets[idx],val=Math.floor(petEarn(pet)*10);G.money+=val;G.pets.splice(idx,1);toast(pet.n+' $'+fmt(val),'inf');save();updateUI();refreshHabPets();}
+function doRb(){var cost=rbCost();if(rbConf){clearTimeout(rbTmr);rbConf=false;G.rb++;G.mult*=1.8;G.money=10;G.displayMoney=10;G.pets=[];G.pr={basic:10,golden:500,cosmic:5000,void:50000,divine:250000,infernal:1000000,natural:25,marino:8000,magmatico:100000,estelar:2000000,umbral:10000000};snd.hatch('og');toast('REBIRTH '+G.rb+' x'+G.mult.toFixed(1),'rwd');save();updateUI();refreshHabPets();}else{if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return;}rbConf=true;var btn=document.getElementById('btnRb');btn.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';btn.classList.add('yes');btn.disabled=false;snd.click();rbTmr=setTimeout(function(){rbConf=false;updateUI();},3000);}}
+function handleAuto(){snd.click();if(!G.autoOpen){if(G.money<1e9){snd.err();toast('Necesitas $1.0B','err');return;}G.money-=1e9;G.autoOpen=true;G.autoOn=true;toast('Auto activado!','rwd');save();updateUI();}else{G.autoOn=!G.autoOn;toast('Auto: '+(G.autoOn?'ON':'OFF'),'inf');save();updateUI();}}
 
-async function fetchRank(){
-  if(rankFetching) return;
-  rankFetching=true;
-  setRankStatus('loading','Cargando ranking...');
-  try{
-    var keysResult = await window.storage.list(RANK_PREFIX, true);
-    if(!keysResult||!Array.isArray(keysResult.keys)){
-      rankCache=[];setRankStatus('ok','0 jugadores');rankFetching=false;return;
-    }
-    var newCache=[];
-    for(var i=0;i<keysResult.keys.length;i++){
-      try{
-        var result = await window.storage.get(keysResult.keys[i], true);
-        if(result&&result.value){
-          var d=JSON.parse(result.value);
-          if(d&&d.playerId){
-            newCache.push({
-              id:d.playerId,
-              name:(typeof d.name==='string')?d.name:'???',
-              earn:typeof d.earn==='number'?d.earn:0,
-              rb:typeof d.rb==='number'?d.rb:0,
-              pets:typeof d.pets==='number'?d.pets:0,
-              isMe:(d.playerId===G.playerId)
-            });
-          }
-        }
-      }catch(e){}
-    }
-    newCache.sort(function(a,b){return b.earn-a.earn;});
-    rankCache=newCache;
-    setRankStatus('ok',rankCache.length+' jugadores · Actualizado');
-    if(activeTab==='rank') renderRank();
-    if(isAdmin) renderAdminPanel();
-  }catch(e){
-    setRankStatus('err','Error al cargar');
-    console.error('fetchRank error:',e);
-  }
-  rankFetching=false;
-}
+function ensurePlayerId(){if(!G.playerId||G.playerId.trim().length<3){G.playerId='p_'+Math.random().toString(36).substr(2,6);}G.playerId=G.playerId.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);G.fbId=G.playerId;save();}
+function copyPlayerId(){if(navigator.clipboard){navigator.clipboard.writeText(G.playerId).then(function(){toast('ID copiado','ok');});}else{toast('Error','err');}}
 
-function setRankStatus(type,msg){
-  var el=document.getElementById('rkStatus');
-  var txt=document.getElementById('rkStatusTxt');
-  if(!el||!txt) return;
-  el.className='rk-status '+type;
-  txt.textContent=msg;
-  el.innerHTML=(type==='loading'?'<span class="rk-spinner"></span>':'<i class="fas fa-'+(type==='ok'?'circle-check':type==='err'?'circle-exclamation':'clock')+'"></i>')+' <span id="rkStatusTxt">'+msg+'</span>';
-}
+var RANK_PREFIX='rank_';
+async function pushRank(){if(!G.playerId)return;try{await window.storage.set(RANK_PREFIX+G.playerId,JSON.stringify({name:G.pname,earn:Math.floor(totInc()),rb:G.rb,pets:G.pets.length,ts:Date.now(),playerId:G.playerId}),true);}catch(e){}}
+async function fetchRank(){if(rankFetching)return;rankFetching=true;setRankStatus('loading','Cargando...');try{var kr=await window.storage.list(RANK_PREFIX,true);if(!kr||!Array.isArray(kr.keys)){rankCache=[];setRankStatus('ok','0');rankFetching=false;return;}var nc=[];for(var i=0;i<kr.keys.length;i++){try{var r=await window.storage.get(kr.keys[i],true);if(r&&r.value){var d=JSON.parse(r.value);if(d&&d.playerId)nc.push({id:d.playerId,name:d.name||'???',earn:d.earn||0,rb:d.rb||0,pets:d.pets||0,isMe:d.playerId===G.playerId});}}catch(e){}}nc.sort(function(a,b){return b.earn-a.earn;});rankCache=nc;setRankStatus('ok',rankCache.length+' jugadores');if(activeTab==='rank')renderRank();}catch(e){setRankStatus('err','Error');}rankFetching=false;}
+function setRankStatus(type,msg){var el=document.getElementById('rkStatus');if(!el)return;el.className='rk-status '+type;el.innerHTML=(type==='loading'?'<span class="rk-spinner"></span>':'<i class="fas fa-circle-check"></i>')+' <span>'+msg+'</span>';}
+function renderRank(){var myEarn=Math.floor(totInc()),entries=rankCache.slice(),found=false;for(var i=0;i<entries.length;i++){if(entries[i].id===G.playerId){entries[i].isMe=true;found=true;}else entries[i].isMe=false;}if(!found&&G.playerId)entries.push({name:G.pname,earn:myEarn,rb:G.rb,pets:G.pets.length,isMe:true,id:G.playerId});entries.sort(function(a,b){return b.earn-a.earn;});var myPos=-1;for(var i=0;i<entries.length;i++){if(entries[i].isMe){myPos=i+1;break;}}document.getElementById('rkPos').textContent='#'+(myPos>0?myPos:'--');document.getElementById('rkMyEarn').textContent='$'+fmt(myEarn)+'/s';var html='';var top=entries.slice(0,20);for(var i=0;i<top.length;i++){var e=top[i],pos=i+1;html+='<div class="rk-i'+(e.isMe?' me':'')+'"><div class="rk-pos'+(pos<=3?' p'+pos:'')+'">'+pos+'</div><div class="rk-body"><div class="rk-top"><span class="rk-n">'+esc(e.name)+(e.isMe?' <span class="rk-you">TU</span>':'')+'</span><span class="rk-rb">RB '+e.rb+'</span></div><div class="rk-bot"><span class="rk-pc">'+e.pets+' pets</span><span class="rk-earn">$'+fmt(e.earn)+'/s</span></div></div></div>';}document.getElementById('rkList').innerHTML=html;}
 
-function renderRank(){
-  var myEarn=Math.floor(totInc());
-  var entries=rankCache.slice();
-  var found=false;
-  for(var i=0;i<entries.length;i++){
-    if(entries[i].id===G.playerId){entries[i].isMe=true;found=true;}
-    else entries[i].isMe=false;
-  }
-  if(!found&&G.playerId){
-    entries.push({name:G.pname||'Mi Base',earn:myEarn,rb:G.rb,pets:G.pets.length,isMe:true,id:G.playerId});
-  }
-  entries.sort(function(a,b){return b.earn-a.earn;});
-  var myPos=-1;
-  for(var i=0;i<entries.length;i++){if(entries[i].isMe){myPos=i+1;break;}}
-  document.getElementById('rkPos').textContent='#'+(myPos>0?myPos:'--');
-  document.getElementById('rkMyEarn').textContent='$'+fmt(myEarn)+'/s';
-  var html='';
-  if(!entries.length){
-    html='<div class="empty"><i class="fas fa-trophy"></i><p>Sin jugadores todavia<br><small style="font-size:9px;opacity:.6">Juega un rato para aparecer</small></p></div>';
-  }
-  var top=entries.slice(0,20);
-  for(var i=0;i<top.length;i++){
-    var e=top[i],pos=i+1,posC=pos<=3?' p'+pos:'',meC=e.isMe?' me':'';
-    html+='<div class="rk-i'+meC+'">'+
-      '<div class="rk-pos'+posC+'">'+pos+'</div>'+
-      '<div class="rk-body">'+
-        '<div class="rk-top">'+
-          '<span class="rk-n">'+esc(e.name)+(e.isMe?' <span class="rk-you">TU</span>':'')+'</span>'+
-          '<span class="rk-rb">RB '+e.rb+'</span>'+
-        '</div>'+
-        '<div class="rk-bot">'+
-          '<span class="rk-pc">'+e.pets+' mascotas</span>'+
-          '<span class="rk-earn">$'+fmt(e.earn)+'/s</span>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }
-  document.getElementById('rkList').innerHTML=html;
-}
+function showAdminPanel(){isAdmin=true;fetchRank();document.getElementById('adminOverlay').classList.add('show');toast('Admin','adm');}
+function hideAdminPanel(){document.getElementById('adminOverlay').classList.remove('show');}
+function renderAdminPanel(){var entries=rankCache.slice().sort(function(a,b){return b.earn-a.earn;});var tp=0;for(var i=0;i<entries.length;i++)tp+=entries[i].pets;document.getElementById('adminTotalPlayers').textContent=entries.length;document.getElementById('adminTopEarn').textContent=entries.length?'$'+fmt(entries[0].earn)+'/s':'$0';document.getElementById('adminTotalPets').textContent=tp;var html='';if(!entries.length)html='<div class="admin-empty">Sin jugadores</div>';for(var i=0;i<entries.length;i++){var e=entries[i];html+='<div class="admin-player"><span class="admin-pos">'+(i+1)+'</span><div class="admin-player-info"><span class="admin-player-name">'+esc(e.name)+'</span><span class="admin-player-sub">RB '+e.rb+' · '+e.pets+'</span></div><span class="admin-player-earn">$'+fmt(e.earn)+'/s</span>'+(e.isMe?'<span style="width:20px"></span>':'<button class="admin-del" data-pid="'+esc(e.id)+'"><i class="fas fa-trash-can"></i></button>')+'</div>';}document.getElementById('adminList').innerHTML=html;document.querySelectorAll('.admin-del').forEach(function(btn){btn.onclick=function(){var pid=this.dataset.pid;showConfirm('🗑️','Eliminar','Eliminar del ranking?',function(){adminDeletePlayer(pid);});};});}
+async function adminDeletePlayer(pid){try{await window.storage.delete(RANK_PREFIX+pid,true);toast('Eliminado','ok');await fetchRank();renderAdminPanel();}catch(e){toast('Error','err');}}
+async function adminClearAll(){try{var kr=await window.storage.list(RANK_PREFIX,true);if(kr&&kr.keys){for(var i=0;i<kr.keys.length;i++){try{await window.storage.delete(kr.keys[i],true);}catch(e){}}}rankCache=[];toast('Limpio','ok');renderRank();renderAdminPanel();}catch(e){toast('Error','err');}}
+function handleTitleClick(){titleClickCount++;clearTimeout(titleClickTimer);titleClickTimer=setTimeout(function(){titleClickCount=0;},1500);if(titleClickCount>=5){titleClickCount=0;var pwd=prompt('Admin pass:');if(pwd===ADMIN_PASS)showAdminPanel();else{snd.err();toast('No','err');}}}
 
-// ==================== ADMIN PANEL ====================
-function showAdminPanel(){
-  isAdmin=true;
-  fetchRank().then(function(){renderAdminPanel();});
-  document.getElementById('adminOverlay').classList.add('show');
-  toast('Bienvenido, Administrador 🛡️','adm');
-}
-function hideAdminPanel(){
-  document.getElementById('adminOverlay').classList.remove('show');
-}
+function renderEggs(){var w=getWorld(),html='';for(var i=0;i<w.eggs.length;i++){var eid=w.eggs[i];html+='<button class="egg'+(eid===selEgg?' on':'')+'" data-e="'+eid+'"><div class="egg-shape '+(EGG_STYLES[eid]||'egg-b')+'"></div><span class="egg-n">'+(EGG_NAMES[eid]||eid)+'</span><span class="egg-p">$'+fmt(G.pr[eid])+'</span></button>';}document.getElementById('navEggs').innerHTML=html;}
+function renderWorlds(){var html='';for(var i=0;i<WORLDS.length;i++){var w=WORLDS[i],u=isWorldUnlocked(w),a=w.id===G.world,lt=getWorldUnlockText(w);var ph='';if(a){for(var j=0;j<4;j++)ph+='<div class="wparticle" style="left:'+Math.random()*90+'%;bottom:'+Math.random()*30+'%;width:'+(3+Math.random()*4)+'px;height:'+(3+Math.random()*4)+'px;background:'+w.color+';animation-duration:'+(2+Math.random()*3)+'s;animation-delay:'+Math.random()*2+'s;"></div>';}html+='<div class="wcard'+(a?' active':'')+(!u?' locked':'')+'" data-wid="'+w.id+'"><div class="wcard-particles">'+ph+'</div><div class="wcard-hd"><span class="wcard-icon" style="color:'+w.color+'">'+w.icon+'</span><div class="wcard-info"><div class="wcard-name">'+w.name+'</div><div class="wcard-desc">'+w.desc+'</div>'+(lt?'<div class="wcard-lock">'+lt+'</div>':'')+'</div></div><div class="wcard-stats"><span class="wcard-st">Bonus: <span>x'+w.bonus.toFixed(1)+'</span></span></div>'+(a?'<div class="wcard-bonus">ACTIVO</div>':'')+'</div>';}document.getElementById('worldMap').innerHTML=html;}
 
-function renderAdminPanel(){
-  var entries=rankCache.slice().sort(function(a,b){return b.earn-a.earn;});
-  var totalPets=0;
-  for(var i=0;i<entries.length;i++) totalPets+=entries[i].pets;
-  document.getElementById('adminTotalPlayers').textContent=entries.length;
-  document.getElementById('adminTopEarn').textContent=entries.length?'$'+fmt(entries[0].earn)+'/s':'$0';
-  document.getElementById('adminTotalPets').textContent=totalPets;
-  var html='';
-  if(!entries.length){
-    html='<div class="admin-empty"><i class="fas fa-users-slash" style="font-size:24px;display:block;margin-bottom:8px;opacity:.3"></i>No hay jugadores todavia</div>';
-  }
-  for(var i=0;i<entries.length;i++){
-    var e=entries[i],pos=i+1;
-    var meTag=e.isMe?' <span style="font-size:7px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 4px;border-radius:3px;">TU</span>':'';
-    var ts=e.ts?new Date(e.ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'';
-    html+='<div class="admin-player">'+
-      '<span class="admin-pos">'+pos+'</span>'+
-      '<div class="admin-player-info">'+
-        '<span class="admin-player-name">'+esc(e.name)+meTag+'</span>'+
-        '<span class="admin-player-sub">RB '+e.rb+' · '+e.pets+' mascotas'+(ts?' · '+ts:'')+'</span>'+
-        '<span class="admin-player-id">'+esc(e.id)+'</span>'+
-      '</div>'+
-      '<span class="admin-player-earn">$'+fmt(e.earn)+'/s</span>'+
-      (e.isMe?'<span style="width:22px;flex-shrink:0"></span>':'<button class="admin-del" data-pid="'+esc(e.id)+'" title="Eliminar jugador"><i class="fas fa-trash-can"></i></button>')+
-    '</div>';
-  }
-  document.getElementById('adminList').innerHTML=html;
-  
-  // Delete listeners
-  document.querySelectorAll('.admin-del').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var pid=this.getAttribute('data-pid');
-      var ename=this.closest('.admin-player').querySelector('.admin-player-name').textContent.replace('TU','').trim();
-      showConfirm('🗑️','Eliminar jugador','Eliminar a "'+ename+'" del ranking? No se puede deshacer.',function(){
-        adminDeletePlayer(pid);
-      });
-    });
-  });
-}
+function updateUI(){var diff=G.money-G.displayMoney;if(Math.abs(diff)<1)G.displayMoney=G.money;else G.displayMoney+=diff*0.15;document.getElementById('sMoney').textContent='$'+fmt(Math.round(G.displayMoney));document.getElementById('sInc').textContent='$'+fmt(totInc())+'/s';document.getElementById('sPets').textContent=G.pets.length;var bb=document.getElementById('btnBuy');if(G.money>=G.pr[selEgg]){bb.classList.add('can');bb.classList.remove('no');}else{bb.classList.remove('can');bb.classList.add('no');}var ba=document.getElementById('btnAuto');if(!G.autoOpen){ba.innerHTML='<i class="fas fa-robot"></i> AUTO ($1.0B)';if(G.money>=1e9){ba.classList.add('can');ba.classList.remove('no','on');}else{ba.classList.add('no');ba.classList.remove('can','on');}}else{if(G.autoOn){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can');}else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no');}}if(!rbConf){var rb=document.getElementById('btnRb');rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCost())+')';rb.disabled=G.money<rbCost();rb.classList.remove('yes');}renderPets();renderEggs();if(activeTab==='worlds')renderWorlds();if(activeTab==='rank')renderRank();}
+function renderPets(){var el=document.getElementById('petList');if(!G.pets.length){el.innerHTML='<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo</p></div>';return;}var s=G.pets.slice().sort(function(a,b){var rd=(RORD[b.r]||0)-(RORD[a.r]||0);return rd!==0?rd:petEarn(b)-petEarn(a);});var h='';for(var i=0;i<s.length;i++){var p=s[i],earn=petEarn(p),uc=p.lv<99?upCost(p):0;h+='<div class="pc '+p.r+'"><div class="pc-l"><span class="pc-i">'+p.i+'</span><div class="pc-t"><span class="pc-n">'+p.n+'</span><span class="pc-m">Nv.'+p.lv+' '+(RNAME[p.r]||'')+(uc?' · $'+fmt(uc):'')+'</span></div></div><div class="pc-r"><span class="pc-e">$'+fmt(earn)+'/s</span><div class="pc-a">';if(p.lv<99)h+='<button class="ab ab-u" data-act="up" data-id="'+p.id+'"><i class="fas fa-arrow-up"></i></button>';h+='<button class="ab ab-s" data-act="sell" data-id="'+p.id+'"><i class="fas fa-coins"></i></button></div></div></div>';}el.innerHTML=h;}
+function renderIdx(){var pct=Math.round((G.disc.length/PETS.length)*100);document.getElementById('idxPct').textContent=pct+'%';document.getElementById('idxBar').style.width=pct+'%';var s=PETS.slice().sort(function(a,b){return(RORD[a.r]||0)-(RORD[b.r]||0);});var h='';for(var i=0;i<s.length;i++){var p=s[i],d=G.disc.indexOf(p.n)!==-1;h+='<div class="ii '+p.r+(d?'':' off')+'"><span class="ic">'+(d?p.i:'?')+'</span><span class="in">'+(d?p.n:'???')+'</span><span class="ir '+p.r+'">'+(RNAME[p.r]||'')+'</span></div>';}document.getElementById('idxList').innerHTML=h;}
 
-async function adminDeletePlayer(playerId){
-  try{
-    await window.storage.delete(RANK_PREFIX+playerId, true);
-    toast('Jugador eliminado del ranking','ok');
-    await fetchRank();
-    renderAdminPanel();
-  }catch(e){
-    toast('Error al eliminar: '+e.message,'err');
-  }
-}
+function setTab(t){snd.click();activeTab=t;var panels=document.querySelectorAll('.panel'),btns=document.querySelectorAll('.tab');for(var i=0;i<panels.length;i++)panels[i].classList.remove('on');for(var i=0;i<btns.length;i++)btns[i].classList.remove('on');var map={game:'pGame',worlds:'pWorlds',index:'pIndex',rank:'pRank'};var pel=document.getElementById(map[t]);if(pel)pel.classList.add('on');var bel=document.querySelector('.tab[data-t="'+t+'"]');if(bel)bel.classList.add('on');if(t==='index')renderIdx();if(t==='rank'){renderRank();document.getElementById('rkPlayerId').value=G.playerId;fetchRank();}if(t==='worlds')renderWorlds();}
+function setEgg(e){snd.click();selEgg=e;updateUI();}
 
-async function adminClearAll(){
-  try{
-    var keysResult = await window.storage.list(RANK_PREFIX, true);
-    if(keysResult&&Array.isArray(keysResult.keys)){
-      for(var i=0;i<keysResult.keys.length;i++){
-        try{await window.storage.delete(keysResult.keys[i], true);}catch(e){}
-      }
-    }
-    rankCache=[];
-    toast('Ranking limpiado completamente','ok');
-    renderRank();renderAdminPanel();
-  }catch(e){
-    toast('Error al limpiar: '+e.message,'err');
-  }
-}
+function renderLoop(){var diff=G.money-G.displayMoney;if(Math.abs(diff)>0.5){G.displayMoney+=diff*0.15;document.getElementById('sMoney').textContent='$'+fmt(Math.round(G.displayMoney));}requestAnimationFrame(renderLoop);}
 
-// ==================== ADMIN ACCESS via title clicks ====================
-function handleTitleClick(){
-  titleClickCount++;
-  clearTimeout(titleClickTimer);
-  titleClickTimer=setTimeout(function(){titleClickCount=0;},1500);
-  if(titleClickCount>=5){
-    titleClickCount=0;
-    var pwd=prompt('🔐 Contraseña de administrador:');
-    if(pwd===null) return;
-    if(pwd===ADMIN_PASS){
-      showAdminPanel();
-    } else {
-      snd.err();toast('Contraseña incorrecta ❌','err');
-    }
-  }
-}
-
-// ==================== UI RENDERING ====================
-function updateUI(){
-  document.getElementById('sMoney').textContent='$'+fmt(G.money);
-  document.getElementById('sInc').textContent='$'+fmt(totInc())+'/s';
-  document.getElementById('sPets').textContent=G.pets.length;
-  var eggIds={basic:'pB',golden:'pG',cosmic:'pC',void:'pV',divine:'pD',infernal:'pI'};
-  for(var k in eggIds){var el=document.getElementById(eggIds[k]);if(el) el.textContent='$'+fmt(G.pr[k]);}
-  var bb=document.getElementById('btnBuy');
-  if(G.money>=G.pr[selEgg]){bb.classList.add('can');bb.classList.remove('no');}
-  else{bb.classList.remove('can');bb.classList.add('no');}
-  var ba=document.getElementById('btnAuto');
-  if(!G.autoOpen){
-    ba.innerHTML='<i class="fas fa-robot"></i> AUTO APERTURA ($1.0B)';
-    if(G.money>=1e9){ba.classList.add('can');ba.classList.remove('no','on');}
-    else{ba.classList.add('no');ba.classList.remove('can','on');}
-  } else {
-    if(G.autoOn){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can');}
-    else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no');}
-  }
-  if(!rbConf){
-    var rb=document.getElementById('btnRb');
-    rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCost())+')';
-    rb.disabled=G.money<rbCost();rb.classList.remove('yes');
-  }
-  renderPets();
-  if(activeTab==='rank') renderRank();
-}
-
-function renderPets(){
-  var el=document.getElementById('petList');
-  if(!G.pets.length){el.innerHTML='<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo para empezar</p></div>';return;}
-  var sorted=G.pets.slice().sort(function(a,b){var rd=(RORD[b.r]||0)-(RORD[a.r]||0);return rd!==0?rd:petEarn(b)-petEarn(a);});
-  var h='';
-  for(var i=0;i<sorted.length;i++){
-    var p=sorted[i],earn=petEarn(p),uc=p.lv<99?upCost(p):0;
-    h+='<div class="pc '+p.r+'">'+
-      '<div class="pc-l"><span class="pc-i">'+p.i+'</span>'+
-      '<div class="pc-t"><span class="pc-n">'+p.n+'</span>'+
-      '<span class="pc-m">Nvl.'+p.lv+' · '+(RNAME[p.r]||p.r)+(uc?' · Up $'+fmt(uc):'')+'</span>'+
-      '</div></div>'+
-      '<div class="pc-r"><span class="pc-e">$'+fmt(earn)+'/s</span>'+
-      '<div class="pc-a">';
-    if(p.lv<99) h+='<button class="ab ab-u" data-act="up" data-id="'+p.id+'"><i class="fas fa-arrow-up"></i></button>';
-    h+='<button class="ab ab-s" data-act="sell" data-id="'+p.id+'"><i class="fas fa-coins"></i></button>'+
-      '</div></div></div>';
-  }
-  el.innerHTML=h;
-}
-
-function renderIdx(){
-  var pct=Math.round((G.disc.length/PETS.length)*100);
-  document.getElementById('idxPct').textContent=pct+'%';
-  document.getElementById('idxBar').style.width=pct+'%';
-  var sorted=PETS.slice().sort(function(a,b){return(RORD[a.r]||0)-(RORD[b.r]||0);});
-  var h='';
-  for(var i=0;i<sorted.length;i++){
-    var p=sorted[i],d=G.disc.indexOf(p.n)!==-1;
-    h+='<div class="ii '+p.r+(d?'':' off')+'">'+
-      '<span class="ic">'+(d?p.i:'?')+'</span>'+
-      '<span class="in">'+(d?p.n:'???')+'</span>'+
-      '<span class="ir '+p.r+'">'+(RNAME[p.r]||p.r)+'</span></div>';
-  }
-  document.getElementById('idxList').innerHTML=h;
-}
-
-// ==================== NAVIGATION ====================
-function setTab(t){
-  snd.click();activeTab=t;
-  var panels=document.querySelectorAll('.panel');
-  var btns=document.querySelectorAll('.tab');
-  for(var i=0;i<panels.length;i++) panels[i].classList.remove('on');
-  for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
-  var map={game:'pGame',index:'pIndex',rank:'pRank'};
-  var pel=document.getElementById(map[t]);if(pel) pel.classList.add('on');
-  var bel=document.querySelector('.tab[data-t="'+t+'"]');if(bel) bel.classList.add('on');
-  if(t==='index') renderIdx();
-  if(t==='rank'){
-    renderRank();
-    document.getElementById('rkPlayerId').value=G.playerId;
-    var now=Date.now();
-    if(now-rankLastFetch>20000){rankLastFetch=now;fetchRank();}
-  }
-}
-function setEgg(e){
-  snd.click();selEgg=e;
-  var btns=document.querySelectorAll('.egg');for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
-  var bel=document.querySelector('.egg[data-e="'+e+'"]');if(bel) bel.classList.add('on');
-  updateUI();
-}
-
-// ==================== INIT ====================
+/* ===== INIT - ESTO ES LO QUE FALTABA ===== */
 function init(){
   try{
-    load();
-    ensurePlayerId();
-    var nameInput=document.getElementById('rkName');
-    nameInput.value=G.pname||'Mi Base';
-    var idInput=document.getElementById('rkPlayerId');
-    idInput.value=G.playerId;
+    load();ensurePlayerId();
+    document.getElementById('rkName').value=G.pname;
+    document.getElementById('rkPlayerId').value=G.playerId;
 
-    // Nombre
-    nameInput.addEventListener('input',function(){
-      G.pname=this.value.trim().slice(0,14)||'Mi Base';
-      save();if(activeTab==='rank') renderRank();
-    });
-    nameInput.addEventListener('click',function(e){e.stopPropagation();});
-    
-    // Player ID
-    idInput.addEventListener('input',function(){
-      var newId=this.value.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);
-      this.value=newId;G.playerId=newId;G.fbId=newId;save();
-    });
-    idInput.addEventListener('click',function(e){e.stopPropagation();});
+    initBgCanvas();drawBg();
+    setTimeout(function(){initHabCanvas();drawHabitat();},100);
+    window.addEventListener('resize',function(){setTimeout(initHabCanvas,200);});
+    applyWorldTheme();
+
+    // Inputs
+    document.getElementById('rkName').addEventListener('input',function(){G.pname=this.value.trim().slice(0,14)||'Mi Base';save();});
+    document.getElementById('rkPlayerId').addEventListener('input',function(){var n=this.value.replace(/[^a-zA-Z0-9_]/g,'_').substring(0,20);this.value=n;G.playerId=n;G.fbId=n;save();});
     document.getElementById('btnCopyId').addEventListener('click',function(e){e.stopPropagation();copyPlayerId();});
 
-    // Mute
+    // Header buttons
     var mb=document.getElementById('btnMute');
     mb.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';
     mb.onclick=function(){G.mut=!G.mut;this.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';save();};
-
-    // Reset
-    document.getElementById('btnReset').onclick=function(){
-      showConfirm('⚠️','Reiniciar Juego','Perderás todo el progreso. Tu Player ID se mantendrá para el ranking global.',function(){resetGame();});
-    };
-
-    // Title: 5 clicks para admin
+    document.getElementById('btnReset').onclick=function(){showConfirm('⚠️','Reiniciar','Perderas todo.',resetGame);};
     document.getElementById('gameTitle').addEventListener('click',handleTitleClick);
 
-    // Tabs
-    document.getElementById('navTabs').onclick=function(ev){
-      var btn=ev.target.closest('.tab');if(btn) setTab(btn.getAttribute('data-t'));
-    };
-    
-    // Eggs
-    document.getElementById('navEggs').onclick=function(ev){
-      var btn=ev.target.closest('.egg');if(btn) setEgg(btn.getAttribute('data-e'));
-    };
+    // Navigation
+    document.getElementById('navTabs').addEventListener('click',function(ev){var btn=ev.target.closest('.tab');if(btn)setTab(btn.dataset.t);});
+    document.getElementById('navEggs').addEventListener('click',function(ev){var btn=ev.target.closest('.egg');if(btn)setEgg(btn.dataset.e);});
+    document.getElementById('worldMap').addEventListener('click',function(ev){var card=ev.target.closest('.wcard');if(card)setWorld(card.dataset.wid);});
 
-    // Buttons
-    document.getElementById('btnBuy').onclick=function(){openEgg(false);};
-    document.getElementById('btnAuto').onclick=handleAuto;
-    document.getElementById('btnRb').onclick=doRb;
-    document.getElementById('oclose').onclick=closeHatch;
-    
-    // Pet actions
-    document.getElementById('petList').onclick=function(ev){
-      var btn=ev.target.closest('[data-act]');if(!btn) return;
-      var action=btn.getAttribute('data-act');
-      var petId=parseInt(btn.getAttribute('data-id'),10);
-      if(action==='up') doUpgrade(petId);
-      else if(action==='sell') doSell(petId);
-    };
+    // MAIN GAME BUTTONS
+    document.getElementById('btnBuy').addEventListener('click',function(){openEgg(false);});
+    document.getElementById('btnAuto').addEventListener('click',handleAuto);
+    document.getElementById('btnRb').addEventListener('click',doRb);
 
-    // Admin panel events
+    // INTERACTIVE HATCH CLICK
+    document.getElementById('overlay').addEventListener('click',function(e){
+      if(e.target.id==='oclose'||e.target.closest('#oclose'))return;
+      hatchClick();
+    });
+    document.getElementById('oclose').addEventListener('click',function(e){
+      e.stopPropagation();
+      closeHatch();
+    });
+
+    // Pet list actions
+    document.getElementById('petList').addEventListener('click',function(ev){
+      var btn=ev.target.closest('[data-act]');if(!btn)return;
+      var act=btn.dataset.act,id=parseInt(btn.dataset.id,10);
+      if(act==='up')doUpgrade(id);else if(act==='sell')doSell(id);
+    });
+
+    // Admin
     document.getElementById('adminClose').onclick=hideAdminPanel;
-    document.getElementById('adminRefresh').onclick=function(){
-      rankLastFetch=Date.now();fetchRank().then(renderAdminPanel);
-    };
-    document.getElementById('adminClearAll').onclick=function(){
-      showConfirm('🗑️','Limpiar TODO el Ranking','Esta acción eliminará TODOS los jugadores del ranking global. No se puede deshacer.',function(){adminClearAll();});
-    };
+    document.getElementById('adminRefresh').onclick=function(){rankLastFetch=Date.now();fetchRank().then(renderAdminPanel);};
+    document.getElementById('adminClearAll').onclick=function(){showConfirm('🗑️','Limpiar TODO','Eliminar todo?',adminClearAll);};
 
-    // Confirm dialog
-    document.getElementById('confirmYes').onclick=function(){
-      hideConfirm();if(confirmCallback) confirmCallback();
-    };
+    // Confirm
+    document.getElementById('confirmYes').onclick=function(){hideConfirm();if(confirmCallback)confirmCallback();};
     document.getElementById('confirmNo').onclick=hideConfirm;
 
-    // Initial fetch
-    fetchRank();
-    updateUI();
+    fetchRank();updateUI();
 
-    // GAME LOOP
+    // Game Loop
     var tickN=0;
     setInterval(function(){
       var inc=totInc();
-      if(inc>0){G.money+=inc;G.te+=inc;if(inc>=10&&Math.random()<0.15) floatM(inc);}
-      if(G.autoOn&&G.money>=G.pr[selEgg]) openEgg(true);
+      if(inc>0){G.money+=inc;G.te+=inc;if(inc>=10&&Math.random()<0.15)floatM(inc);}
+      if(G.autoOn&&G.money>=G.pr[selEgg])openEgg(true);
       tickN++;
-      // Push rank every 60s, fetch every 90s
-      if(tickN%60===0) pushRank();
+      if(tickN%60===0)pushRank();
       if(tickN%90===0){rankLastFetch=Date.now();fetchRank();}
       updateUI();
     },1000);
 
-    // Push initial rank after 5s
     setTimeout(function(){pushRank();},5000);
     setInterval(save,8000);
+    requestAnimationFrame(renderLoop);
 
   }catch(e){console.error('Init error:',e);}
 }
