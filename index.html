@@ -22,7 +22,8 @@
       --pink: #ec4899;
       --blue: #3b82f6;
       --text: #f1f0ff;
-      --muted: #6b7280;
+      /* ✅ FIX: muted mejorado para mejor legibilidad */
+      --muted: #a1a1b5;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
@@ -35,12 +36,10 @@
     }
     h1,h2,h3,h4 { font-family: 'Poppins', sans-serif; }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: #2d2d50; border-radius: 3px; }
 
-    /* NOISE OVERLAY */
     body::before {
       content: '';
       position: fixed; inset: 0; z-index: 0;
@@ -71,24 +70,26 @@
     .nav-logo span { color: #f1f0ff; -webkit-text-fill-color: #f1f0ff; }
     .nav-credit {
       font-size: 11px;
-      color: var(--muted);
+      color: #c4b5fd;
       padding: 4px 10px;
-      background: rgba(255,255,255,0.03);
+      background: rgba(124,58,237,0.1);
       border-radius: 6px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(124,58,237,0.25);
       flex-shrink: 0;
+      font-weight: 500;
     }
     .nav-credit strong {
-      color: var(--accent2);
-      font-weight: 600;
+      color: #e9d5ff;
+      font-weight: 700;
     }
     .nav-tabs {
       display: flex; gap: 4px; margin-left: auto;
     }
     .nav-tab {
       padding: 7px 14px; border-radius: 8px;
-      font-size: 13px; font-weight: 500;
-      color: var(--muted); cursor: pointer;
+      font-size: 13px; font-weight: 600;
+      /* ✅ FIX: letra más visible en tabs */
+      color: #8b8ba8; cursor: pointer;
       transition: all 0.2s; border: none; background: none;
       display: flex; align-items: center; gap: 6px;
       font-family: 'Inter', sans-serif;
@@ -171,8 +172,8 @@
     .hero-eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
       background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
-      color: var(--accent2); font-size: 12px; font-weight: 600;
-      padding: 6px 14px; border-radius: 100px;
+      color: var(--accent2); font-size: 13px; font-weight: 700;
+      padding: 7px 16px; border-radius: 100px;
       letter-spacing: 0.05em; text-transform: uppercase;
       margin-bottom: 28px;
     }
@@ -190,7 +191,8 @@
       background-clip: text;
     }
     .hero-sub {
-      color: var(--muted); font-size: 16px; max-width: 480px;
+      /* ✅ FIX: subtítulo más legible */
+      color: #b0b0cc; font-size: 16px; max-width: 480px;
       margin: 0 auto 36px; line-height: 1.7;
     }
     .hero-stats {
@@ -210,7 +212,8 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+    /* ✅ FIX: labels de stats más visibles */
+    .hero-stat-label { font-size: 12px; color: #9090b0; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
     .live-pill {
       display: inline-flex; align-items: center; gap: 6px;
       font-size: 13px; font-weight: 600; color: #10b981;
@@ -243,9 +246,10 @@
     .cat-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
     .cat-pill {
       padding: 7px 16px; border-radius: 100px;
-      font-size: 13px; font-weight: 500; cursor: pointer;
-      border: 1px solid var(--border); background: var(--surface);
-      color: var(--muted); transition: all 0.2s;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.1); background: var(--surface);
+      /* ✅ FIX: pills más legibles */
+      color: #9090b0; transition: all 0.2s;
       font-family: 'Inter', sans-serif;
     }
     .cat-pill:hover { color: var(--text); border-color: rgba(124,58,237,0.3); }
@@ -262,16 +266,17 @@
     .search-wrap { position: relative; max-width: 360px; }
     .search-input {
       width: 100%; padding: 10px 16px 10px 40px;
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px; color: var(--text); font-size: 14px;
       outline: none; transition: border-color 0.2s;
       font-family: 'Inter', sans-serif;
     }
-    .search-input::placeholder { color: var(--muted); }
+    /* ✅ FIX: placeholder más visible */
+    .search-input::placeholder { color: #6b6b8a; }
     .search-input:focus { border-color: rgba(124,58,237,0.5); }
     .search-icon {
       position: absolute; left: 12px; top: 50%;
-      transform: translateY(-50%); color: var(--muted);
+      transform: translateY(-50%); color: #6b6b8a;
       pointer-events: none;
     }
 
@@ -311,7 +316,7 @@
       background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.12); border-radius: 100px;
       padding: 5px 10px; display: flex; align-items: center; gap: 5px;
-      cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 700;
+      cursor: pointer; color: #c0c0d8; font-size: 12px; font-weight: 700;
       transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .like-btn:hover { transform: scale(1.08); }
@@ -325,9 +330,9 @@
     }
     .like-btn.pop { animation: heartPop 0.4s ease-out; }
     .game-info { padding: 12px 14px; }
-    .game-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+    .game-name { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 5px; color: var(--text); }
     .game-cat {
-      font-size: 11px; font-weight: 500;
+      font-size: 11px; font-weight: 600;
       padding: 2px 8px; border-radius: 100px;
     }
     .card-glow {
@@ -357,8 +362,9 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 36px;
     }
-    .shop-item .item-name { font-family: 'Poppins',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-    .shop-item .item-type { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .shop-item .item-name { font-family: 'Poppins',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--text); }
+    /* ✅ FIX: tipo de item más visible */
+    .shop-item .item-type { font-size: 11px; color: #8888a8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; font-weight: 600; }
     .shop-item .item-price {
       display: flex; align-items: center; justify-content: center; gap: 5px;
       font-weight: 700; font-size: 14px; color: var(--gold);
@@ -368,13 +374,13 @@
       font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
       text-transform: uppercase; padding: 2px 7px; border-radius: 100px;
     }
-    .rarity-common { background: rgba(107,114,128,0.2); color: #9ca3af; }
+    .rarity-common { background: rgba(107,114,128,0.2); color: #c0c0c8; }
     .rarity-rare { background: rgba(59,130,246,0.15); color: #93c5fd; }
     .rarity-epic { background: rgba(124,58,237,0.15); color: var(--accent2); }
     .rarity-legendary { background: rgba(245,158,11,0.15); color: var(--gold); }
     .btn-buy {
       width: 100%; margin-top: 12px; padding: 9px;
-      border-radius: 8px; font-size: 12px; font-weight: 600;
+      border-radius: 8px; font-size: 12px; font-weight: 700;
       border: none; cursor: pointer; transition: all 0.2s;
       font-family: 'Inter', sans-serif;
     }
@@ -406,10 +412,11 @@
       width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
     }
     .friend-status.online { background: var(--green); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
-    .friend-status.offline { background: var(--muted); }
+    .friend-status.offline { background: #4a4a6a; }
     .friend-info { flex: 1; min-width: 0; }
-    .friend-name { font-size: 14px; font-weight: 600; }
-    .friend-sub { font-size: 12px; color: var(--muted); }
+    .friend-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    /* ✅ FIX: friend sub info más visible */
+    .friend-sub { font-size: 12px; color: #8888a8; margin-top: 2px; }
     .friend-actions { display: flex; gap: 6px; }
     .icon-btn {
       width: 32px; height: 32px; border-radius: 8px;
@@ -419,25 +426,29 @@
     }
     .icon-btn:hover { color: var(--red); border-color: rgba(239,68,68,0.3); }
     .add-friend-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px;
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 22px;
     }
-    .add-friend-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    /* ✅ FIX: título del add friend box más visible */
+    .add-friend-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .add-friend-box p { font-size: 13px; color: #8888a8; margin-bottom: 14px; }
+    /* ✅ FIX PRINCIPAL: inputs con texto claramente visible */
     .friend-input {
-      width: 100%; padding: 10px 14px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 13px;
+      width: 100%; padding: 11px 14px;
+      background: #1a1a2e; border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 8px; color: #f1f0ff; font-size: 14px;
       outline: none; transition: border-color 0.2s; margin-bottom: 10px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', sans-serif; font-weight: 500;
     }
-    .friend-input:focus { border-color: rgba(124,58,237,0.5); }
+    .friend-input::placeholder { color: #5a5a7a; }
+    .friend-input:focus { border-color: rgba(124,58,237,0.6); background: #1e1e38; }
     .btn-sm {
-      width: 100%; padding: 9px;
+      width: 100%; padding: 10px;
       background: var(--accent); color: white;
-      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
-    .btn-sm:hover { background: #6d28d9; }
+    .btn-sm:hover { background: #6d28d9; transform: translateY(-1px); }
     .req-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
     .req-card {
       background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.15);
@@ -448,13 +459,13 @@
     .btn-accept {
       padding: 5px 12px; border-radius: 6px;
       background: var(--green); color: white;
-      border: none; font-size: 12px; font-weight: 600;
+      border: none; font-size: 12px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .btn-reject {
       padding: 5px 10px; border-radius: 6px;
       background: rgba(239,68,68,0.12); color: var(--red);
-      border: 1px solid rgba(239,68,68,0.3); font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(239,68,68,0.3); font-size: 12px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
 
@@ -483,28 +494,33 @@
       border: 2px solid var(--bg);
     }
     .profile-info { flex: 1; min-width: 200px; }
-    .profile-name { 
-      font-size: 26px; font-weight: 800; letter-spacing: -1px; 
+    .profile-name {
+      font-size: 26px; font-weight: 800; letter-spacing: -1px;
       margin-bottom: 4px; cursor: pointer;
       display: inline-block;
       transition: all 0.2s;
+      color: var(--text);
     }
     .profile-name:hover { color: var(--accent2); }
-    .profile-tag { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    /* ✅ FIX: tag más visible */
+    .profile-tag { font-size: 14px; color: #7070a0; margin-bottom: 12px; }
     .profile-bio {
-      font-size: 14px; color: #9ca3af; line-height: 1.5;
+      /* ✅ FIX: bio más legible */
+      font-size: 14px; color: #c0c0d8; line-height: 1.6;
       max-width: 400px; margin-bottom: 14px;
     }
     .profile-badges { display: flex; gap: 8px; flex-wrap: wrap; }
     .profile-badge {
       display: flex; align-items: center; gap: 5px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 500;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+      color: #c0c0d8;
     }
     .profile-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-left: auto; }
     .p-stat { text-align: center; }
     .p-stat-val { font-family: 'Poppins',sans-serif; font-size: 22px; font-weight: 800; color: var(--accent2); }
-    .p-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    /* ✅ FIX: labels de stats del perfil más visibles */
+    .p-stat-label { font-size: 11px; color: #8888a8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; font-weight: 600; }
     .xp-bar-wrap {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 14px; padding: 20px; margin-bottom: 20px;
@@ -520,40 +536,44 @@
     }
     .edit-bio-btn {
       padding: 6px 14px; border-radius: 8px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--muted); font-size: 12px; font-weight: 500;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #c0c0d8; font-size: 12px; font-weight: 600;
       cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
-    .edit-bio-btn:hover { color: var(--text); }
+    .edit-bio-btn:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+    /* ✅ FIX: bio input con texto visible */
     .bio-input {
-      width: 100%; padding: 8px 12px;
-      background: var(--surface2); border: 1px solid rgba(124,58,237,0.4);
-      border-radius: 8px; color: var(--text); font-size: 13px;
+      width: 100%; padding: 10px 12px;
+      background: #1a1a2e; border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 8px; color: #f1f0ff; font-size: 14px;
       outline: none; resize: none; font-family: 'Inter', sans-serif;
     }
+    .bio-input::placeholder { color: #5a5a7a; }
+    .bio-input:focus { border-color: var(--accent2); }
 
-    /* Edit Name Modal */
+    /* ✅ FIX: Edit Name - inputs y botones bien visibles */
     .edit-name-inline {
       display: inline-flex; align-items: center; gap: 8px;
       margin-bottom: 4px;
     }
     .name-input-inline {
-      padding: 6px 12px;
-      background: var(--surface2); border: 1px solid rgba(124,58,237,0.4);
-      border-radius: 8px; color: var(--text); font-size: 24px; font-weight: 800;
+      padding: 8px 14px;
+      background: #1a1a2e; border: 2px solid rgba(124,58,237,0.5);
+      border-radius: 8px; color: #f1f0ff; font-size: 22px; font-weight: 800;
       outline: none; font-family: 'Poppins', sans-serif;
-      width: 250px;
+      width: 260px;
     }
-    .name-input-inline:focus { border-color: var(--accent2); }
-    
+    .name-input-inline::placeholder { color: #5a5a7a; }
+    .name-input-inline:focus { border-color: var(--accent2); background: #1e1e38; }
+
     .name-change-cost {
-      font-size: 12px;
-      padding: 4px 10px;
+      font-size: 12px; font-weight: 600;
+      padding: 5px 12px;
       border-radius: 6px;
       margin-top: 6px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
     .name-change-cost.free {
       background: rgba(16,185,129,0.1);
@@ -577,11 +597,11 @@
     .avatar-picker {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 18px; padding: 28px; width: 90%; max-width: 480px;
-      transform: scale(0.95); transition: transform 0.3s;
+      transform: scale(0.95); transition: transform 0.3s; position: relative;
     }
     .avatar-picker-overlay.open .avatar-picker { transform: scale(1); }
-    .avatar-picker h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-    .avatar-picker p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .avatar-picker h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .avatar-picker p { font-size: 13px; color: #8888a8; margin-bottom: 20px; }
     .avatar-grid {
       display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
       margin-bottom: 20px;
@@ -590,7 +610,7 @@
       aspect-ratio: 1; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-size: 32px; cursor: pointer;
-      background: var(--surface2); border: 2px solid var(--border);
+      background: var(--surface2); border: 2px solid rgba(255,255,255,0.08);
       transition: all 0.2s;
     }
     .avatar-option:hover { border-color: rgba(124,58,237,0.4); transform: scale(1.05); }
@@ -605,36 +625,39 @@
     }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
     .modal {
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 18px; padding: 32px; width: 90%; max-width: 420px;
       transform: translateY(16px) scale(0.97); transition: transform 0.3s;
       box-shadow: 0 30px 80px rgba(0,0,0,0.6);
     }
     .modal-overlay.open .modal { transform: none; }
-    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; color: var(--text); }
+    /* ✅ FIX: subtítulo del modal más visible */
+    .modal-sub { font-size: 13px; color: #8888a8; margin-bottom: 24px; }
     .modal-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
     .modal-tab {
-      padding: 10px 20px; font-size: 13px; font-weight: 600;
-      cursor: pointer; color: var(--muted); border: none; background: none;
+      padding: 10px 20px; font-size: 13px; font-weight: 700;
+      cursor: pointer; color: #6060a0; border: none; background: none;
       border-bottom: 2px solid transparent; margin-bottom: -1px;
       transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
     .modal-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
     .input-group { margin-bottom: 14px; }
-    .input-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; display: block; letter-spacing: 0.04em; text-transform: uppercase; }
+    /* ✅ FIX: labels de inputs más visibles */
+    .input-label { font-size: 12px; color: #9090b8; font-weight: 700; margin-bottom: 6px; display: block; letter-spacing: 0.06em; text-transform: uppercase; }
+    /* ✅ FIX PRINCIPAL: inputs del modal con texto blanco visible */
     .modal-input {
-      width: 100%; padding: 11px 14px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text); font-size: 14px;
+      width: 100%; padding: 12px 14px;
+      background: #1a1a2e; border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 10px; color: #f1f0ff; font-size: 14px;
       outline: none; transition: border-color 0.2s;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', sans-serif; font-weight: 500;
     }
-    .modal-input:focus { border-color: rgba(124,58,237,0.5); }
-    .modal-input::placeholder { color: var(--muted); }
+    .modal-input:focus { border-color: rgba(124,58,237,0.6); background: #1e1e38; }
+    .modal-input::placeholder { color: #5a5a7a; }
     .btn-full {
       width: 100%; padding: 12px; border-radius: 10px;
-      background: var(--accent); color: white; font-weight: 600; font-size: 14px;
+      background: var(--accent); color: white; font-weight: 700; font-size: 14px;
       border: none; cursor: pointer; transition: all 0.2s; margin-top: 4px;
       font-family: 'Inter', sans-serif;
     }
@@ -649,17 +672,17 @@
     .btn-google-modal:hover { background: #f4f4f4; }
     .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
     .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
     }
-    .divider span { font-size: 12px; color: var(--muted); }
+    .divider span { font-size: 12px; color: #6060a0; font-weight: 600; }
     .modal-close {
       position: absolute; top: 16px; right: 16px;
       width: 32px; height: 32px; border-radius: 8px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--muted); display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+      color: #8888a8; display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s;
     }
-    .modal-close:hover { color: var(--text); }
+    .modal-close:hover { color: var(--text); background: rgba(255,255,255,0.1); }
     .modal-wrap { position: relative; }
 
     /* ─── TOAST ─── */
@@ -668,12 +691,12 @@
       display: flex; flex-direction: column; gap: 8px; pointer-events: none;
     }
     .toast {
-      background: var(--surface); border: 1px solid var(--border);
+      background: #13131f; border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px; padding: 12px 18px;
-      font-size: 13px; font-weight: 500;
+      font-size: 13px; font-weight: 600; color: var(--text);
       display: flex; align-items: center; gap: 10px;
       transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
       max-width: 320px;
     }
     .toast.show { transform: translateX(0); }
@@ -687,21 +710,24 @@
     }
     .confirm-overlay.open { opacity: 1; pointer-events: all; }
     .confirm-box {
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px; padding: 28px; width: 90%; max-width: 360px;
       text-align: center;
       transform: scale(0.96); transition: transform 0.3s;
       box-shadow: 0 25px 60px rgba(0,0,0,0.5);
     }
     .confirm-overlay.open .confirm-box { transform: scale(1); }
+    /* ✅ FIX: confirm box texto visible */
+    .confirm-box h3 { color: var(--text) !important; }
+    .confirm-box p { color: #9090b8 !important; }
 
     /* ─── EMPTY STATES ─── */
     .empty-state {
-      text-align: center; padding: 60px 20px; color: var(--muted);
+      text-align: center; padding: 60px 20px;
     }
     .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-    .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .empty-state p { font-size: 13px; }
+    .empty-state h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: #8080a0; }
 
     /* ─── XP NOTIFICATION ─── */
     .xp-notif {
@@ -715,14 +741,14 @@
     }
     .xp-notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ─── COINS PER MINUTE INDICATOR (IN-GAME) ─── */
+    /* ─── COINS PER MINUTE INDICATOR ─── */
     .coins-min-indicator {
       position: fixed; bottom: 24px; left: 24px;
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px; padding: 12px 18px;
       display: flex; align-items: center; gap: 10px;
       z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      font-size: 13px; font-weight: 600;
+      font-size: 13px; font-weight: 700;
     }
     .coins-min-indicator .timer-ring {
       width: 28px; height: 28px; border-radius: 50%;
@@ -735,14 +761,21 @@
       animation: none;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    
     .coins-min-indicator .game-playing-label {
-      font-size: 10px;
-      color: var(--green);
+      font-size: 10px; color: var(--green);
       background: rgba(16,185,129,0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 4px;
+      padding: 2px 6px; border-radius: 4px; margin-left: 4px;
+    }
+
+    /* ─── FRIEND SEARCH RESULT ─── */
+    #friend-search-result p {
+      font-size: 13px; font-weight: 600; padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    /* ─── SECTION INFO TEXT ─── */
+    .section-info-text {
+      font-size: 13px; color: #8888a8;
     }
 
     /* ─── FOOTER ─── */
@@ -750,7 +783,7 @@
       border-top: 1px solid var(--border);
       padding: 20px 24px;
       display: flex; align-items: center; justify-content: center; gap: 6px;
-      color: var(--muted); font-size: 12px;
+      color: #7070a0; font-size: 12px; font-weight: 500;
     }
     footer strong { color: var(--accent2); }
 
@@ -774,14 +807,13 @@
     .discord-btn {
       position: fixed; bottom: 24px; right: 24px;
       background: #5865F2; color: white; padding: 12px 20px;
-      border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 13px;
+      border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 13px;
       z-index: 500; display: flex; align-items: center; gap: 8px;
       box-shadow: 0 6px 24px rgba(88,101,242,0.4); transition: all 0.3s;
       font-family: 'Inter', sans-serif;
     }
     .discord-btn:hover { transform: translateY(-3px); background: #4752C4; }
 
-    /* Loading skeleton */
     .shimmer {
       background: linear-gradient(90deg, var(--surface2) 25%, #1f1f35 50%, var(--surface2) 75%);
       background-size: 200px 100%;
@@ -792,6 +824,10 @@
       0% { background-position: -200px 0; }
       100% { background-position: 200px 0; }
     }
+
+    /* ✅ FIX: XP bar labels */
+    #xp-text { color: #a0a0c0 !important; font-weight: 600; }
+    #xp-next-lv { font-weight: 700; }
   </style>
 </head>
 <body>
@@ -805,7 +841,7 @@
   <span id="xp-notif-text">+50 XP</span>
 </div>
 
-<!-- ─── COINS PER MINUTE INDICATOR (SOLO EN JUEGO) ─── -->
+<!-- ─── COINS PER MINUTE INDICATOR ─── -->
 <div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;">
   <div class="timer-ring"></div>
   <div>
@@ -814,7 +850,7 @@
       <span id="coins-min-timer">60s</span>
       <span class="game-playing-label">JUGANDO</span>
     </div>
-    <div style="font-size:10px;color:var(--muted);">+5 monedas/min en juego</div>
+    <div style="font-size:10px;color:#8888a8;">+5 monedas/min en juego</div>
   </div>
 </div>
 
@@ -824,11 +860,11 @@
     <div style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
       <span class="iconify" data-icon="mdi:alert-outline" data-width="28" style="color:#f59e0b"></span>
     </div>
-    <h3 style="font-size:17px;font-weight:800;margin-bottom:8px;">¿Estás en casa?</h3>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">Esta web es para jugar en casa. Si estás en un colegio, entras asumiendo tu responsabilidad.</p>
+    <h3 style="font-size:17px;font-weight:800;margin-bottom:8px;color:var(--text);">¿Estás en casa?</h3>
+    <p style="font-size:13px;color:#9090b8;line-height:1.6;margin-bottom:20px;">Esta web es para jugar en casa. Si estás en un colegio, entras asumiendo tu responsabilidad.</p>
     <div style="display:flex;gap:10px;">
-      <button id="confirm-cancel" style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">Salir</button>
-      <button id="confirm-ok" style="flex:1;padding:10px;border-radius:8px;background:var(--accent);color:white;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;">Entendido ✓</button>
+      <button id="confirm-cancel" style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9090b8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#9090b8'">Salir</button>
+      <button id="confirm-ok" style="flex:1;padding:10px;border-radius:8px;background:var(--accent);color:white;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Inter',sans-serif;">Entendido ✓</button>
     </div>
   </div>
 </div>
@@ -900,6 +936,7 @@
 <!-- ─── NAVBAR ─── -->
 <nav class="navbar">
   <div class="nav-logo">Level<span>Up</span></div>
+  <!-- ✅ FIX 1: Cambiado "Nueva temporada" por "Creado por Gh0st" -->
   <div class="nav-credit">Creado por <strong>Gh0st</strong></div>
   <div class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" data-page="home">
@@ -939,17 +976,16 @@
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════
-     PAGE: HOME
-════════════════════════════════════════════ -->
+<!-- ═══════ PAGE: HOME ═══════ -->
 <div class="page active" id="page-home">
   <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
     <div class="hero-content">
+      <!-- ✅ FIX 1: "Creado por Gh0st" en el eyebrow del hero -->
       <div class="hero-eyebrow">
-        <span class="iconify" data-icon="mdi:lightning-bolt" data-width="14"></span>
-        Nueva temporada disponible
+        <span class="iconify" data-icon="mdi:ghost" data-width="15"></span>
+        Creado por Gh0st
       </div>
       <h1 class="hero-title">
         <span class="line1">Tu portal de</span>
@@ -1006,22 +1042,19 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PAGE: SHOP
-════════════════════════════════════════════ -->
+<!-- ═══════ PAGE: SHOP ═══════ -->
 <div class="page" id="page-shop">
   <div class="section">
     <div class="section-header">
       <div>
         <h2 class="section-title">🛍️ Tienda de Cosméticos</h2>
-        <p style="font-size:13px;color:var(--muted);margin-top:4px;">Gana monedas jugando y personaliza tu perfil</p>
+        <p style="font-size:13px;color:#8888a8;margin-top:4px;">Gana monedas jugando y personaliza tu perfil</p>
       </div>
       <div class="coins-display" id="shop-coins">
         <span class="iconify" data-icon="mdi:bitcoin" data-width="18"></span>
         <span id="shop-coins-val">0</span> monedas
       </div>
     </div>
-
     <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
       <button class="cat-pill active" data-shop-cat="all">Todo</button>
       <button class="cat-pill" data-shop-cat="avatar">🎭 Avatares</button>
@@ -1029,17 +1062,14 @@
       <button class="cat-pill" data-shop-cat="badge">🏆 Badges</button>
       <button class="cat-pill" data-shop-cat="title">✏️ Títulos</button>
     </div>
-
     <div class="shop-grid" id="shop-grid"></div>
-    <p style="text-align:center;margin-top:32px;font-size:12px;color:var(--muted);">
+    <p style="text-align:center;margin-top:32px;font-size:13px;color:#8888a8;">
       💡 Ganas <strong style="color:var(--gold)">10 monedas</strong> por abrir un juego, <strong style="color:var(--gold)">5 monedas</strong> por like y <strong style="color:var(--gold)">+5 monedas/min</strong> MIENTRAS JUEGAS
     </p>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PAGE: FRIENDS
-════════════════════════════════════════════ -->
+<!-- ═══════ PAGE: FRIENDS ═══════ -->
 <div class="page" id="page-friends">
   <div class="section">
     <div class="section-header">
@@ -1048,10 +1078,10 @@
     <div class="friends-layout">
       <div>
         <div id="req-section" class="hidden" style="margin-bottom:20px;">
-          <h3 style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:10px;letter-spacing:0.04em;text-transform:uppercase;">Solicitudes pendientes</h3>
+          <h3 style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px;letter-spacing:0.05em;text-transform:uppercase;">Solicitudes pendientes</h3>
           <div class="req-list" id="req-list"></div>
         </div>
-        <h3 style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:0.04em;text-transform:uppercase;">Mis amigos</h3>
+        <h3 style="font-size:13px;font-weight:700;color:#7070a0;margin-bottom:10px;letter-spacing:0.05em;text-transform:uppercase;">Mis amigos</h3>
         <div class="friends-list" id="friends-list">
           <div class="empty-state">
             <div class="icon">👥</div>
@@ -1063,8 +1093,9 @@
       <div>
         <div class="add-friend-box">
           <h3>➕ Añadir amigo</h3>
-          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Escribe el nombre de usuario exacto</p>
-          <input type="text" class="friend-input" id="friend-search-input" placeholder="Nombre de usuario...">
+          <p>Escribe el nombre de usuario exacto</p>
+          <!-- ✅ FIX 2: input con id correcto y estilo mejorado -->
+          <input type="text" class="friend-input" id="friend-search-input" placeholder="Nombre de usuario..." autocomplete="off">
           <button class="btn-sm" id="btn-add-friend">Buscar y añadir</button>
           <div id="friend-search-result" style="margin-top:12px;"></div>
         </div>
@@ -1073,9 +1104,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PAGE: PROFILE
-════════════════════════════════════════════ -->
+<!-- ═══════ PAGE: PROFILE ═══════ -->
 <div class="page" id="page-profile">
   <div class="section">
     <div class="profile-hero">
@@ -1096,8 +1125,8 @@
         <div id="profile-bio-edit" style="display:none;margin-top:8px;">
           <textarea class="bio-input" id="bio-input" rows="2" maxlength="120" placeholder="Escribe tu bio..."></textarea>
           <div style="display:flex;gap:8px;margin-top:8px;">
-            <button style="flex:1;padding:7px;border-radius:7px;background:var(--accent);color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;" id="save-bio-btn">Guardar</button>
-            <button style="flex:1;padding:7px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;" id="cancel-bio-btn">Cancelar</button>
+            <button style="flex:1;padding:8px;border-radius:7px;background:var(--accent);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;" id="save-bio-btn">Guardar</button>
+            <button style="flex:1;padding:8px;border-radius:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#c0c0d8;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;" id="cancel-bio-btn">Cancelar</button>
           </div>
         </div>
         <div class="profile-badges" id="profile-badges" style="margin-top:14px;"></div>
@@ -1112,10 +1141,10 @@
     <div class="xp-bar-wrap">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;">Progresión</span>
-          <span style="font-size:12px;color:var(--muted);margin-left:10px;" id="xp-text">0 / 200 XP</span>
+          <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;color:var(--text);">Progresión</span>
+          <span style="font-size:12px;color:#9090b8;margin-left:10px;font-weight:600;" id="xp-text">0 / 200 XP</span>
         </div>
-        <span style="font-size:12px;color:var(--accent2);font-weight:600;" id="xp-next-lv">Próximo nivel: 200 XP</span>
+        <span style="font-size:12px;color:var(--accent2);font-weight:700;" id="xp-next-lv">Próximo nivel: 200 XP</span>
       </div>
       <div class="xp-bar-track">
         <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
@@ -1138,7 +1167,7 @@
 <!-- ─── FOOTER ─── -->
 <footer>
   <span>LevelUp © 2025</span>
-  <span style="color:var(--border)">·</span>
+  <span style="color:rgba(255,255,255,0.1)">·</span>
   <span>Creado por <strong>Gh0st</strong></span>
 </footer>
 
@@ -1192,58 +1221,43 @@ GAMES.forEach(g => g.id = g.name.replace(/[^a-zA-Z0-9]/g,'_'));
 // SHOP DATA
 // ========================================================
 const SHOP_ITEMS = [
-  // Avatares
-  { id:'av_flame', name:'Flama', type:'avatar', cat:'avatar', emoji:'🔥', price:100, rarity:'common', bg:'linear-gradient(135deg,#ef4444,#f97316)', desc:'Avatar ardiente' },
-  { id:'av_star', name:'Estrella', type:'avatar', cat:'avatar', emoji:'⭐', price:250, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#eab308)', desc:'Avatar de estrella' },
-  { id:'av_ghost', name:'Ghost', type:'avatar', cat:'avatar', emoji:'👻', price:300, rarity:'rare', bg:'linear-gradient(135deg,#6b7280,#374151)', desc:'El clásico de Gh0st' },
-  { id:'av_crown', name:'Rey', type:'avatar', cat:'avatar', emoji:'👑', price:500, rarity:'epic', bg:'linear-gradient(135deg,#f59e0b,#d97706)', desc:'Avatar épico de la realeza' },
-  { id:'av_alien', name:'Alien', type:'avatar', cat:'avatar', emoji:'👾', price:400, rarity:'epic', bg:'linear-gradient(135deg,#10b981,#059669)', desc:'De otro mundo' },
-  { id:'av_dragon', name:'Dragón', type:'avatar', cat:'avatar', emoji:'🐉', price:1000, rarity:'legendary', bg:'linear-gradient(135deg,#7c3aed,#ec4899)', desc:'Avatar legendario' },
-  // Marcos
-  { id:'fr_purple', name:'Neón Morado', type:'frame', cat:'frame', emoji:'💜', price:150, rarity:'common', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)', desc:'Marco neón morado' },
-  { id:'fr_gold', name:'Dorado', type:'frame', cat:'frame', emoji:'✨', price:400, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#fbbf24)', desc:'Marco dorado brillante' },
-  { id:'fr_rainbow', name:'Arcoiris', type:'frame', cat:'frame', emoji:'🌈', price:800, rarity:'epic', bg:'linear-gradient(135deg,#ef4444,#f97316,#eab308,#10b981,#3b82f6,#8b5cf6)', desc:'Marco multicolor épico' },
-  { id:'fr_galaxy', name:'Galaxia', type:'frame', cat:'frame', emoji:'🌌', price:1500, rarity:'legendary', bg:'linear-gradient(135deg,#1e1b4b,#7c3aed,#ec4899)', desc:'Marco galáctico legendario' },
-  // Badges
-  { id:'bd_early', name:'Early Adopter', type:'badge', cat:'badge', emoji:'🚀', price:0, rarity:'epic', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)', desc:'Estuviste desde el principio', free:true },
-  { id:'bd_gamer', name:'Gamer Pro', type:'badge', cat:'badge', emoji:'🎮', price:300, rarity:'rare', bg:'linear-gradient(135deg,#3b82f6,#06b6d4)', desc:'Para gamers de verdad' },
-  { id:'bd_ghost', name:'Gh0st Crew', type:'badge', cat:'badge', emoji:'👻', price:500, rarity:'epic', bg:'linear-gradient(135deg,#374151,#6b7280)', desc:'Miembro del equipo Gh0st' },
-  { id:'bd_legend', name:'Leyenda', type:'badge', cat:'badge', emoji:'⚡', price:2000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444)', desc:'Rango más alto del sistema' },
-  // Títulos
-  { id:'ti_noob', name:'Noob Master', type:'title', cat:'title', emoji:'😅', price:50, rarity:'common', bg:'linear-gradient(135deg,#6b7280,#4b5563)', desc:'Con orgullo' },
-  { id:'ti_pro', name:'Pro Player', type:'title', cat:'title', emoji:'🏆', price:350, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#d97706)', desc:'Título de élite' },
-  { id:'ti_ghost', name:'Gh0st Fan', type:'title', cat:'title', emoji:'👻', price:200, rarity:'rare', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)', desc:'Fan del creador' },
-  { id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444,#7c3aed)', desc:'El título más difícil de conseguir' },
+  { id:'av_flame', name:'Flama', type:'avatar', cat:'avatar', emoji:'🔥', price:100, rarity:'common', bg:'linear-gradient(135deg,#ef4444,#f97316)' },
+  { id:'av_star', name:'Estrella', type:'avatar', cat:'avatar', emoji:'⭐', price:250, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#eab308)' },
+  { id:'av_ghost', name:'Ghost', type:'avatar', cat:'avatar', emoji:'👻', price:300, rarity:'rare', bg:'linear-gradient(135deg,#6b7280,#374151)' },
+  { id:'av_crown', name:'Rey', type:'avatar', cat:'avatar', emoji:'👑', price:500, rarity:'epic', bg:'linear-gradient(135deg,#f59e0b,#d97706)' },
+  { id:'av_alien', name:'Alien', type:'avatar', cat:'avatar', emoji:'👾', price:400, rarity:'epic', bg:'linear-gradient(135deg,#10b981,#059669)' },
+  { id:'av_dragon', name:'Dragón', type:'avatar', cat:'avatar', emoji:'🐉', price:1000, rarity:'legendary', bg:'linear-gradient(135deg,#7c3aed,#ec4899)' },
+  { id:'fr_purple', name:'Neón Morado', type:'frame', cat:'frame', emoji:'💜', price:150, rarity:'common', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
+  { id:'fr_gold', name:'Dorado', type:'frame', cat:'frame', emoji:'✨', price:400, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#fbbf24)' },
+  { id:'fr_rainbow', name:'Arcoiris', type:'frame', cat:'frame', emoji:'🌈', price:800, rarity:'epic', bg:'linear-gradient(135deg,#ef4444,#f97316,#eab308,#10b981,#3b82f6,#8b5cf6)' },
+  { id:'fr_galaxy', name:'Galaxia', type:'frame', cat:'frame', emoji:'🌌', price:1500, rarity:'legendary', bg:'linear-gradient(135deg,#1e1b4b,#7c3aed,#ec4899)' },
+  { id:'bd_early', name:'Early Adopter', type:'badge', cat:'badge', emoji:'🚀', price:0, rarity:'epic', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)', free:true },
+  { id:'bd_gamer', name:'Gamer Pro', type:'badge', cat:'badge', emoji:'🎮', price:300, rarity:'rare', bg:'linear-gradient(135deg,#3b82f6,#06b6d4)' },
+  { id:'bd_ghost', name:'Gh0st Crew', type:'badge', cat:'badge', emoji:'👻', price:500, rarity:'epic', bg:'linear-gradient(135deg,#374151,#6b7280)' },
+  { id:'bd_legend', name:'Leyenda', type:'badge', cat:'badge', emoji:'⚡', price:2000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444)' },
+  { id:'ti_noob', name:'Noob Master', type:'title', cat:'title', emoji:'😅', price:50, rarity:'common', bg:'linear-gradient(135deg,#6b7280,#4b5563)' },
+  { id:'ti_pro', name:'Pro Player', type:'title', cat:'title', emoji:'🏆', price:350, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#d97706)' },
+  { id:'ti_ghost', name:'Gh0st Fan', type:'title', cat:'title', emoji:'👻', price:200, rarity:'rare', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
+  { id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444,#7c3aed)' },
 ];
 
 // ========================================================
 // STATE
 // ========================================================
 const State = {
-  uid: null,
-  username: '',
-  email: '',
-  level: 1,
-  xp: 0,
-  coins: 0,
-  favs: {},
-  owned: {},
-  equipped: { avatar: null, frame: null, badge: null, title: null },
-  friends: {},
-  friendRequests: {},
-  bio: '',
-  gameLikes: {},
-  nameChanges: 0,
-  db: null,
-  auth: null,
+  uid: null, username: '', email: '',
+  level: 1, xp: 0, coins: 0,
+  favs: {}, owned: {}, equipped: { avatar: null, frame: null, badge: null, title: null },
+  friends: {}, friendRequests: {}, bio: '', gameLikes: {},
+  nameChanges: 0, db: null, auth: null,
 };
 window.State = State;
 
 let activeCat = 'all';
 let activeShopCat = 'all';
 let currentPage = 'home';
+window.currentPage = currentPage;
 
-// Coins per minute system (SOLO CUANDO ESTÁS EN UN JUEGO)
 let coinsMinuteTimer = null;
 let coinsSecondCount = 0;
 let isPlayingGame = false;
@@ -1251,8 +1265,6 @@ let gameStartTime = null;
 const COINS_PER_MINUTE = 5;
 const XP_PER_MINUTE = 10;
 const NAME_CHANGE_COST = 200;
-
-// Avatar picker state
 let selectedAvatarId = null;
 
 // ========================================================
@@ -1265,6 +1277,7 @@ function showPage(page) {
     return;
   }
   currentPage = page;
+  window.currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t => {
@@ -1273,8 +1286,6 @@ function showPage(page) {
   if (page === 'shop') renderShop();
   if (page === 'profile') renderProfile();
   if (page === 'friends') renderFriends();
-  
-  // Si volvemos al home, no iniciamos el timer (solo cuando abres un juego)
 }
 window.showPage = showPage;
 
@@ -1290,7 +1301,7 @@ function toast(msg, type='info') {
   const t = document.createElement('div');
   t.className = 'toast';
   const icons = { info:'mdi:information', error:'mdi:alert-circle', success:'mdi:check-circle' };
-  const cols = { info:'#7c3aed', error:'#ef4444', success:'#10b981' };
+  const cols = { info:'#a78bfa', error:'#ef4444', success:'#10b981' };
   t.innerHTML = `<span class="iconify" data-icon="${icons[type]}" data-width="16" style="color:${cols[type]};flex-shrink:0"></span><span>${msg}</span>`;
   tc.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
@@ -1309,42 +1320,28 @@ function showXP(amount) {
 }
 
 // ========================================================
-// COINS PER MINUTE SYSTEM (SOLO DENTRO DE JUEGOS)
+// COINS PER MINUTE SYSTEM
 // ========================================================
-
 function startGameSession() {
   if (!State.uid) return;
-  
-  // Guardamos en sessionStorage que estamos jugando
   isPlayingGame = true;
   gameStartTime = Date.now();
   coinsSecondCount = 0;
-  
   sessionStorage.setItem('levelup_playing', 'true');
   sessionStorage.setItem('levelup_game_start', gameStartTime.toString());
   sessionStorage.setItem('levelup_uid', State.uid);
-  
-  // Mostrar indicador
   const indicator = document.getElementById('coins-min-indicator');
   indicator.style.display = 'flex';
   indicator.classList.remove('paused');
-  
-  // Iniciar timer que corre cada segundo
   if (coinsMinuteTimer) clearInterval(coinsMinuteTimer);
-  
   coinsMinuteTimer = setInterval(() => {
     coinsSecondCount++;
     const remaining = 60 - coinsSecondCount;
     document.getElementById('coins-min-timer').textContent = remaining + 's';
-    
     if (coinsSecondCount >= 60) {
       coinsSecondCount = 0;
-      
-      // Verificar que todavía estamos "jugando"
       if (sessionStorage.getItem('levelup_playing') === 'true' && sessionStorage.getItem('levelup_uid') === State.uid) {
         awardXPandCoins(XP_PER_MINUTE, COINS_PER_MINUTE, 'Tiempo en juego');
-        // No mostramos toast cada vez para no spamear, pero podríamos descomentar esto:
-        // toast(`💰 +${COINS_PER_MINUTE} monedas por jugar`, 'success');
       } else {
         stopGameSession();
       }
@@ -1355,51 +1352,36 @@ function startGameSession() {
 function stopGameSession() {
   isPlayingGame = false;
   gameStartTime = null;
-  
   sessionStorage.removeItem('levelup_playing');
   sessionStorage.removeItem('levelup_game_start');
   sessionStorage.removeItem('levelup_uid');
-  
-  if (coinsMinuteTimer) {
-    clearInterval(coinsMinuteTimer);
-    coinsMinuteTimer = null;
-  }
-  
+  if (coinsMinuteTimer) { clearInterval(coinsMinuteTimer); coinsMinuteTimer = null; }
   const indicator = document.getElementById('coins-min-indicator');
   indicator.style.display = 'none';
   indicator.classList.add('paused');
 }
+window.stopGameSession = stopGameSession;
 
-// Verificar si venimos de un juego al cargar la página
 function checkActiveGameSession() {
   if (!State.uid) return;
-  
   const wasPlaying = sessionStorage.getItem('levelup_playing') === 'true';
   const savedUid = sessionStorage.getItem('levelup_uid');
   const gameStart = sessionStorage.getItem('levelup_game_start');
-  
   if (wasPlaying && savedUid === State.uid && gameStart) {
-    // El usuario estaba jugando y ha vuelto, reanudamos la sesión
     const elapsed = Math.floor((Date.now() - parseInt(gameStart)) / 1000);
     coinsSecondCount = elapsed % 60;
-    
     isPlayingGame = true;
     gameStartTime = parseInt(gameStart);
-    
     const indicator = document.getElementById('coins-min-indicator');
     indicator.style.display = 'flex';
     indicator.classList.remove('paused');
-    
     if (coinsMinuteTimer) clearInterval(coinsMinuteTimer);
-    
     coinsMinuteTimer = setInterval(() => {
       coinsSecondCount++;
       const remaining = 60 - coinsSecondCount;
       document.getElementById('coins-min-timer').textContent = remaining + 's';
-      
       if (coinsSecondCount >= 60) {
         coinsSecondCount = 0;
-        
         if (sessionStorage.getItem('levelup_playing') === 'true' && sessionStorage.getItem('levelup_uid') === State.uid) {
           awardXPandCoins(XP_PER_MINUTE, COINS_PER_MINUTE, 'Tiempo en juego');
         } else {
@@ -1419,13 +1401,15 @@ function openAuth() {
 function closeAuth() {
   document.getElementById('auth-modal').classList.remove('open');
 }
+window.openAuth = openAuth;
+window.closeAuth = closeAuth;
+
 document.getElementById('open-auth-btn').addEventListener('click', openAuth);
 document.getElementById('close-auth').addEventListener('click', closeAuth);
 document.getElementById('auth-modal').addEventListener('click', (e) => {
   if (e.target === document.getElementById('auth-modal')) closeAuth();
 });
 
-// Modal tabs
 document.querySelectorAll('.modal-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
@@ -1456,32 +1440,25 @@ document.getElementById('confirm-cancel').addEventListener('click', () => {
 });
 
 // ========================================================
-// UPDATE UI AFTER LOGIN
+// UPDATE NAV USER
 // ========================================================
 function updateNavUser() {
   const isLoggedIn = !!State.uid;
   document.getElementById('nav-guest').style.display = isLoggedIn ? 'none' : 'flex';
   const nu = document.getElementById('nav-user');
   nu.style.display = isLoggedIn ? 'flex' : 'none';
-
   if (isLoggedIn) {
     const initial = (State.username || State.email || '?')[0].toUpperCase();
     const equippedAv = State.equipped.avatar ? SHOP_ITEMS.find(s=>s.id===State.equipped.avatar) : null;
-    const avEmoji = equippedAv ? equippedAv.emoji : initial;
-    const avBg = equippedAv ? equippedAv.bg : 'linear-gradient(135deg,#7c3aed,#a78bfa)';
-    
-    document.getElementById('nav-avatar').style.background = avBg;
+    document.getElementById('nav-avatar').style.background = equippedAv ? equippedAv.bg : 'linear-gradient(135deg,#7c3aed,#a78bfa)';
     document.getElementById('nav-avatar').innerHTML = equippedAv
-      ? `<span style="font-size:17px;">${avEmoji}</span>`
+      ? `<span style="font-size:17px;">${equippedAv.emoji}</span>`
       : `<span style="font-family:'Poppins',sans-serif;font-weight:800;color:white;">${initial}</span>`;
-    
     const displayName = State.username || State.email.split('@')[0];
     document.getElementById('nav-username').textContent = displayName;
     document.getElementById('nav-lv').textContent = `LVL ${State.level}`;
     document.getElementById('coins-val').textContent = State.coins;
     document.getElementById('shop-coins-val').textContent = State.coins;
-    
-    // Verificar si había una sesión de juego activa
     checkActiveGameSession();
   } else {
     stopGameSession();
@@ -1489,16 +1466,13 @@ function updateNavUser() {
 }
 
 function xpToLevel(xp) {
-  let level = 1;
-  let total = 0;
-  while (total + level * 200 <= xp) {
-    total += level * 200;
-    level++;
-  }
+  let level = 1, total = 0;
+  while (total + level * 200 <= xp) { total += level * 200; level++; }
   const needed = level * 200;
   const current = xp - total;
   return { level, current, needed, total };
 }
+window.xpToLevel = xpToLevel;
 
 // ========================================================
 // GAME GRID RENDER
@@ -1508,22 +1482,18 @@ function renderGames() {
   const noResults = document.getElementById('no-results');
   const favEmpty = document.getElementById('fav-empty');
   const search = document.getElementById('search-input').value.toLowerCase();
-
   grid.innerHTML = '';
   noResults.classList.add('hidden');
   favEmpty.classList.add('hidden');
-
   let list = GAMES.filter(g => {
     if (activeCat === 'favoritos') return !!State.favs[g.id];
     if (activeCat !== 'all' && g.category !== activeCat) return false;
     return g.name.toLowerCase().includes(search);
   });
-
   if (list.length === 0) {
     (activeCat === 'favoritos' ? favEmpty : noResults).classList.remove('hidden');
     return;
   }
-
   list.forEach((game, i) => {
     const liked = !!State.favs[game.id];
     const likeCount = State.gameLikes[game.id] || 0;
@@ -1532,7 +1502,6 @@ function renderGames() {
     card.style.transitionDelay = `${i * 35}ms`;
     card.dataset.path = game.path;
     card.dataset.gameId = game.id;
-
     card.innerHTML = `
       <div class="game-thumb" style="background:linear-gradient(135deg,${game.color}18,${game.color}06);">
         ${game.tag ? `<div class="game-tag" style="background:${game.color}22;color:${game.color};border:1px solid ${game.color}44">${game.tag}</div>` : ''}
@@ -1546,20 +1515,19 @@ function renderGames() {
       <div class="card-glow"></div>
       <div class="game-info">
         <div class="game-name">${game.name}</div>
-        <span class="game-cat" style="background:${game.color}15;color:${game.color}">${game.category}</span>
+        <span class="game-cat" style="background:${game.color}18;color:${game.color};border:1px solid ${game.color}30;">${game.category}</span>
       </div>
     `;
     grid.appendChild(card);
   });
-
   requestAnimationFrame(() => {
     document.querySelectorAll('.game-card.fade-up').forEach(el => {
       setTimeout(() => el.classList.add('visible'), 30);
     });
   });
 }
+window.renderGames = renderGames;
 
-// Cat pills
 document.getElementById('cat-bar').addEventListener('click', e => {
   const pill = e.target.closest('.cat-pill');
   if (!pill) return;
@@ -1571,19 +1539,16 @@ document.getElementById('cat-bar').addEventListener('click', e => {
 });
 document.getElementById('search-input').addEventListener('input', renderGames);
 
-// Click events on grid - IMPORTANTE: Aquí iniciamos la sesión de juego
 document.getElementById('games-grid').addEventListener('click', async e => {
   const likeBtn = e.target.closest('.like-btn');
   if (likeBtn) {
     e.preventDefault(); e.stopPropagation();
     if (!State.uid) { toast('Inicia sesión para dar like ❤️','error'); openAuth(); return; }
-    const gid = likeBtn.dataset.gid;
-    await toggleLike(gid, likeBtn);
+    await toggleLike(likeBtn.dataset.gid, likeBtn);
     return;
   }
   const card = e.target.closest('.game-card');
   if (card && card.dataset.path) {
-    // Iniciar sesión de juego ANTES de navegar
     if (State.uid) {
       await awardXPandCoins(50, 10, 'Abrir juego');
       startGameSession();
@@ -1595,18 +1560,14 @@ document.getElementById('games-grid').addEventListener('click', async e => {
 async function toggleLike(gid, btn) {
   const isFav = !!State.favs[gid];
   const newFav = !isFav;
-
   State.favs[gid] = newFav ? true : undefined;
   if (!newFav) delete State.favs[gid];
-  if (newFav) { spawnHeart(btn); }
-
+  if (newFav) spawnHeart(btn);
   btn.classList.remove('pop');
   void btn.offsetWidth;
   btn.classList.add('pop');
   btn.classList.toggle('liked', newFav);
-
   if (activeCat === 'favoritos' && !newFav) renderGames();
-
   try {
     const { ref, set, runTransaction } = window._fbFns;
     await set(ref(State.db, `userFavorites/${State.uid}/${gid}`), newFav ? true : null);
@@ -1615,10 +1576,7 @@ async function toggleLike(gid, btn) {
     if (newFav) await awardXPandCoins(20, 5, 'Like dado');
     const lc = btn.querySelector('.lc');
     if (lc) lc.textContent = Math.max(0, (State.gameLikes[gid]||0) + (newFav?1:-1));
-  } catch(err) {
-    toast('Error al guardar like','error');
-    console.error(err);
-  }
+  } catch(err) { toast('Error al guardar like','error'); console.error(err); }
 }
 
 function spawnHeart(btn) {
@@ -1642,13 +1600,11 @@ function spawnHeart(btn) {
 async function awardXPandCoins(xpAmt, coinsAmt, reason) {
   if (!State.uid || !window._fbFns) return;
   const { ref, runTransaction } = window._fbFns;
-  
   try {
     const newXP = State.xp + xpAmt;
     const newCoins = State.coins + coinsAmt;
     const lvData = xpToLevel(newXP);
     const prevLevel = State.level;
-
     await runTransaction(ref(State.db, `users/${State.uid}`), (u) => {
       if (!u) return u;
       u.xp = (u.xp||0) + xpAmt;
@@ -1656,15 +1612,11 @@ async function awardXPandCoins(xpAmt, coinsAmt, reason) {
       u.level = lvData.level;
       return u;
     });
-
     State.xp = newXP;
     State.coins = newCoins;
     State.level = lvData.level;
-
     if (xpAmt > 0) showXP(xpAmt);
-    if (lvData.level > prevLevel) {
-      toast(`🎉 ¡Subiste al nivel ${lvData.level}!`, 'success');
-    }
+    if (lvData.level > prevLevel) toast(`🎉 ¡Subiste al nivel ${lvData.level}!`, 'success');
     updateNavUser();
     document.getElementById('shop-coins-val').textContent = State.coins;
     document.getElementById('p-coins').textContent = State.coins;
@@ -1679,6 +1631,7 @@ function updateXPBar() {
   document.getElementById('xp-text').textContent = `${lvData.current} / ${lvData.needed} XP`;
   document.getElementById('xp-next-lv').textContent = `Nivel ${lvData.level + 1}`;
 }
+window.updateXPBar = updateXPBar;
 
 // ========================================================
 // SHOP RENDER
@@ -1687,22 +1640,19 @@ function renderShop(cat) {
   if (cat !== undefined) activeShopCat = cat;
   const grid = document.getElementById('shop-grid');
   grid.innerHTML = '';
-  
   const list = activeShopCat === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i => i.cat === activeShopCat);
   list.forEach(item => {
     const isOwned = !!State.owned[item.id] || item.free;
     const isEquipped = State.equipped[item.type] === item.id;
-    const rarityClass = `rarity-${item.rarity}`;
-
     const div = document.createElement('div');
     div.className = `shop-item ${isOwned?'owned':''} ${isEquipped?'equipped':''}`;
     div.innerHTML = `
-      <div class="item-rarity ${rarityClass}">${item.rarity.toUpperCase()}</div>
+      <div class="item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div>
       <div class="item-preview" style="background:${item.bg}">${item.emoji}</div>
       <div class="item-name">${item.name}</div>
       <div class="item-type">${item.type}</div>
       <div class="item-price">
-        ${item.free ? '<span style="color:#10b981;font-size:12px;">GRATIS</span>' : `<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span>${item.price}`}
+        ${item.free ? '<span style="color:#10b981;font-size:12px;font-weight:700;">GRATIS</span>' : `<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span>${item.price}`}
       </div>
       ${isEquipped
         ? `<button class="btn-buy equipped-st">✓ Equipado</button>`
@@ -1727,13 +1677,11 @@ document.querySelectorAll('[data-shop-cat]').forEach(p => {
 
 async function buyItem(itemId) {
   if (!State.uid) { openAuth(); return; }
+  if (!window._fbFns) { toast('Error de conexión, recarga la página','error'); return; }
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item) return;
   if (State.owned[itemId]) { toast('Ya tienes este ítem','error'); return; }
-  if (State.coins < item.price) {
-    toast(`Necesitas ${item.price - State.coins} monedas más 💸`, 'error'); return;
-  }
-
+  if (State.coins < item.price) { toast(`Necesitas ${item.price - State.coins} monedas más 💸`, 'error'); return; }
   try {
     const { ref, set, runTransaction } = window._fbFns;
     await runTransaction(ref(State.db, `users/${State.uid}`), u => {
@@ -1744,7 +1692,6 @@ async function buyItem(itemId) {
       return u;
     });
     await set(ref(State.db, `users/${State.uid}/owned/${itemId}`), true);
-
     State.coins -= item.price;
     State.owned[itemId] = true;
     toast(`🛍️ ¡${item.name} comprado!`, 'success');
@@ -1756,6 +1703,7 @@ async function buyItem(itemId) {
 
 async function equipItem(itemId, type) {
   if (!State.uid) { openAuth(); return; }
+  if (!window._fbFns) { toast('Error de conexión','error'); return; }
   try {
     const { ref, set } = window._fbFns;
     State.equipped[type] = itemId;
@@ -1768,26 +1716,21 @@ async function equipItem(itemId, type) {
 }
 window.equipItem = equipItem;
 window.buyItem = buyItem;
-window.openAuth = openAuth;
 
 // ========================================================
 // AVATAR PICKER
 // ========================================================
 function openAvatarPicker() {
   if (!State.uid) { toast('Inicia sesión para cambiar avatar','error'); openAuth(); return; }
-  
   const grid = document.getElementById('avatar-grid');
   grid.innerHTML = '';
-  
   const avatars = SHOP_ITEMS.filter(i => i.type === 'avatar' && (State.owned[i.id] || i.free));
-  
   const defaultOption = document.createElement('div');
   defaultOption.className = `avatar-option ${!State.equipped.avatar ? 'selected' : ''}`;
   defaultOption.dataset.id = 'default';
-  defaultOption.innerHTML = `<span style="font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;">${(State.username||'?')[0].toUpperCase()}</span>`;
+  defaultOption.innerHTML = `<span style="font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;color:var(--text);">${(State.username||'?')[0].toUpperCase()}</span>`;
   defaultOption.onclick = () => selectAvatarOption('default');
   grid.appendChild(defaultOption);
-  
   avatars.forEach(av => {
     const opt = document.createElement('div');
     opt.className = `avatar-option ${State.equipped.avatar === av.id ? 'selected' : ''}`;
@@ -1797,7 +1740,6 @@ function openAvatarPicker() {
     opt.onclick = () => selectAvatarOption(av.id);
     grid.appendChild(opt);
   });
-  
   selectedAvatarId = State.equipped.avatar || 'default';
   document.getElementById('avatar-picker-overlay').classList.add('open');
 }
@@ -1814,10 +1756,9 @@ function selectAvatarOption(id) {
 }
 
 async function saveAvatarSelection() {
-  if (!State.uid) return;
+  if (!State.uid || !window._fbFns) return;
   try {
     const { ref, set } = window._fbFns;
-    
     if (selectedAvatarId === 'default' || !selectedAvatarId) {
       State.equipped.avatar = null;
       await set(ref(State.db, `users/${State.uid}/equipped/avatar`), null);
@@ -1825,7 +1766,6 @@ async function saveAvatarSelection() {
       State.equipped.avatar = selectedAvatarId;
       await set(ref(State.db, `users/${State.uid}/equipped/avatar`), selectedAvatarId);
     }
-    
     toast('✓ Avatar cambiado', 'success');
     closeAvatarPicker();
     updateNavUser();
@@ -1838,98 +1778,107 @@ window.closeAvatarPicker = closeAvatarPicker;
 window.saveAvatarSelection = saveAvatarSelection;
 
 // ========================================================
-// EDIT USERNAME (CON SISTEMA DE COSTOS)
+// ✅ FIX 2: EDIT USERNAME - botones con estilos inline claros
 // ========================================================
 function startEditName() {
   if (!State.uid) { toast('Inicia sesión para cambiar tu nombre','error'); openAuth(); return; }
-  
   const nameWrap = document.getElementById('profile-name-wrap');
   const currentName = State.username || '';
   const isFirstChange = State.nameChanges === 0;
-  
+
   nameWrap.innerHTML = `
-    <div class="edit-name-inline" style="flex-direction:column;align-items:flex-start;gap:8px;">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" class="name-input-inline" id="edit-name-input" value="${currentName}" maxlength="20" placeholder="Nuevo nombre...">
-        <button onclick="saveNewName()" style="padding:8px 14px;border-radius:8px;background:var(--accent);color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Guardar</button>
-        <button onclick="cancelEditName()" style="padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">Cancelar</button>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input
+          type="text"
+          id="edit-name-input"
+          value="${currentName}"
+          maxlength="20"
+          placeholder="Nuevo nombre..."
+          style="padding:10px 14px;background:#1a1a2e;border:2px solid rgba(124,58,237,0.5);border-radius:10px;color:#f1f0ff;font-size:20px;font-weight:800;outline:none;font-family:'Poppins',sans-serif;width:240px;"
+          autocomplete="off"
+        >
+        <button
+          onclick="saveNewName()"
+          style="padding:10px 18px;border-radius:8px;background:#7c3aed;color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;"
+        >Guardar</button>
+        <button
+          onclick="cancelEditName()"
+          style="padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#c0c0d8;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;"
+        >Cancelar</button>
       </div>
-      <div class="name-change-cost ${isFirstChange ? 'free' : 'paid'}">
-        ${isFirstChange 
-          ? '<span class="iconify" data-icon="mdi:gift" data-width="14"></span> Primer cambio: GRATIS' 
-          : `<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span> Coste: ${NAME_CHANGE_COST} monedas (Cambios: ${State.nameChanges})`
+      <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;${isFirstChange ? 'background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);' : 'background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);'}">
+        ${isFirstChange
+          ? '🎁 Primer cambio: GRATIS'
+          : `💰 Coste: ${NAME_CHANGE_COST} monedas (Cambio #${State.nameChanges + 1})`
         }
       </div>
     </div>
   `;
-  
-  document.getElementById('edit-name-input').focus();
-  document.getElementById('edit-name-input').select();
+
+  const inp = document.getElementById('edit-name-input');
+  if (inp) { inp.focus(); inp.select(); }
+  // Allow Enter to save
+  inp && inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveNewName();
+    if (e.key === 'Escape') cancelEditName();
+  });
 }
 
 async function saveNewName() {
   if (!State.uid) return;
-  const newName = document.getElementById('edit-name-input').value.trim();
-  
+  if (!window._fbFns) { toast('Error de conexión, recarga la página','error'); return; }
+  const inp = document.getElementById('edit-name-input');
+  if (!inp) { toast('Error: recarga la página','error'); return; }
+  const newName = inp.value.trim();
   if (!newName) { toast('El nombre no puede estar vacío','error'); return; }
   if (newName.length < 3) { toast('Mínimo 3 caracteres','error'); return; }
   if (newName === State.username) { cancelEditName(); return; }
-  
-  // Verificar coste
+
   const isFirstChange = State.nameChanges === 0;
   const cost = isFirstChange ? 0 : NAME_CHANGE_COST;
-  
   if (!isFirstChange && State.coins < cost) {
     toast(`Necesitas ${cost - State.coins} monedas más para cambiar de nombre 💸`, 'error');
     return;
   }
-  
+
   try {
-    const { ref, get, query, orderByChild, equalTo, set, runTransaction } = window._fbFns;
-    
-    // Check if username is taken
+    const { ref, get, query, orderByChild, equalTo, runTransaction } = window._fbFns;
     const q = query(ref(State.db,'users'), orderByChild('username'), equalTo(newName));
     const snap = await get(q);
-    
     if (snap.exists()) {
       let takenByOther = false;
-      snap.forEach(child => {
-        if (child.key !== State.uid) takenByOther = true;
-      });
+      snap.forEach(child => { if (child.key !== State.uid) takenByOther = true; });
       if (takenByOther) { toast('Ese nombre ya está en uso','error'); return; }
     }
-    
-    // Transacción: actualizar nombre, cobrar (si aplica), incrementar contador
+
     await runTransaction(ref(State.db, `users/${State.uid}`), (u) => {
       if (!u) return u;
       u.username = newName;
       if (cost > 0) {
-        if ((u.coins||0) < cost) return u; // No tiene suficientes monedas
+        if ((u.coins||0) < cost) return u;
         u.coins = (u.coins||0) - cost;
       }
       u.nameChanges = (u.nameChanges||0) + 1;
       return u;
     });
-    
-    // Actualizar estado local
+
     State.username = newName;
     State.nameChanges = (State.nameChanges || 0) + 1;
-    if (cost > 0) {
-      State.coins -= cost;
-    }
-    
-    toast(isFirstChange 
-      ? '✓ Nombre actualizado (¡gratis!)' 
-      : `✓ Nombre actualizado (-${cost} monedas)`
-    , 'success');
+    if (cost > 0) State.coins -= cost;
+
+    toast(isFirstChange ? '✓ Nombre actualizado (¡gratis!)' : `✓ Nombre actualizado (-${cost} monedas)`, 'success');
     cancelEditName();
     updateNavUser();
-  } catch(err) { toast('Error al guardar nombre','error'); console.error(err); }
+    renderProfile();
+  } catch(err) { toast('Error al guardar nombre: ' + err.message,'error'); console.error(err); }
 }
 
 function cancelEditName() {
   const nameWrap = document.getElementById('profile-name-wrap');
-  nameWrap.innerHTML = `<div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">${State.username || 'Cargando...'}</div>`;
+  if (nameWrap) {
+    nameWrap.innerHTML = `<div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">${State.username || 'Sin nombre'}</div>`;
+  }
 }
 
 window.startEditName = startEditName;
@@ -1948,26 +1897,22 @@ function renderProfile() {
   const avContent = equippedAv
     ? `<span style="font-size:40px;">${equippedAv.emoji}</span>`
     : `<span style="font-family:'Poppins',sans-serif;font-weight:800;color:white;font-size:36px;">${displayName[0].toUpperCase()}</span>`;
-  
   document.getElementById('profile-avatar-big').style.background = avBg;
   document.getElementById('profile-avatar-big').innerHTML = avContent;
   document.getElementById('profile-lv-badge').textContent = `LV ${State.level}`;
-  
+
   const nameWrap = document.getElementById('profile-name-wrap');
-  if (!document.getElementById('profile-name')) {
+  // Only update name display if not currently in edit mode
+  if (!document.getElementById('edit-name-input')) {
     nameWrap.innerHTML = `<div class="profile-name" id="profile-name" onclick="startEditName()" title="Click para cambiar nombre">${displayName}</div>`;
-  } else {
-    document.getElementById('profile-name').textContent = displayName;
   }
-  
+
   document.getElementById('profile-tag').textContent = `@${(State.username||'').toLowerCase() || State.email.split('@')[0]}`;
   document.getElementById('profile-bio').textContent = State.bio || 'Sin bio todavía.';
   document.getElementById('bio-input').value = State.bio || '';
 
-  const friendCount = Object.keys(State.friends).length;
-  const likeCount = Object.keys(State.favs).length;
-  document.getElementById('p-friends').textContent = friendCount;
-  document.getElementById('p-likes').textContent = likeCount;
+  document.getElementById('p-friends').textContent = Object.keys(State.friends).length;
+  document.getElementById('p-likes').textContent = Object.keys(State.favs).length;
   document.getElementById('p-coins').textContent = State.coins;
 
   updateXPBar();
@@ -1976,15 +1921,9 @@ function renderProfile() {
   badgesEl.innerHTML = '';
   const equippedBadge = State.equipped.badge ? SHOP_ITEMS.find(s=>s.id===State.equipped.badge) : null;
   const equippedTitle = State.equipped.title ? SHOP_ITEMS.find(s=>s.id===State.equipped.title) : null;
-  if (equippedBadge) {
-    badgesEl.innerHTML += `<div class="profile-badge"><span>${equippedBadge.emoji}</span>${equippedBadge.name}</div>`;
-  }
-  if (equippedTitle) {
-    badgesEl.innerHTML += `<div class="profile-badge" style="background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.2);color:var(--accent3)">✏️ ${equippedTitle.name}</div>`;
-  }
-  if (State.level >= 5) {
-    badgesEl.innerHTML += `<div class="profile-badge" style="color:var(--gold)">⭐ Lv 5+</div>`;
-  }
+  if (equippedBadge) badgesEl.innerHTML += `<div class="profile-badge"><span>${equippedBadge.emoji}</span>${equippedBadge.name}</div>`;
+  if (equippedTitle) badgesEl.innerHTML += `<div class="profile-badge" style="background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.25);color:var(--accent3)">✏️ ${equippedTitle.name}</div>`;
+  if (State.level >= 5) badgesEl.innerHTML += `<div class="profile-badge" style="color:var(--gold);border-color:rgba(245,158,11,0.25);">⭐ Lv 5+</div>`;
 
   const colEl = document.getElementById('profile-collection');
   const myItems = SHOP_ITEMS.filter(i => State.owned[i.id] || i.free);
@@ -2010,18 +1949,20 @@ function renderProfile() {
     });
   }
 }
+window.renderProfile = renderProfile;
 
 // Bio edit
 document.getElementById('edit-bio-btn').addEventListener('click', () => {
   document.getElementById('profile-bio-wrap').style.display = 'none';
   document.getElementById('profile-bio-edit').style.display = 'block';
+  document.getElementById('bio-input').focus();
 });
 document.getElementById('cancel-bio-btn').addEventListener('click', () => {
   document.getElementById('profile-bio-wrap').style.display = 'block';
   document.getElementById('profile-bio-edit').style.display = 'none';
 });
 document.getElementById('save-bio-btn').addEventListener('click', async () => {
-  if (!State.uid) return;
+  if (!State.uid || !window._fbFns) return;
   const bio = document.getElementById('bio-input').value.trim();
   State.bio = bio;
   try {
@@ -2035,7 +1976,7 @@ document.getElementById('save-bio-btn').addEventListener('click', async () => {
 });
 
 // ========================================================
-// FRIENDS SYSTEM
+// ✅ FIX 2: FRIENDS SYSTEM - con comprobación de _fbFns
 // ========================================================
 function renderFriends() {
   const list = document.getElementById('friends-list');
@@ -2052,11 +1993,11 @@ function renderFriends() {
       d.innerHTML = `
         <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
         <div>
-          <div style="font-size:13px;font-weight:600;">${data.username||'Usuario'}</div>
-          <div style="font-size:11px;color:var(--muted);">Quiere ser tu amigo</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${data.username||'Usuario'}</div>
+          <div style="font-size:12px;color:#8888a8;">Quiere ser tu amigo</div>
         </div>
         <div class="req-actions">
-          <button class="btn-accept" onclick="acceptFriend('${fromUid}','${data.username||''}')">✓</button>
+          <button class="btn-accept" onclick="acceptFriend('${fromUid}','${data.username||''}')">✓ Aceptar</button>
           <button class="btn-reject" onclick="rejectFriend('${fromUid}')">✗</button>
         </div>
       `;
@@ -2091,35 +2032,42 @@ function renderFriends() {
     list.appendChild(d);
   });
 }
+window.renderFriends = renderFriends;
 
+// ✅ FIX: el listener del botón añadir amigo con comprobación robusta
 document.getElementById('btn-add-friend').addEventListener('click', async () => {
-  if (!State.uid) { openAuth(); return; }
+  if (!State.uid) { toast('Inicia sesión para añadir amigos','error'); openAuth(); return; }
+  if (!window._fbFns) { toast('Cargando Firebase... espera un momento','error'); return; }
   const username = document.getElementById('friend-search-input').value.trim();
   if (!username) { toast('Escribe un nombre de usuario','error'); return; }
-  if (username === State.username) { toast('No puedes añadirte a ti mismo','error'); return; }
+  if (username.toLowerCase() === (State.username||'').toLowerCase()) { toast('No puedes añadirte a ti mismo 😅','error'); return; }
   await searchAndAddFriend(username);
 });
 
+// Permitir pulsar Enter en el input de amigos
+document.getElementById('friend-search-input').addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('btn-add-friend').click();
+  }
+});
+
 async function searchAndAddFriend(username) {
+  if (!window._fbFns) { toast('Error de conexión','error'); return; }
   const resultEl = document.getElementById('friend-search-result');
-  resultEl.innerHTML = '<p style="font-size:12px;color:var(--muted);">Buscando...</p>';
-  
+  resultEl.innerHTML = '<p style="font-size:13px;color:#8888a8;padding:8px 0;">🔍 Buscando...</p>';
   try {
     const { ref, get, query, orderByChild, equalTo, set } = window._fbFns;
-    const usersRef = ref(State.db, 'users');
-    const q = query(usersRef, orderByChild('username'), equalTo(username));
+    const q = query(ref(State.db, 'users'), orderByChild('username'), equalTo(username));
     const snap = await get(q);
-    
     if (!snap.exists()) {
-      resultEl.innerHTML = `<p style="font-size:12px;color:var(--red);">❌ Usuario "${username}" no encontrado</p>`;
+      resultEl.innerHTML = `<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Usuario "<strong>${username}</strong>" no encontrado</p>`;
       return;
     }
-
     let targetUid = null, targetData = null;
     snap.forEach(child => { targetUid = child.key; targetData = child.val(); });
 
     if (State.friends[targetUid]) {
-      resultEl.innerHTML = `<p style="font-size:12px;color:var(--green);">✓ Ya sois amigos</p>`;
+      resultEl.innerHTML = `<p style="font-size:13px;color:#10b981;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:10px 14px;">✓ Ya sois amigos</p>`;
       return;
     }
 
@@ -2129,35 +2077,36 @@ async function searchAndAddFriend(username) {
       timestamp: Date.now()
     });
 
-    resultEl.innerHTML = `<p style="font-size:12px;color:var(--green);">✅ Solicitud enviada a ${username}</p>`;
+    resultEl.innerHTML = `<p style="font-size:13px;color:#a78bfa;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:10px 14px;">✅ Solicitud enviada a <strong>${username}</strong></p>`;
     toast(`Solicitud enviada a ${username}`, 'success');
     document.getElementById('friend-search-input').value = '';
   } catch(err) {
-    resultEl.innerHTML = `<p style="font-size:12px;color:var(--red);">Error al buscar</p>`;
+    resultEl.innerHTML = `<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Error al buscar: ${err.message}</p>`;
     console.error(err);
   }
 }
+window.searchAndAddFriend = searchAndAddFriend;
 
 async function acceptFriend(fromUid, fromUsername) {
+  if (!window._fbFns) return;
   try {
     const { ref, set, remove } = window._fbFns;
     const myName = State.username || State.email.split('@')[0];
-
     await Promise.all([
       set(ref(State.db, `users/${State.uid}/friends/${fromUid}`), { username: fromUsername, level: 1, online: false }),
       set(ref(State.db, `users/${fromUid}/friends/${State.uid}`), { username: myName, level: State.level, online: true }),
       remove(ref(State.db, `users/${State.uid}/friendRequests/${fromUid}`))
     ]);
-
     State.friends[fromUid] = { username: fromUsername, level: 1 };
     delete State.friendRequests[fromUid];
     toast(`✓ ¡Ahora eres amigo de ${fromUsername}!`, 'success');
     renderFriends();
     updateReqBadge();
-  } catch(err) { toast('Error','error'); console.error(err); }
+  } catch(err) { toast('Error al aceptar solicitud','error'); console.error(err); }
 }
 
 async function rejectFriend(fromUid) {
+  if (!window._fbFns) return;
   try {
     const { ref, remove } = window._fbFns;
     await remove(ref(State.db, `users/${State.uid}/friendRequests/${fromUid}`));
@@ -2169,6 +2118,7 @@ async function rejectFriend(fromUid) {
 }
 
 async function removeFriend(friendUid) {
+  if (!window._fbFns) return;
   try {
     const { ref, remove } = window._fbFns;
     await Promise.all([
@@ -2184,14 +2134,10 @@ async function removeFriend(friendUid) {
 function updateReqBadge() {
   const count = Object.keys(State.friendRequests).length;
   const badge = document.getElementById('req-badge');
-  if (count > 0) {
-    badge.textContent = count;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
-  }
+  if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
 }
-
+window.updateReqBadge = updateReqBadge;
 window.acceptFriend = acceptFriend;
 window.rejectFriend = rejectFriend;
 window.removeFriend = removeFriend;
@@ -2229,6 +2175,7 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 State.db = db;
+// ✅ FIX: Exponer todas las funciones de Firebase al scope global para que las funciones window.* puedan usarlas
 window._fbFns = { ref, set, get, onValue, runTransaction, remove, query, orderByChild, equalTo, push, onDisconnect };
 
 const BANNED = ["bcarrere@ietemple.cat","gvarela@ietemple.cat"];
@@ -2292,7 +2239,6 @@ async function loadUserData(uid) {
   State.friendRequests = data.friendRequests || {};
   State.nameChanges = data.nameChanges || 0;
 
-  // Listeners
   onValue(ref(db, `userFavorites/${uid}`), s => {
     State.favs = s.val() || {};
     if (window.renderGames) window.renderGames();
@@ -2313,7 +2259,7 @@ async function loadUserData(uid) {
     if (window.currentPage === 'friends') window.renderFriends();
   });
   onValue(ref(db, `users/${uid}/nameChanges`), s => {
-    if (s.val() !== null) { State.nameChanges = s.val(); }
+    if (s.val() !== null) State.nameChanges = s.val();
   });
 }
 
@@ -2326,9 +2272,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     await signInWithEmailAndPassword(auth, em, pw);
     toast('¡Sesión iniciada!', 'success');
     closeAuth();
-  } catch(err) {
-    toast('Email o contraseña incorrectos','error');
-  }
+  } catch(err) { toast('Email o contraseña incorrectos','error'); }
 });
 
 document.getElementById('btn-register').addEventListener('click', async () => {
@@ -2338,12 +2282,10 @@ document.getElementById('btn-register').addEventListener('click', async () => {
   if (!username || !em || !pw) { toast('Rellena todos los campos','error'); return; }
   if (username.length < 3) { toast('El nombre debe tener al menos 3 caracteres','error'); return; }
   if (pw.length < 6) { toast('La contraseña debe tener al menos 6 caracteres','error'); return; }
-  
   try {
     const q = query(ref(db,'users'), orderByChild('username'), equalTo(username));
     const snap = await get(q);
     if (snap.exists()) { toast('Ese nombre de usuario ya está en uso','error'); return; }
-
     const cred = await createUserWithEmailAndPassword(auth, em, pw);
     await set(ref(db, `users/${cred.user.uid}`), {
       username, email: em,
@@ -2355,9 +2297,7 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     });
     toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida', 'success');
     closeAuth();
-  } catch(err) {
-    toast('Error al registrarse: ' + err.message, 'error');
-  }
+  } catch(err) { toast('Error al registrarse: ' + err.message, 'error'); }
 });
 
 const googleSignIn = async () => {
@@ -2410,10 +2350,8 @@ onAuthStateChanged(auth, async (user) => {
     State.uid = user.uid;
     State.email = user.email;
     await loadUserData(user.uid);
-
     await set(ref(db, `users/${user.uid}/online`), true);
     onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-
     updateNavUser();
     if (currentPage !== 'home') renderProfile();
   } else {
