@@ -222,12 +222,6 @@
       margin-bottom: 24px;
     }
     .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-    .section-tag {
-      font-size: 11px; color: var(--accent2);
-      background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2);
-      padding: 4px 10px; border-radius: 100px; font-weight: 600;
-      letter-spacing: 0.05em; text-transform: uppercase;
-    }
 
     /* ─── CATEGORY PILLS ─── */
     .cat-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
@@ -287,13 +281,15 @@
       display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
     }
-    /* ✅ FIX 1: game image support */
+    /* FIX: imagen más grande */
     .game-thumb-img {
-      width: 56px; height: 56px; object-fit: contain;
-      border-radius: 10px;
-      filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 0;
       position: relative; z-index: 2;
+      transition: transform 0.3s ease;
     }
+    .game-card:hover .game-thumb-img { transform: scale(1.05); }
     .game-thumb-icon {
       position: relative; z-index: 2;
       filter: drop-shadow(0 4px 20px currentColor);
@@ -681,13 +677,10 @@
 
     /* ─── UPDATE LOG STYLES ─── */
     .update-log-container { max-width: 820px; margin: 0 auto; padding: 40px 24px; }
-
     .update-log-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 32px; flex-wrap: wrap; gap: 12px;
     }
-
-    /* Admin panel */
     .admin-panel {
       background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.04));
       border: 1px solid rgba(124,58,237,0.25);
@@ -739,8 +732,6 @@
       font-family: 'Inter', sans-serif; transition: all 0.2s;
     }
     .btn-publish:hover { opacity: 0.88; transform: translateY(-1px); }
-
-    /* Update entries */
     .update-entry {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 16px; padding: 22px 24px; margin-bottom: 14px;
@@ -786,8 +777,6 @@
     }
 
     /* ─── MISC ─── */
-    #xp-text { color: #a0a0c0 !important; font-weight: 600; }
-    #xp-next-lv { font-weight: 700; }
     .hidden { display: none !important; }
 
     /* ─── FOOTER ─── */
@@ -947,7 +936,6 @@
     <button class="nav-tab" data-page="profile">
       <span class="iconify" data-icon="mdi:account-circle" data-width="17"></span> Perfil
     </button>
-    <!-- ✅ NUEVO: Tab Updates -->
     <button class="nav-tab" data-page="updates">
       <span class="iconify" data-icon="mdi:bell-ring-outline" data-width="17"></span> Updates
       <span class="badge hidden" id="update-badge">!</span>
@@ -1210,7 +1198,6 @@
 // GAMES DATA
 // ========================================================
 const GAMES = [
-  // ✅ FIX 1: Pets and Money usa icon de imagen, no iconify
   { name:"Pets and Money", path:"Pets and Money/index.html", icon:"Pets and Money/pets.webp", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
   { name:"No cliques el Botón", path:"juego2/index.html", icon:"mdi:cursor-default-click", color:"#ef4444", category:"casual", tag:"Reto" },
   { name:"Steal a Brainrot", path:"Roba un Brainrot/index.html", icon:"mdi:brain", color:"#8b5cf6", category:"estrategia", tag:"Nuevo" },
@@ -1302,7 +1289,6 @@ const NAME_CHANGE_COST = 200;
 let selectedAvatarId = null;
 let selectedLogType = 'new';
 
-// Admin email (update log)
 const ADMIN_EMAIL = 'guillevarelacors@gmail.com';
 
 // ========================================================
@@ -1479,7 +1465,6 @@ function updateNavUser() {
     document.getElementById('coins-val').textContent = State.coins;
     document.getElementById('shop-coins-val').textContent = State.coins;
     checkActiveGameSession();
-    // Show/hide admin panel on updates page
     const adminPanel = document.getElementById('admin-update-panel');
     if (adminPanel) adminPanel.classList.toggle('hidden', State.email !== ADMIN_EMAIL);
   } else {
@@ -1497,7 +1482,7 @@ function xpToLevel(xp) {
 window.xpToLevel = xpToLevel;
 
 // ========================================================
-// ✅ FIX 1: GAME GRID RENDER — soporte de imágenes
+// GAME GRID RENDER — imagen grande con cover
 // ========================================================
 function renderGames() {
   const grid = document.getElementById('games-grid');
@@ -1523,7 +1508,6 @@ function renderGames() {
     const liked = !!State.favs[game.id];
     const likeCount = State.gameLikes[game.id] || 0;
 
-    // ✅ Detectar si el icono es una imagen local o un iconify
     const isLocalImg = game.isImage === true || (
       game.icon && !game.icon.startsWith('mdi:') && !game.icon.startsWith('ic:') &&
       (game.icon.includes('.webp') || game.icon.includes('.png') || game.icon.includes('.jpg') || game.icon.includes('.svg'))
@@ -1534,7 +1518,6 @@ function renderGames() {
            src="${game.icon}"
            alt="${game.name}"
            class="game-thumb-img"
-           style="filter:drop-shadow(0 0 20px ${game.color}88);"
            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'iconify game-thumb-icon\\' data-icon=\\'mdi:gamepad-variant\\' data-width=\\'52\\' style=\\'color:${game.color};\\'></span>')"
          >`
       : `<span class="iconify game-thumb-icon" data-icon="${game.icon}" data-width="52" style="color:${game.color};filter:drop-shadow(0 0 20px ${game.color}66)"></span>`;
@@ -1793,7 +1776,7 @@ window.closeAvatarPicker = closeAvatarPicker;
 window.saveAvatarSelection = saveAvatarSelection;
 
 // ========================================================
-// ✅ FIX 2: EDIT USERNAME — versión corregida y robusta
+// EDIT USERNAME
 // ========================================================
 function startEditName() {
   if (!State.uid) { toast('Inicia sesión para cambiar tu nombre','error'); openAuth(); return; }
@@ -1814,14 +1797,8 @@ function startEditName() {
           style="padding:10px 14px;background:#1a1a2e;border:2px solid rgba(124,58,237,0.5);border-radius:10px;color:#f1f0ff;font-size:20px;font-weight:800;outline:none;font-family:'Poppins',sans-serif;width:240px;"
           autocomplete="off"
         >
-        <button
-          id="btn-save-name"
-          style="padding:10px 18px;border-radius:8px;background:#7c3aed;color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s;"
-        >Guardar</button>
-        <button
-          id="btn-cancel-name"
-          style="padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#c0c0d8;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;"
-        >Cancelar</button>
+        <button id="btn-save-name" style="padding:10px 18px;border-radius:8px;background:#7c3aed;color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Guardar</button>
+        <button id="btn-cancel-name" style="padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#c0c0d8;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">Cancelar</button>
       </div>
       <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;width:fit-content;${isFirstChange ? 'background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);' : 'background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);'}">
         ${isFirstChange ? '🎁 Primer cambio: GRATIS' : `💰 Coste: ${NAME_CHANGE_COST} monedas (Cambio #${(State.nameChanges||0)+1})`}
@@ -1829,11 +1806,9 @@ function startEditName() {
     </div>
   `;
 
-  // Attach listeners after DOM is updated
   const inp = document.getElementById('edit-name-input');
   const saveBtn = document.getElementById('btn-save-name');
   const cancelBtn = document.getElementById('btn-cancel-name');
-
   if (inp) { inp.focus(); inp.select(); }
   if (saveBtn) saveBtn.addEventListener('click', saveNewName);
   if (cancelBtn) cancelBtn.addEventListener('click', cancelEditName);
@@ -1847,22 +1822,15 @@ function startEditName() {
 
 async function saveNewName() {
   if (!State.uid) return;
-
-  // Wait for Firebase if needed
-  if (!window._fbFns) {
-    toast('Firebase aún no cargado, espera un momento e inténtalo de nuevo','error');
-    return;
-  }
+  if (!window._fbFns) { toast('Firebase cargando, inténtalo de nuevo','error'); return; }
 
   const inp = document.getElementById('edit-name-input');
   if (!inp) { toast('Error: recarga la página','error'); return; }
-
   const newName = inp.value.trim();
   if (!newName) { toast('El nombre no puede estar vacío','error'); return; }
   if (newName.length < 3) { toast('Mínimo 3 caracteres','error'); return; }
   if (newName === State.username) { cancelEditName(); return; }
 
-  // Disable button to prevent double click
   const saveBtn = document.getElementById('btn-save-name');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; saveBtn.textContent = 'Guardando...'; }
 
@@ -1870,15 +1838,13 @@ async function saveNewName() {
   const cost = isFirstChange ? 0 : NAME_CHANGE_COST;
 
   if (!isFirstChange && State.coins < cost) {
-    toast(`Necesitas ${cost - State.coins} monedas más para cambiar de nombre 💸`, 'error');
+    toast(`Necesitas ${cost - State.coins} monedas más 💸`, 'error');
     if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.textContent = 'Guardar'; }
     return;
   }
 
   try {
     const { ref, get, query, orderByChild, equalTo, runTransaction } = window._fbFns;
-
-    // Check if username is taken
     const q = query(ref(State.db,'users'), orderByChild('username'), equalTo(newName));
     const snap = await get(q);
     if (snap.exists()) {
@@ -1891,20 +1857,15 @@ async function saveNewName() {
       }
     }
 
-    // Run transaction
-    let transactionSuccess = false;
     await runTransaction(ref(State.db, `users/${State.uid}`), (u) => {
       if (!u) return u;
-      // Check coins again inside transaction
-      if (cost > 0 && (u.coins||0) < cost) return undefined; // abort
+      if (cost > 0 && (u.coins||0) < cost) return undefined;
       u.username = newName;
       if (cost > 0) u.coins = (u.coins||0) - cost;
       u.nameChanges = (u.nameChanges||0) + 1;
-      transactionSuccess = true;
       return u;
     });
 
-    // Update local state
     State.username = newName;
     State.nameChanges = (State.nameChanges || 0) + 1;
     if (cost > 0) State.coins -= cost;
@@ -1916,7 +1877,7 @@ async function saveNewName() {
 
   } catch(err) {
     console.error('Name change error:', err);
-    toast('Error al guardar nombre: ' + (err.message || 'inténtalo de nuevo'), 'error');
+    toast('Error al guardar: ' + (err.message || 'inténtalo de nuevo'), 'error');
     if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.textContent = 'Guardar'; }
   }
 }
@@ -2015,7 +1976,7 @@ document.getElementById('save-bio-btn').addEventListener('click', async () => {
 });
 
 // ========================================================
-// ✅ FIX 3: FRIENDS — versión corregida y robusta
+// FRIENDS
 // ========================================================
 function renderFriends() {
   const list = document.getElementById('friends-list');
@@ -2029,6 +1990,7 @@ function renderFriends() {
     reqs.forEach(([fromUid, data]) => {
       const d = document.createElement('div');
       d.className = 'req-card';
+      const safeUsername = (data.username||'Usuario').replace(/'/g,"\\'");
       d.innerHTML = `
         <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div>
         <div>
@@ -2036,7 +1998,7 @@ function renderFriends() {
           <div style="font-size:12px;color:#8888a8;">Quiere ser tu amigo</div>
         </div>
         <div class="req-actions">
-          <button class="btn-accept" data-uid="${fromUid}" data-username="${(data.username||'').replace(/"/g,'')}" onclick="acceptFriend('${fromUid}','${(data.username||'').replace(/'/g,"\\'")}')">✓ Aceptar</button>
+          <button class="btn-accept" onclick="acceptFriend('${fromUid}','${safeUsername}')">✓ Aceptar</button>
           <button class="btn-reject" onclick="rejectFriend('${fromUid}')">✗</button>
         </div>
       `;
@@ -2073,23 +2035,15 @@ function renderFriends() {
 }
 window.renderFriends = renderFriends;
 
-// ✅ FIX: listener robusto con validación de Firebase
 document.getElementById('btn-add-friend').addEventListener('click', async () => {
   if (!State.uid) { toast('Inicia sesión para añadir amigos','error'); openAuth(); return; }
-
-  // Retry si Firebase aún no está listo
-  if (!window._fbFns) {
-    toast('Firebase cargando... inténtalo en un momento','error');
-    return;
-  }
-
+  if (!window._fbFns) { toast('Cargando Firebase, espera un momento...','error'); return; }
   const input = document.getElementById('friend-search-input');
   const username = input ? input.value.trim() : '';
   if (!username) { toast('Escribe un nombre de usuario','error'); return; }
   if (username.toLowerCase() === (State.username||'').toLowerCase()) {
     toast('No puedes añadirte a ti mismo 😅','error'); return;
   }
-
   await searchAndAddFriend(username);
 });
 
@@ -2099,50 +2053,36 @@ document.getElementById('friend-search-input').addEventListener('keydown', async
 
 async function searchAndAddFriend(username) {
   if (!window._fbFns) { toast('Error de conexión con Firebase','error'); return; }
-
   const resultEl = document.getElementById('friend-search-result');
   const addBtn = document.getElementById('btn-add-friend');
-
   resultEl.innerHTML = '<p style="font-size:13px;color:#8888a8;padding:8px 0;">🔍 Buscando...</p>';
   if (addBtn) addBtn.disabled = true;
-
   try {
     const { ref, get, query, orderByChild, equalTo, set } = window._fbFns;
-
     const q = query(ref(State.db, 'users'), orderByChild('username'), equalTo(username));
     const snap = await get(q);
-
     if (!snap.exists()) {
       resultEl.innerHTML = `<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Usuario "<strong style="color:#fca5a5;">${username}</strong>" no encontrado</p>`;
       return;
     }
-
     let targetUid = null, targetData = null;
     snap.forEach(child => { targetUid = child.key; targetData = child.val(); });
-
     if (!targetUid) {
       resultEl.innerHTML = `<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Error al obtener usuario</p>`;
       return;
     }
-
     if (State.friends[targetUid]) {
       resultEl.innerHTML = `<p style="font-size:13px;color:#10b981;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:10px 14px;">✅ Ya sois amigos</p>`;
       return;
     }
-
     const myName = State.username || State.email.split('@')[0];
     await set(ref(State.db, `users/${targetUid}/friendRequests/${State.uid}`), {
-      username: myName,
-      uid: State.uid,
-      timestamp: Date.now()
+      username: myName, uid: State.uid, timestamp: Date.now()
     });
-
     resultEl.innerHTML = `<p style="font-size:13px;color:#a78bfa;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:10px 14px;">✅ Solicitud enviada a <strong style="color:#c4b5fd;">${username}</strong></p>`;
     toast(`Solicitud enviada a ${username} ✓`, 'success');
-
     const input = document.getElementById('friend-search-input');
     if (input) input.value = '';
-
   } catch(err) {
     console.error('Add friend error:', err);
     resultEl.innerHTML = `<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Error: ${err.message || 'inténtalo de nuevo'}</p>`;
@@ -2204,7 +2144,7 @@ window.rejectFriend = rejectFriend;
 window.removeFriend = removeFriend;
 
 // ========================================================
-// ✅ NUEVO: UPDATE LOG
+// UPDATE LOG
 // ========================================================
 let updateLogCache = {};
 let lastSeenUpdateTs = parseInt(localStorage.getItem('lv_last_update') || '0');
@@ -2223,35 +2163,24 @@ async function publishUpdate() {
     toast('Sin permisos de administrador','error'); return;
   }
   if (!window._fbFns) { toast('Firebase no cargado','error'); return; }
-
   const title = document.getElementById('log-title-input').value.trim();
   const body = document.getElementById('log-body-input').value.trim();
   const isPinned = document.getElementById('log-pin-check').checked;
-
   if (!title) { toast('El título no puede estar vacío','error'); return; }
   if (!body) { toast('La descripción no puede estar vacía','error'); return; }
-
   try {
     const { ref, push } = window._fbFns;
-    const entry = {
+    await push(ref(State.db, 'updateLog'), {
       title, body, type: selectedLogType,
-      pinned: isPinned,
-      ts: Date.now(),
+      pinned: isPinned, ts: Date.now(),
       author: State.username || 'Gh0st'
-    };
-
-    await push(ref(State.db, 'updateLog'), entry);
-
-    // Clear form
+    });
     document.getElementById('log-title-input').value = '';
     document.getElementById('log-body-input').value = '';
     document.getElementById('log-pin-check').checked = false;
     selectLogType('new');
-
     toast('🚀 Update publicado', 'success');
-  } catch(err) {
-    toast('Error al publicar: ' + err.message,'error'); console.error(err);
-  }
+  } catch(err) { toast('Error al publicar: ' + err.message,'error'); console.error(err); }
 }
 window.publishUpdate = publishUpdate;
 
@@ -2271,8 +2200,6 @@ function renderUpdates() {
   const container = document.getElementById('updates-list');
   const emptyEl = document.getElementById('updates-empty');
   const adminPanel = document.getElementById('admin-update-panel');
-
-  // Show/hide admin panel
   if (adminPanel) adminPanel.classList.toggle('hidden', State.email !== ADMIN_EMAIL);
 
   const entries = Object.entries(updateLogCache);
@@ -2280,18 +2207,17 @@ function renderUpdates() {
 
   if (entries.length === 0) {
     emptyEl.classList.remove('hidden');
+    container.querySelectorAll('.update-entry').forEach(el => el.remove());
     return;
   }
   emptyEl.classList.add('hidden');
 
-  // Sort: pinned first, then by timestamp desc
   entries.sort(([,a],[,b]) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
     return (b.ts||0) - (a.ts||0);
   });
 
-  // Remove existing entries (keep empty state and admin panel)
   container.querySelectorAll('.update-entry').forEach(el => el.remove());
 
   const typeLabels = { new: '🆕 Nuevo', fix: '🔧 Fix', improvement: '⬆️ Mejora' };
@@ -2312,11 +2238,7 @@ function renderUpdates() {
       </div>
       <div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;')}</div>
       ${entry.author ? `<div style="margin-top:10px;font-size:12px;color:#6060a0;font-weight:600;">— ${entry.author}</div>` : ''}
-      ${isAdmin ? `
-        <div class="update-entry-actions">
-          <button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button>
-        </div>
-      ` : ''}
+      ${isAdmin ? `<div class="update-entry-actions"><button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button></div>` : ''}
     `;
     container.appendChild(div);
   });
@@ -2333,11 +2255,14 @@ function markUpdatesSeen() {
 }
 
 function checkNewUpdates() {
-  const maxTs = Math.max(...Object.values(updateLogCache).map(e => e.ts||0), 0);
+  const vals = Object.values(updateLogCache);
+  if (vals.length === 0) return;
+  const maxTs = Math.max(...vals.map(e => e.ts||0));
   if (maxTs > lastSeenUpdateTs) {
     document.getElementById('update-badge').classList.remove('hidden');
   }
 }
+window.checkNewUpdates = checkNewUpdates;
 
 // Initial renders
 renderGames();
@@ -2372,7 +2297,6 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 State.db = db;
-// ✅ Exponer funciones Firebase globalmente
 window._fbFns = { ref, set, get, onValue, runTransaction, remove, query, orderByChild, equalTo, push, onDisconnect };
 
 const BANNED = ["bcarrere@ietemple.cat","gvarela@ietemple.cat"];
@@ -2422,9 +2346,10 @@ onValue(ref(db,'gameLikes'), snap => {
   });
 });
 
-// ✅ NUEVO: ─── UPDATE LOG LISTENER ───
+// ─── UPDATE LOG LISTENER ───
 onValue(ref(db, 'updateLog'), snap => {
-  window.updateLogCache = snap.val() || {};
+  updateLogCache = snap.val() || {};
+  window.updateLogCache = updateLogCache;
   if (window.currentPage === 'updates') window.renderUpdates();
   window.checkNewUpdates && window.checkNewUpdates();
 });
@@ -2449,10 +2374,20 @@ async function loadUserData(uid) {
     if (window.renderGames) window.renderGames();
   });
   onValue(ref(db, `users/${uid}/coins`), s => {
-    if (s.val() !== null) { State.coins = s.val(); updateNavUser(); document.getElementById('shop-coins-val').textContent = State.coins; }
+    if (s.val() !== null) {
+      State.coins = s.val();
+      updateNavUser();
+      document.getElementById('shop-coins-val').textContent = State.coins;
+    }
   });
   onValue(ref(db, `users/${uid}/xp`), s => {
-    if (s.val() !== null) { State.xp = s.val(); const lv = window.xpToLevel(s.val()); State.level = lv.level; updateNavUser(); window.updateXPBar && window.updateXPBar(); }
+    if (s.val() !== null) {
+      State.xp = s.val();
+      const lv = window.xpToLevel(s.val());
+      State.level = lv.level;
+      updateNavUser();
+      window.updateXPBar && window.updateXPBar();
+    }
   });
   onValue(ref(db, `users/${uid}/friendRequests`), s => {
     State.friendRequests = s.val() || {};
@@ -2555,7 +2490,6 @@ onAuthStateChanged(auth, async (user) => {
     await set(ref(db, `users/${user.uid}/online`), true);
     onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
     updateNavUser();
-    // Show admin panel if on updates page
     if (user.email === ADMIN_EMAIL) {
       const adminPanel = document.getElementById('admin-update-panel');
       if (adminPanel) adminPanel.classList.remove('hidden');
