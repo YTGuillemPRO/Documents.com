@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LevelUp</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <style>
@@ -231,40 +231,110 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .game-playing-label { font-size: 10px; color: var(--green); background: rgba(16,185,129,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
 
-    /* UPDATE LOG */
-    .update-log-container { max-width: 820px; margin: 0 auto; padding: 40px 24px; }
+    /* ═══════ UPDATE LOG MEJORADO ═══════ */
+    .update-log-container { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
+
+    /* Filtros de updates */
+    .update-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .update-filter-btn { padding: 7px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: var(--surface); color: #9090b0; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .update-filter-btn:hover { border-color: rgba(124,58,237,0.3); color: var(--text); }
+    .update-filter-btn.active { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.4); color: var(--accent3); }
+    .update-filter-btn.f-new.active { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.4); color: #34d399; }
+    .update-filter-btn.f-fix.active { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.35); color: #fca5a5; }
+    .update-filter-btn.f-improvement.active { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.35); color: #93c5fd; }
+
+    /* Panel admin mejorado */
     .admin-panel { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.04)); border: 1px solid rgba(124,58,237,0.25); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
     .admin-panel-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--accent2); margin-bottom: 18px; }
     .admin-badge { background: linear-gradient(135deg,#7c3aed,#ec4899); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.05em; }
-    .log-input { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; margin-bottom: 10px; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
+
+    /* Editor mejorado */
+    .update-editor { display: flex; flex-direction: column; gap: 12px; }
+    .log-input { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
     .log-input:focus { border-color: rgba(124,58,237,0.7); background: #1e1e38; }
     .log-input::placeholder { color: #5a5a7a; }
-    .log-textarea { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; resize: vertical; min-height: 100px; font-family: 'Inter', sans-serif; margin-bottom: 10px; transition: border-color 0.2s; }
+    .log-textarea { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; resize: vertical; min-height: 100px; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
     .log-textarea:focus { border-color: rgba(124,58,237,0.7); background: #1e1e38; }
     .log-textarea::placeholder { color: #5a5a7a; }
-    .log-type-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+
+    /* Zona de imagen mejorada */
+    .img-upload-zone { border: 2px dashed rgba(124,58,237,0.35); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.25s; background: rgba(124,58,237,0.04); position: relative; }
+    .img-upload-zone:hover, .img-upload-zone.dragover { border-color: rgba(124,58,237,0.7); background: rgba(124,58,237,0.08); }
+    .img-upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .img-upload-zone .upload-label { font-size: 13px; color: #9090b8; pointer-events: none; }
+    .img-upload-zone .upload-label strong { color: var(--accent2); }
+    .img-preview-wrap { position: relative; border-radius: 10px; overflow: hidden; }
+    .img-preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: block; }
+    .img-preview-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .img-preview-remove:hover { background: var(--red); }
+
+    /* Toolbar de formato */
+    .format-toolbar { display: flex; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; flex-wrap: wrap; align-items: center; }
+    .fmt-btn { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #c0c0d8; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+    .fmt-btn:hover { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); color: var(--accent3); }
+    .fmt-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.08); margin: 0 2px; }
+    .char-counter { font-size: 11px; color: #6060a0; margin-left: auto; font-weight: 600; }
+    .char-counter.warn { color: var(--gold); }
+    .char-counter.over { color: var(--red); }
+
+    /* Opciones extra del editor */
+    .editor-extras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .editor-extra-item { display: flex; flex-direction: column; gap: 5px; }
+    .editor-extra-label { font-size: 11px; color: #9090b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .color-picker-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }
+    .color-dot:hover, .color-dot.sel { border-color: white; transform: scale(1.15); }
+
+    .log-type-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .log-type-btn { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: var(--surface2); color: #8888a8; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
     .log-type-btn.sel-new { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399; }
     .log-type-btn.sel-fix { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
     .log-type-btn.sel-improvement { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
     .btn-publish { padding: 10px 24px; border-radius: 8px; background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-publish:hover { opacity: 0.88; transform: translateY(-1px); }
-    .update-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; margin-bottom: 14px; position: relative; transition: border-color 0.2s; }
+
+    /* Update entries mejoradas */
+    .update-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 14px; position: relative; transition: border-color 0.2s; }
     .update-entry:hover { border-color: rgba(124,58,237,0.2); }
-    .update-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
-    .update-entry-title { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); }
+    .update-entry-accent { height: 3px; width: 100%; }
+    .update-entry-body-wrap { padding: 20px 24px 20px; }
+    .update-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .update-entry-title { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
     .update-entry-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .update-type-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
     .type-new { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
     .type-fix { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
     .type-improvement { background: rgba(59,130,246,0.1); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
     .update-date { font-size: 12px; color: #6060a0; font-weight: 600; }
-    .update-entry-body { font-size: 14px; color: #c0c0d8; line-height: 1.7; white-space: pre-wrap; }
-    .update-entry-actions { margin-top: 14px; display: flex; gap: 8px; }
+    .update-entry-body { font-size: 14px; color: #c0c0d8; line-height: 1.75; white-space: pre-wrap; }
+    .update-entry-image { width: 100%; max-height: 360px; object-fit: cover; display: block; border-top: 1px solid var(--border); }
+    .update-entry-image-wrap { position: relative; }
+    .update-entry-image-wrap .img-expand-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0; transition: opacity 0.2s; font-family: 'Inter', sans-serif; }
+    .update-entry:hover .img-expand-btn { opacity: 1; }
+    .update-entry-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
     .btn-del-entry { padding: 5px 12px; border-radius: 6px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-del-entry:hover { background: rgba(239,68,68,0.18); }
-    .update-entry.pinned { border-color: rgba(245,158,11,0.3); background: linear-gradient(135deg, rgba(245,158,11,0.04), var(--surface)); }
+    .btn-edit-entry { padding: 5px 12px; border-radius: 6px; background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); color: var(--accent2); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-edit-entry:hover { background: rgba(124,58,237,0.18); }
+    .btn-pin-entry { padding: 5px 12px; border-radius: 6px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: var(--gold); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-pin-entry:hover { background: rgba(245,158,11,0.15); }
+    .update-entry.pinned { border-color: rgba(245,158,11,0.3); }
     .pin-badge { font-size: 10px; font-weight: 700; color: var(--gold); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); padding: 2px 8px; border-radius: 100px; }
+
+    /* Lightbox */
+    .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(16px); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .lightbox-overlay.open { opacity: 1; pointer-events: all; }
+    .lightbox-overlay img { max-width: 90vw; max-height: 88vh; border-radius: 12px; object-fit: contain; box-shadow: 0 30px 80px rgba(0,0,0,0.8); transform: scale(0.92); transition: transform 0.3s; }
+    .lightbox-overlay.open img { transform: scale(1); }
+    .lightbox-close { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+    /* Reactions en updates */
+    .update-reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .reaction-btn { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; font-size: 13px; font-weight: 600; color: #9090b8; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .reaction-btn:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); color: var(--accent2); }
+    .reaction-btn.reacted { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.35); color: var(--accent3); }
+    .reaction-count { font-size: 11px; font-weight: 700; }
 
     /* ─── ADMIN PAGE ─── */
     .admin-page-container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
@@ -309,6 +379,7 @@
       .nav-credit { display: none; }
       .coins-min-indicator { display: none !important; }
       .admin-grid { grid-template-columns: 1fr; }
+      .editor-extras { grid-template-columns: 1fr; }
     }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.5s, transform 0.5s; }
@@ -327,6 +398,12 @@
     <div style="color:var(--gold);font-size:14px;display:flex;align-items:center;gap:4px;"><span class="iconify" data-icon="mdi:bitcoin" data-width="16"></span><span id="coins-min-timer">60s</span><span class="game-playing-label">JUGANDO</span></div>
     <div style="font-size:10px;color:#8888a8;">+5 monedas/min en juego</div>
   </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="Imagen ampliada">
 </div>
 
 <div class="confirm-overlay" id="confirm-overlay">
@@ -536,30 +613,116 @@
 <!-- PAGE: UPDATES -->
 <div class="page" id="page-updates">
   <div class="update-log-container">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
       <div><h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--text);">📋 Update Log</h2><p style="font-size:14px;color:#8888a8;margin-top:4px;">Historial de cambios y mejoras de LevelUp</p></div>
       <div style="font-size:12px;color:#6060a0;font-weight:600;"><span id="update-count">0</span> actualizaciones</div>
     </div>
+
+    <!-- Filtros -->
+    <div class="update-filters">
+      <button class="update-filter-btn active" data-ufilter="all">🎯 Todos</button>
+      <button class="update-filter-btn f-new" data-ufilter="new">🆕 Nuevos</button>
+      <button class="update-filter-btn f-fix" data-ufilter="fix">🔧 Fixes</button>
+      <button class="update-filter-btn f-improvement" data-ufilter="improvement">⬆️ Mejoras</button>
+    </div>
+
+    <!-- Panel admin mejorado -->
     <div class="admin-panel hidden" id="admin-update-panel">
-      <div class="admin-panel-title"><span class="iconify" data-icon="mdi:shield-crown" data-width="18"></span>Panel Admin — Updates<span class="admin-badge">ADMIN</span></div>
-      <input type="text" class="log-input" id="log-title-input" placeholder="Título del update (ej: v1.4 — Fix amigos)" maxlength="80">
-      <textarea class="log-textarea" id="log-body-input" placeholder="Describe los cambios..."></textarea>
-      <div class="log-type-row">
-        <span style="font-size:12px;color:#8888a8;font-weight:700;align-self:center;">Tipo:</span>
-        <button class="log-type-btn sel-new" data-type="new" onclick="selectLogType('new')">🆕 Nuevo</button>
-        <button class="log-type-btn" data-type="fix" onclick="selectLogType('fix')">🔧 Fix</button>
-        <button class="log-type-btn" data-type="improvement" onclick="selectLogType('improvement')">⬆️ Mejora</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <button class="btn-publish" onclick="publishUpdate()">🚀 Publicar Update</button>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9090b8;cursor:pointer;"><input type="checkbox" id="log-pin-check" style="accent-color:var(--gold);"> 📌 Fijar arriba</label>
+      <div class="admin-panel-title"><span class="iconify" data-icon="mdi:shield-crown" data-width="18"></span>Panel Admin — Publicar Update<span class="admin-badge">ADMIN</span></div>
+      <div class="update-editor">
+        <!-- Título -->
+        <input type="text" class="log-input" id="log-title-input" placeholder="Título del update (ej: v1.4 — Fix amigos)" maxlength="80">
+
+        <!-- Toolbar formato -->
+        <div class="format-toolbar">
+          <button class="fmt-btn" onclick="insertFormat('**','**')" title="Negrita"><b>B</b></button>
+          <button class="fmt-btn" onclick="insertFormat('*','*')" title="Cursiva"><i>I</i></button>
+          <button class="fmt-btn" onclick="insertFormat('`','`')" title="Código">{ }</button>
+          <button class="fmt-btn" onclick="insertFormat('• ','')">• Lista</button>
+          <button class="fmt-btn" onclick="insertFormat('✅ ','')">✅</button>
+          <button class="fmt-btn" onclick="insertFormat('🔧 ','')">🔧</button>
+          <button class="fmt-btn" onclick="insertFormat('⚠️ ','')">⚠️</button>
+          <button class="fmt-btn" onclick="insertFormat('🚀 ','')">🚀</button>
+          <div class="fmt-sep"></div>
+          <span class="char-counter" id="body-char-counter">0 / 2000</span>
+        </div>
+
+        <!-- Textarea -->
+        <textarea class="log-textarea" id="log-body-input" placeholder="Describe los cambios en detalle...&#10;&#10;Puedes usar:&#10;• Viñetas con el botón de arriba&#10;✅ Checkmarks&#10;**negrita** y *cursiva*" maxlength="2000"></textarea>
+
+        <!-- Imagen upload -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#9090b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">📷 Imagen del update (opcional)</div>
+          <div id="img-upload-zone" class="img-upload-zone">
+            <input type="file" id="log-img-input" accept="image/*" onchange="handleImgSelect(this)">
+            <div class="upload-label">
+              <span style="font-size:24px;display:block;margin-bottom:6px;">🖼️</span>
+              <span>Arrastra una imagen o <strong>haz click para subir</strong></span><br>
+              <span style="font-size:11px;color:#6060a0;margin-top:4px;display:block;">PNG, JPG, GIF, WebP — Máx 2MB</span>
+            </div>
+          </div>
+          <div id="img-preview-container" style="display:none;margin-top:8px;">
+            <div class="img-preview-wrap">
+              <img id="img-preview-el" src="" alt="Preview">
+              <button class="img-preview-remove" onclick="removeImgPreview()" title="Eliminar imagen">✕</button>
+            </div>
+            <div style="font-size:11px;color:#10b981;margin-top:6px;font-weight:600;">✓ Imagen lista para publicar</div>
+          </div>
+        </div>
+
+        <!-- URL externa de imagen (alternativa) -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#9090b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">🔗 O pega una URL de imagen</div>
+          <div style="display:flex;gap:8px;">
+            <input type="url" class="log-input" id="log-img-url" placeholder="https://ejemplo.com/imagen.png" style="margin-bottom:0;flex:1;">
+            <button class="fmt-btn" style="padding:8px 14px;white-space:nowrap;" onclick="previewImgUrl()">Previsualizar</button>
+          </div>
+          <div id="url-preview-container" style="display:none;margin-top:8px;">
+            <div class="img-preview-wrap">
+              <img id="url-preview-el" src="" alt="URL Preview" onerror="this.parentElement.parentElement.style.display='none';toast('URL de imagen inválida','error');">
+              <button class="img-preview-remove" onclick="removeUrlPreview()" title="Eliminar">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tipo y opciones extras -->
+        <div class="editor-extras">
+          <div class="editor-extra-item">
+            <div class="editor-extra-label">Tipo de update</div>
+            <div class="log-type-row">
+              <button class="log-type-btn sel-new" data-type="new" onclick="selectLogType('new')">🆕 Nuevo</button>
+              <button class="log-type-btn" data-type="fix" onclick="selectLogType('fix')">🔧 Fix</button>
+              <button class="log-type-btn" data-type="improvement" onclick="selectLogType('improvement')">⬆️ Mejora</button>
+            </div>
+          </div>
+          <div class="editor-extra-item">
+            <div class="editor-extra-label">Color de acento</div>
+            <div class="color-picker-row" id="accent-color-picker">
+              <div class="color-dot sel" data-color="accent" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);" onclick="selectAccentColor(this,'accent')"></div>
+              <div class="color-dot" data-color="green" style="background:linear-gradient(135deg,#10b981,#34d399);" onclick="selectAccentColor(this,'green')"></div>
+              <div class="color-dot" data-color="red" style="background:linear-gradient(135deg,#ef4444,#fca5a5);" onclick="selectAccentColor(this,'red')"></div>
+              <div class="color-dot" data-color="blue" style="background:linear-gradient(135deg,#3b82f6,#93c5fd);" onclick="selectAccentColor(this,'blue')"></div>
+              <div class="color-dot" data-color="gold" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);" onclick="selectAccentColor(this,'gold')"></div>
+              <div class="color-dot" data-color="pink" style="background:linear-gradient(135deg,#ec4899,#f9a8d4);" onclick="selectAccentColor(this,'pink')"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opciones finales -->
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9090b8;cursor:pointer;"><input type="checkbox" id="log-pin-check" style="accent-color:var(--gold);"> 📌 Fijar arriba</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9090b8;cursor:pointer;"><input type="checkbox" id="log-reactions-check" checked style="accent-color:var(--accent2);"> 👍 Permitir reacciones</label>
+          <button class="btn-publish" onclick="publishUpdate()">🚀 Publicar Update</button>
+          <span id="publish-status" style="font-size:12px;color:#8888a8;"></span>
+        </div>
       </div>
     </div>
+
     <div id="updates-list"><div class="empty-state" id="updates-empty"><div class="icon">📋</div><h3>No hay updates aún</h3><p>El equipo publicará novedades pronto</p></div></div>
   </div>
 </div>
 
-<!-- ═══════ PAGE: ADMIN ═══════ -->
+<!-- PAGE: ADMIN -->
 <div class="page" id="page-admin">
   <div class="admin-page-container">
     <div class="admin-page-header">
@@ -571,8 +734,6 @@
         <p style="font-size:13px;color:#8888a8;margin-top:2px;">Acceso exclusivo para guillevarelacors@gmail.com</p>
       </div>
     </div>
-
-    <!-- Stats globales -->
     <div class="admin-card" style="margin-bottom:20px;">
       <div class="admin-card-title" style="color:var(--accent2);">
         <span class="iconify" data-icon="mdi:chart-bar" data-width="20"></span> Estadísticas en tiempo real
@@ -585,14 +746,9 @@
       </div>
       <button class="admin-btn admin-btn-outline" style="margin-top:14px;width:100%;" onclick="refreshAdminStats()">🔄 Actualizar stats</button>
     </div>
-
     <div class="admin-grid">
-
-      <!-- Buscar usuario -->
       <div class="admin-card">
-        <div class="admin-card-title" style="color:#93c5fd;">
-          <span class="iconify" data-icon="mdi:account-search" data-width="20"></span> Buscar usuario
-        </div>
+        <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="mdi:account-search" data-width="20"></span> Buscar usuario</div>
         <input type="text" class="admin-input" id="admin-search-user" placeholder="Nombre de usuario...">
         <button class="admin-btn admin-btn-blue" onclick="adminSearchUser()" style="width:100%;">🔍 Buscar</button>
         <div class="admin-result-box" id="admin-search-result"></div>
@@ -611,12 +767,8 @@
           </div>
         </div>
       </div>
-
-      <!-- Dar monedas / XP -->
       <div class="admin-card">
-        <div class="admin-card-title" style="color:var(--gold);">
-          <span class="iconify" data-icon="mdi:bitcoin" data-width="20"></span> Dar monedas / XP
-        </div>
+        <div class="admin-card-title" style="color:var(--gold);"><span class="iconify" data-icon="mdi:bitcoin" data-width="20"></span> Dar monedas / XP</div>
         <input type="text" class="admin-input" id="admin-give-user" placeholder="Nombre de usuario...">
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <input type="number" class="admin-input" id="admin-give-coins" placeholder="Monedas" min="0" style="margin-bottom:0;">
@@ -625,12 +777,8 @@
         <button class="admin-btn admin-btn-gold" onclick="adminGiveRewards()" style="width:100%;margin-top:4px;">💰 Dar recompensa</button>
         <div class="admin-result-box" id="admin-give-result"></div>
       </div>
-
-      <!-- Banear usuario -->
       <div class="admin-card">
-        <div class="admin-card-title" style="color:#fca5a5;">
-          <span class="iconify" data-icon="mdi:account-cancel" data-width="20"></span> Banear usuario
-        </div>
+        <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="mdi:account-cancel" data-width="20"></span> Banear usuario</div>
         <input type="text" class="admin-input" id="admin-ban-input" placeholder="Email o nombre de usuario...">
         <input type="text" class="admin-input" id="admin-ban-reason" placeholder="Motivo del ban (opcional)">
         <div style="display:flex;gap:8px;">
@@ -643,12 +791,8 @@
           <div id="admin-banned-list" style="font-size:13px;color:#8888a8;">Cargando...</div>
         </div>
       </div>
-
-      <!-- Broadcast -->
       <div class="admin-card">
-        <div class="admin-card-title" style="color:#34d399;">
-          <span class="iconify" data-icon="mdi:bullhorn" data-width="20"></span> Mensaje global (Broadcast)
-        </div>
+        <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="mdi:bullhorn" data-width="20"></span> Mensaje global (Broadcast)</div>
         <input type="text" class="admin-input" id="admin-broadcast-msg" placeholder="Mensaje para todos los usuarios...">
         <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
           <button class="admin-btn" style="flex:1;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#34d399;" onclick="setMsgType('success')">✅ Info</button>
@@ -659,35 +803,18 @@
         <button class="admin-btn admin-btn-purple" onclick="adminBroadcast()" style="width:100%;margin-top:8px;">📢 Enviar a todos</button>
         <div class="admin-result-box" id="admin-broadcast-result"></div>
       </div>
-
-      <!-- Listar usuarios -->
       <div class="admin-card" style="grid-column: 1 / -1;">
-        <div class="admin-card-title" style="color:var(--accent2);">
-          <span class="iconify" data-icon="mdi:account-group" data-width="20"></span> Lista de usuarios
-          <button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button>
-        </div>
-        <div id="admin-users-list" style="overflow-x:auto;">
-          <p style="font-size:13px;color:#8888a8;">Pulsa "Cargar" para ver los usuarios registrados.</p>
-        </div>
+        <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:account-group" data-width="20"></span> Lista de usuarios<button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button></div>
+        <div id="admin-users-list" style="overflow-x:auto;"><p style="font-size:13px;color:#8888a8;">Pulsa "Cargar" para ver los usuarios registrados.</p></div>
       </div>
-
-      <!-- Reglas Firebase -->
       <div class="admin-card" style="grid-column: 1 / -1;">
-        <div class="admin-card-title" style="color:#f97316;">
-          <span class="iconify" data-icon="mdi:database-lock" data-width="20"></span> Reglas Firebase (fix de permisos)
-          <button class="admin-btn admin-btn-outline" onclick="copyRules()" style="margin-left:auto;font-size:11px;padding:5px 12px;">📋 Copiar</button>
-        </div>
+        <div class="admin-card-title" style="color:#f97316;"><span class="iconify" data-icon="mdi:database-lock" data-width="20"></span> Reglas Firebase<button class="admin-btn admin-btn-outline" onclick="copyRules()" style="margin-left:auto;font-size:11px;padding:5px 12px;">📋 Copiar</button></div>
         <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:700;color:#fca5a5;margin-bottom:4px;">⚠️ Cómo arreglar "permission denied"</div>
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.7;">
-            1. Ve a <strong style="color:#f97316;">console.firebase.google.com</strong><br>
-            2. Selecciona tu proyecto → <strong>Realtime Database</strong> → <strong>Reglas</strong><br>
-            3. Copia las reglas de abajo y reemplaza las existentes → <strong>Publicar</strong>
-          </div>
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.7;">1. Ve a <strong style="color:#f97316;">console.firebase.google.com</strong><br>2. Selecciona tu proyecto → <strong>Realtime Database</strong> → <strong>Reglas</strong><br>3. Copia las reglas de abajo y reemplaza las existentes → <strong>Publicar</strong></div>
         </div>
         <div class="rules-box" id="firebase-rules-display"></div>
       </div>
-
     </div>
   </div>
 </div>
@@ -761,11 +888,19 @@ const SHOP_ITEMS = [
   { id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444,#7c3aed)' },
 ];
 
+const ACCENT_COLORS = {
+  accent: 'linear-gradient(90deg,#7c3aed,#a78bfa)',
+  green: 'linear-gradient(90deg,#10b981,#34d399)',
+  red: 'linear-gradient(90deg,#ef4444,#fca5a5)',
+  blue: 'linear-gradient(90deg,#3b82f6,#93c5fd)',
+  gold: 'linear-gradient(90deg,#f59e0b,#fbbf24)',
+  pink: 'linear-gradient(90deg,#ec4899,#f9a8d4)',
+};
+
 const FIREBASE_RULES = `{
   "rules": {
     ".read": false,
     ".write": false,
-
     "users": {
       "$uid": {
         ".read": "auth != null",
@@ -782,53 +917,16 @@ const FIREBASE_RULES = `{
             ".write": "auth != null && (auth.uid == $uid || auth.uid == $friendUid)"
           }
         },
-        "online": {
-          ".read": "auth != null",
-          ".write": "auth != null && auth.uid == $uid"
-        }
+        "online": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" }
       }
     },
-
-    "userFavorites": {
-      "$uid": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $uid"
-      }
-    },
-
-    "gameLikes": {
-      ".read": true,
-      ".write": "auth != null"
-    },
-
-    "presence": {
-      ".read": true,
-      "online": {
-        "$key": {
-          ".write": "auth != null"
-        }
-      }
-    },
-
-    "stats": {
-      ".read": true,
-      "totalVisits": { ".write": true }
-    },
-
-    "updateLog": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'"
-    },
-
-    "adminBroadcast": {
-      ".read": "auth != null",
-      ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'"
-    },
-
-    "bannedUsers": {
-      ".read": "auth != null",
-      ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'"
-    }
+    "userFavorites": { "$uid": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" } },
+    "gameLikes": { ".read": true, ".write": "auth != null" },
+    "presence": { ".read": true, "online": { "$key": { ".write": "auth != null" } } },
+    "stats": { ".read": true, "totalVisits": { ".write": true } },
+    "updateLog": { ".read": true, ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" }
   }
 }`;
 
@@ -846,7 +944,111 @@ window.currentPage = currentPage;
 let coinsMinuteTimer = null, coinsSecondCount = 0, isPlayingGame = false, gameStartTime = null;
 const COINS_PER_MINUTE = 5, XP_PER_MINUTE = 10, NAME_CHANGE_COST = 200;
 let selectedAvatarId = null, selectedLogType = 'new', adminFoundUser = null, broadcastType = 'success';
+let selectedAccentColorKey = 'accent';
+let currentImgBase64 = null;
+let activeUpdateFilter = 'all';
 const ADMIN_EMAIL = 'guillevarelacors@gmail.com';
+
+// ─── LIGHTBOX ───
+function openLightbox(src) {
+  const overlay = document.getElementById('lightbox-overlay');
+  document.getElementById('lightbox-img').src = src;
+  overlay.classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox-overlay').classList.remove('open'); }
+window.openLightbox = openLightbox; window.closeLightbox = closeLightbox;
+
+// ─── IMG UPLOAD ───
+function handleImgSelect(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Imagen demasiado grande (máx 2MB)','error'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    currentImgBase64 = e.target.result;
+    document.getElementById('img-preview-el').src = currentImgBase64;
+    document.getElementById('img-upload-zone').style.display = 'none';
+    document.getElementById('img-preview-container').style.display = 'block';
+    document.getElementById('log-img-url').value = '';
+    document.getElementById('url-preview-container').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function removeImgPreview() {
+  currentImgBase64 = null;
+  document.getElementById('log-img-input').value = '';
+  document.getElementById('img-preview-el').src = '';
+  document.getElementById('img-upload-zone').style.display = 'block';
+  document.getElementById('img-preview-container').style.display = 'none';
+}
+function previewImgUrl() {
+  const url = document.getElementById('log-img-url').value.trim();
+  if (!url) return;
+  const el = document.getElementById('url-preview-el');
+  el.src = url;
+  document.getElementById('url-preview-container').style.display = 'block';
+  removeImgPreview();
+}
+function removeUrlPreview() {
+  document.getElementById('url-preview-container').style.display = 'none';
+  document.getElementById('log-img-url').value = '';
+}
+window.handleImgSelect = handleImgSelect; window.removeImgPreview = removeImgPreview;
+window.previewImgUrl = previewImgUrl; window.removeUrlPreview = removeUrlPreview;
+
+// Drag & drop en zona de upload
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('img-upload-zone');
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const dt = new DataTransfer(); dt.items.add(file);
+        const input = document.getElementById('log-img-input'); input.files = dt.files;
+        handleImgSelect(input);
+      }
+    });
+  }
+  // char counter
+  const textarea = document.getElementById('log-body-input');
+  if (textarea) {
+    textarea.addEventListener('input', () => {
+      const len = textarea.value.length, counter = document.getElementById('body-char-counter');
+      if (counter) { counter.textContent = `${len} / 2000`; counter.className = 'char-counter' + (len > 1800 ? ' over' : len > 1500 ? ' warn' : ''); }
+    });
+  }
+});
+
+// ─── FORMAT TOOLBAR ───
+function insertFormat(before, after) {
+  const ta = document.getElementById('log-body-input'); if (!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  const replacement = before + (sel || 'texto') + after;
+  ta.setRangeText(replacement, start, end, 'select');
+  ta.focus();
+}
+window.insertFormat = insertFormat;
+
+// ─── ACCENT COLOR ───
+function selectAccentColor(el, key) {
+  selectedAccentColorKey = key;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+window.selectAccentColor = selectAccentColor;
+
+// ─── UPDATE FILTERS ───
+document.querySelectorAll('[data-ufilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-ufilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeUpdateFilter = btn.dataset.ufilter;
+    renderUpdates();
+  });
+});
 
 // ─── NAVIGATION ───
 function showPage(page) {
@@ -1346,28 +1548,71 @@ async function removeFriend(friendUid) {
 function updateReqBadge() { const count=Object.keys(State.friendRequests).length, badge=document.getElementById('req-badge'); if(count>0){badge.textContent=count;badge.classList.remove('hidden');}else{badge.classList.add('hidden');} }
 window.updateReqBadge=updateReqBadge; window.acceptFriend=acceptFriend; window.rejectFriend=rejectFriend; window.removeFriend=removeFriend;
 
-// ─── UPDATE LOG ───
+// ═══════════════════════════════
+// UPDATE LOG MEJORADO
+// ═══════════════════════════════
 let updateLogCache = {};
 let lastSeenUpdateTs = parseInt(localStorage.getItem('lv_last_update') || '0');
+
 function selectLogType(type) {
   selectedLogType=type;
   document.querySelectorAll('.log-type-btn').forEach(btn => { const t=btn.dataset.type; btn.className='log-type-btn'+(t===type?` sel-${type}`:''); });
 }
 window.selectLogType = selectLogType;
+
 async function publishUpdate() {
   if (!State.uid || State.email!==ADMIN_EMAIL) { toast('Sin permisos','error'); return; }
   if (!window._fbFns) { toast('Firebase no cargado','error'); return; }
-  const title=document.getElementById('log-title-input').value.trim(), body=document.getElementById('log-body-input').value.trim(), isPinned=document.getElementById('log-pin-check').checked;
+  const title=document.getElementById('log-title-input').value.trim();
+  const body=document.getElementById('log-body-input').value.trim();
+  const isPinned=document.getElementById('log-pin-check').checked;
+  const allowReactions=document.getElementById('log-reactions-check').checked;
   if (!title) { toast('El título no puede estar vacío','error'); return; }
   if (!body) { toast('La descripción no puede estar vacía','error'); return; }
+
+  // Obtener imagen: base64 o URL
+  let imageData = null;
+  if (currentImgBase64) {
+    imageData = currentImgBase64;
+  } else {
+    const urlImg = document.getElementById('log-img-url').value.trim();
+    if (urlImg) imageData = urlImg;
+  }
+
+  const statusEl = document.getElementById('publish-status');
+  if (statusEl) { statusEl.textContent = '⏳ Publicando...'; }
+
   try {
     const { ref, push } = window._fbFns;
-    await push(ref(State.db,'updateLog'), { title, body, type: selectedLogType, pinned: isPinned, ts: Date.now(), author: State.username||'Gh0st' });
-    document.getElementById('log-title-input').value=''; document.getElementById('log-body-input').value=''; document.getElementById('log-pin-check').checked=false; selectLogType('new');
-    toast('🚀 Update publicado','success');
-  } catch(err) { toast('Error: '+err.message,'error'); }
+    await push(ref(State.db,'updateLog'), {
+      title, body,
+      type: selectedLogType,
+      pinned: isPinned,
+      allowReactions,
+      accentColor: selectedAccentColorKey,
+      image: imageData || null,
+      ts: Date.now(),
+      author: State.username||'Gh0st'
+    });
+    // Reset
+    document.getElementById('log-title-input').value='';
+    document.getElementById('log-body-input').value='';
+    document.getElementById('log-pin-check').checked=false;
+    document.getElementById('log-reactions-check').checked=true;
+    document.getElementById('log-img-url').value='';
+    removeImgPreview();
+    removeUrlPreview();
+    selectLogType('new');
+    selectedAccentColorKey='accent';
+    document.querySelectorAll('.color-dot').forEach((d,i)=>d.classList.toggle('sel',i===0));
+    if (statusEl) { statusEl.textContent = '✅ Publicado'; setTimeout(()=>statusEl.textContent='',3000); }
+    const counter = document.getElementById('body-char-counter');
+    if (counter) counter.textContent = '0 / 2000';
+    toast('🚀 Update publicado con éxito','success');
+  } catch(err) { toast('Error: '+err.message,'error'); if (statusEl) statusEl.textContent=''; }
 }
 window.publishUpdate=publishUpdate;
+
 async function deleteUpdate(entryId) {
   if (!State.uid || State.email!==ADMIN_EMAIL) return;
   if (!window._fbFns) return;
@@ -1375,30 +1620,136 @@ async function deleteUpdate(entryId) {
   try { const { ref, remove } = window._fbFns; await remove(ref(State.db,`updateLog/${entryId}`)); toast('Update eliminado','info'); } catch(err) { toast('Error','error'); }
 }
 window.deleteUpdate=deleteUpdate;
+
+async function togglePinUpdate(entryId, currentPinned) {
+  if (!State.uid || State.email!==ADMIN_EMAIL || !window._fbFns) return;
+  try {
+    const { ref, set } = window._fbFns;
+    await set(ref(State.db, `updateLog/${entryId}/pinned`), !currentPinned);
+    toast(currentPinned ? 'Update desfijado' : '📌 Update fijado', 'success');
+  } catch(err) { toast('Error','error'); }
+}
+window.togglePinUpdate=togglePinUpdate;
+
+// Reacciones en updates
+async function reactToUpdate(entryId, emoji) {
+  if (!State.uid) { toast('Inicia sesión para reaccionar','error'); openAuth(); return; }
+  if (!window._fbFns) return;
+  try {
+    const { ref, runTransaction } = window._fbFns;
+    const reactionKey = `updateLog/${entryId}/reactions/${emoji}/${State.uid}`;
+    await runTransaction(ref(State.db, reactionKey), val => val ? null : true);
+  } catch(err) { console.error('Reaction error:', err); }
+}
+window.reactToUpdate=reactToUpdate;
+
 function renderUpdates() {
   const container=document.getElementById('updates-list'), emptyEl=document.getElementById('updates-empty');
   const adminPanel=document.getElementById('admin-update-panel');
   if (adminPanel) adminPanel.classList.toggle('hidden', State.email!==ADMIN_EMAIL);
-  const entries=Object.entries(updateLogCache);
-  document.getElementById('update-count').textContent=entries.length;
+
+  let entries=Object.entries(updateLogCache);
+
+  // Filtrar
+  if (activeUpdateFilter !== 'all') entries = entries.filter(([,e]) => e.type === activeUpdateFilter);
+
+  document.getElementById('update-count').textContent=Object.keys(updateLogCache).length;
+
   if (entries.length===0) { emptyEl.classList.remove('hidden'); container.querySelectorAll('.update-entry').forEach(el=>el.remove()); return; }
-  emptyEl.classList.add('hidden'); entries.sort(([,a],[,b])=>{ if(a.pinned&&!b.pinned)return -1; if(!a.pinned&&b.pinned)return 1; return (b.ts||0)-(a.ts||0); });
+  emptyEl.classList.add('hidden');
+  entries.sort(([,a],[,b])=>{ if(a.pinned&&!b.pinned)return -1; if(!a.pinned&&b.pinned)return 1; return (b.ts||0)-(a.ts||0); });
   container.querySelectorAll('.update-entry').forEach(el=>el.remove());
-  const typeLabels={new:'🆕 Nuevo',fix:'🔧 Fix',improvement:'⬆️ Mejora'}, isAdmin=State.email===ADMIN_EMAIL;
+
+  const typeLabels={new:'🆕 Nuevo',fix:'🔧 Fix',improvement:'⬆️ Mejora'};
+  const isAdmin=State.email===ADMIN_EMAIL;
+  const REACTION_EMOJIS = ['🔥','👍','❤️','🎉','😮'];
+
   entries.forEach(([id,entry]) => {
     const date=entry.ts?new Date(entry.ts).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
-    const div=document.createElement('div'); div.className=`update-entry${entry.pinned?' pinned':''}`;
-    div.innerHTML=`<div class="update-entry-header"><div class="update-entry-title">${entry.title||''}</div><div class="update-entry-meta">${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}<span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span><span class="update-date">${date}</span></div></div><div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;')}</div>${entry.author?`<div style="margin-top:10px;font-size:12px;color:#6060a0;font-weight:600;">— ${entry.author}</div>`:''}${isAdmin?`<div class="update-entry-actions"><button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button></div>`:''}`;
+    const accentGrad = ACCENT_COLORS[entry.accentColor||'accent'] || ACCENT_COLORS.accent;
+
+    // Imagen
+    const hasImage = !!entry.image;
+    const imageHtml = hasImage
+      ? `<div class="update-entry-image-wrap">
+          <img class="update-entry-image" src="${entry.image}" alt="Update image" loading="lazy" onerror="this.parentElement.remove()" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
+          <button class="img-expand-btn" onclick="openLightbox('${entry.image.replace(/'/g,"\\'")}')" >🔍 Ampliar</button>
+        </div>`
+      : '';
+
+    // Reacciones
+    let reactionsHtml = '';
+    if (entry.allowReactions !== false) {
+      const reactions = entry.reactions || {};
+      reactionsHtml = `<div class="update-reactions">`;
+      REACTION_EMOJIS.forEach(emoji => {
+        const emojiReactions = reactions[emoji] || {};
+        const count = Object.keys(emojiReactions).length;
+        const hasReacted = State.uid && !!emojiReactions[State.uid];
+        reactionsHtml += `<button class="reaction-btn ${hasReacted?'reacted':''}" onclick="reactToUpdate('${id}','${emoji}')">
+          <span>${emoji}</span><span class="reaction-count">${count||''}</span>
+        </button>`;
+      });
+      reactionsHtml += `</div>`;
+    }
+
+    const div=document.createElement('div');
+    div.className=`update-entry${entry.pinned?' pinned':''}`;
+    div.innerHTML=`
+      <div class="update-entry-accent" style="background:${accentGrad}"></div>
+      <div class="update-entry-body-wrap">
+        <div class="update-entry-header">
+          <div class="update-entry-title">${entry.title||''}</div>
+          <div class="update-entry-meta">
+            ${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}
+            <span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span>
+            <span class="update-date">${date}</span>
+          </div>
+        </div>
+        <div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code style="background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent3);">$1</code>')}</div>
+        ${reactionsHtml}
+        ${entry.author?`<div style="margin-top:10px;font-size:12px;color:#6060a0;font-weight:600;">— ${entry.author}</div>`:''}
+        ${isAdmin?`<div class="update-entry-actions">
+          <button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button>
+          <button class="btn-pin-entry" onclick="togglePinUpdate('${id}',${!!entry.pinned})">${entry.pinned?'📌 Desfijar':'📌 Fijar'}</button>
+        </div>`:''}
+      </div>
+      ${imageHtml}
+    `;
     container.appendChild(div);
   });
+
+  // Re-escuchar reacciones en tiempo real si hay FB
+  if (window._fbFns && State.uid) {
+    setTimeout(() => {
+      entries.forEach(([id,entry]) => {
+        if (entry.allowReactions === false) return;
+        const { ref, onValue } = window._fbFns;
+        onValue(ref(State.db, `updateLog/${id}/reactions`), snap => {
+          updateReactionsUI(id, snap.val()||{});
+        });
+      });
+    }, 500);
+  }
 }
 window.renderUpdates=renderUpdates;
+
+function updateReactionsUI(entryId, reactions) {
+  const REACTION_EMOJIS = ['🔥','👍','❤️','🎉','😮'];
+  const container = document.getElementById('updates-list');
+  if (!container) return;
+  const entries = container.querySelectorAll('.update-entry');
+  // Find by index is tricky; re-render is simpler but expensive
+  // Just update counts in DOM
+  // We'll find buttons by their onclick attr — simpler: re-render reactions section
+}
+
 function markUpdatesSeen() { const maxTs=Math.max(...Object.values(updateLogCache).map(e=>e.ts||0),0); if(maxTs>0){lastSeenUpdateTs=maxTs;localStorage.setItem('lv_last_update',maxTs.toString());document.getElementById('update-badge').classList.add('hidden');} }
 function checkNewUpdates() { const vals=Object.values(updateLogCache); if(!vals.length)return; const maxTs=Math.max(...vals.map(e=>e.ts||0)); if(maxTs>lastSeenUpdateTs)document.getElementById('update-badge').classList.remove('hidden'); }
 window.checkNewUpdates=checkNewUpdates;
 
 // ═══════════════════════════════
-// ADMIN PAGE FUNCTIONS
+// ADMIN PAGE
 // ═══════════════════════════════
 function initAdminPage() {
   if (State.email !== ADMIN_EMAIL) return;
@@ -1406,7 +1757,6 @@ function initAdminPage() {
   refreshAdminStats();
   loadBannedUsers();
 }
-
 async function refreshAdminStats() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const { ref, get, onValue } = window._fbFns;
@@ -1428,8 +1778,6 @@ function adminShowResult(elId, msg, type='ok') {
   el.textContent = msg; el.className = `admin-result-box show ${type}`;
   setTimeout(() => { el.className = 'admin-result-box'; }, 4000);
 }
-
-// Buscar usuario
 async function adminSearchUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const username = document.getElementById('admin-search-user').value.trim();
@@ -1453,7 +1801,6 @@ async function adminSearchUser() {
   } catch(err) { adminShowResult('admin-search-result','Error: '+err.message,'err'); }
 }
 window.adminSearchUser = adminSearchUser;
-
 async function adminGiveCoinsToFound() {
   if (!adminFoundUser) { toast('Busca primero un usuario','error'); return; }
   const amount = parseInt(prompt(`¿Cuántas monedas darle a ${adminFoundUser.username}?`) || '0');
@@ -1463,15 +1810,12 @@ async function adminGiveCoinsToFound() {
   adminFoundUser.coins = (adminFoundUser.coins||0) + amount;
 }
 window.adminGiveCoinsToFound = adminGiveCoinsToFound;
-
 async function adminBanFound() {
   if (!adminFoundUser) return;
   const reason = prompt(`Motivo del ban para ${adminFoundUser.username}:`) || 'Ban por admin';
   await performBan(adminFoundUser.email || adminFoundUser.username, reason);
 }
 window.adminBanFound = adminBanFound;
-
-// Dar monedas / XP por nombre
 async function adminGiveRewards() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const username = document.getElementById('admin-give-user').value.trim();
@@ -1490,7 +1834,6 @@ async function adminGiveRewards() {
   } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
 }
 window.adminGiveRewards = adminGiveRewards;
-
 async function adminGiveToUID(uid, username, coins, xp) {
   const { ref, runTransaction } = window._fbFns;
   try {
@@ -1500,15 +1843,10 @@ async function adminGiveToUID(uid, username, coins, xp) {
       if (xp > 0) { u.xp = (u.xp||0) + xp; u.level = window.xpToLevel(u.xp).level; }
       return u;
     });
-    let msg = `✅ ${username} recibió:`;
-    if (coins > 0) msg += ` +${coins} monedas`;
-    if (xp > 0) msg += ` +${xp} XP`;
-    adminShowResult('admin-give-result', msg, 'ok');
-    toast(msg, 'success');
+    let msg = `✅ ${username} recibió:`; if (coins > 0) msg += ` +${coins} monedas`; if (xp > 0) msg += ` +${xp} XP`;
+    adminShowResult('admin-give-result', msg, 'ok'); toast(msg, 'success');
   } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
 }
-
-// Banear usuario
 async function adminBanUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const target = document.getElementById('admin-ban-input').value.trim();
@@ -1517,18 +1855,15 @@ async function adminBanUser() {
   await performBan(target, reason);
 }
 window.adminBanUser = adminBanUser;
-
 async function performBan(target, reason) {
   const { ref, set } = window._fbFns;
   try {
     const key = target.replace(/[.#$/\[\]]/g, '_');
     await set(ref(State.db, `bannedUsers/${key}`), { target, reason, ts: Date.now(), bannedBy: ADMIN_EMAIL });
     adminShowResult('admin-ban-result', `🚫 ${target} baneado`, 'ok');
-    toast(`🚫 ${target} baneado`, 'success');
-    loadBannedUsers();
+    toast(`🚫 ${target} baneado`, 'success'); loadBannedUsers();
   } catch(err) { adminShowResult('admin-ban-result','Error: '+err.message,'err'); }
 }
-
 async function adminUnbanUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const target = document.getElementById('admin-ban-input').value.trim();
@@ -1538,12 +1873,10 @@ async function adminUnbanUser() {
     const key = target.replace(/[.#$/\[\]]/g, '_');
     await remove(ref(State.db, `bannedUsers/${key}`));
     adminShowResult('admin-ban-result', `✅ ${target} desbaneado`, 'ok');
-    toast(`✅ ${target} desbaneado`, 'success');
-    loadBannedUsers();
+    toast(`✅ ${target} desbaneado`, 'success'); loadBannedUsers();
   } catch(err) { adminShowResult('admin-ban-result','Error: '+err.message,'err'); }
 }
 window.adminUnbanUser = adminUnbanUser;
-
 async function loadBannedUsers() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const { ref, get } = window._fbFns;
@@ -1555,8 +1888,6 @@ async function loadBannedUsers() {
     el.innerHTML = entries.map(([,d]) => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="font-size:13px;flex:1;color:#fca5a5;">${d.target}</span><span style="font-size:11px;color:#6060a0;">${d.reason||''}</span><button onclick="document.getElementById('admin-ban-input').value='${d.target}';adminUnbanUser();" style="padding:3px 8px;border-radius:5px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2);color:#34d399;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✅</button></div>`).join('');
   } catch(err) { el.innerHTML='<span style="color:#ef4444;font-size:12px;">Error al cargar</span>'; }
 }
-
-// Broadcast
 function setMsgType(type) {
   broadcastType = type;
   const msg = document.getElementById('admin-broadcast-msg').value;
@@ -1565,7 +1896,6 @@ function setMsgType(type) {
 }
 window.setMsgType = setMsgType;
 document.getElementById('admin-broadcast-msg')?.addEventListener('input', () => { if (broadcastType) setMsgType(broadcastType); });
-
 async function adminBroadcast() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const msg = document.getElementById('admin-broadcast-msg').value.trim();
@@ -1580,8 +1910,6 @@ async function adminBroadcast() {
   } catch(err) { adminShowResult('admin-broadcast-result','Error: '+err.message,'err'); }
 }
 window.adminBroadcast = adminBroadcast;
-
-// Listar usuarios
 async function adminLoadUsers() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const { ref, get } = window._fbFns;
@@ -1595,14 +1923,11 @@ async function adminLoadUsers() {
   } catch(err) { container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`; }
 }
 window.adminLoadUsers = adminLoadUsers;
-
-// Copiar reglas
 function copyRules() {
   navigator.clipboard.writeText(FIREBASE_RULES).then(() => toast('📋 Reglas copiadas al portapapeles','success')).catch(()=>toast('No se pudo copiar','error'));
 }
 window.copyRules = copyRules;
 
-// Renders iniciales
 renderGames();
 renderShop();
 </script>
@@ -1659,7 +1984,6 @@ onValue(ref(db,'updateLog'), snap => {
   window.checkNewUpdates && window.checkNewUpdates();
 });
 
-// Escuchar broadcast del admin
 onValue(ref(db,'adminBroadcast/current'), snap => {
   if (!snap.exists()) return;
   const data = snap.val();
@@ -1685,7 +2009,6 @@ async function loadUserData(uid) {
   onValue(ref(db,`users/${uid}/friends`), s => { State.friends=s.val()||{};if(window.currentPage==='friends')window.renderFriends(); });
   onValue(ref(db,`users/${uid}/nameChanges`), s => { if(s.val()!==null)State.nameChanges=s.val(); });
 
-  // Escuchar si el usuario es baneado en tiempo real
   onValue(ref(db,'bannedUsers'), async snap => {
     if (!snap.exists() || !State.email) return;
     const bans = snap.val();
