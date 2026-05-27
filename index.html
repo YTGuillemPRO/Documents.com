@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -920,16 +919,17 @@ const FIREBASE_RULES = `{
         },
         "online": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" }
       }
-},
+    },
     "userFavorites": { "$uid": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" } },
     "gameLikes": { ".read": true, ".write": "auth != null" },
     "presence": { ".read": true, "online": { "$key": { ".write": "auth != null" } } },
     "stats": { ".read": true, "totalVisits": { ".write": true } },
-    "updateLog": { ".read": true, ".write": "auth != null && auth.token.email == 'guillempro07@gmail.com'" },
-    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillempro07@gmail.com'" },
-    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillempro07@gmail.com'" }
+    "updateLog": { ".read": true, ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" }
   }
 }`;
+
 const State = {
   uid: null, username: '', email: '',
   level: 1, xp: 0, coins: 0,
@@ -1955,8 +1955,7 @@ State.db = db;
 window._fbFns = { ref, set, get, onValue, runTransaction, remove, query, orderByChild, equalTo, push, onDisconnect };
 
 const ADMIN_EMAIL = 'guillevarelacors@gmail.com';
-const ADMIN_EMAIL = 'guillempro07@gmail.com';
-  
+
 let myPresenceRef = null;
 try {
   const presRef = ref(db,'presence/online'); myPresenceRef = push(presRef);
@@ -2087,4 +2086,4 @@ window.addEventListener('beforeunload', () => {
 });
 </script>
 </body>
-</html>
+</html> 
