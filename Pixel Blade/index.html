@@ -1,17 +1,300 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Pixel Blade</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Pixel Blade Super Cool</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #111;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        canvas {
+            background-color: #222;
+            border: 4px solid #f1c40f;
+            image-rendering: pixelated;
+            box-shadow: 0 0 20px #f1c40f;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            pointer-events: none;
+        }
+        h1 { margin: 0; color: #e74c3c; text-shadow: 2px 2px 0 #000; font-size: 28px; }
+        #score { font-size: 20px; color: #f1c40f; }
+        #instructions { font-size: 14px; color: #aaa; margin-top: 10px;}
+    </style>
 </head>
 <body>
 
-<h1>🗡️ PIXEL BLADE</h1>
-<canvas id="game" width="640" height="360"></canvas>
-<p>⬅️ ➡️ mover | ⬆️ saltar | X atacar</p>
+    <div id="ui">
+        <h1>PIXEL BLADE SUPER COOL</h1>
+        <div id="score">SCORE: 0 | COMBO: x1</div>
+        <div id="instructions">WASD / Flechas = Mover | ESPACIO = Atacar</div>
+    </div>
 
-<script src="game.js"></script>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+
+    // Variables del juego
+    let score = 0;
+    let combo = 1;
+    let comboTimer = 0;
+    let screenShake = 0;
+    let gameOver = false;
+
+    // Teclas
+    const keys = {};
+    window.addEventListener('keydown', e => { keys[e.code] = true; if(e.code === 'Space') e.preventDefault(); });
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    // Jugador
+    const player = {
+        x: 400, y: 300, w: 24, h: 24, speed: 4, 
+        color: '#3498db', attacking: false, attackTime: 0, 
+        facingX: 1, facingY: 0, hp: 5, invincibleTime: 0
+    };
+
+    // Entidades
+    let enemies = [];
+    let particles = [];
+    let slashEffects = [];
+
+    function spawnEnemy() {
+        const side = Math.floor(Math.random() * 4);
+        let x, y;
+        if(side === 0) { x = -20; y = Math.random() * canvas.height; }
+        else if(side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; }
+        else if(side === 2) { x = Math.random() * canvas.width; y = -20; }
+        else { x = Math.random() * canvas.width; y = canvas.height + 20; }
+
+        enemies.push({
+            x, y, w: 20, h: 20, speed: 1.5 + Math.random() * 1.5, 
+            color: '#e74c3c', hp: 1, knockbackX: 0, knockbackY: 0
+        });
+    }
+
+    function createParticles(x, y, color, amount) {
+        for(let i=0; i<amount; i++) {
+            particles.push({
+                x, y, 
+                vx: (Math.random() - 0.5) * 8, 
+                vy: (Math.random() - 0.5) * 8, 
+                life: 20 + Math.random() * 20, 
+                color, size: 2 + Math.random() * 4
+            });
+        }
+    }
+
+    function attack() {
+        if(player.attacking) return;
+        player.attacking = true;
+        player.attackTime = 15;
+        
+        // Efecto de corte
+        slashEffects.push({
+            x: player.x + player.facingX * 30,
+            y: player.y + player.facingY * 30,
+            life: 10
+        });
+
+        // Comprobar colisión con enemigos
+        const attackX = player.x + player.facingX * 25;
+        const attackY = player.y + player.facingY * 25;
+        const attackRange = 30;
+
+        enemies.forEach(enemy => {
+            const dx = enemy.x - attackX;
+            const dy = enemy.y - attackY;
+            if(Math.abs(dx) < attackRange && Math.abs(dy) < attackRange) {
+                enemy.hp--;
+                enemy.knockbackX = player.facingX * 10;
+                enemy.knockbackY = player.facingY * 10;
+                
+                combo++;
+                comboTimer = 60;
+                score += 10 * combo;
+                screenShake = 5;
+                createParticles(enemy.x, enemy.y, '#f1c40f', 5);
+            }
+        });
+    }
+
+    function update() {
+        if(gameOver) return;
+
+        // Movimiento del jugador
+        let moveX = 0, moveY = 0;
+        if(keys['KeyW'] || keys['ArrowUp']) moveY = -1;
+        if(keys['KeyS'] || keys['ArrowDown']) moveY = 1;
+        if(keys['KeyA'] || keys['ArrowLeft']) moveX = -1;
+        if(keys['KeyD'] || keys['ArrowRight']) moveX = 1;
+
+        if(moveX !== 0 || moveY !== 0) {
+            player.facingX = moveX;
+            player.facingY = moveY;
+            player.x += moveX * player.speed;
+            player.y += moveY * player.speed;
+        }
+
+        // Ataque
+        if(keys['Space']) attack();
+        if(player.attacking) {
+            player.attackTime--;
+            if(player.attackTime <= 0) player.attacking = false;
+        }
+
+        if(player.invincibleTime > 0) player.invincibleTime--;
+
+        // Combo timer
+        if(comboTimer > 0) comboTimer--;
+        else combo = 1;
+
+        // Generar enemigos
+        if(Math.random() < 0.03 + score * 0.0001) spawnEnemy();
+
+        // Actualizar enemigos
+        for(let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i];
+            
+            if(e.knockbackX !== 0 || e.knockbackY !== 0) {
+                e.x += e.knockbackX;
+                e.y += e.knockbackY;
+                e.knockbackX *= 0.5;
+                e.knockbackY *= 0.5;
+                if(Math.abs(e.knockbackX) < 0.5) e.knockbackX = 0;
+                if(Math.abs(e.knockbackY) < 0.5) e.knockbackY = 0;
+            } else {
+                const angle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(angle) * e.speed;
+                e.y += Math.sin(angle) * e.speed;
+            }
+
+            // Colisión con jugador
+            if(Math.abs(e.x - player.x) < 20 && Math.abs(e.y - player.y) < 20 && player.invincibleTime === 0) {
+                player.hp--;
+                player.invincibleTime = 30;
+                screenShake = 8;
+                createParticles(player.x, player.y, '#e74c3c', 10);
+                if(player.hp <= 0) gameOver = true;
+            }
+
+            // Enemigo muerto
+            if(e.hp <= 0) {
+                createParticles(e.x, e.y, '#c0392b', 15);
+                enemies.splice(i, 1);
+            }
+        }
+
+        // Actualizar partículas
+        for(let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            p.vx *= 0.9;
+            p.vy *= 0.9;
+            if(p.life <= 0) particles.splice(i, 1);
+        }
+
+        // Actualizar cortes
+        for(let i = slashEffects.length - 1; i >= 0; i--) {
+            slashEffects[i].life--;
+            if(slashEffects[i].life <= 0) slashEffects.splice(i, 1);
+        }
+
+        // Screen shake
+        if(screenShake > 0) screenShake--;
+
+        // Actualizar UI
+        scoreElement.innerText = `SCORE: ${score} | COMBO: x${combo} | HP: ${'❤️'.repeat(player.hp)}`;
+    }
+
+    function draw() {
+        ctx.save();
+        
+        // Sacudida de pantalla
+        if(screenShake > 0) {
+            ctx.translate(Math.random() * 10 - 5, Math.random() * 10 - 5);
+        }
+
+        ctx.clearRect(-10, -10, canvas.width+20, canvas.height+20);
+
+        // Dibujar efecto de corte
+        slashEffects.forEach(s => {
+            ctx.globalAlpha = s.life / 10;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 25 - (10 - s.life), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        });
+
+        // Dibujar jugador
+        if(!(player.invincibleTime > 0 && player.invincibleTime % 4 < 2)) {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x - player.w/2, player.y - player.h/2, player.w, player.h);
+            
+            // Espada
+            ctx.fillStyle = '#bdc3c7';
+            if(player.attacking) {
+                ctx.fillRect(player.x + player.facingX * 20 - 4, player.y + player.facingY * 20 - 4, 8, 8);
+            } else {
+                ctx.fillRect(player.x + player.facingX * 10 - 2, player.y + player.facingY * 10 - 2, 4, 4);
+            }
+        }
+
+        // Dibujar enemigos
+        enemies.forEach(e => {
+            ctx.fillStyle = e.color;
+            ctx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
+            // Ojos pixelados
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(e.x - 4, e.y - 4, 3, 3);
+            ctx.fillRect(e.x + 2, e.y - 4, 3, 3);
+        });
+
+        // Dibujar partículas
+        particles.forEach(p => {
+            ctx.globalAlpha = p.life / 40;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+            ctx.globalAlpha = 1;
+        });
+
+        if(gameOver) {
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = '50px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2);
+            ctx.font = '20px Courier New';
+            ctx.fillText('Recarga la página para reiniciar', canvas.width/2, canvas.height/2 + 40);
+        }
+
+        ctx.restore();
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+</script>
 </body>
 </html>
