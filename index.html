@@ -107,37 +107,178 @@
     .game-cat { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
     .card-glow { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.3s; background: radial-gradient(circle at 50% 0%, rgba(124,58,237,0.1), transparent 70%); }
     .game-card:hover .card-glow { opacity: 1; }
+
+    /* ══════════════════════════════════════
+       SHOP & SKINS - REDISEÑO ÉPICO
+    ══════════════════════════════════════ */
     .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-    .shop-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; transition: all 0.25s; position: relative; cursor: pointer; }
-    .shop-item:hover { border-color: rgba(124,58,237,0.3); transform: translateY(-3px); }
+
+    .shop-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 0;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .shop-item:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .shop-item.owned { border-color: rgba(16,185,129,0.3); }
-    .shop-item.equipped { border-color: var(--accent); background: rgba(124,58,237,0.06); }
-    .shop-item .item-preview { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
-    .shop-item .item-name { font-family: 'Poppins',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--text); }
-    .shop-item .item-type { font-size: 11px; color: #8888a8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; font-weight: 600; }
-    .shop-item .item-price { display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 700; font-size: 14px; color: var(--gold); }
-    .item-rarity { position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 100px; }
-    .rarity-common { background: rgba(107,114,128,0.2); color: #c0c0c8; }
-    .rarity-rare { background: rgba(59,130,246,0.15); color: #93c5fd; }
-    .rarity-epic { background: rgba(124,58,237,0.15); color: var(--accent2); }
-    .rarity-legendary { background: rgba(245,158,11,0.15); color: var(--gold); }
-    .btn-buy { width: 100%; margin-top: 12px; padding: 9px; border-radius: 8px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .shop-item.equipped { border-color: var(--accent); box-shadow: 0 0 20px rgba(124,58,237,0.2); }
+
+    /* Header visual de la skin */
+    .skin-visual {
+      position: relative;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .skin-visual-bg {
+      position: absolute;
+      inset: 0;
+    }
+    .skin-visual-glow {
+      position: absolute;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.6;
+    }
+    .skin-emoji {
+      position: relative;
+      z-index: 2;
+      font-size: 44px;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+      transition: transform 0.3s;
+      line-height: 1;
+    }
+    .shop-item:hover .skin-emoji { transform: scale(1.15) rotate(-5deg); }
+
+    /* Animated shimmer para legendary */
+    .shop-item.rarity-legendary .skin-visual-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%);
+      background-size: 200% 200%;
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0%} 100%{background-position:-200% 0%} }
+
+    /* Partículas flotantes para epic+ */
+    .skin-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .skin-particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      opacity: 0;
+      animation: floatParticle 3s infinite;
+    }
+    @keyframes floatParticle {
+      0% { opacity: 0; transform: translateY(100%) scale(0); }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.4; }
+      100% { opacity: 0; transform: translateY(-20px) scale(1.5); }
+    }
+
+    .skin-info { padding: 12px 14px 14px; }
+    .skin-name { font-family: 'Poppins',sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 2px; color: var(--text); }
+    .skin-type { font-size: 10px; color: #8888a8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-weight: 600; }
+    .skin-price { display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 800; font-size: 13px; color: var(--gold); margin-bottom: 8px; }
+
+    .item-rarity {
+      position: absolute; top: 8px; right: 8px; z-index: 3;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 100px;
+    }
+    .rarity-common { background: rgba(107,114,128,0.25); color: #d1d5db; border: 1px solid rgba(107,114,128,0.3); }
+    .rarity-rare { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.35); }
+    .rarity-epic { background: rgba(124,58,237,0.2); color: var(--accent2); border: 1px solid rgba(124,58,237,0.4); }
+    .rarity-legendary {
+      background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.15));
+      color: var(--gold);
+      border: 1px solid rgba(245,158,11,0.4);
+      animation: legendaryBadge 2s infinite;
+    }
+    @keyframes legendaryBadge { 0%,100%{box-shadow:0 0 6px rgba(245,158,11,0.3)} 50%{box-shadow:0 0 12px rgba(245,158,11,0.6)} }
+
+    .btn-buy { width: 100%; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
     .btn-buy.buy { background: var(--accent); color: white; }
-    .btn-buy.buy:hover { background: #6d28d9; }
+    .btn-buy.buy:hover { background: #6d28d9; transform: scale(1.02); }
     .btn-buy.equip { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
     .btn-buy.equip:hover { background: rgba(16,185,129,0.25); }
     .btn-buy.equipped-st { background: rgba(124,58,237,0.15); color: var(--accent2); border: 1px solid rgba(124,58,237,0.3); cursor: default; }
+
+    /* ══════════════════════════════════════
+       FRIENDS - SKINS VISIBLES
+    ══════════════════════════════════════ */
     .coins-display { display: flex; align-items: center; gap: 6px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); padding: 8px 16px; border-radius: 100px; font-weight: 700; color: var(--gold); font-size: 14px; }
     .friends-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
     .friends-list { display: flex; flex-direction: column; gap: 10px; }
-    .friend-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .friend-card:hover { border-color: rgba(124,58,237,0.2); }
+    .friend-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .friend-card:hover { border-color: rgba(124,58,237,0.25); transform: translateX(4px); }
+    .friend-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .friend-card.online-card::before { background: var(--green); opacity: 1; }
+
+    /* Avatar de amigo con skin */
+    .friend-avatar-wrap { position: relative; flex-shrink: 0; }
+    .friend-avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800;
+      position: relative;
+      border: 2px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .friend-avatar-frame {
+      position: absolute; inset: -3px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .friend-online-dot {
+      position: absolute; bottom: 1px; right: 1px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+      z-index: 3;
+    }
+    .friend-online-dot.online { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.6); animation: livepulse 2s infinite; }
+    .friend-online-dot.offline { background: #4a4a6a; }
+
     .friend-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .friend-status.online { background: var(--green); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
     .friend-status.offline { background: #4a4a6a; }
     .friend-info { flex: 1; min-width: 0; }
-    .friend-name { font-size: 14px; font-weight: 700; color: var(--text); }
-    .friend-sub { font-size: 12px; color: #8888a8; margin-top: 2px; }
+    .friend-name { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .friend-title-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; background: rgba(124,58,237,0.15); color: var(--accent3); border: 1px solid rgba(124,58,237,0.25); }
+    .friend-sub { font-size: 12px; color: #8888a8; margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+    .friend-badge-mini { font-size: 14px; }
     .friend-actions { display: flex; gap: 6px; }
     .icon-btn { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
     .icon-btn:hover { color: var(--red); border-color: rgba(239,68,68,0.3); }
@@ -230,11 +371,7 @@
     .coins-min-indicator.paused .timer-ring { border-top-color: var(--muted); animation: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .game-playing-label { font-size: 10px; color: var(--green); background: rgba(16,185,129,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
-
-    /* ═══════ UPDATE LOG MEJORADO ═══════ */
     .update-log-container { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
-
-    /* Filtros de updates */
     .update-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
     .update-filter-btn { padding: 7px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: var(--surface); color: #9090b0; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
     .update-filter-btn:hover { border-color: rgba(124,58,237,0.3); color: var(--text); }
@@ -242,13 +379,9 @@
     .update-filter-btn.f-new.active { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.4); color: #34d399; }
     .update-filter-btn.f-fix.active { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.35); color: #fca5a5; }
     .update-filter-btn.f-improvement.active { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.35); color: #93c5fd; }
-
-    /* Panel admin mejorado */
     .admin-panel { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.04)); border: 1px solid rgba(124,58,237,0.25); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
     .admin-panel-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--accent2); margin-bottom: 18px; }
     .admin-badge { background: linear-gradient(135deg,#7c3aed,#ec4899); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.05em; }
-
-    /* Editor mejorado */
     .update-editor { display: flex; flex-direction: column; gap: 12px; }
     .log-input { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
     .log-input:focus { border-color: rgba(124,58,237,0.7); background: #1e1e38; }
@@ -256,8 +389,6 @@
     .log-textarea { width: 100%; padding: 11px 14px; background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; color: #f1f0ff; font-size: 14px; outline: none; resize: vertical; min-height: 100px; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
     .log-textarea:focus { border-color: rgba(124,58,237,0.7); background: #1e1e38; }
     .log-textarea::placeholder { color: #5a5a7a; }
-
-    /* Zona de imagen mejorada */
     .img-upload-zone { border: 2px dashed rgba(124,58,237,0.35); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.25s; background: rgba(124,58,237,0.04); position: relative; }
     .img-upload-zone:hover, .img-upload-zone.dragover { border-color: rgba(124,58,237,0.7); background: rgba(124,58,237,0.08); }
     .img-upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -267,8 +398,6 @@
     .img-preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: block; }
     .img-preview-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .img-preview-remove:hover { background: var(--red); }
-
-    /* Toolbar de formato */
     .format-toolbar { display: flex; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; flex-wrap: wrap; align-items: center; }
     .fmt-btn { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #c0c0d8; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; }
     .fmt-btn:hover { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); color: var(--accent3); }
@@ -276,15 +405,12 @@
     .char-counter { font-size: 11px; color: #6060a0; margin-left: auto; font-weight: 600; }
     .char-counter.warn { color: var(--gold); }
     .char-counter.over { color: var(--red); }
-
-    /* Opciones extra del editor */
     .editor-extras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .editor-extra-item { display: flex; flex-direction: column; gap: 5px; }
     .editor-extra-label { font-size: 11px; color: #9090b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
     .color-picker-row { display: flex; gap: 6px; flex-wrap: wrap; }
     .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }
     .color-dot:hover, .color-dot.sel { border-color: white; transform: scale(1.15); }
-
     .log-type-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .log-type-btn { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); background: var(--surface2); color: #8888a8; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
     .log-type-btn.sel-new { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399; }
@@ -292,8 +418,6 @@
     .log-type-btn.sel-improvement { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
     .btn-publish { padding: 10px 24px; border-radius: 8px; background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-publish:hover { opacity: 0.88; transform: translateY(-1px); }
-
-    /* Update entries mejoradas */
     .update-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 14px; position: relative; transition: border-color 0.2s; }
     .update-entry:hover { border-color: rgba(124,58,237,0.2); }
     .update-entry-accent { height: 3px; width: 100%; }
@@ -320,23 +444,17 @@
     .btn-pin-entry:hover { background: rgba(245,158,11,0.15); }
     .update-entry.pinned { border-color: rgba(245,158,11,0.3); }
     .pin-badge { font-size: 10px; font-weight: 700; color: var(--gold); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); padding: 2px 8px; border-radius: 100px; }
-
-    /* Lightbox */
     .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(16px); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
     .lightbox-overlay.open { opacity: 1; pointer-events: all; }
     .lightbox-overlay img { max-width: 90vw; max-height: 88vh; border-radius: 12px; object-fit: contain; box-shadow: 0 30px 80px rgba(0,0,0,0.8); transform: scale(0.92); transition: transform 0.3s; }
     .lightbox-overlay.open img { transform: scale(1); }
     .lightbox-close { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; }
     .lightbox-close:hover { background: rgba(255,255,255,0.2); }
-
-    /* Reactions en updates */
     .update-reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
     .reaction-btn { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; font-size: 13px; font-weight: 600; color: #9090b8; transition: all 0.2s; font-family: 'Inter', sans-serif; }
     .reaction-btn:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); color: var(--accent2); }
     .reaction-btn.reacted { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.35); color: var(--accent3); }
     .reaction-count { font-size: 11px; font-weight: 700; }
-
-    /* ─── ADMIN PAGE ─── */
     .admin-page-container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
     .admin-page-header { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
     .admin-page-header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
@@ -354,6 +472,26 @@
     .admin-btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
     .admin-btn-purple { background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; }
     .admin-btn-outline { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); }
+    /* Botón TODOS - especial */
+    .admin-btn-all-users {
+      background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      width: 100%;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .admin-btn-all-users::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.4s;
+    }
+    .admin-btn-all-users:hover::before { transform: translateX(100%); }
     .admin-result-box { margin-top: 12px; padding: 12px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; display: none; }
     .admin-result-box.show { display: block; }
     .admin-result-box.ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #34d399; }
@@ -386,6 +524,11 @@
     .fade-up.visible { opacity: 1; transform: none; }
     .discord-btn { position: fixed; bottom: 24px; right: 24px; background: #5865F2; color: white; padding: 12px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 6px 24px rgba(88,101,242,0.4); transition: all 0.3s; font-family: 'Inter', sans-serif; }
     .discord-btn:hover { transform: translateY(-3px); background: #4752C4; }
+
+    /* Progress bar admin give all */
+    .give-all-progress { height: 6px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; margin-top: 10px; display: none; }
+    .give-all-progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #ec4899); border-radius: 100px; transition: width 0.3s; width: 0%; }
+    .give-all-progress.show { display: block; }
   </style>
 </head>
 <body>
@@ -538,7 +681,12 @@
       <button class="cat-pill" data-shop-cat="title">✏️ Títulos</button>
     </div>
     <div class="shop-grid" id="shop-grid"></div>
-    <p style="text-align:center;margin-top:32px;font-size:13px;color:#8888a8;">💡 Ganas <strong style="color:var(--gold)">10 monedas</strong> por abrir un juego, <strong style="color:var(--gold)">5 monedas</strong> por like y <strong style="color:var(--gold)">+5 monedas/min</strong> MIENTRAS JUEGAS</p>
+    <!-- NOTA: monedas SOLO jugando -->
+    <div style="text-align:center;margin-top:32px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:12px;padding:16px 20px;">
+      <p style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:4px;">💡 ¿Cómo ganar monedas?</p>
+      <p style="font-size:13px;color:#9090b8;"><strong style="color:#fbbf24;">+5 monedas/min</strong> mientras juegas · <strong style="color:#fbbf24;">+10 XP/min</strong> mientras juegas</p>
+      <p style="font-size:12px;color:#6060a0;margin-top:4px;">Las monedas se ganan únicamente jugando activamente</p>
+    </div>
   </div>
 </div>
 
@@ -617,23 +765,16 @@
       <div><h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--text);">📋 Update Log</h2><p style="font-size:14px;color:#8888a8;margin-top:4px;">Historial de cambios y mejoras de LevelUp</p></div>
       <div style="font-size:12px;color:#6060a0;font-weight:600;"><span id="update-count">0</span> actualizaciones</div>
     </div>
-
-    <!-- Filtros -->
     <div class="update-filters">
       <button class="update-filter-btn active" data-ufilter="all">🎯 Todos</button>
       <button class="update-filter-btn f-new" data-ufilter="new">🆕 Nuevos</button>
       <button class="update-filter-btn f-fix" data-ufilter="fix">🔧 Fixes</button>
       <button class="update-filter-btn f-improvement" data-ufilter="improvement">⬆️ Mejoras</button>
     </div>
-
-    <!-- Panel admin mejorado -->
     <div class="admin-panel hidden" id="admin-update-panel">
       <div class="admin-panel-title"><span class="iconify" data-icon="mdi:shield-crown" data-width="18"></span>Panel Admin — Publicar Update<span class="admin-badge">ADMIN</span></div>
       <div class="update-editor">
-        <!-- Título -->
         <input type="text" class="log-input" id="log-title-input" placeholder="Título del update (ej: v1.4 — Fix amigos)" maxlength="80">
-
-        <!-- Toolbar formato -->
         <div class="format-toolbar">
           <button class="fmt-btn" onclick="insertFormat('**','**')" title="Negrita"><b>B</b></button>
           <button class="fmt-btn" onclick="insertFormat('*','*')" title="Cursiva"><i>I</i></button>
@@ -646,46 +787,23 @@
           <div class="fmt-sep"></div>
           <span class="char-counter" id="body-char-counter">0 / 2000</span>
         </div>
-
-        <!-- Textarea -->
-        <textarea class="log-textarea" id="log-body-input" placeholder="Describe los cambios en detalle...&#10;&#10;Puedes usar:&#10;• Viñetas con el botón de arriba&#10;✅ Checkmarks&#10;**negrita** y *cursiva*" maxlength="2000"></textarea>
-
-        <!-- Imagen upload -->
+        <textarea class="log-textarea" id="log-body-input" placeholder="Describe los cambios en detalle..." maxlength="2000"></textarea>
         <div>
           <div style="font-size:11px;font-weight:700;color:#9090b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">📷 Imagen del update (opcional)</div>
           <div id="img-upload-zone" class="img-upload-zone">
             <input type="file" id="log-img-input" accept="image/*" onchange="handleImgSelect(this)">
-            <div class="upload-label">
-              <span style="font-size:24px;display:block;margin-bottom:6px;">🖼️</span>
-              <span>Arrastra una imagen o <strong>haz click para subir</strong></span><br>
-              <span style="font-size:11px;color:#6060a0;margin-top:4px;display:block;">PNG, JPG, GIF, WebP — Máx 2MB</span>
-            </div>
+            <div class="upload-label"><span style="font-size:24px;display:block;margin-bottom:6px;">🖼️</span><span>Arrastra una imagen o <strong>haz click para subir</strong></span><br><span style="font-size:11px;color:#6060a0;margin-top:4px;display:block;">PNG, JPG, GIF, WebP — Máx 2MB</span></div>
           </div>
           <div id="img-preview-container" style="display:none;margin-top:8px;">
-            <div class="img-preview-wrap">
-              <img id="img-preview-el" src="" alt="Preview">
-              <button class="img-preview-remove" onclick="removeImgPreview()" title="Eliminar imagen">✕</button>
-            </div>
+            <div class="img-preview-wrap"><img id="img-preview-el" src="" alt="Preview"><button class="img-preview-remove" onclick="removeImgPreview()" title="Eliminar imagen">✕</button></div>
             <div style="font-size:11px;color:#10b981;margin-top:6px;font-weight:600;">✓ Imagen lista para publicar</div>
           </div>
         </div>
-
-        <!-- URL externa de imagen (alternativa) -->
         <div>
           <div style="font-size:11px;font-weight:700;color:#9090b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">🔗 O pega una URL de imagen</div>
-          <div style="display:flex;gap:8px;">
-            <input type="url" class="log-input" id="log-img-url" placeholder="https://ejemplo.com/imagen.png" style="margin-bottom:0;flex:1;">
-            <button class="fmt-btn" style="padding:8px 14px;white-space:nowrap;" onclick="previewImgUrl()">Previsualizar</button>
-          </div>
-          <div id="url-preview-container" style="display:none;margin-top:8px;">
-            <div class="img-preview-wrap">
-              <img id="url-preview-el" src="" alt="URL Preview" onerror="this.parentElement.parentElement.style.display='none';toast('URL de imagen inválida','error');">
-              <button class="img-preview-remove" onclick="removeUrlPreview()" title="Eliminar">✕</button>
-            </div>
-          </div>
+          <div style="display:flex;gap:8px;"><input type="url" class="log-input" id="log-img-url" placeholder="https://ejemplo.com/imagen.png" style="margin-bottom:0;flex:1;"><button class="fmt-btn" style="padding:8px 14px;white-space:nowrap;" onclick="previewImgUrl()">Previsualizar</button></div>
+          <div id="url-preview-container" style="display:none;margin-top:8px;"><div class="img-preview-wrap"><img id="url-preview-el" src="" alt="URL Preview" onerror="this.parentElement.parentElement.style.display='none';toast('URL de imagen inválida','error');"><button class="img-preview-remove" onclick="removeUrlPreview()" title="Eliminar">✕</button></div></div>
         </div>
-
-        <!-- Tipo y opciones extras -->
         <div class="editor-extras">
           <div class="editor-extra-item">
             <div class="editor-extra-label">Tipo de update</div>
@@ -707,8 +825,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Opciones finales -->
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:4px;">
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9090b8;cursor:pointer;"><input type="checkbox" id="log-pin-check" style="accent-color:var(--gold);"> 📌 Fijar arriba</label>
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9090b8;cursor:pointer;"><input type="checkbox" id="log-reactions-check" checked style="accent-color:var(--accent2);"> 👍 Permitir reacciones</label>
@@ -717,7 +833,6 @@
         </div>
       </div>
     </div>
-
     <div id="updates-list"><div class="empty-state" id="updates-empty"><div class="icon">📋</div><h3>No hay updates aún</h3><p>El equipo publicará novedades pronto</p></div></div>
   </div>
 </div>
@@ -729,15 +844,10 @@
       <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
         <span class="iconify" data-icon="mdi:shield-crown" data-width="26" style="color:#1a0a00;"></span>
       </div>
-      <div>
-        <h1>Panel de Administración</h1>
-        <p style="font-size:13px;color:#8888a8;margin-top:2px;">Admin Panel</p>
-      </div>
+      <div><h1>Panel de Administración</h1><p style="font-size:13px;color:#8888a8;margin-top:2px;">Admin Panel</p></div>
     </div>
     <div class="admin-card" style="margin-bottom:20px;">
-      <div class="admin-card-title" style="color:var(--accent2);">
-        <span class="iconify" data-icon="mdi:chart-bar" data-width="20"></span> Estadísticas en tiempo real
-      </div>
+      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:chart-bar" data-width="20"></span> Estadísticas en tiempo real</div>
       <div id="admin-stats-content">
         <div class="stat-row"><span class="stat-row-label">👥 Usuarios registrados</span><span class="stat-row-val" id="stat-total-users">—</span></div>
         <div class="stat-row"><span class="stat-row-label">🟢 En línea ahora</span><span class="stat-row-val" id="stat-online-admin">—</span></div>
@@ -767,16 +877,31 @@
           </div>
         </div>
       </div>
+
+      <!-- GIVE REWARDS - con botón TODOS -->
       <div class="admin-card">
         <div class="admin-card-title" style="color:var(--gold);"><span class="iconify" data-icon="mdi:bitcoin" data-width="20"></span> Dar monedas / XP</div>
-        <input type="text" class="admin-input" id="admin-give-user" placeholder="Nombre de usuario...">
+        <input type="text" class="admin-input" id="admin-give-user" placeholder="Nombre de usuario (o dejar vacío para TODOS)...">
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <input type="number" class="admin-input" id="admin-give-coins" placeholder="Monedas" min="0" style="margin-bottom:0;">
           <input type="number" class="admin-input" id="admin-give-xp" placeholder="XP" min="0" style="margin-bottom:0;">
         </div>
-        <button class="admin-btn admin-btn-gold" onclick="adminGiveRewards()" style="width:100%;margin-top:4px;">💰 Dar recompensa</button>
+        <div style="display:flex;gap:8px;">
+          <button class="admin-btn admin-btn-gold" onclick="adminGiveRewards()" style="flex:1;margin-top:4px;">💰 Dar (usuario)</button>
+        </div>
+        <!-- BOTÓN DAR A TODOS -->
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);">
+          <div style="font-size:11px;font-weight:700;color:#9090b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🌍 Recompensa global</div>
+          <button class="admin-btn admin-btn-all-users" onclick="adminGiveCoinsToAll()">
+            🌍 Dar monedas / XP a TODOS los usuarios
+          </button>
+          <div class="give-all-progress" id="give-all-progress">
+            <div class="give-all-progress-fill" id="give-all-progress-fill"></div>
+          </div>
+        </div>
         <div class="admin-result-box" id="admin-give-result"></div>
       </div>
+
       <div class="admin-card">
         <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="mdi:account-cancel" data-width="20"></span> Banear usuario</div>
         <input type="text" class="admin-input" id="admin-ban-input" placeholder="Email o nombre de usuario...">
@@ -791,6 +916,7 @@
           <div id="admin-banned-list" style="font-size:13px;color:#8888a8;">Cargando...</div>
         </div>
       </div>
+
       <div class="admin-card">
         <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="mdi:bullhorn" data-width="20"></span> Mensaje global (Broadcast)</div>
         <input type="text" class="admin-input" id="admin-broadcast-msg" placeholder="Mensaje para todos los usuarios...">
@@ -803,10 +929,12 @@
         <button class="admin-btn admin-btn-purple" onclick="adminBroadcast()" style="width:100%;margin-top:8px;">📢 Enviar a todos</button>
         <div class="admin-result-box" id="admin-broadcast-result"></div>
       </div>
+
       <div class="admin-card" style="grid-column: 1 / -1;">
         <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:account-group" data-width="20"></span> Lista de usuarios<button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button></div>
         <div id="admin-users-list" style="overflow-x:auto;"><p style="font-size:13px;color:#8888a8;">Pulsa "Cargar" para ver los usuarios registrados.</p></div>
       </div>
+
       <div class="admin-card" style="grid-column: 1 / -1;">
         <div class="admin-card-title" style="color:#f97316;"><span class="iconify" data-icon="mdi:database-lock" data-width="20"></span> Reglas Firebase<button class="admin-btn admin-btn-outline" onclick="copyRules()" style="margin-left:auto;font-size:11px;padding:5px 12px;">📋 Copiar</button></div>
         <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
@@ -867,25 +995,207 @@ const GAMES = [
 ];
 GAMES.forEach(g => g.id = g.name.replace(/[^a-zA-Z0-9]/g,'_'));
 
+// ══════════════════════════════════════════════
+// SHOP ITEMS - SKINS ÉPICAS REDISEÑADAS
+// ══════════════════════════════════════════════
 const SHOP_ITEMS = [
-  { id:'av_flame', name:'Flama', type:'avatar', cat:'avatar', emoji:'🔥', price:100, rarity:'common', bg:'linear-gradient(135deg,#ef4444,#f97316)' },
-  { id:'av_star', name:'Estrella', type:'avatar', cat:'avatar', emoji:'⭐', price:250, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#eab308)' },
-  { id:'av_ghost', name:'Ghost', type:'avatar', cat:'avatar', emoji:'👻', price:300, rarity:'rare', bg:'linear-gradient(135deg,#6b7280,#374151)' },
-  { id:'av_crown', name:'Rey', type:'avatar', cat:'avatar', emoji:'👑', price:500, rarity:'epic', bg:'linear-gradient(135deg,#f59e0b,#d97706)' },
-  { id:'av_alien', name:'Alien', type:'avatar', cat:'avatar', emoji:'👾', price:400, rarity:'epic', bg:'linear-gradient(135deg,#10b981,#059669)' },
-  { id:'av_dragon', name:'Dragón', type:'avatar', cat:'avatar', emoji:'🐉', price:1000, rarity:'legendary', bg:'linear-gradient(135deg,#7c3aed,#ec4899)' },
-  { id:'fr_purple', name:'Neón Morado', type:'frame', cat:'frame', emoji:'💜', price:150, rarity:'common', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
-  { id:'fr_gold', name:'Dorado', type:'frame', cat:'frame', emoji:'✨', price:400, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#fbbf24)' },
-  { id:'fr_rainbow', name:'Arcoiris', type:'frame', cat:'frame', emoji:'🌈', price:800, rarity:'epic', bg:'linear-gradient(135deg,#ef4444,#f97316,#eab308,#10b981,#3b82f6,#8b5cf6)' },
-  { id:'fr_galaxy', name:'Galaxia', type:'frame', cat:'frame', emoji:'🌌', price:1500, rarity:'legendary', bg:'linear-gradient(135deg,#1e1b4b,#7c3aed,#ec4899)' },
-  { id:'bd_early', name:'Early Adopter', type:'badge', cat:'badge', emoji:'🚀', price:0, rarity:'epic', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)', free:true },
-  { id:'bd_gamer', name:'Gamer Pro', type:'badge', cat:'badge', emoji:'🎮', price:300, rarity:'rare', bg:'linear-gradient(135deg,#3b82f6,#06b6d4)' },
-  { id:'bd_ghost', name:'Gh0st Crew', type:'badge', cat:'badge', emoji:'👻', price:500, rarity:'epic', bg:'linear-gradient(135deg,#374151,#6b7280)' },
-  { id:'bd_legend', name:'Leyenda', type:'badge', cat:'badge', emoji:'⚡', price:2000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444)' },
-  { id:'ti_noob', name:'Noob Master', type:'title', cat:'title', emoji:'😅', price:50, rarity:'common', bg:'linear-gradient(135deg,#6b7280,#4b5563)' },
-  { id:'ti_pro', name:'Pro Player', type:'title', cat:'title', emoji:'🏆', price:350, rarity:'rare', bg:'linear-gradient(135deg,#f59e0b,#d97706)' },
-  { id:'ti_ghost', name:'Gh0st Fan', type:'title', cat:'title', emoji:'👻', price:200, rarity:'rare', bg:'linear-gradient(135deg,#7c3aed,#a78bfa)' },
-  { id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#f59e0b,#ef4444,#7c3aed)' },
+  // AVATARES
+  {
+    id:'av_flame', name:'Alma de Fuego', type:'avatar', cat:'avatar', emoji:'🔥',
+    price:100, rarity:'common',
+    bg:'linear-gradient(135deg,#ef4444 0%,#f97316 50%,#fbbf24 100%)',
+    glowColor:'#ef4444',
+    particleColor:'#f97316',
+    description:'Avatar ardiente'
+  },
+  {
+    id:'av_star', name:'Supernova', type:'avatar', cat:'avatar', emoji:'⭐',
+    price:250, rarity:'rare',
+    bg:'linear-gradient(135deg,#1a1a2e 0%,#f59e0b 50%,#fbbf24 100%)',
+    glowColor:'#f59e0b',
+    particleColor:'#fbbf24',
+    description:'Brilla como una estrella'
+  },
+  {
+    id:'av_ghost', name:'Phantom', type:'avatar', cat:'avatar', emoji:'👻',
+    price:300, rarity:'rare',
+    bg:'linear-gradient(135deg,#0f0f1a 0%,#4b5563 50%,#9ca3af 100%)',
+    glowColor:'#9ca3af',
+    particleColor:'#e5e7eb',
+    description:'Invisible y aterrador'
+  },
+  {
+    id:'av_crown', name:'Overlord', type:'avatar', cat:'avatar', emoji:'👑',
+    price:500, rarity:'epic',
+    bg:'linear-gradient(135deg,#78350f 0%,#d97706 40%,#fbbf24 70%,#f59e0b 100%)',
+    glowColor:'#f59e0b',
+    particleColor:'#fbbf24',
+    description:'El rey absoluto'
+  },
+  {
+    id:'av_alien', name:'Infiltrador', type:'avatar', cat:'avatar', emoji:'👾',
+    price:400, rarity:'epic',
+    bg:'linear-gradient(135deg,#052e16 0%,#10b981 50%,#34d399 100%)',
+    glowColor:'#10b981',
+    particleColor:'#6ee7b7',
+    description:'No es de este mundo'
+  },
+  {
+    id:'av_dragon', name:'Dragón Cósmico', type:'avatar', cat:'avatar', emoji:'🐉',
+    price:1000, rarity:'legendary',
+    bg:'linear-gradient(135deg,#1e1b4b 0%,#7c3aed 30%,#ec4899 60%,#f59e0b 100%)',
+    glowColor:'#7c3aed',
+    particleColor:'#c4b5fd',
+    description:'Poder inimaginable'
+  },
+  {
+    id:'av_skull', name:'Doom Skull', type:'avatar', cat:'avatar', emoji:'💀',
+    price:600, rarity:'epic',
+    bg:'linear-gradient(135deg,#0a0a0f 0%,#1f2937 50%,#374151 100%)',
+    glowColor:'#ef4444',
+    particleColor:'#dc2626',
+    description:'La muerte te persigue'
+  },
+  {
+    id:'av_robot', name:'Cyborg X9', type:'avatar', cat:'avatar', emoji:'🤖',
+    price:350, rarity:'rare',
+    bg:'linear-gradient(135deg,#0c1445 0%,#1d4ed8 50%,#60a5fa 100%)',
+    glowColor:'#3b82f6',
+    particleColor:'#93c5fd',
+    description:'Mitad humano, mitad máquina'
+  },
+  {
+    id:'av_wizard', name:'Archimago', type:'avatar', cat:'avatar', emoji:'🧙',
+    price:800, rarity:'legendary',
+    bg:'linear-gradient(135deg,#1e1b4b 0%,#4c1d95 40%,#7c3aed 70%,#c4b5fd 100%)',
+    glowColor:'#8b5cf6',
+    particleColor:'#ddd6fe',
+    description:'Domina la magia arcana'
+  },
+  // MARCOS
+  {
+    id:'fr_neon_purple', name:'Neón Púrpura', type:'frame', cat:'frame', emoji:'💜',
+    price:150, rarity:'common',
+    bg:'linear-gradient(135deg,#2e1065 0%,#7c3aed 50%,#a78bfa 100%)',
+    glowColor:'#7c3aed',
+    particleColor:'#a78bfa',
+    description:'Marco de neón morado'
+  },
+  {
+    id:'fr_gold_crown', name:'Marco Real', type:'frame', cat:'frame', emoji:'✨',
+    price:400, rarity:'rare',
+    bg:'linear-gradient(135deg,#451a03 0%,#b45309 40%,#f59e0b 70%,#fbbf24 100%)',
+    glowColor:'#f59e0b',
+    particleColor:'#fde68a',
+    description:'Elegancia dorada'
+  },
+  {
+    id:'fr_rainbow', name:'Prisma', type:'frame', cat:'frame', emoji:'🌈',
+    price:800, rarity:'epic',
+    bg:'linear-gradient(135deg,#ef4444,#f97316,#eab308,#10b981,#3b82f6,#8b5cf6)',
+    glowColor:'#ec4899',
+    particleColor:'#f9a8d4',
+    description:'Todos los colores del espectro'
+  },
+  {
+    id:'fr_galaxy', name:'Nebulosa', type:'frame', cat:'frame', emoji:'🌌',
+    price:1500, rarity:'legendary',
+    bg:'linear-gradient(135deg,#020617 0%,#1e1b4b 30%,#4c1d95 60%,#7c3aed 80%,#ec4899 100%)',
+    glowColor:'#7c3aed',
+    particleColor:'#c4b5fd',
+    description:'Un universo en tu perfil'
+  },
+  {
+    id:'fr_ice', name:'Permafrost', type:'frame', cat:'frame', emoji:'❄️',
+    price:550, rarity:'epic',
+    bg:'linear-gradient(135deg,#0c2231 0%,#0891b2 50%,#67e8f9 100%)',
+    glowColor:'#06b6d4',
+    particleColor:'#a5f3fc',
+    description:'Frío como el ártico'
+  },
+  // BADGES
+  {
+    id:'bd_early', name:'Early Adopter', type:'badge', cat:'badge', emoji:'🚀',
+    price:0, rarity:'epic',
+    bg:'linear-gradient(135deg,#1e1b4b,#4338ca,#6366f1)',
+    glowColor:'#6366f1',
+    particleColor:'#a5b4fc',
+    free:true,
+    description:'Estuviste desde el inicio'
+  },
+  {
+    id:'bd_gamer', name:'Gamer Pro', type:'badge', cat:'badge', emoji:'🎮',
+    price:300, rarity:'rare',
+    bg:'linear-gradient(135deg,#0c2a4a,#1d4ed8,#3b82f6)',
+    glowColor:'#3b82f6',
+    particleColor:'#93c5fd',
+    description:'Un pro de los videojuegos'
+  },
+  {
+    id:'bd_ghost', name:'Gh0st Crew', type:'badge', cat:'badge', emoji:'👻',
+    price:500, rarity:'epic',
+    bg:'linear-gradient(135deg,#0f0f1a,#374151,#6b7280)',
+    glowColor:'#9ca3af',
+    particleColor:'#e5e7eb',
+    description:'Miembro del equipo Gh0st'
+  },
+  {
+    id:'bd_legend', name:'Leyenda', type:'badge', cat:'badge', emoji:'⚡',
+    price:2000, rarity:'legendary',
+    bg:'linear-gradient(135deg,#451a03,#d97706,#f59e0b,#ef4444)',
+    glowColor:'#f59e0b',
+    particleColor:'#fde68a',
+    description:'El status máximo'
+  },
+  {
+    id:'bd_shadow', name:'Shadow Ops', type:'badge', cat:'badge', emoji:'🥷',
+    price:750, rarity:'epic',
+    bg:'linear-gradient(135deg,#000000,#1c1917,#292524)',
+    glowColor:'#ef4444',
+    particleColor:'#fca5a5',
+    description:'Operaciones en la oscuridad'
+  },
+  // TÍTULOS
+  {
+    id:'ti_noob', name:'Noob Master', type:'title', cat:'title', emoji:'😅',
+    price:50, rarity:'common',
+    bg:'linear-gradient(135deg,#1f2937,#374151,#4b5563)',
+    glowColor:'#9ca3af',
+    particleColor:'#e5e7eb',
+    description:'El noob con más orgullo'
+  },
+  {
+    id:'ti_pro', name:'Pro Player', type:'title', cat:'title', emoji:'🏆',
+    price:350, rarity:'rare',
+    bg:'linear-gradient(135deg,#451a03,#92400e,#f59e0b)',
+    glowColor:'#f59e0b',
+    particleColor:'#fde68a',
+    description:'Nivel élite comprobado'
+  },
+  {
+    id:'ti_ghost', name:'Gh0st Fan', type:'title', cat:'title', emoji:'👻',
+    price:200, rarity:'rare',
+    bg:'linear-gradient(135deg,#1e1b4b,#4c1d95,#7c3aed)',
+    glowColor:'#7c3aed',
+    particleColor:'#c4b5fd',
+    description:'Fan número uno de Gh0st'
+  },
+  {
+    id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡',
+    price:5000, rarity:'legendary',
+    bg:'linear-gradient(135deg,#451a03,#d97706,#f59e0b,#4c1d95,#7c3aed)',
+    glowColor:'#f59e0b',
+    particleColor:'#fde68a',
+    description:'Deidad del gaming'
+  },
+  {
+    id:'ti_shadow', name:'Dark Lord', type:'title', cat:'title', emoji:'🌑',
+    price:1200, rarity:'legendary',
+    bg:'linear-gradient(135deg,#000000,#0f0f1a,#1e1b4b,#ef4444)',
+    glowColor:'#ef4444',
+    particleColor:'#fca5a5',
+    description:'Señor de las tinieblas'
+  },
 ];
 
 const ACCENT_COLORS = {
@@ -981,8 +1291,7 @@ function removeImgPreview() {
   document.getElementById('img-preview-container').style.display = 'none';
 }
 function previewImgUrl() {
-  const url = document.getElementById('log-img-url').value.trim();
-  if (!url) return;
+  const url = document.getElementById('log-img-url').value.trim(); if (!url) return;
   const el = document.getElementById('url-preview-el');
   el.src = url;
   document.getElementById('url-preview-container').style.display = 'block';
@@ -992,10 +1301,9 @@ function removeUrlPreview() {
   document.getElementById('url-preview-container').style.display = 'none';
   document.getElementById('log-img-url').value = '';
 }
-window.handleImgSelect = handleImgSelect; window.removeImgPreview = removeImgPreview;
-window.previewImgUrl = previewImgUrl; window.removeUrlPreview = removeUrlPreview;
+window.handleImgSelect=handleImgSelect; window.removeImgPreview=removeImgPreview;
+window.previewImgUrl=previewImgUrl; window.removeUrlPreview=removeUrlPreview;
 
-// Drag & drop en zona de upload
 document.addEventListener('DOMContentLoaded', () => {
   const zone = document.getElementById('img-upload-zone');
   if (zone) {
@@ -1011,7 +1319,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  // char counter
   const textarea = document.getElementById('log-body-input');
   if (textarea) {
     textarea.addEventListener('input', () => {
@@ -1021,7 +1328,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ─── FORMAT TOOLBAR ───
 function insertFormat(before, after) {
   const ta = document.getElementById('log-body-input'); if (!ta) return;
   const start = ta.selectionStart, end = ta.selectionEnd;
@@ -1032,7 +1338,6 @@ function insertFormat(before, after) {
 }
 window.insertFormat = insertFormat;
 
-// ─── ACCENT COLOR ───
 function selectAccentColor(el, key) {
   selectedAccentColorKey = key;
   document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('sel'));
@@ -1040,7 +1345,6 @@ function selectAccentColor(el, key) {
 }
 window.selectAccentColor = selectAccentColor;
 
-// ─── UPDATE FILTERS ───
 document.querySelectorAll('[data-ufilter]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-ufilter]').forEach(b => b.classList.remove('active'));
@@ -1055,9 +1359,7 @@ function showPage(page) {
   if (!State.uid && ['shop','friends','profile','admin'].includes(page)) {
     toast('Inicia sesión para acceder a esa sección', 'error'); openAuth(); return;
   }
-  if (page === 'admin' && State.email !== ADMIN_EMAIL) {
-    toast('Sin permisos de administrador', 'error'); return;
-  }
+  if (page === 'admin' && State.email !== ADMIN_EMAIL) { toast('Sin permisos de administrador', 'error'); return; }
   currentPage = page; window.currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -1223,7 +1525,7 @@ function renderGames() {
     const likeCount = State.gameLikes[game.id] || 0;
     const isLocalImg = game.isImage===true || (game.icon && !game.icon.startsWith('mdi:') && !game.icon.startsWith('ic:') && (game.icon.includes('.webp')||game.icon.includes('.png')||game.icon.includes('.jpg')||game.icon.includes('.svg')));
     const thumbContent = isLocalImg
-      ? `<img src="${game.icon}" alt="${game.name}" class="game-thumb-img" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'iconify game-thumb-icon\\' data-icon=\\'mdi:gamepad-variant\\' data-width=\\'52\\' style=\\'color:${game.color};\\'></span>')">`
+      ? `<img src="${game.icon}" alt="${game.name}" class="game-thumb-img" onerror="this.style.display='none';">`
       : `<span class="iconify game-thumb-icon" data-icon="${game.icon}" data-width="52" style="color:${game.color};filter:drop-shadow(0 0 20px ${game.color}66)"></span>`;
     const card = document.createElement('div');
     card.className = 'game-card fade-up'; card.style.transitionDelay = `${i*35}ms`;
@@ -1242,11 +1544,21 @@ document.getElementById('cat-bar').addEventListener('click', e => {
   activeCat = pill.dataset.cat; renderGames();
 });
 document.getElementById('search-input').addEventListener('input', renderGames);
+
 document.getElementById('games-grid').addEventListener('click', async e => {
   const likeBtn = e.target.closest('.like-btn');
-  if (likeBtn) { e.preventDefault(); e.stopPropagation(); if (!State.uid) { toast('Inicia sesión para dar like ❤️','error'); openAuth(); return; } await toggleLike(likeBtn.dataset.gid, likeBtn); return; }
+  if (likeBtn) {
+    e.preventDefault(); e.stopPropagation();
+    if (!State.uid) { toast('Inicia sesión para dar like ❤️','error'); openAuth(); return; }
+    await toggleLike(likeBtn.dataset.gid, likeBtn);
+    return;
+  }
   const card = e.target.closest('.game-card');
-  if (card && card.dataset.path) { if (State.uid) { await awardXPandCoins(50, 10, 'Abrir juego'); startGameSession(); } window.location.href = card.dataset.path; }
+  if (card && card.dataset.path) {
+    // ✅ MONEDAS SOLO JUGANDO - no damos monedas al abrir, solo iniciamos la sesión
+    if (State.uid) startGameSession();
+    window.location.href = card.dataset.path;
+  }
 });
 
 async function toggleLike(gid, btn) {
@@ -1261,8 +1573,8 @@ async function toggleLike(gid, btn) {
     const { ref, set, runTransaction } = window._fbFns;
     await set(ref(State.db, `userFavorites/${State.uid}/${gid}`), newFav ? true : null);
     await runTransaction(ref(State.db, `gameLikes/${gid}`), c => newFav ? (c||0)+1 : Math.max(0,(c||1)-1));
+    // ✅ LIKE NO DA MONEDAS - solo guarda el favorito
     toast(newFav ? '❤️ Añadido a favoritos' : 'Eliminado de favoritos', 'success');
-    if (newFav) await awardXPandCoins(20, 5, 'Like dado');
     const lc = btn.querySelector('.lc');
     if (lc) lc.textContent = Math.max(0, (State.gameLikes[gid]||0) + (newFav?1:-1));
   } catch(err) { toast('Error al guardar like','error'); console.error(err); }
@@ -1277,7 +1589,7 @@ function spawnHeart(btn) {
   setTimeout(() => p.remove(), 900);
 }
 
-// ─── XP + COINS ───
+// ─── XP + COINS (SOLO JUGANDO) ───
 async function awardXPandCoins(xpAmt, coinsAmt, reason) {
   if (!State.uid || !window._fbFns) return;
   const { ref, runTransaction } = window._fbFns;
@@ -1306,7 +1618,21 @@ function updateXPBar() {
 }
 window.updateXPBar = updateXPBar;
 
-// ─── SHOP ───
+// ─── SHOP (skins épicas) ───
+function buildSkinParticles(item) {
+  if (!['epic','legendary'].includes(item.rarity)) return '';
+  let html = '<div class="skin-particles">';
+  const count = item.rarity === 'legendary' ? 8 : 4;
+  for (let i = 0; i < count; i++) {
+    const left = 10 + Math.random() * 80;
+    const delay = Math.random() * 3;
+    const dur = 2 + Math.random() * 2;
+    html += `<div class="skin-particle" style="left:${left}%;background:${item.particleColor||'#fff'};animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
 function renderShop(cat) {
   if (cat !== undefined) activeShopCat = cat;
   const grid = document.getElementById('shop-grid'); grid.innerHTML = '';
@@ -1314,8 +1640,37 @@ function renderShop(cat) {
   list.forEach(item => {
     const isOwned = !!State.owned[item.id] || item.free;
     const isEquipped = State.equipped[item.type] === item.id;
-    const div = document.createElement('div'); div.className = `shop-item ${isOwned?'owned':''} ${isEquipped?'equipped':''}`;
-    div.innerHTML = `<div class="item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div><div class="item-preview" style="background:${item.bg}">${item.emoji}</div><div class="item-name">${item.name}</div><div class="item-type">${item.type}</div><div class="item-price">${item.free?'<span style="color:#10b981;font-size:12px;font-weight:700;">GRATIS</span>':`<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span>${item.price}`}</div>${isEquipped?`<button class="btn-buy equipped-st">✓ Equipado</button>`:isOwned?`<button class="btn-buy equip" onclick="equipItem('${item.id}','${item.type}')">Equipar</button>`:State.uid?`<button class="btn-buy buy" onclick="buyItem('${item.id}')">Comprar</button>`:`<button class="btn-buy buy" onclick="openAuth()">Iniciar sesión</button>`}`;
+    const div = document.createElement('div');
+    div.className = `shop-item rarity-${item.rarity} ${isOwned?'owned':''} ${isEquipped?'equipped':''}`;
+
+    const glowStyle = item.glowColor ? `background:${item.glowColor};` : '';
+    const btnHtml = isEquipped
+      ? `<button class="btn-buy equipped-st">✓ Equipado</button>`
+      : isOwned
+        ? `<button class="btn-buy equip" onclick="equipItem('${item.id}','${item.type}')">Equipar</button>`
+        : State.uid
+          ? `<button class="btn-buy buy" onclick="buyItem('${item.id}')">Comprar</button>`
+          : `<button class="btn-buy buy" onclick="openAuth()">Iniciar sesión</button>`;
+
+    div.innerHTML = `
+      <div class="item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div>
+      <div class="skin-visual">
+        <div class="skin-visual-bg" style="background:${item.bg}"></div>
+        <div class="skin-visual-glow" style="${glowStyle}"></div>
+        ${buildSkinParticles(item)}
+        <span class="skin-emoji">${item.emoji}</span>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">${item.name}</div>
+        <div class="skin-type">${item.type}${item.description?` · <span style="color:#6060a0">${item.description}</span>`:''}</div>
+        <div class="skin-price">
+          ${item.free
+            ? '<span style="color:#10b981;font-size:12px;font-weight:800;">GRATIS</span>'
+            : `<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span>${item.price.toLocaleString()}`}
+        </div>
+        ${btnHtml}
+      </div>
+    `;
     grid.appendChild(div);
   });
 }
@@ -1356,7 +1711,11 @@ function openAvatarPicker() {
   const def = document.createElement('div'); def.className = `avatar-option ${!State.equipped.avatar?'selected':''}`;
   def.dataset.id='default'; def.innerHTML=`<span style="font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;color:var(--text);">${(State.username||'?')[0].toUpperCase()}</span>`;
   def.onclick = () => selectAvatarOption('default'); grid.appendChild(def);
-  avatars.forEach(av => { const opt=document.createElement('div'); opt.className=`avatar-option ${State.equipped.avatar===av.id?'selected':''}`; opt.dataset.id=av.id; opt.innerHTML=av.emoji; opt.style.background=av.bg; opt.onclick=()=>selectAvatarOption(av.id); grid.appendChild(opt); });
+  avatars.forEach(av => {
+    const opt=document.createElement('div'); opt.className=`avatar-option ${State.equipped.avatar===av.id?'selected':''}`;
+    opt.dataset.id=av.id; opt.innerHTML=av.emoji; opt.style.background=av.bg;
+    opt.onclick=()=>selectAvatarOption(av.id); grid.appendChild(opt);
+  });
   selectedAvatarId = State.equipped.avatar || 'default';
   document.getElementById('avatar-picker-overlay').classList.add('open');
 }
@@ -1447,9 +1806,14 @@ function renderProfile() {
   if (State.level>=5) badgesEl.innerHTML+=`<div class="profile-badge" style="color:var(--gold);border-color:rgba(245,158,11,0.25);">⭐ Lv 5+</div>`;
   const colEl=document.getElementById('profile-collection');
   const myItems=SHOP_ITEMS.filter(i=>State.owned[i.id]||i.free);
-  if (myItems.length===0) { colEl.innerHTML=`<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🛍️</div><h3>Sin colección</h3><p>Compra cosméticos en la tienda</p></div>`; } else {
+  if (myItems.length===0) { colEl.innerHTML=`<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🛍️</div><h3>Sin colección</h3><p>Gana monedas jugando y compra cosméticos</p></div>`; } else {
     colEl.innerHTML='';
-    myItems.forEach(item => { const isEq=State.equipped[item.type]===item.id; const d=document.createElement('div'); d.className=`shop-item ${isEq?'equipped':'owned'}`; d.innerHTML=`<div class="item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div><div class="item-preview" style="background:${item.bg}">${item.emoji}</div><div class="item-name">${item.name}</div><div class="item-type">${item.type}</div>${isEq?`<button class="btn-buy equipped-st">✓ Equipado</button>`:`<button class="btn-buy equip" onclick="equipItem('${item.id}','${item.type}')">Equipar</button>`}`; colEl.appendChild(d); });
+    myItems.forEach(item => {
+      const isEq=State.equipped[item.type]===item.id;
+      const d=document.createElement('div'); d.className=`shop-item rarity-${item.rarity} ${isEq?'equipped':'owned'}`;
+      d.innerHTML=`<div class="item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div><div class="skin-visual"><div class="skin-visual-bg" style="background:${item.bg}"></div>${buildSkinParticles(item)}<span class="skin-emoji">${item.emoji}</span></div><div class="skin-info"><div class="skin-name">${item.name}</div><div class="skin-type">${item.type}</div>${isEq?`<button class="btn-buy equipped-st">✓ Equipado</button>`:`<button class="btn-buy equip" onclick="equipItem('${item.id}','${item.type}')">Equipar</button>`}</div>`;
+      colEl.appendChild(d);
+    });
   }
 }
 window.renderProfile = renderProfile;
@@ -1464,7 +1828,19 @@ document.getElementById('save-bio-btn').addEventListener('click', async () => {
   document.getElementById('profile-bio-wrap').style.display='block'; document.getElementById('profile-bio-edit').style.display='none';
 });
 
-// ─── FRIENDS ───
+// ─── FRIENDS (con skins visibles) ───
+function getFriendAvatarHTML(data, size=46) {
+  // data puede tener equipped.avatar guardado
+  const equippedAvId = data.equippedAvatar || null;
+  const item = equippedAvId ? SHOP_ITEMS.find(s=>s.id===equippedAvId) : null;
+  const initial = (data.username||'?')[0].toUpperCase();
+  const bg = item ? item.bg : 'linear-gradient(135deg,#7c3aed,#a78bfa)';
+  const content = item
+    ? `<span style="font-size:${Math.floor(size*0.48)}px;">${item.emoji}</span>`
+    : `<span style="font-family:'Poppins',sans-serif;font-weight:800;color:white;font-size:${Math.floor(size*0.38)}px;">${initial}</span>`;
+  return { bg, content };
+}
+
 function renderFriends() {
   const list=document.getElementById('friends-list'), reqSection=document.getElementById('req-section'), reqList=document.getElementById('req-list');
   const reqs=Object.entries(State.friendRequests);
@@ -1472,17 +1848,46 @@ function renderFriends() {
     reqSection.classList.remove('hidden'); reqList.innerHTML='';
     reqs.forEach(([fromUid, data]) => {
       const d=document.createElement('div'); d.className='req-card';
+      const av = getFriendAvatarHTML(data, 36);
       const safeUsername=(data.username||'Usuario').replace(/'/g,"\\'");
-      d.innerHTML=`<div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${data.username||'Usuario'}</div><div style="font-size:12px;color:#8888a8;">Quiere ser tu amigo</div></div><div class="req-actions"><button class="btn-accept" onclick="acceptFriend('${fromUid}','${safeUsername}')">✓ Aceptar</button><button class="btn-reject" onclick="rejectFriend('${fromUid}')">✗</button></div>`;
+      d.innerHTML=`<div class="friend-avatar" style="background:${av.bg};width:36px;height:36px;font-size:16px;">${av.content}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${data.username||'Usuario'}</div><div style="font-size:12px;color:#8888a8;">Quiere ser tu amigo</div></div><div class="req-actions"><button class="btn-accept" onclick="acceptFriend('${fromUid}','${safeUsername}')">✓ Aceptar</button><button class="btn-reject" onclick="rejectFriend('${fromUid}')">✗</button></div>`;
       reqList.appendChild(d);
     });
   } else { reqSection.classList.add('hidden'); }
+
   const friends=Object.entries(State.friends);
   if (friends.length===0) { list.innerHTML=`<div class="empty-state"><div class="icon">👥</div><h3>Sin amigos aún</h3><p>Busca a alguien por nombre de usuario</p></div>`; return; }
   list.innerHTML='';
   friends.forEach(([uid, data]) => {
-    const d=document.createElement('div'); d.className='friend-card';
-    d.innerHTML=`<div class="friend-status ${data.online?'online':'offline'}"></div><div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;">${(data.username||'?')[0].toUpperCase()}</div><div class="friend-info"><div class="friend-name">${data.username||'Usuario'}</div><div class="friend-sub">${data.online?'🟢 En línea':'⚫ Desconectado'} · Lv ${data.level||1}</div></div><div class="friend-actions"><div class="icon-btn" onclick="removeFriend('${uid}')" title="Eliminar amigo"><span class="iconify" data-icon="mdi:account-minus" data-width="16"></span></div></div>`;
+    const d=document.createElement('div'); d.className=`friend-card ${data.online?'online-card':''}`;
+    const av = getFriendAvatarHTML(data, 46);
+
+    // Badge y título equipados del amigo
+    const badgeId = data.equippedBadge || null;
+    const titleId = data.equippedTitle || null;
+    const badgeItem = badgeId ? SHOP_ITEMS.find(s=>s.id===badgeId) : null;
+    const titleItem = titleId ? SHOP_ITEMS.find(s=>s.id===titleId) : null;
+
+    const titleHtml = titleItem ? `<span class="friend-title-badge">${titleItem.emoji} ${titleItem.name}</span>` : '';
+    const badgeHtml = badgeItem ? `<span class="friend-badge-mini" title="${badgeItem.name}">${badgeItem.emoji}</span>` : '';
+
+    d.innerHTML=`
+      <div class="friend-avatar-wrap">
+        <div class="friend-avatar" style="background:${av.bg};">${av.content}</div>
+        <div class="friend-online-dot ${data.online?'online':'offline'}"></div>
+      </div>
+      <div class="friend-info">
+        <div class="friend-name">${data.username||'Usuario'} ${badgeHtml} ${titleHtml}</div>
+        <div class="friend-sub">
+          ${data.online?'<span style="color:var(--green);font-weight:700;">🟢 En línea</span>':'<span>⚫ Desconectado</span>'}
+          <span style="color:#5050a0;">·</span>
+          <span>Lv <strong style="color:var(--accent2)">${data.level||1}</strong></span>
+        </div>
+      </div>
+      <div class="friend-actions">
+        <div class="icon-btn" onclick="removeFriend('${uid}')" title="Eliminar amigo"><span class="iconify" data-icon="mdi:account-minus" data-width="16"></span></div>
+      </div>
+    `;
     list.appendChild(d);
   });
 }
@@ -1514,7 +1919,13 @@ async function searchAndAddFriend(username) {
     if (!targetUid) { resultEl.innerHTML=`<p style="font-size:13px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;">❌ Error al obtener usuario</p>`; return; }
     if (State.friends[targetUid]) { resultEl.innerHTML=`<p style="font-size:13px;color:#10b981;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:10px 14px;">✅ Ya sois amigos</p>`; return; }
     const myName = State.username || State.email.split('@')[0];
-    await set(ref(State.db, `users/${targetUid}/friendRequests/${State.uid}`), { username: myName, uid: State.uid, timestamp: Date.now() });
+    // Incluir skins al enviar solicitud
+    await set(ref(State.db, `users/${targetUid}/friendRequests/${State.uid}`), {
+      username: myName, uid: State.uid, timestamp: Date.now(),
+      equippedAvatar: State.equipped.avatar || null,
+      equippedBadge: State.equipped.badge || null,
+      equippedTitle: State.equipped.title || null,
+    });
     resultEl.innerHTML=`<p style="font-size:13px;color:#a78bfa;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:10px 14px;">✅ Solicitud enviada a <strong style="color:#c4b5fd;">${username}</strong></p>`;
     toast(`Solicitud enviada a ${username} ✓`,'success');
     const input=document.getElementById('friend-search-input'); if (input) input.value='';
@@ -1526,14 +1937,27 @@ window.searchAndAddFriend = searchAndAddFriend;
 async function acceptFriend(fromUid, fromUsername) {
   if (!window._fbFns) return;
   try {
-    const { ref, set, remove } = window._fbFns;
+    const { ref, set, remove, get } = window._fbFns;
     const myName = State.username || State.email.split('@')[0];
+    // Obtener datos del amigo para guardar sus skins
+    const reqData = State.friendRequests[fromUid] || {};
     await Promise.all([
-      set(ref(State.db, `users/${State.uid}/friends/${fromUid}`), { username: fromUsername, level: 1, online: false }),
-      set(ref(State.db, `users/${fromUid}/friends/${State.uid}`), { username: myName, level: State.level, online: true }),
+      set(ref(State.db, `users/${State.uid}/friends/${fromUid}`), {
+        username: fromUsername, level: 1, online: false,
+        equippedAvatar: reqData.equippedAvatar || null,
+        equippedBadge: reqData.equippedBadge || null,
+        equippedTitle: reqData.equippedTitle || null,
+      }),
+      set(ref(State.db, `users/${fromUid}/friends/${State.uid}`), {
+        username: myName, level: State.level, online: true,
+        equippedAvatar: State.equipped.avatar || null,
+        equippedBadge: State.equipped.badge || null,
+        equippedTitle: State.equipped.title || null,
+      }),
       remove(ref(State.db, `users/${State.uid}/friendRequests/${fromUid}`))
     ]);
-    State.friends[fromUid] = { username: fromUsername, level: 1 }; delete State.friendRequests[fromUid];
+    State.friends[fromUid] = { username: fromUsername, level: 1, equippedAvatar: reqData.equippedAvatar||null, equippedBadge: reqData.equippedBadge||null, equippedTitle: reqData.equippedTitle||null };
+    delete State.friendRequests[fromUid];
     toast(`✓ ¡Ahora eres amigo de ${fromUsername}!`,'success'); renderFriends(); updateReqBadge();
   } catch(err) { toast('Error al aceptar solicitud','error'); console.error(err); }
 }
@@ -1549,7 +1973,7 @@ function updateReqBadge() { const count=Object.keys(State.friendRequests).length
 window.updateReqBadge=updateReqBadge; window.acceptFriend=acceptFriend; window.rejectFriend=rejectFriend; window.removeFriend=removeFriend;
 
 // ═══════════════════════════════
-// UPDATE LOG MEJORADO
+// UPDATE LOG
 // ═══════════════════════════════
 let updateLogCache = {};
 let lastSeenUpdateTs = parseInt(localStorage.getItem('lv_last_update') || '0');
@@ -1569,45 +1993,19 @@ async function publishUpdate() {
   const allowReactions=document.getElementById('log-reactions-check').checked;
   if (!title) { toast('El título no puede estar vacío','error'); return; }
   if (!body) { toast('La descripción no puede estar vacía','error'); return; }
-
-  // Obtener imagen: base64 o URL
   let imageData = null;
-  if (currentImgBase64) {
-    imageData = currentImgBase64;
-  } else {
-    const urlImg = document.getElementById('log-img-url').value.trim();
-    if (urlImg) imageData = urlImg;
-  }
-
+  if (currentImgBase64) { imageData = currentImgBase64; } else { const urlImg = document.getElementById('log-img-url').value.trim(); if (urlImg) imageData = urlImg; }
   const statusEl = document.getElementById('publish-status');
   if (statusEl) { statusEl.textContent = '⏳ Publicando...'; }
-
   try {
     const { ref, push } = window._fbFns;
-    await push(ref(State.db,'updateLog'), {
-      title, body,
-      type: selectedLogType,
-      pinned: isPinned,
-      allowReactions,
-      accentColor: selectedAccentColorKey,
-      image: imageData || null,
-      ts: Date.now(),
-      author: State.username||'Gh0st'
-    });
-    // Reset
-    document.getElementById('log-title-input').value='';
-    document.getElementById('log-body-input').value='';
-    document.getElementById('log-pin-check').checked=false;
-    document.getElementById('log-reactions-check').checked=true;
-    document.getElementById('log-img-url').value='';
-    removeImgPreview();
-    removeUrlPreview();
-    selectLogType('new');
-    selectedAccentColorKey='accent';
-    document.querySelectorAll('.color-dot').forEach((d,i)=>d.classList.toggle('sel',i===0));
+    await push(ref(State.db,'updateLog'), { title, body, type: selectedLogType, pinned: isPinned, allowReactions, accentColor: selectedAccentColorKey, image: imageData || null, ts: Date.now(), author: State.username||'Gh0st' });
+    document.getElementById('log-title-input').value=''; document.getElementById('log-body-input').value='';
+    document.getElementById('log-pin-check').checked=false; document.getElementById('log-reactions-check').checked=true;
+    document.getElementById('log-img-url').value=''; removeImgPreview(); removeUrlPreview(); selectLogType('new');
+    selectedAccentColorKey='accent'; document.querySelectorAll('.color-dot').forEach((d,i)=>d.classList.toggle('sel',i===0));
     if (statusEl) { statusEl.textContent = '✅ Publicado'; setTimeout(()=>statusEl.textContent='',3000); }
-    const counter = document.getElementById('body-char-counter');
-    if (counter) counter.textContent = '0 / 2000';
+    const counter = document.getElementById('body-char-counter'); if (counter) counter.textContent = '0 / 2000';
     toast('🚀 Update publicado con éxito','success');
   } catch(err) { toast('Error: '+err.message,'error'); if (statusEl) statusEl.textContent=''; }
 }
@@ -1623,23 +2021,14 @@ window.deleteUpdate=deleteUpdate;
 
 async function togglePinUpdate(entryId, currentPinned) {
   if (!State.uid || State.email!==ADMIN_EMAIL || !window._fbFns) return;
-  try {
-    const { ref, set } = window._fbFns;
-    await set(ref(State.db, `updateLog/${entryId}/pinned`), !currentPinned);
-    toast(currentPinned ? 'Update desfijado' : '📌 Update fijado', 'success');
-  } catch(err) { toast('Error','error'); }
+  try { const { ref, set } = window._fbFns; await set(ref(State.db, `updateLog/${entryId}/pinned`), !currentPinned); toast(currentPinned ? 'Update desfijado' : '📌 Update fijado', 'success'); } catch(err) { toast('Error','error'); }
 }
 window.togglePinUpdate=togglePinUpdate;
 
-// Reacciones en updates
 async function reactToUpdate(entryId, emoji) {
   if (!State.uid) { toast('Inicia sesión para reaccionar','error'); openAuth(); return; }
   if (!window._fbFns) return;
-  try {
-    const { ref, runTransaction } = window._fbFns;
-    const reactionKey = `updateLog/${entryId}/reactions/${emoji}/${State.uid}`;
-    await runTransaction(ref(State.db, reactionKey), val => val ? null : true);
-  } catch(err) { console.error('Reaction error:', err); }
+  try { const { ref, runTransaction } = window._fbFns; await runTransaction(ref(State.db, `updateLog/${entryId}/reactions/${emoji}/${State.uid}`), val => val ? null : true); } catch(err) { console.error('Reaction error:', err); }
 }
 window.reactToUpdate=reactToUpdate;
 
@@ -1647,102 +2036,34 @@ function renderUpdates() {
   const container=document.getElementById('updates-list'), emptyEl=document.getElementById('updates-empty');
   const adminPanel=document.getElementById('admin-update-panel');
   if (adminPanel) adminPanel.classList.toggle('hidden', State.email!==ADMIN_EMAIL);
-
   let entries=Object.entries(updateLogCache);
-
-  // Filtrar
   if (activeUpdateFilter !== 'all') entries = entries.filter(([,e]) => e.type === activeUpdateFilter);
-
   document.getElementById('update-count').textContent=Object.keys(updateLogCache).length;
-
   if (entries.length===0) { emptyEl.classList.remove('hidden'); container.querySelectorAll('.update-entry').forEach(el=>el.remove()); return; }
   emptyEl.classList.add('hidden');
   entries.sort(([,a],[,b])=>{ if(a.pinned&&!b.pinned)return -1; if(!a.pinned&&b.pinned)return 1; return (b.ts||0)-(a.ts||0); });
   container.querySelectorAll('.update-entry').forEach(el=>el.remove());
-
   const typeLabels={new:'🆕 Nuevo',fix:'🔧 Fix',improvement:'⬆️ Mejora'};
   const isAdmin=State.email===ADMIN_EMAIL;
   const REACTION_EMOJIS = ['🔥','👍','❤️','🎉','😮'];
-
   entries.forEach(([id,entry]) => {
     const date=entry.ts?new Date(entry.ts).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
     const accentGrad = ACCENT_COLORS[entry.accentColor||'accent'] || ACCENT_COLORS.accent;
-
-    // Imagen
     const hasImage = !!entry.image;
-    const imageHtml = hasImage
-      ? `<div class="update-entry-image-wrap">
-          <img class="update-entry-image" src="${entry.image}" alt="Update image" loading="lazy" onerror="this.parentElement.remove()" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
-          <button class="img-expand-btn" onclick="openLightbox('${entry.image.replace(/'/g,"\\'")}')" >🔍 Ampliar</button>
-        </div>`
-      : '';
-
-    // Reacciones
+    const imageHtml = hasImage ? `<div class="update-entry-image-wrap"><img class="update-entry-image" src="${entry.image}" alt="Update image" loading="lazy" onerror="this.parentElement.remove()" onclick="openLightbox(this.src)" style="cursor:zoom-in;"><button class="img-expand-btn" onclick="openLightbox('${entry.image.replace(/'/g,"\\'")}')" >🔍 Ampliar</button></div>` : '';
     let reactionsHtml = '';
     if (entry.allowReactions !== false) {
       const reactions = entry.reactions || {};
       reactionsHtml = `<div class="update-reactions">`;
-      REACTION_EMOJIS.forEach(emoji => {
-        const emojiReactions = reactions[emoji] || {};
-        const count = Object.keys(emojiReactions).length;
-        const hasReacted = State.uid && !!emojiReactions[State.uid];
-        reactionsHtml += `<button class="reaction-btn ${hasReacted?'reacted':''}" onclick="reactToUpdate('${id}','${emoji}')">
-          <span>${emoji}</span><span class="reaction-count">${count||''}</span>
-        </button>`;
-      });
+      REACTION_EMOJIS.forEach(emoji => { const emojiReactions = reactions[emoji] || {}; const count = Object.keys(emojiReactions).length; const hasReacted = State.uid && !!emojiReactions[State.uid]; reactionsHtml += `<button class="reaction-btn ${hasReacted?'reacted':''}" onclick="reactToUpdate('${id}','${emoji}')"><span>${emoji}</span><span class="reaction-count">${count||''}</span></button>`; });
       reactionsHtml += `</div>`;
     }
-
-    const div=document.createElement('div');
-    div.className=`update-entry${entry.pinned?' pinned':''}`;
-    div.innerHTML=`
-      <div class="update-entry-accent" style="background:${accentGrad}"></div>
-      <div class="update-entry-body-wrap">
-        <div class="update-entry-header">
-          <div class="update-entry-title">${entry.title||''}</div>
-          <div class="update-entry-meta">
-            ${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}
-            <span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span>
-            <span class="update-date">${date}</span>
-          </div>
-        </div>
-        <div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code style="background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent3);">$1</code>')}</div>
-        ${reactionsHtml}
-        ${entry.author?`<div style="margin-top:10px;font-size:12px;color:#6060a0;font-weight:600;">— ${entry.author}</div>`:''}
-        ${isAdmin?`<div class="update-entry-actions">
-          <button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button>
-          <button class="btn-pin-entry" onclick="togglePinUpdate('${id}',${!!entry.pinned})">${entry.pinned?'📌 Desfijar':'📌 Fijar'}</button>
-        </div>`:''}
-      </div>
-      ${imageHtml}
-    `;
+    const div=document.createElement('div'); div.className=`update-entry${entry.pinned?' pinned':''}`;
+    div.innerHTML=`<div class="update-entry-accent" style="background:${accentGrad}"></div><div class="update-entry-body-wrap"><div class="update-entry-header"><div class="update-entry-title">${entry.title||''}</div><div class="update-entry-meta">${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}<span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span><span class="update-date">${date}</span></div></div><div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code style="background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent3);">$1</code>')}</div>${reactionsHtml}${entry.author?`<div style="margin-top:10px;font-size:12px;color:#6060a0;font-weight:600;">— ${entry.author}</div>`:''} ${isAdmin?`<div class="update-entry-actions"><button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button><button class="btn-pin-entry" onclick="togglePinUpdate('${id}',${!!entry.pinned})">${entry.pinned?'📌 Desfijar':'📌 Fijar'}</button></div>`:''}</div>${imageHtml}`;
     container.appendChild(div);
   });
-
-  // Re-escuchar reacciones en tiempo real si hay FB
-  if (window._fbFns && State.uid) {
-    setTimeout(() => {
-      entries.forEach(([id,entry]) => {
-        if (entry.allowReactions === false) return;
-        const { ref, onValue } = window._fbFns;
-        onValue(ref(State.db, `updateLog/${id}/reactions`), snap => {
-          updateReactionsUI(id, snap.val()||{});
-        });
-      });
-    }, 500);
-  }
 }
 window.renderUpdates=renderUpdates;
-
-function updateReactionsUI(entryId, reactions) {
-  const REACTION_EMOJIS = ['🔥','👍','❤️','🎉','😮'];
-  const container = document.getElementById('updates-list');
-  if (!container) return;
-  const entries = container.querySelectorAll('.update-entry');
-  // Find by index is tricky; re-render is simpler but expensive
-  // Just update counts in DOM
-  // We'll find buttons by their onclick attr — simpler: re-render reactions section
-}
 
 function markUpdatesSeen() { const maxTs=Math.max(...Object.values(updateLogCache).map(e=>e.ts||0),0); if(maxTs>0){lastSeenUpdateTs=maxTs;localStorage.setItem('lv_last_update',maxTs.toString());document.getElementById('update-badge').classList.add('hidden');} }
 function checkNewUpdates() { const vals=Object.values(updateLogCache); if(!vals.length)return; const maxTs=Math.max(...vals.map(e=>e.ts||0)); if(maxTs>lastSeenUpdateTs)document.getElementById('update-badge').classList.remove('hidden'); }
@@ -1766,9 +2087,7 @@ async function refreshAdminStats() {
     document.getElementById('stat-updates').textContent = Object.keys(updateLogCache).length;
     const statsSnap = await get(ref(State.db, 'stats/totalVisits'));
     document.getElementById('stat-visits-admin').textContent = (statsSnap.val()||0).toLocaleString('es-ES');
-    onValue(ref(State.db,'presence/online'), snap => {
-      document.getElementById('stat-online-admin').textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
-    }, { onlyOnce: true });
+    onValue(ref(State.db,'presence/online'), snap => { document.getElementById('stat-online-admin').textContent = snap.exists() ? Object.keys(snap.val()).length : 0; }, { onlyOnce: true });
   } catch(err) { console.error('Admin stats error:', err); }
 }
 window.refreshAdminStats = refreshAdminStats;
@@ -1776,8 +2095,9 @@ window.refreshAdminStats = refreshAdminStats;
 function adminShowResult(elId, msg, type='ok') {
   const el = document.getElementById(elId); if (!el) return;
   el.textContent = msg; el.className = `admin-result-box show ${type}`;
-  setTimeout(() => { el.className = 'admin-result-box'; }, 4000);
+  setTimeout(() => { el.className = 'admin-result-box'; }, 5000);
 }
+
 async function adminSearchUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const username = document.getElementById('admin-search-user').value.trim();
@@ -1801,6 +2121,7 @@ async function adminSearchUser() {
   } catch(err) { adminShowResult('admin-search-result','Error: '+err.message,'err'); }
 }
 window.adminSearchUser = adminSearchUser;
+
 async function adminGiveCoinsToFound() {
   if (!adminFoundUser) { toast('Busca primero un usuario','error'); return; }
   const amount = parseInt(prompt(`¿Cuántas monedas darle a ${adminFoundUser.username}?`) || '0');
@@ -1810,18 +2131,20 @@ async function adminGiveCoinsToFound() {
   adminFoundUser.coins = (adminFoundUser.coins||0) + amount;
 }
 window.adminGiveCoinsToFound = adminGiveCoinsToFound;
+
 async function adminBanFound() {
   if (!adminFoundUser) return;
   const reason = prompt(`Motivo del ban para ${adminFoundUser.username}:`) || 'Ban por admin';
   await performBan(adminFoundUser.email || adminFoundUser.username, reason);
 }
 window.adminBanFound = adminBanFound;
+
 async function adminGiveRewards() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const username = document.getElementById('admin-give-user').value.trim();
   const coins = parseInt(document.getElementById('admin-give-coins').value || '0');
   const xp = parseInt(document.getElementById('admin-give-xp').value || '0');
-  if (!username) { adminShowResult('admin-give-result','Escribe un nombre de usuario','err'); return; }
+  if (!username) { adminShowResult('admin-give-result','Escribe un nombre de usuario (o usa el botón TODOS para dar a todos)','err'); return; }
   if (!coins && !xp) { adminShowResult('admin-give-result','Escribe una cantidad de monedas o XP','err'); return; }
   const { ref, get, query, orderByChild, equalTo } = window._fbFns;
   adminShowResult('admin-give-result','🔍 Buscando usuario...','info');
@@ -1834,6 +2157,7 @@ async function adminGiveRewards() {
   } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
 }
 window.adminGiveRewards = adminGiveRewards;
+
 async function adminGiveToUID(uid, username, coins, xp) {
   const { ref, runTransaction } = window._fbFns;
   try {
@@ -1847,6 +2171,80 @@ async function adminGiveToUID(uid, username, coins, xp) {
     adminShowResult('admin-give-result', msg, 'ok'); toast(msg, 'success');
   } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
 }
+
+// ══════════════════════════════════════════════
+// 🌍 DAR MONEDAS A TODOS LOS USUARIOS
+// ══════════════════════════════════════════════
+async function adminGiveCoinsToAll() {
+  if (!window._fbFns || State.email !== ADMIN_EMAIL) { toast('Sin permisos','error'); return; }
+  const coins = parseInt(document.getElementById('admin-give-coins').value || '0');
+  const xp = parseInt(document.getElementById('admin-give-xp').value || '0');
+  if (!coins && !xp) {
+    adminShowResult('admin-give-result','⚠️ Escribe primero una cantidad de monedas y/o XP','err');
+    return;
+  }
+  const confirmed = confirm(`⚠️ ¿Dar ${coins>0?`${coins} monedas`:''}${coins>0&&xp>0?' y ':''}${xp>0?`${xp} XP`:''} a TODOS los usuarios?\n\nEsta acción no se puede deshacer.`);
+  if (!confirmed) return;
+
+  const { ref, get, set } = window._fbFns;
+  const progressBar = document.getElementById('give-all-progress');
+  const progressFill = document.getElementById('give-all-progress-fill');
+  progressBar.classList.add('show');
+  progressFill.style.width = '0%';
+  adminShowResult('admin-give-result','⏳ Cargando usuarios...','info');
+
+  try {
+    const snap = await get(ref(State.db, 'users'));
+    if (!snap.exists()) { adminShowResult('admin-give-result','❌ No hay usuarios','err'); progressBar.classList.remove('show'); return; }
+    const users = Object.entries(snap.val());
+    const total = users.length;
+    let done = 0, errors = 0;
+
+    adminShowResult('admin-give-result',`⏳ Procesando 0 / ${total} usuarios...`,'info');
+
+    // Procesar en lotes de 10 para no saturar Firebase
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(async ([uid, userData]) => {
+        try {
+          const updates = {};
+          if (coins > 0) updates[`users/${uid}/coins`] = (userData.coins||0) + coins;
+          if (xp > 0) {
+            const newXp = (userData.xp||0) + xp;
+            updates[`users/${uid}/xp`] = newXp;
+            updates[`users/${uid}/level`] = window.xpToLevel(newXp).level;
+          }
+          // Actualizar cada campo individualmente
+          await Promise.all(Object.entries(updates).map(([path, val]) => set(ref(State.db, path), val)));
+          done++;
+        } catch(e) { errors++; console.warn(`Error en usuario ${uid}:`, e); }
+      }));
+      // Actualizar barra de progreso
+      const pct = Math.round(((i + BATCH_SIZE) / total) * 100);
+      progressFill.style.width = Math.min(100, pct) + '%';
+      adminShowResult('admin-give-result',`⏳ Procesando ${Math.min(i + BATCH_SIZE, total)} / ${total} usuarios...`,'info');
+      // Pequeña pausa para no sobrecargar
+      await new Promise(r => setTimeout(r, 100));
+    }
+
+    progressFill.style.width = '100%';
+    let resultMsg = `✅ Recompensa enviada a ${done} usuarios`;
+    if (errors > 0) resultMsg += ` (${errors} errores)`;
+    if (coins > 0) resultMsg += ` · +${coins} monedas`;
+    if (xp > 0) resultMsg += ` · +${xp} XP`;
+    adminShowResult('admin-give-result', resultMsg, 'ok');
+    toast(`🌍 Recompensa global enviada a ${done} usuarios`, 'success');
+
+    setTimeout(() => progressBar.classList.remove('show'), 2000);
+  } catch(err) {
+    adminShowResult('admin-give-result','Error: '+err.message,'err');
+    progressBar.classList.remove('show');
+    console.error('Give all error:', err);
+  }
+}
+window.adminGiveCoinsToAll = adminGiveCoinsToAll;
+
 async function adminBanUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const target = document.getElementById('admin-ban-input').value.trim();
@@ -1855,6 +2253,7 @@ async function adminBanUser() {
   await performBan(target, reason);
 }
 window.adminBanUser = adminBanUser;
+
 async function performBan(target, reason) {
   const { ref, set } = window._fbFns;
   try {
@@ -1864,6 +2263,7 @@ async function performBan(target, reason) {
     toast(`🚫 ${target} baneado`, 'success'); loadBannedUsers();
   } catch(err) { adminShowResult('admin-ban-result','Error: '+err.message,'err'); }
 }
+
 async function adminUnbanUser() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const target = document.getElementById('admin-ban-input').value.trim();
@@ -1877,6 +2277,7 @@ async function adminUnbanUser() {
   } catch(err) { adminShowResult('admin-ban-result','Error: '+err.message,'err'); }
 }
 window.adminUnbanUser = adminUnbanUser;
+
 async function loadBannedUsers() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const { ref, get } = window._fbFns;
@@ -1888,6 +2289,7 @@ async function loadBannedUsers() {
     el.innerHTML = entries.map(([,d]) => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="font-size:13px;flex:1;color:#fca5a5;">${d.target}</span><span style="font-size:11px;color:#6060a0;">${d.reason||''}</span><button onclick="document.getElementById('admin-ban-input').value='${d.target}';adminUnbanUser();" style="padding:3px 8px;border-radius:5px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2);color:#34d399;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✅</button></div>`).join('');
   } catch(err) { el.innerHTML='<span style="color:#ef4444;font-size:12px;">Error al cargar</span>'; }
 }
+
 function setMsgType(type) {
   broadcastType = type;
   const msg = document.getElementById('admin-broadcast-msg').value;
@@ -1896,6 +2298,7 @@ function setMsgType(type) {
 }
 window.setMsgType = setMsgType;
 document.getElementById('admin-broadcast-msg')?.addEventListener('input', () => { if (broadcastType) setMsgType(broadcastType); });
+
 async function adminBroadcast() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const msg = document.getElementById('admin-broadcast-msg').value.trim();
@@ -1910,6 +2313,7 @@ async function adminBroadcast() {
   } catch(err) { adminShowResult('admin-broadcast-result','Error: '+err.message,'err'); }
 }
 window.adminBroadcast = adminBroadcast;
+
 async function adminLoadUsers() {
   if (!window._fbFns || State.email !== ADMIN_EMAIL) return;
   const { ref, get } = window._fbFns;
@@ -1923,6 +2327,7 @@ async function adminLoadUsers() {
   } catch(err) { container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`; }
 }
 window.adminLoadUsers = adminLoadUsers;
+
 function copyRules() {
   navigator.clipboard.writeText(FIREBASE_RULES).then(() => toast('📋 Reglas copiadas al portapapeles','success')).catch(()=>toast('No se pudo copiar','error'));
 }
@@ -1986,8 +2391,7 @@ onValue(ref(db,'updateLog'), snap => {
 
 onValue(ref(db,'adminBroadcast/current'), snap => {
   if (!snap.exists()) return;
-  const data = snap.val();
-  if (!data || !data.message) return;
+  const data = snap.val(); if (!data || !data.message) return;
   const lastSeen = parseInt(sessionStorage.getItem('lv_last_broadcast')||'0');
   if (data.ts && data.ts > lastSeen) {
     sessionStorage.setItem('lv_last_broadcast', data.ts.toString());
@@ -2002,12 +2406,29 @@ async function loadUserData(uid) {
   State.username=data.username||''; State.level=data.level||1; State.xp=data.xp||0; State.coins=data.coins||0;
   State.bio=data.bio||''; State.owned=data.owned||{}; State.equipped=data.equipped||{};
   State.friends=data.friends||{}; State.friendRequests=data.friendRequests||{}; State.nameChanges=data.nameChanges||0;
+
   onValue(ref(db,`userFavorites/${uid}`), s => { State.favs=s.val()||{}; if(window.renderGames)window.renderGames(); });
   onValue(ref(db,`users/${uid}/coins`), s => { if(s.val()!==null){State.coins=s.val();updateNavUser();document.getElementById('shop-coins-val').textContent=State.coins;} });
   onValue(ref(db,`users/${uid}/xp`), s => { if(s.val()!==null){State.xp=s.val();const lv=window.xpToLevel(s.val());State.level=lv.level;updateNavUser();window.updateXPBar&&window.updateXPBar();} });
   onValue(ref(db,`users/${uid}/friendRequests`), s => { State.friendRequests=s.val()||{};window.updateReqBadge&&window.updateReqBadge();if(window.currentPage==='friends')window.renderFriends(); });
   onValue(ref(db,`users/${uid}/friends`), s => { State.friends=s.val()||{};if(window.currentPage==='friends')window.renderFriends(); });
   onValue(ref(db,`users/${uid}/nameChanges`), s => { if(s.val()!==null)State.nameChanges=s.val(); });
+
+  // Sincronizar skins equipadas con amigos cuando cambian
+  onValue(ref(db,`users/${uid}/equipped`), async s => {
+    const eq = s.val()||{};
+    State.equipped = eq;
+    // Actualizar skins en los datos de amigo para todos mis amigos
+    const myFriendsList = State.friends || {};
+    for (const friendUid of Object.keys(myFriendsList)) {
+      try {
+        await set(ref(db, `users/${friendUid}/friends/${uid}/equippedAvatar`), eq.avatar||null);
+        await set(ref(db, `users/${friendUid}/friends/${uid}/equippedBadge`), eq.badge||null);
+        await set(ref(db, `users/${friendUid}/friends/${uid}/equippedTitle`), eq.title||null);
+      } catch(e) { /* silencioso */ }
+    }
+    updateNavUser();
+  });
 
   onValue(ref(db,'bannedUsers'), async snap => {
     if (!snap.exists() || !State.email) return;
@@ -2086,4 +2507,4 @@ window.addEventListener('beforeunload', () => {
 });
 </script>
 </body>
-</html> 
+</html>
