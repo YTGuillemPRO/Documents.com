@@ -3,185 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>N0VA</title>
+<title>N0VA AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
 <style>
-  :root {
-    --bg: #030014;
-    --bg2: #0a0118;
-    --bg3: #120225;
-    --bd: #1e1035;
-    --bm: #9333ea;
-    --bl: #c084fc;
-    --pb: #06b6d4;
-    --pg: #22c55e;
-    --pk: #f472b6;
-    --py: #facc15;
-    --tx: #e2e8f0;
-    --t2: #94a3b8;
-    --tm: #475569;
-    --fm: 'JetBrains Mono', monospace;
-    --fs: 'Space Grotesk', sans-serif;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--tx); font-family:var(--fs); height:100vh; overflow:hidden; }
-  ::-webkit-scrollbar { width:5px; }
-  ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:var(--bd); border-radius:9px; }
-  ::-webkit-scrollbar-thumb:hover { background:var(--bm); }
+:root{--bg:#030014;--bg2:#0a0118;--bg3:#120225;--bd:#1e1035;--bm:#9333ea;--bl:#c084fc;--pb:#06b6d4;--pg:#22c55e;--pk:#f472b6;--py:#facc15;--tx:#e2e8f0;--t2:#94a3b8;--tm:#475569;--fm:'JetBrains Mono',monospace;--fs:'Space Grotesk',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:var(--fs);height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:9px}
+::-webkit-scrollbar-thumb:hover{background:var(--bm)}
+.app{display:flex;height:100vh}
 
-  .app { display:flex; height:100vh; }
+/* SIDEBAR */
+.sb{width:260px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0}
+.sbh{padding:16px;border-bottom:1px solid var(--bd)}
+.logo{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--bm);letter-spacing:3px}
+.logo span{color:var(--pb)}
+.sbsub{font-size:10px;color:var(--tm);font-family:var(--fm);margin-top:2px;letter-spacing:1px}
+.nbtn{width:100%;margin-top:12px;padding:10px;background:linear-gradient(135deg,var(--bm),#7c3aed);color:#fff;border:none;border-radius:8px;font-family:var(--fm);font-size:12px;cursor:pointer;transition:.2s;letter-spacing:1px}
+.nbtn:hover{filter:brightness(1.2);transform:translateY(-1px)}
+.sbc{flex:1;overflow-y:auto;padding:8px}
+.civ{display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;transition:.15s;gap:10px;margin-bottom:2px}
+.civ:hover{background:var(--bg3)}
+.civ.act{background:var(--bg3);border:1px solid var(--bd)}
+.cic svg{width:16px;height:16px;stroke:var(--tm);flex-shrink:0}
+.civ.act .cic svg{stroke:var(--bl)}
+.cmv{flex:1;min-width:0}
+.ctv{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpv{font-size:10px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.cdl{opacity:0;background:none;border:none;cursor:pointer;padding:4px;transition:.15s}
+.civ:hover .cdl{opacity:.6}
+.cdl:hover{opacity:1!important}
+.cdl svg{width:14px;height:14px;stroke:var(--pk)}
+.sbf{padding:12px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap}
+.sbf button{flex:1;min-width:70px;padding:7px;background:var(--bg3);border:1px solid var(--bd);color:var(--t2);border-radius:6px;font-family:var(--fm);font-size:10px;cursor:pointer;transition:.15s}
+.sbf button:hover{border-color:var(--bm);color:var(--bl)}
 
-  /* SIDEBAR */
-  .sb { width:260px; background:var(--bg2); border-right:1px solid var(--bd); display:flex; flex-direction:column; flex-shrink:0; }
-  .sbh { padding:16px; border-bottom:1px solid var(--bd); }
-  .logo { font-family:var(--fm); font-size:20px; font-weight:700; color:var(--bm); letter-spacing:3px; }
-  .logo span { color:var(--pb); }
-  .sbsub { font-size:10px; color:var(--tm); font-family:var(--fm); margin-top:2px; letter-spacing:1px; }
-  .nbtn { width:100%; margin-top:12px; padding:10px; background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; border:none; border-radius:8px; font-family:var(--fm); font-size:12px; cursor:pointer; transition:.2s; letter-spacing:1px; }
-  .nbtn:hover { filter:brightness(1.2); transform:translateY(-1px); }
-  .sbc { flex:1; overflow-y:auto; padding:8px; }
-  .civ { display:flex; align-items:center; padding:10px 12px; border-radius:8px; cursor:pointer; transition:.15s; gap:10px; margin-bottom:2px; }
-  .civ:hover { background:var(--bg3); }
-  .civ.act { background:var(--bg3); border:1px solid var(--bd); }
-  .cic svg { width:16px; height:16px; stroke:var(--tm); flex-shrink:0; }
-  .civ.act .cic svg { stroke:var(--bl); }
-  .cmv { flex:1; min-width:0; }
-  .ctv { font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .cpv { font-size:10px; color:var(--tm); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
-  .cdl { opacity:0; background:none; border:none; cursor:pointer; padding:4px; transition:.15s; }
-  .civ:hover .cdl { opacity:.6; }
-  .cdl:hover { opacity:1!important; }
-  .cdl svg { width:14px; height:14px; stroke:var(--pk); }
-  .sbf { padding:12px; border-top:1px solid var(--bd); display:flex; gap:6px; flex-wrap:wrap; }
-  .sbf button { flex:1; min-width:70px; padding:7px; background:var(--bg3); border:1px solid var(--bd); color:var(--t2); border-radius:6px; font-family:var(--fm); font-size:10px; cursor:pointer; transition:.15s; }
-  .sbf button:hover { border-color:var(--bm); color:var(--bl); }
+/* MAIN */
+.mn{flex:1;display:flex;flex-direction:column;min-width:0}
 
-  /* MAIN */
-  .mn { flex:1; display:flex; flex-direction:column; min-width:0; }
+/* TOPBAR */
+.tb{height:52px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0}
+.ttitle{font-family:var(--fm);font-size:12px;color:var(--t2);letter-spacing:1px}
+.tright{display:flex;align-items:center;gap:12px}
 
-  /* TOPBAR */
-  .tb { height:52px; background:var(--bg2); border-bottom:1px solid var(--bd); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; }
-  .ttitle { font-family:var(--fm); font-size:12px; color:var(--t2); letter-spacing:1px; }
-  .tright { display:flex; align-items:center; gap:12px; }
+/* MODEL SELECTOR */
+.msel{position:relative}
+.mbtn{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:var(--fm);font-size:11px;cursor:pointer;transition:.2s}
+.mbtn:hover,.mbtn.open{border-color:var(--bm)}
+.mbtn .dot{width:7px;height:7px;border-radius:50%;background:var(--pg)}
+.mbtn .arrow{font-size:9px;color:var(--tm);transition:.2s}
+.mbtn.open .arrow{transform:rotate(180deg)}
+.mdrop{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:6px;min-width:220px;z-index:99;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.mdrop.show{display:block}
+.mopt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;font-size:12px;transition:.12s}
+.mopt:hover{background:var(--bg3)}
+.mopt.sel{background:var(--bg3);color:var(--bl)}
+.mopt .mdot{width:8px;height:8px;border-radius:50%}
+.mopt .mtag{margin-left:auto;font-family:var(--fm);font-size:9px;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--tm)}
+.mopt .mfree{color:var(--pg);font-size:9px;font-family:var(--fm)}
 
-  /* MODEL SELECTOR */
-  .msel { position:relative; }
-  .mbtn { display:flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--tx); font-family:var(--fm); font-size:11px; cursor:pointer; transition:.2s; }
-  .mbtn:hover,.mbtn.open { border-color:var(--bm); }
-  .mbtn .dot { width:7px; height:7px; border-radius:50%; background:var(--pg); }
-  .mbtn .arrow { font-size:9px; color:var(--tm); transition:.2s; }
-  .mbtn.open .arrow { transform:rotate(180deg); }
-  .mdrop { position:absolute; top:calc(100% + 6px); right:0; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; padding:6px; min-width:200px; z-index:99; display:none; box-shadow:0 8px 32px rgba(0,0,0,.5); }
-  .mdrop.show { display:block; }
-  .mopt { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:12px; transition:.12s; }
-  .mopt:hover { background:var(--bg3); }
-  .mopt.sel { background:var(--bg3); color:var(--bl); }
-  .mopt .mdot { width:8px; height:8px; border-radius:50%; }
-  .mopt .mtag { margin-left:auto; font-family:var(--fm); font-size:9px; padding:2px 6px; border-radius:4px; background:var(--bg); color:var(--tm); }
+/* CHAT AREA */
+.ca{flex:1;overflow-y:auto;padding:20px}
+.mr{display:flex;gap:14px;margin-bottom:24px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.mav{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;font-weight:700;flex-shrink:0}
+.usr .mav{background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff}
+.ai .mav{background:linear-gradient(135deg,var(--bm),#7c3aed);color:#fff}
+.mbd{flex:1;min-width:0}
+.mmeta{font-family:var(--fm);font-size:10px;color:var(--tm);margin-bottom:6px;letter-spacing:.5px}
+.bbl{padding:14px 18px;border-radius:14px;font-size:14px;line-height:1.7}
+.usr .bbl{background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(6,182,212,.05));border:1px solid rgba(6,182,212,.15)}
+.ai .bbl{background:var(--bg3);border:1px solid var(--bd)}
+.ai .bbl h2{font-size:16px;color:var(--bl);margin:16px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:6px}
+.ai .bbl h3{font-size:14px;color:var(--pb);margin:14px 0 6px}
+.ai .bbl p{margin:6px 0}
+.ai .bbl ul,.ai .bbl ol{padding-left:20px;margin:6px 0}
+.ai .bbl li{margin:3px 0}
+.ai .bbl strong{color:var(--py)}
+.ai .bbl code{font-family:var(--fm);font-size:12px;background:rgba(147,51,234,.12);padding:2px 6px;border-radius:4px;color:var(--pk)}
+.ai .bbl table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.ai .bbl th{background:var(--bg2);padding:8px;text-align:left;border:1px solid var(--bd);color:var(--bl);font-family:var(--fm)}
+.ai .bbl td{padding:8px;border:1px solid var(--bd)}
+.ai .bbl hr{border:none;border-top:1px solid var(--bd);margin:16px 0}
+.errbbl{padding:14px 18px;border-radius:14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#fca5a5;font-family:var(--fm);font-size:12px}
 
-  /* CHAT AREA */
-  .ca { flex:1; overflow-y:auto; padding:20px; }
-  .mr { display:flex; gap:14px; margin-bottom:24px; animation:fadeIn .3s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  .mav { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:var(--fm); font-size:10px; font-weight:700; flex-shrink:0; }
-  .usr .mav { background:linear-gradient(135deg,#06b6d4,#0891b2); color:#fff; }
-  .ai .mav { background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; }
-  .mbd { flex:1; min-width:0; }
-  .mmeta { font-family:var(--fm); font-size:10px; color:var(--tm); margin-bottom:6px; letter-spacing:.5px; }
-  .bbl { padding:14px 18px; border-radius:14px; font-size:14px; line-height:1.7; }
-  .usr .bbl { background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(6,182,212,.05)); border:1px solid rgba(6,182,212,.15); }
-  .ai .bbl { background:var(--bg3); border:1px solid var(--bd); }
-  .ai .bbl h2 { font-size:16px; color:var(--bl); margin:16px 0 8px; border-bottom:1px solid var(--bd); padding-bottom:6px; }
-  .ai .bbl h3 { font-size:14px; color:var(--pb); margin:14px 0 6px; }
-  .ai .bbl p { margin:6px 0; }
-  .ai .bbl ul,.ai .bbl ol { padding-left:20px; margin:6px 0; }
-  .ai .bbl li { margin:3px 0; }
-  .ai .bbl strong { color:var(--py); }
-  .ai .bbl code { font-family:var(--fm); font-size:12px; background:rgba(147,51,234,.12); padding:2px 6px; border-radius:4px; color:var(--pk); }
-  .ai .bbl table { width:100%; border-collapse:collapse; margin:10px 0; font-size:12px; }
-  .ai .bbl th { background:var(--bg2); padding:8px; text-align:left; border:1px solid var(--bd); color:var(--bl); font-family:var(--fm); }
-  .ai .bbl td { padding:8px; border:1px solid var(--bd); }
-  .ai .bbl a { color:var(--pb); text-decoration:underline; }
-  .ai .bbl hr { border:none; border-top:1px solid var(--bd); margin:16px 0; }
-  .errbbl { padding:14px 18px; border-radius:14px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2); color:#fca5a5; font-family:var(--fm); font-size:12px; }
+/* CODE BLOCKS */
+.cw{margin:10px 0;border-radius:10px;overflow:hidden;border:1px solid var(--bd)}
+.chead{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg2)}
+.clng{font-family:var(--fm);font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px}
+.cpb{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--bd);color:var(--t2);padding:4px 10px;border-radius:5px;font-family:var(--fm);font-size:10px;cursor:pointer;transition:.15s}
+.cpb:hover{border-color:var(--bm);color:var(--bl)}
+.cpb.ok{border-color:var(--pg);color:var(--pg)}
+.cpb svg{width:12px;height:12px;stroke:currentColor}
+.cw pre{margin:0!important;padding:14px!important;background:var(--bg)!important;overflow-x:auto}
+.cw code{font-family:var(--fm)!important;font-size:12px!important;line-height:1.6!important}
 
-  /* CODE BLOCKS */
-  .cw { margin:10px 0; border-radius:10px; overflow:hidden; border:1px solid var(--bd); }
-  .chead { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--bg2); }
-  .clng { font-family:var(--fm); font-size:10px; color:var(--tm); text-transform:uppercase; letter-spacing:1px; }
-  .cpb { display:flex; align-items:center; gap:5px; background:none; border:1px solid var(--bd); color:var(--t2); padding:4px 10px; border-radius:5px; font-family:var(--fm); font-size:10px; cursor:pointer; transition:.15s; }
-  .cpb:hover { border-color:var(--bm); color:var(--bl); }
-  .cpb.ok { border-color:var(--pg); color:var(--pg); }
-  .cpb svg { width:12px; height:12px; stroke:currentColor; }
-  .cw pre { margin:0!important; padding:14px!important; background:var(--bg)!important; overflow-x:auto; }
-  .cw code { font-family:var(--fm)!important; font-size:12px!important; line-height:1.6!important; }
+/* TYPING */
+.typbbl{display:flex;align-items:center;gap:5px;padding:18px 22px}
+.tdot{width:7px;height:7px;border-radius:50%;background:var(--bl);animation:tbounce 1.4s infinite}
+.tdot:nth-child(2){animation-delay:.2s}
+.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tbounce{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-7px);opacity:1}}
 
-  /* TYPING */
-  .typbbl { display:flex; align-items:center; gap:5px; padding:18px 22px; }
-  .tdot { width:7px; height:7px; border-radius:50%; background:var(--bl); animation:tbounce 1.4s infinite; }
-  .tdot:nth-child(2) { animation-delay:.2s; }
-  .tdot:nth-child(3) { animation-delay:.4s; }
-  @keyframes tbounce { 0%,60%,100%{transform:translateY(0);opacity:.3} 30%{transform:translateY(-7px);opacity:1} }
+/* WELCOME */
+.wc{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;animation:fadeIn .6s ease}
+.wl{font-family:var(--fm);font-size:52px;font-weight:700;letter-spacing:8px;background:linear-gradient(135deg,var(--bm),var(--pb));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ws{font-family:var(--fm);font-size:11px;color:var(--tm);letter-spacing:4px;margin-top:4px;text-transform:uppercase}
+.wli{width:50px;height:2px;background:linear-gradient(90deg,transparent,var(--bm),transparent);margin:30px 0}
+.wch{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:500px;width:100%}
+.wcp{padding:12px 16px;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;color:var(--t2);font-size:12px;cursor:pointer;transition:.2s;text-align:left;font-family:var(--fs)}
+.wcp:hover{border-color:var(--bm);color:var(--tx);transform:translateY(-2px);background:rgba(147,51,234,.06)}
 
-  /* WELCOME */
-  .wc { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; text-align:center; animation:fadeIn .6s ease; }
-  .wl { font-family:var(--fm); font-size:52px; font-weight:700; letter-spacing:8px; background:linear-gradient(135deg,var(--bm),var(--pb)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .ws { font-family:var(--fm); font-size:11px; color:var(--tm); letter-spacing:4px; margin-top:4px; text-transform:uppercase; }
-  .wli { width:50px; height:2px; background:linear-gradient(90deg,transparent,var(--bm),transparent); margin:30px 0; }
-  .wch { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:500px; width:100%; }
-  .wcp { padding:12px 16px; background:var(--bg3); border:1px solid var(--bd); border-radius:10px; color:var(--t2); font-size:12px; cursor:pointer; transition:.2s; text-align:left; font-family:var(--fs); }
-  .wcp:hover { border-color:var(--bm); color:var(--tx); transform:translateY(-2px); background:rgba(147,51,234,.06); }
+/* SETUP BANNER */
+.setupban{margin:20px auto;max-width:480px;padding:20px 24px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(6,182,212,.06));border:1px solid var(--bd);border-radius:14px;text-align:center;animation:fadeIn .5s ease}
+.setupban h3{font-family:var(--fm);font-size:14px;color:var(--bl);margin-bottom:8px}
+.setupban p{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px}
+.setupban a{color:var(--pb);text-decoration:underline}
+.sbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sbtn{padding:8px 18px;border-radius:8px;font-family:var(--fm);font-size:11px;cursor:pointer;border:1px solid var(--bd);transition:.15s}
+.sbtn-p{background:linear-gradient(135deg,var(--bm),#7c3aed);color:#fff;border-color:transparent}
+.sbtn-p:hover{filter:brightness(1.2)}
+.sbtn-s{background:var(--bg3);color:var(--t2)}
+.sbtn-s:hover{border-color:var(--bm);color:var(--bl)}
 
-  /* INPUT */
-  .ib { padding:16px 20px; border-top:1px solid var(--bd); background:var(--bg2); }
-  .iw { display:flex; align-items:flex-end; gap:10px; background:var(--bg3); border:1px solid var(--bd); border-radius:14px; padding:10px 14px; transition:.2s; }
-  .iw:focus-within { border-color:var(--bm); box-shadow:0 0 0 3px rgba(147,51,234,.1); }
-  #ci { flex:1; background:none; border:none; color:var(--tx); font-family:var(--fs); font-size:14px; resize:none; outline:none; max-height:150px; line-height:1.5; }
-  #ci::placeholder { color:var(--tm); }
-  .ia { display:flex; align-items:center; gap:8px; }
-  #ccnt { font-family:var(--fm); font-size:9px; color:var(--tm); }
-  #sbtn { width:36px; height:36px; border-radius:10px; border:none; background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
-  #sbtn:hover { filter:brightness(1.2); transform:scale(1.05); }
-  #sbtn.dim { opacity:.4; pointer-events:none; }
-  #sbtn svg { width:18px; height:18px; }
-  .ih { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
-  .ihint { font-family:var(--fm); font-size:9px; color:var(--tm); }
+/* INPUT */
+.ib{padding:16px 20px;border-top:1px solid var(--bd);background:var(--bg2)}
+.iw{display:flex;align-items:flex-end;gap:10px;background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:10px 14px;transition:.2s}
+.iw:focus-within{border-color:var(--bm);box-shadow:0 0 0 3px rgba(147,51,234,.1)}
+#ci{flex:1;background:none;border:none;color:var(--tx);font-family:var(--fs);font-size:14px;resize:none;outline:none;max-height:150px;line-height:1.5}
+#ci::placeholder{color:var(--tm)}
+.ia{display:flex;align-items:center;gap:8px}
+#ccnt{font-family:var(--fm);font-size:9px;color:var(--tm)}
+#sbtn{width:36px;height:36px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--bm),#7c3aed);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+#sbtn:hover{filter:brightness(1.2);transform:scale(1.05)}
+#sbtn.dim{opacity:.4;pointer-events:none}
+#sbtn svg{width:18px;height:18px}
+.ih{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.ihint{font-family:var(--fm);font-size:9px;color:var(--tm)}
 
-  /* MODAL */
-  .mo { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:999; }
-  .mo.hide { display:none; }
-  .md { background:var(--bg2); border:1px solid var(--bd); border-radius:16px; padding:28px; width:380px; }
-  .md h3 { font-family:var(--fm); font-size:14px; color:var(--bl); margin-bottom:16px; }
-  .md input { width:100%; padding:10px 14px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--tx); font-family:var(--fm); font-size:12px; outline:none; }
-  .md input:focus { border-color:var(--bm); }
-  .mda { display:flex; gap:8px; margin-top:16px; }
-  .mda button { flex:1; padding:9px; border-radius:8px; font-family:var(--fm); font-size:11px; cursor:pointer; border:1px solid var(--bd); transition:.15s; }
-  .mda .mp { background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; border-color:transparent; }
-  .mda .mp:hover { filter:brightness(1.2); }
-  .mda .ms { background:var(--bg3); color:var(--t2); }
-  .mda .ms:hover { border-color:var(--bd); }
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999}
+.mo.hide{display:none}
+.md{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:28px;width:420px;max-width:90vw}
+.md h3{font-family:var(--fm);font-size:14px;color:var(--bl);margin-bottom:6px}
+.md .mdesc{font-size:11px;color:var(--tm);margin-bottom:16px;line-height:1.5}
+.md label{display:block;font-family:var(--fm);font-size:10px;color:var(--t2);margin-bottom:6px;letter-spacing:.5px}
+.md input,.md select{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:var(--fm);font-size:12px;outline:none;margin-bottom:12px}
+.md input:focus,.md select:focus{border-color:var(--bm)}
+.md select{cursor:pointer;appearance:none}
+.mda{display:flex;gap:8px;margin-top:8px}
+.mda button{flex:1;padding:9px;border-radius:8px;font-family:var(--fm);font-size:11px;cursor:pointer;border:1px solid var(--bd);transition:.15s}
+.mda .mp{background:linear-gradient(135deg,var(--bm),#7c3aed);color:#fff;border-color:transparent}
+.mda .mp:hover{filter:brightness(1.2)}
+.mda .ms{background:var(--bg3);color:var(--t2)}
+.mda .ms:hover{border-color:var(--bd)}
+.mdlink{font-size:10px;color:var(--pb);text-decoration:underline;font-family:var(--fm)}
 
-  /* TOAST */
-  #toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg2); border:1px solid var(--bm); padding:8px 20px; border-radius:8px; font-family:var(--fm); font-size:11px; color:var(--pb); opacity:0; transition:.3s; z-index:999; pointer-events:none; }
-  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--bm);padding:8px 20px;border-radius:8px;font-family:var(--fm);font-size:11px;color:var(--pb);opacity:0;transition:.3s;z-index:999;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* MODEL TAG */
-  #modelTag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:8px; font-family:var(--fm); letter-spacing:1px; text-transform:uppercase; margin-left:4px; }
-
-  /* RESPONSIVE */
-  @media(max-width:768px) {
-    .sb { display:none; }
-    .wch { grid-template-columns:1fr; }
-  }
+@media(max-width:768px){
+.sb{display:none}
+.wch{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-
 <div class="app">
   <!-- SIDEBAR -->
   <aside class="sb">
@@ -206,29 +200,29 @@
         <div class="msel" id="msel">
           <button class="mbtn" id="mbtn" onclick="toggleModels()">
             <span class="dot"></span>
-            <span id="mbtnText">N0VA Local</span>
-            <span class="arrow">▼</span>
+            <span id="mbtnText">Gemini 2.0 Flash</span>
+            <span class="arrow">&#9660;</span>
           </button>
           <div class="mdrop" id="mdrop">
-            <div class="mopt sel" data-model="local" onclick="selectModel('local')">
-              <span class="mdot" style="background:var(--pg)"></span>
-              N0VA Local
-              <span class="mtag">local</span>
+            <div class="mopt sel" data-model="gemini" onclick="selectModel('gemini')">
+              <span class="mdot" style="background:#4285f4"></span>
+              Gemini 2.0 Flash
+              <span class="mtag">gratis</span>
             </div>
-            <div class="mopt" data-model="code" onclick="selectModel('code')">
-              <span class="mdot" style="background:var(--pb)"></span>
-              N0VA Code
-              <span class="mtag">local</span>
+            <div class="mopt" data-model="groq" onclick="selectModel('groq')">
+              <span class="mdot" style="background:var(--pg)"></span>
+              Groq Llama 3
+              <span class="mtag">gratis</span>
             </div>
             <div class="mopt" data-model="claude" onclick="selectModel('claude')">
               <span class="mdot" style="background:var(--pk)"></span>
               Claude Sonnet 4
               <span class="mtag">api</span>
             </div>
-            <div class="mopt" data-model="creative" onclick="selectModel('creative')">
+            <div class="mopt" data-model="local" onclick="selectModel('local')">
               <span class="mdot" style="background:var(--py)"></span>
-              N0VA Creative
-              <span class="mtag">local</span>
+              N0VA Local (offline)
+              <span class="mtag">sin api</span>
             </div>
           </div>
         </div>
@@ -248,7 +242,7 @@
         </div>
       </div>
       <div class="ih">
-        <span class="ihint">Enter para enviar · Shift+Enter salto de linea · Ctrl+K nuevo chat</span>
+        <span class="ihint">Enter enviar &middot; Shift+Enter salto &middot; Ctrl+K nuevo chat</span>
       </div>
     </div>
   </main>
@@ -257,8 +251,19 @@
 <!-- API KEY MODAL -->
 <div class="mo hide" id="keyModal">
   <div class="md">
-    <h3>// API KEY</h3>
-    <input type="password" id="keyInput" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')saveKey();">
+    <h3>// CONFIGURAR MOTOR DE IA</h3>
+    <div class="mdesc">Para que N0VA responda a CUALQUIER pregunta, conecta un motor de IA. Gemini y Groq son gratuitos.</div>
+    <label>SELECCIONA MOTOR</label>
+    <select id="keyProvider" onchange="updateKeyPlaceholder()">
+      <option value="gemini">Google Gemini (gratis)</option>
+      <option value="groq">Groq Llama 3 (gratis)</option>
+      <option value="claude">Claude Sonnet 4 (pago)</option>
+    </select>
+    <label>API KEY</label>
+    <input type="password" id="keyInput" placeholder="Pega tu API key aqui..." onkeydown="if(event.key==='Enter')saveKey();">
+    <div style="margin-bottom:8px">
+      <a class="mdlink" id="getKeyLink" href="https://aistudio.google.com/apikey" target="_blank">Obtener API key gratuita de Gemini</a>
+    </div>
     <div class="mda">
       <button class="ms" onclick="closeKeyModal()">CANCELAR</button>
       <button class="mp" onclick="saveKey()">GUARDAR</button>
@@ -271,177 +276,152 @@
 
 <script>
 // ═══════════════════════════════════════════
-// N0VA AI — Script Completo Corregido
+// N0VA AI — Con motores de IA reales
 // ═══════════════════════════════════════════
 
-// ── KNOWLEDGE BASE ──
-const KB = {
-  recursion: "## Recursividad\n\nLa recursividad es una técnica donde una función se llama a sí misma para resolver un problema dividiéndolo en subproblemas más pequeños.\n\n### Elementos clave\n- **Caso base**: condición de parada que evita llamadas infinitas\n- **Caso recursivo**: la función se llama a sí misma con un problema menor\n- **Pila de llamadas**: cada llamada se apila hasta llegar al caso base\n\n### Factorial\n\n```python\ndef factorial(n):\n    \"\"\"Calcula n! de forma recursiva.\"\"\"\n    if n <= 1:           # caso base\n        return 1\n    return n * factorial(n - 1)  # caso recursivo\n\nprint(factorial(5))  # 120\nprint(factorial(0))  # 1\n```\n\n### Fibonacci con memoización\n\n```python\nfrom functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\nprint(fibonacci(50))  # 12586269025 (instantáneo)\n```\n\n### Torres de Hanoi\n\n```python\ndef hanoi(n, origen, destino, auxiliar):\n    if n == 1:\n        print(f\"Mover disco de {origen} a {destino}\")\n        return\n    hanoi(n - 1, origen, auxiliar, destino)\n    print(f\"Mover disco de {origen} a {destino}\")\n    hanoi(n - 1, auxiliar, destino, origen)\n\nhanoi(3, 'A', 'C', 'B')\n```\n\n### Búsqueda binaria recursiva\n\n```python\ndef busqueda_binaria(arr, objetivo, izq=0, der=None):\n    if der is None:\n        der = len(arr) - 1\n    if izq > der:\n        return -1\n    medio = (izq + der) // 2\n    if arr[medio] == objetivo:\n        return medio\n    elif arr[medio] < objetivo:\n        return busqueda_binaria(arr, objetivo, medio + 1, der)\n    else:\n        return busqueda_binaria(arr, objetivo, izq, medio - 1)\n\nprint(busqueda_binaria([1,3,5,7,9,11], 7))  # 3\n```\n\n### Permutaciones\n\n```python\ndef permutaciones(arr):\n    if len(arr) <= 1:\n        return [arr]\n    resultado = []\n    for i, elem in enumerate(arr):\n        resto = arr[:i] + arr[i+1:]\n        for p in permutaciones(resto):\n            resultado.append([elem] + p)\n    return resultado\n\nprint(permutaciones([1, 2, 3]))\n```\n\n### Cuidado con la recursividad\n\n- Sin caso base correcto → **Stack Overflow**\n- Fibonacci recursivo simple: O(2^n) → siempre usar memoización\n- Python tiene límite de recursividad (default 1000), ajustable con `sys.setrecursionlimit()`\n- Siempre preferir iteración cuando la profundidad puede ser grande\n- La recursividad de cola (tail recursion) puede optimizarse en algunos lenguajes, pero **no en Python**",
-
-  http_server: "## Servidor HTTP en Python\n\n### Opción 1: http.server (sin dependencias)\n\n```python\nfrom http.server import HTTPServer, SimpleHTTPRequestHandler\nimport json\n\nclass APIHandler(SimpleHTTPRequestHandler):\n    def do_GET(self):\n        if self.path == '/':\n            self.send_json({'mensaje': 'Hola Mundo', 'version': '1.0'})\n        elif self.path == '/api/users':\n            self.send_json([{'id': 1, 'nombre': 'Ana'}, {'id': 2, 'nombre': 'Luis'}])\n        else:\n            self.send_error(404)\n\n    def do_POST(self):\n        if self.path == '/api/users':\n            length = int(self.headers['Content-Length'])\n            data = json.loads(self.rfile.read(length))\n            self.send_json({'creado': data}, 201)\n        else:\n            self.send_error(404)\n\n    def send_json(self, data, code=200):\n        self.send_response(code)\n        self.send_header('Content-Type', 'application/json')\n        self.send_header('Access-Control-Allow-Origin', '*')\n        self.end_headers()\n        self.wfile.write(json.dumps(data).encode())\n\nserver = HTTPServer(('localhost', 8000), APIHandler)\nprint('Servidor en http://localhost:8000')\nserver.serve_forever()\n```\n\n### Opción 2: Flask (más potente)\n\n```python\nfrom flask import Flask, jsonify, request\nfrom functools import wraps\n\napp = Flask(__name__)\ntodos = []\n\ndef require_api_key(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        if request.headers.get('X-API-Key') != 'mi-clave-secreta':\n            return jsonify({'error': 'No autorizado'}), 401\n        return f(*args, **kwargs)\n    return decorated\n\n@app.route('/api/todos', methods=['GET'])\ndef get_todos():\n    return jsonify(todos)\n\n@app.route('/api/todos', methods=['POST'])\n@require_api_key\ndef add_todo():\n    data = request.json\n    if not data or 'texto' not in data:\n        return jsonify({'error': 'Campo \"texto\" requerido'}), 400\n    todo = {'id': len(todos) + 1, 'texto': data['texto'], 'hecho': False}\n    todos.append(todo)\n    return jsonify(todo), 201\n\nif __name__ == '__main__':\n    app.run(debug=True, port=8000)\n```\n\n### Opción 3: FastAPI (moderno y rápido)\n\n```python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import Optional\nfrom datetime import datetime\n\napp = FastAPI(title='Mi API', version='1.0')\n\nclass ItemCreate(BaseModel):\n    nombre: str\n    precio: float\n    descripcion: Optional[str] = None\n\nitems_db = []\ncounter = 0\n\n@app.post('/items', status_code=201)\ndef crear(item: ItemCreate):\n    global counter\n    counter += 1\n    nuevo = {'id': counter, 'creado': str(datetime.now()), **item.dict()}\n    items_db.append(nuevo)\n    return nuevo\n\n@app.get('/items')\ndef listar(skip: int = 0, limit: int = 10):\n    return items_db[skip:skip+limit]\n\n@app.get('/items/{item_id}')\ndef obtener(item_id: int):\n    for i in items_db:\n        if i['id'] == item_id:\n            return i\n    raise HTTPException(404, 'Item no encontrado')\n```\n\nEjecuta con: `uvicorn main:app --reload`",
-
-  async_await: "## Async/Await — Guía Completa\n\n### JavaScript — Promesas\n\n```javascript\nconst esperar = ms => new Promise(resolve => setTimeout(resolve, ms));\n\nasync function obtenerUsuario(id) {\n    try {\n        const response = await fetch('/api/users/' + id);\n        if (!response.ok) throw new Error('HTTP ' + response.status);\n        const user = await response.json();\n        return user;\n    } catch (err) {\n        console.error('Error:', err.message);\n        return null;\n    }\n}\n\n// Ejecutar en paralelo\nasync function obtenerVarios(ids) {\n    const promesas = ids.map(id => obtenerUsuario(id));\n    return Promise.all(promesas);\n}\n```\n\n### JavaScript — Semáforo de concurrencia\n\n```javascript\nclass Semaphore {\n    constructor(max) {\n        this.max = max;\n        this.current = 0;\n        this.queue = [];\n    }\n    async acquire() {\n        if (this.current < this.max) {\n            this.current++;\n            return;\n        }\n        await new Promise(resolve => this.queue.push(resolve));\n    }\n    release() {\n        this.current--;\n        if (this.queue.length > 0) {\n            this.current++;\n            this.queue.shift()();\n        }\n    }\n}\n```\n\n### Python — asyncio\n\n```python\nimport asyncio\nimport aiohttp\n\nasync def obtener(url):\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url) as resp:\n            return await resp.json()\n\nasync def main():\n    urls = ['https://api.example.com/1', 'https://api.example.com/2']\n    async with aiohttp.ClientSession() as session:\n        resultados = await asyncio.gather(\n            *[obtener(url, session) for url in urls],\n            return_exceptions=True\n        )\n\nasyncio.run(main())\n```\n\n### Cuándo usar async\n\n- Llamadas HTTP / fetch\n- Lectura/escritura de archivos\n- Consultas a bases de datos\n- WebSockets\n- Cualquier I/O\n\n### Cuándo NO usar async\n\n- Cálculos intensivos en CPU → usar multiprocessing/workers\n- Operaciones puramente síncronas\n- Lógica simple sin I/O",
-
-  merge_sort: "## Merge Sort\n\nMerge Sort es un algoritmo de ordenamiento divide y vencerás con complejidad **O(n log n)** en todos los casos.\n\n### Funcionamiento\n\n1. Dividir el array en dos mitades\n2. Ordenar cada mitad recursivamente\n3. Combinar (merge) las dos mitades ordenadas\n\n### Implementación en Python\n\n```python\ndef merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    izquierda = merge_sort(arr[:mid])\n    derecha = merge_sort(arr[mid:])\n    return merge(izquierda, derecha)\n\ndef merge(izq, der):\n    resultado = []\n    i = j = 0\n    while i < len(izq) and j < len(der):\n        if izq[i] <= der[j]:\n            resultado.append(izq[i])\n            i += 1\n        else:\n            resultado.append(der[j])\n            j += 1\n    resultado.extend(izq[i:])\n    resultado.extend(der[j:])\n    return resultado\n\ndatos = [38, 27, 43, 3, 9, 82, 10]\nprint(merge_sort(datos))  # [3, 9, 10, 27, 38, 43, 82]\n```\n\n### Complejidad\n\n| Caso  | Tiempo    | Espacio |\n|-------|-----------|---------|\n| Mejor | O(n log n)| O(n)    |\n| Medio | O(n log n)| O(n)    |\n| Peor  | O(n log n)| O(n)    |\n\nEs **estable** (mantiene el orden de elementos iguales) y predecible, pero usa memoria adicional O(n).",
-
-  solid: "## Principios SOLID\n\n### S — Single Responsibility Principle\n\nUna clase debe tener una sola razón para cambiar.\n\n```python\n# MAL: una clase hace todo\nclass Usuario:\n    def guardar_db(self): ...\n    def enviar_email(self): ...\n    def generar_reporte(self): ...\n\n# BIEN: separar responsabilidades\nclass Usuario:\n    def __init__(self, nombre, email):\n        self.nombre = nombre\n        self.email = email\n\nclass UsuarioRepository:\n    def guardar(self, usuario): ...\n    def buscar(self, id): ...\n\nclass EmailService:\n    def enviar(self, destino, mensaje): ...\n```\n\n### O — Open/Closed Principle\n\nAbierto para extensión, cerrado para modificación.\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Descuento(ABC):\n    @abstractmethod\n    def calcular(self, precio): pass\n\nclass DescuentoNormal(Descuento):\n    def calcular(self, precio): return precio * 0.9\n\nclass DescuentoPremium(Descuento):\n    def calcular(self, precio): return precio * 0.8\n\nclass CalculadoraPrecio:\n    def __init__(self, descuento: Descuento):\n        self.descuento = descuento\n    def calcular(self, precio):\n        return self.descuento.calcular(precio)\n```\n\n### L — Liskov Substitution Principle\n\nLas subclases deben ser sustituibles por sus clases base.\n\n### I — Interface Segregation Principle\n\nMejor muchas interfaces específicas que una general.\n\n### D — Dependency Inversion Principle\n\nDepender de abstracciones, no de implementaciones.",
-
-  sql_nosql: "## SQL vs NoSQL\n\n### SQL (Relacional)\n\n- Estructura fija con tablas, filas y columnas\n- Esquema definido previamente\n- Relaciones entre tablas (JOINs)\n- ACID\n- Escalado vertical\n\n**Ejemplos**: PostgreSQL, MySQL, SQLite\n\n```sql\nCREATE TABLE usuarios (\n    id SERIAL PRIMARY KEY,\n    nombre VARCHAR(100) NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL\n);\n\nSELECT u.nombre, COUNT(p.id) as total_posts\nFROM usuarios u\nLEFT JOIN posts p ON u.id = p.usuario_id\nGROUP BY u.nombre\nHAVING COUNT(p.id) > 5;\n```\n\n### NoSQL (No Relacional)\n\n- Esquema flexible\n- Sin JOINs nativos\n- Escalado horizontal\n\n**Ejemplos**: MongoDB, Redis, Cassandra\n\n### Cuándo usar cada uno\n\n| Criterio        | SQL              | NoSQL            |\n|-----------------|------------------|------------------|\n| Datos estructurados | Si           | No               |\n| Esquema variable | No            | Si               |\n| Transacciones ACID | Si          | Parcial          |\n| Escalar horizontal | Difícil     | Fácil            |",
-
-  neural_network: "## Redes Neuronales\n\n### La neurona (perceptrón)\n\n`salida = activación(w1*x1 + w2*x2 + ... + wn*xn + bias)`\n\n### Implementación con backpropagation\n\n```python\nimport numpy as np\n\nclass RedNeuronal:\n    def __init__(self, capas):\n        self.pesos = []\n        self.bias = []\n        for i in range(len(capas) - 1):\n            w = np.random.randn(capas[i], capas[i+1]) * np.sqrt(2.0 / capas[i])\n            b = np.zeros((1, capas[i+1]))\n            self.pesos.append(w)\n            self.bias.append(b)\n\n    def sigmoid(self, x):\n        return 1 / (1 + np.exp(-np.clip(x, -500, 500)))\n\n    def forward(self, X):\n        self.z = []\n        self.a = [X]\n        for i, (w, b) in enumerate(zip(self.pesos, self.bias)):\n            z = X @ w + b\n            self.z.append(z)\n            X = self.sigmoid(z)\n            self.a.append(X)\n        return X\n\n    def backward(self, y, lr=0.01):\n        m = y.shape[0]\n        dz = self.a[-1] - y\n        for i in range(len(self.pesos) - 1, -1, -1):\n            dw = (self.a[i].T @ dz) / m\n            db = np.sum(dz, axis=0, keepdims=True) / m\n            if i > 0:\n                dz = (dz @ self.pesos[i].T) * (self.a[i] * (1 - self.a[i]))\n            self.pesos[i] -= lr * dw\n            self.bias[i] -= lr * db\n\n# XOR\nX = np.array([[0,0],[0,1],[1,0],[1,1]])\ny = np.array([[0],[1],[1],[0]])\nnn = RedNeuronal([2, 8, 4, 1])\n```\n\n### Funciones de activación\n\n| Función  | Fórmula                  | Uso               |\n|----------|--------------------------|-------------------|\n| ReLU     | max(0, x)               | Capas ocultas     |\n| Sigmoid  | 1/(1+e^-x)             | Salida binaria    |\n| Tanh     | (e^x-e^-x)/(e^x+e^-x) | Ocultas (-1 a 1)  |\n| Softmax  | e^xj / sum(e^xi)       | Multiclase        |",
-
-  design_patterns: "## Patrones de Diseño Más Usados\n\n### Singleton — una sola instancia global\n\n```python\nclass Database:\n    _instance = None\n    _initialized = False\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance\n    def __init__(self):\n        if not self._initialized:\n            self.connection = 'conectado'\n            self._initialized = True\n```\n\n### Factory — crear objetos sin especificar clase exacta\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Notificacion(ABC):\n    @abstractmethod\n    def enviar(self, msg): pass\n\nclass EmailNotif(Notificacion):\n    def enviar(self, msg): print(f'Email: {msg}')\n\nclass NotifFactory:\n    _tipos = {'email': EmailNotif}\n    @classmethod\n    def crear(cls, tipo):\n        return cls._tipos[tipo]()\n```\n\n### Observer — notificar cambios a suscriptores\n\n```javascript\nclass EventEmitter {\n    constructor() { this.events = {}; }\n    on(event, fn) {\n        (this.events[event] ??= []).push(fn);\n        return () => this.off(event, fn);\n    }\n    emit(event, data) {\n        this.events[event]?.forEach(fn => fn(data));\n    }\n}\n```\n\n### Strategy — intercambiar algoritmos\n\n```python\nclass Ordenador:\n    def __init__(self, estrategia):\n        self.estrategia = estrategia\n    def ordenar(self, datos):\n        return self.estrategia(datos)\n```",
-
-  python_basics: "## Python — Guía Completa\n\n### Variables y tipos\n\n```python\nnombre = 'Ana'           # str\nedad = 25                # int\nprecio = 19.99           # float\nactivo = True            # bool\nlista = [1, 2, 3]       # list\ndicc = {'k': 'v'}       # dict\n```\n\n### Estructuras de control\n\n```python\nfor i, elemento in enumerate(lista):\n    print(f'{i}: {elemento}')\n\n# Dict comprehension\ncuadrados = {x: x**2 for x in range(6)}\n\n# Walrus operator (Python 3.8+)\nif (n := len(datos)) > 10:\n    print(f'Demasiados datos: {n}')\n```\n\n### Funciones\n\n```python\nimport functools\n\ndef timer(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        import time\n        inicio = time.perf_counter()\n        resultado = func(*args, **kwargs)\n        print(f'{func.__name__}: {time.perf_counter()-inicio:.4f}s')\n        return resultado\n    return wrapper\n\n@timer\ndef calcular():\n    return sum(range(10**6))\n```\n\n### Clases\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass Usuario:\n    nombre: str\n    email: str\n    activo: bool = True\n```",
-
-  javascript_basics: "## JavaScript — Guía Completa\n\n### Variables y destructuring\n\n```javascript\nconst { nombre: n, ...resto } = persona;\nconst [primero, , tercero, ...rest] = [1, 2, 3, 4, 5];\n\n// Optional chaining\nconst calle = user?.address?.street ?? 'Sin dirección';\n```\n\n### Promesas y async\n\n```javascript\nasync function obtenerDatos(url) {\n    try {\n        const res = await fetch(url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);\n        return await res.json();\n    } catch (err) {\n        console.error(err);\n        return null;\n    }\n}\n```\n\n### Iteradores y generadores\n\n```javascript\nfunction* rango(inicio, fin, paso = 1) {\n    for (let i = inicio; i < fin; i += paso) {\n        yield i;\n    }\n}\nconst gen = rango(0, 10, 2);\nconsole.log([...gen]); // [0, 2, 4, 6, 8]\n```",
-
-  css_flexbox: "## CSS Flexbox y Grid\n\n### Flexbox\n\n```css\n.container {\n    display: flex;\n    justify-content: center;\n    align-items: stretch;\n    flex-wrap: nowrap;\n    gap: 16px;\n}\n.item {\n    flex: 1;\n    align-self: center;\n    order: 0;\n}\n```\n\n### CSS Grid\n\n```css\n.grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));\n    gap: 20px;\n}\n```\n\n### Responsive sin media queries\n\n```css\n.grid { display:flex; flex-wrap:wrap; gap:16px; }\n.card { flex:1 1 300px; max-width:100%; }\n```",
-
-  git_basics: "## Git — Guía Completa\n\n### Configuración\n\n```bash\ngit config --global user.name 'Tu Nombre'\ngit config --global user.email 'tu@email.com'\ngit config --global init.defaultBranch main\n```\n\n### Flujo básico\n\n```bash\ngit init\ngit add .\ngit commit -m 'feat: añadir login'\ngit status\ngit log --oneline --graph --all\n```\n\n### Ramas\n\n```bash\ngit switch -c feature             # crear + cambiar\ngit merge feature                  # fusionar\ngit branch -d feature              # eliminar\n```\n\n### Deshacer\n\n```bash\ngit restore archivo                # descartar cambios\ngit reset --soft HEAD~1            # deshacer commit (mantiene staged)\ngit revert HASH                    # crear commit que deshace otro\ngit reflog                         # recuperar commits perdidos\n```\n\n### Conventional Commits\n\n```\nfeat: nueva funcionalidad\nfix: corrección de bug\ndocs: documentación\nrefactor: refactorización\n```",
-
-  react_basics: "## React — Guía Completa\n\n### useState\n\n```jsx\nimport { useState } from 'react';\n\nfunction Contador() {\n    const [count, setCount] = useState(0);\n    return (\n        <div>\n            <p>{count}</p>\n            <button onClick={() => setCount(c => c + 1)}>+1</button>\n        </div>\n    );\n}\n```\n\n### useEffect\n\n```jsx\nimport { useState, useEffect } from 'react';\n\nfunction Perfil({ userId }) {\n    const [user, setUser] = useState(null);\n    useEffect(() => {\n        let cancelado = false;\n        fetch('/api/users/' + userId)\n            .then(r => r.json())\n            .then(data => { if (!cancelado) setUser(data); });\n        return () => { cancelado = true; };\n    }, [userId]);\n    return <h1>{user?.nombre}</h1>;\n}\n```\n\n### Custom Hooks\n\n```jsx\nfunction useDebounce(valor, delay = 300) {\n    const [debounced, setDebounced] = useState(valor);\n    useEffect(() => {\n        const timer = setTimeout(() => setDebounced(valor), delay);\n        return () => clearTimeout(timer);\n    }, [valor, delay]);\n    return debounced;\n}\n```",
-
-  algorithms: "## Algoritmos — Complejidades y Ejemplos\n\n### Ordenamiento\n\n| Algoritmo    | Mejor      | Medio      | Peor       | Espacio  |\n|-------------|------------|------------|------------|----------|\n| Bubble Sort | O(n)       | O(n²)     | O(n²)     | O(1)     |\n| Merge Sort  | O(n log n) | O(n log n) | O(n log n) | O(n)   |\n| Quick Sort  | O(n log n) | O(n log n) | O(n²)     | O(log n) |\n| Heap Sort   | O(n log n) | O(n log n) | O(n log n) | O(1)   |\n\n### Búsqueda binaria\n\n```python\ndef busqueda_binaria(arr, objetivo):\n    izq, der = 0, len(arr) - 1\n    while izq <= der:\n        medio = (izq + der) // 2\n        if arr[medio] == objetivo:\n            return medio\n        elif arr[medio] < objetivo:\n            izq = medio + 1\n        else:\n            der = medio - 1\n    return -1\n```\n\n### Big O de menor a mayor\n\nO(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2^n) < O(n!)",
-
-  docker: "## Docker — Guía Completa\n\n### Comandos esenciales\n\n```bash\ndocker pull nginx:latest\ndocker run -d -p 8080:80 --name web nginx\ndocker ps\ndocker logs -f web\ndocker exec -it web bash\ndocker volume create mi_data\ndocker network create mi-red\n```\n\n### Dockerfile optimizado (multi-stage)\n\n```dockerfile\nFROM python:3.11-slim AS builder\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir --user -r requirements.txt\n\nFROM python:3.11-slim\nWORKDIR /app\nCOPY --from=builder /root/.local /root/.local\nCOPY . .\nENV PATH=/root/.local/bin:$PATH\nEXPOSE 8000\nCMD ['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000']\n```\n\n### Docker Compose\n\n```yaml\nversion: '3.8'\nservices:\n  web:\n    build: .\n    ports:\n      - '8000:8000'\n    depends_on:\n      - db\n  db:\n    image: postgres:15-alpine\n    environment:\n      POSTGRES_DB: miapp\n```",
-
-  typescript: "## TypeScript vs JavaScript\n\n### Tipos básicos\n\n```typescript\nlet nombre: string = 'Ana';\nlet edad: number = 25;\nlet lista: number[] = [1, 2, 3];\nlet cualquiera: any = 'lo que sea';\nlet desconocido: unknown = 'más seguro que any';\n```\n\n### Interfaces y Types\n\n```typescript\ninterface Usuario {\n    id: number;\n    nombre: string;\n    edad?: number;           // opcional\n    readonly creado: Date;   // solo lectura\n}\n\ntype Status = 'activo' | 'inactivo' | 'suspendido';\n```\n\n### Generics\n\n```typescript\nfunction primero<T>(arr: T[]): T | undefined {\n    return arr[0];\n}\n\nclass Pila<T> {\n    private items: T[] = [];\n    push(item: T) { this.items.push(item); }\n    pop(): T | undefined { return this.items.pop(); }\n}\n```",
-
-  linux: "## Linux — Comandos Esenciales\n\n### Navegación\n\n```bash\npwd\nls -la\ncd /ruta\ntree -L 2\n```\n\n### Archivos\n\n```bash\nmkdir -p a/b/c\ncp -r src/ dst/\nmv old new\nrm -rf dir/\ncat archivo\nless archivo\nhead -n 20 file\ntail -f log.txt\n```\n\n### Búsqueda\n\n```bash\nfind . -name '*.py' -type f\ngrep -r 'texto' . --include='*.py'\n```\n\n### Procesos\n\n```bash\nps aux\ntop / htop\nkill -9 PID\n```",
-
-  rest_api: "## APIs REST — Guía Completa\n\n### Métodos HTTP\n\n| Método  | URL           | Acción            | Idempotente |\n|---------|---------------|-------------------|-------------|\n| GET     | /usuarios     | Listar todos      | Si          |\n| POST    | /usuarios     | Crear             | No          |\n| PUT     | /usuarios/42  | Reemplazar        | Si          |\n| PATCH   | /usuarios/42  | Actualizar parcial| Si          |\n| DELETE  | /usuarios/42  | Eliminar          | Si          |\n\n### Ejemplo con Express\n\n```javascript\nconst express = require('express');\nconst app = express();\napp.use(express.json());\n\nlet usuarios = [{ id: 1, nombre: 'Ana' }];\n\napp.get('/api/usuarios', (req, res) => {\n    res.json(usuarios);\n});\n\napp.post('/api/usuarios', (req, res) => {\n    const user = { id: usuarios.length + 1, ...req.body };\n    usuarios.push(user);\n    res.status(201).json(user);\n});\n\napp.listen(3000);\n```",
-
-  regex: "## Expresiones Regulares — Referencia\n\n### Sintaxis\n\n| Patrón  | Significado                    |\n|---------|--------------------------------|\n| \\d      | Dígito [0-9]                  |\n| \\w      | Palabra [a-zA-Z0-9_]          |\n| \\s      | Espacio en blanco             |\n| ^       | Inicio de cadena              |\n| $       | Fin de cadena                 |\n| *       | 0 o más                       |\n| +       | 1 o más                       |\n| ?       | 0 o 1 (opcional)              |\n| {n,m}   | Entre n y m veces             |\n| (...)   | Grupo de captura              |\n\n### Patrones útiles\n\n```python\nimport re\nre.match(r'^[\\w.-]+@[\\w.-]+\\.\\w{2,}$', email)  # Email\nre.match(r'^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$', fecha)  # Fecha\n```",
-
-  security: "## Seguridad Web — Guía Completa\n\n### XSS — Cross-Site Scripting\n\n```javascript\n// MAL\nelement.innerHTML = userInput;\n// BIEN\nelement.textContent = userInput;\n// BIEN: sanitizar\nimport DOMPurify from 'dompurify';\nelement.innerHTML = DOMPurify.sanitize(userInput);\n```\n\n### SQL Injection\n\n```python\n# MAL\ncursor.execute(f\"SELECT * FROM users WHERE name = '{nombre}'\")\n# BIEN\ncursor.execute('SELECT * FROM users WHERE name = %s', (nombre,))\n```\n\n### Headers de seguridad\n\n```\nContent-Security-Policy: default-src 'self'\nX-Content-Type-Options: nosniff\nStrict-Transport-Security: max-age=31536000\n```\n\n### Contraseñas con bcrypt\n\n```python\nimport bcrypt\nhash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))\nif bcrypt.checkpw(intento.encode('utf-8'), hash):\n    print('Contraseña correcta')\n```",
-
-  testing: "## Testing — Guía Completa\n\n### Python — pytest\n\n```python\nimport pytest\n\ndef test_suma():\n    assert suma(2, 3) == 5\n\n@pytest.mark.parametrize('a,b,esperado', [\n    (1, 2, 3), (0, 0, 0), (-1, 1, 0)\n])\ndef test_suma_casos(a, b, esperado):\n    assert suma(a, b) == esperado\n\n@pytest.fixture\ndef usuario():\n    return {'nombre': 'Ana', 'email': 'ana@mail.com'}\n\nfrom unittest.mock import Mock, patch\n\ndef test_api_call():\n    mock_response = Mock()\n    mock_response.json.return_value = {'id': 1}\n    with patch('requests.get', return_value=mock_response):\n        resultado = obtener_usuario(1)\n        assert resultado['id'] == 1\n```\n\n### Principios AAA\n\n- **Arrange**: preparar datos\n- **Act**: ejecutar lo que se prueba\n- **Assert**: verificar resultado",
-
-  intro: "Hola! Soy **N0VA AI**, tu asistente de inteligencia artificial.\n\nPuedo ayudarte con:\n\n- **Lenguajes**: Python, JavaScript, TypeScript, SQL, y más\n- **Conceptos**: algoritmos, estructuras de datos, patrones de diseño, SOLID\n- **Herramientas**: Git, Docker, Linux, APIs REST\n- **Web**: HTML, CSS, React\n- **Seguridad**: buenas prácticas, OWASP\n- **IA**: redes neuronales, conceptos de ML\n\nEscribe tu pregunta y te responderé con código, ejemplos y explicaciones detalladas."
-
+// ── KNOWLEDGE BASE (offline fallback) ──
+var KB = {
+  recursion: "## Recursividad\n\nLa recursividad es una funcion que se llama a si misma.\n\n### Factorial\n\n```python\ndef factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))  # 120\n```\n\n### Fibonacci con memoizacion\n\n```python\nfrom functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\nprint(fibonacci(50))  # 12586269025\n```\n\n### Cuidado con la recursividad\n\n- Sin caso base -> Stack Overflow\n- Fibonacci simple: O(2^n) -> usar memoizacion\n- Python limite 1000, ajustable con sys.setrecursionlimit()",
+  python_basics: "## Python - Guia Completa\n\n### Variables y tipos\n\n```python\nnombre = 'Ana'           # str\nedad = 25                # int\nprecio = 19.99           # float\nactivo = True            # bool\nlista = [1, 2, 3]       # list\ndicc = {'k': 'v'}       # dict\n```\n\n### Estructuras de control\n\n```python\nfor i, elemento in enumerate(lista):\n    print(f'{i}: {elemento}')\n\ncuadrados = {x: x**2 for x in range(6)}\n\nif (n := len(datos)) > 10:\n    print(f'Demasiados: {n}')\n```\n\n### Funciones\n\n```python\nimport functools\n\ndef timer(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        import time\n        inicio = time.perf_counter()\n        resultado = func(*args, **kwargs)\n        print(f'{func.__name__}: {time.perf_counter()-inicio:.4f}s')\n        return resultado\n    return wrapper\n\n@timer\ndef calcular():\n    return sum(range(10**6))\n```\n\n### Clases\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass Usuario:\n    nombre: str\n    email: str\n    activo: bool = True\n```",
+  javascript_basics: "## JavaScript - Guia Completa\n\n### Variables y destructuring\n\n```javascript\nconst { nombre: n, ...resto } = persona;\nconst [primero, , tercero, ...rest] = [1, 2, 3, 4, 5];\nconst calle = user?.address?.street ?? 'Sin direccion';\n```\n\n### Promesas y async\n\n```javascript\nasync function obtenerDatos(url) {\n    try {\n        const res = await fetch(url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);\n        return await res.json();\n    } catch (err) {\n        console.error(err);\n        return null;\n    }\n}\n```\n\n### Generadores\n\n```javascript\nfunction* rango(inicio, fin, paso = 1) {\n    for (let i = inicio; i < fin; i += paso) {\n        yield i;\n    }\n}\nconsole.log([...rango(0, 10, 2)]); // [0, 2, 4, 6, 8]\n```",
+  algorithms: "## Algoritmos - Complejidades\n\n### Ordenamiento\n\n| Algoritmo    | Mejor      | Medio      | Peor       | Espacio  |\n|-------------|------------|------------|------------|----------|\n| Bubble Sort | O(n)       | O(n^2)    | O(n^2)    | O(1)     |\n| Merge Sort  | O(n log n) | O(n log n) | O(n log n) | O(n)   |\n| Quick Sort  | O(n log n) | O(n log n) | O(n^2)    | O(log n) |\n\n### Busqueda binaria\n\n```python\ndef busqueda_binaria(arr, objetivo):\n    izq, der = 0, len(arr) - 1\n    while izq <= der:\n        medio = (izq + der) // 2\n        if arr[medio] == objetivo:\n            return medio\n        elif arr[medio] < objetivo:\n            izq = medio + 1\n        else:\n            der = medio - 1\n    return -1\n```\n\n### Big O\n\nO(1) < O(log n) < O(n) < O(n log n) < O(n^2) < O(2^n) < O(n!)",
+  git_basics: "## Git - Guia Completa\n\n```bash\ngit init\ngit add .\ngit commit -m 'feat: añadir login'\ngit switch -c feature\ngit merge feature\ngit branch -d feature\ngit restore archivo\ngit reset --soft HEAD~1\ngit reflog\n```\n\n### Conventional Commits\n\n```\nfeat: nueva funcionalidad\nfix: correccion de bug\ndocs: documentacion\nrefactor: refactorizacion\n```",
+  docker: "## Docker - Guia Completa\n\n```bash\ndocker pull nginx:latest\ndocker run -d -p 8080:80 --name web nginx\ndocker ps\ndocker logs -f web\ndocker exec -it web bash\ndocker compose up -d\ndocker compose down\n```\n\n### Dockerfile\n\n```dockerfile\nFROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8000\nCMD ['uvicorn', 'main:app', '--host', '0.0.0.0']\n```",
+  solid: "## Principios SOLID\n\n- **S**ingle Responsibility: una clase, una razon para cambiar\n- **O**pen/Closed: abierto para extension, cerrado para modificacion\n- **L**iskov Substitution: subclases sustituibles por sus clases base\n- **I**nterface Segregation: interfaces pequenas y especificas\n- **D**ependency Inversion: depender de abstracciones, no implementaciones\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Descuento(ABC):\n    @abstractmethod\n    def calcular(self, precio): pass\n\nclass DescuentoNormal(Descuento):\n    def calcular(self, precio): return precio * 0.9\n\nclass CalculadoraPrecio:\n    def __init__(self, descuento: Descuento):\n        self.descuento = descuento\n```",
+  sql_nosql: "## SQL vs NoSQL\n\n| Criterio        | SQL              | NoSQL            |\n|-----------------|------------------|------------------|\n| Datos estructurados | Si           | No               |\n| Esquema variable | No            | Si               |\n| Transacciones ACID | Si          | Parcial          |\n| Escalar horizontal | Dificil     | Facil            |\n\n**SQL**: PostgreSQL, MySQL, SQLite\n**NoSQL**: MongoDB, Redis, Cassandra",
+  security: "## Seguridad Web\n\n### XSS\n```javascript\n// MAL\nelement.innerHTML = userInput;\n// BIEN\nelement.textContent = userInput;\n```\n\n### SQL Injection\n```python\n# MAL\ncursor.execute(f\"SELECT * FROM users WHERE name = '{nombre}'\")\n# BIEN\ncursor.execute('SELECT * FROM users WHERE name = %s', (nombre,))\n```\n\n### Headers de seguridad\n```\nContent-Security-Policy: default-src 'self'\nX-Content-Type-Options: nosniff\nStrict-Transport-Security: max-age=31536000\n```",
+  design_patterns: "## Patrones de Diseno\n\n### Singleton\n```python\nclass Database:\n    _instance = None\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance\n```\n\n### Factory\n```python\nclass NotifFactory:\n    _tipos = {'email': EmailNotif, 'sms': SMSNotif}\n    @classmethod\n    def crear(cls, tipo): return cls._tipos[tipo]()\n```\n\n### Observer\n```javascript\nclass EventEmitter {\n    on(event, fn) { (this.events[event] ??= []).push(fn); }\n    emit(event, data) { this.events[event]?.forEach(fn => fn(data)); }\n}\n```",
+  intro: "Hola! Soy **N0VA AI**, tu asistente de inteligencia artificial.\n\nPuedo responder a **CUALQUIER** pregunta cuando tengo un motor de IA conectado (Gemini, Groq o Claude).\n\nTambien puedo funcionar offline con un conocimiento base limitado sobre programacion.\n\nConfigura tu API key gratis para desbloquear todo el potencial."
 };
 
 // ── MODELS ──
-const MODELS = {
-  local:    { name: 'N0VA Local',    type: 'local' },
-  code:     { name: 'N0VA Code',     type: 'local' },
-  claude:   { name: 'Claude Sonnet 4', type: 'api'  },
-  creative: { name: 'N0VA Creative', type: 'local' }
+var MODELS = {
+  gemini:  { name: 'Gemini 2.0 Flash',   type: 'api', provider: 'gemini',  free: true  },
+  groq:    { name: 'Groq Llama 3',       type: 'api', provider: 'groq',    free: true  },
+  claude:  { name: 'Claude Sonnet 4',    type: 'api', provider: 'claude',  free: false },
+  local:   { name: 'N0VA Local',         type: 'local', provider: 'local', free: true  }
 };
 
+// ── API KEYS (separadas por proveedor) ──
+var apiKeys = JSON.parse(localStorage.getItem('nova_keys') || '{}');
+
+function getKey(provider) {
+  return apiKeys[provider] || '';
+}
+
+function setKey(provider, key) {
+  apiKeys[provider] = key;
+  localStorage.setItem('nova_keys', JSON.stringify(apiKeys));
+}
+
 // ── STATE ──
-let currentModel = 'local';
-let apiKey = localStorage.getItem('nova_key') || '';
-let convs = JSON.parse(localStorage.getItem('nova_c3') || '[]');
-let curId = null;
-let busy = false;
+var currentModel = localStorage.getItem('nova_model') || 'gemini';
+var convs = JSON.parse(localStorage.getItem('nova_c3') || '[]');
+var curId = null;
+var busy = false;
 
-// ── FIND RESPONSE ──
-function findResponse(input) {
-  const q = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const t = [
-    { k: ['recursi', 'recursion', 'recursive'], i: 'recursion' },
-    { k: ['servidor http', 'flask', 'fastapi', 'http server', 'servidor web', 'api python'], i: 'http_server' },
-    { k: ['async', 'await', 'asincron', 'promise', 'promesa', 'asyncio'], i: 'async_await' },
-    { k: ['merge sort', 'mergesort'], i: 'merge_sort' },
-    { k: ['solid', 'single responsibility', 'liskov'], i: 'solid' },
-    { k: ['sql', 'nosql', 'relacional', 'base de dato', 'postgresql', 'mongodb', 'mysql'], i: 'sql_nosql' },
-    { k: ['red neuronal', 'neural network', 'perceptron', 'deep learning', 'machine learning', 'ia ', 'inteligencia artificial'], i: 'neural_network' },
-    { k: ['snake', 'juego snake'], i: 'snake_game' },
-    { k: ['patron de diseno', 'design pattern', 'singleton', 'factory', 'observer', 'decorator', 'strategy', 'builder'], i: 'design_patterns' },
-    { k: ['python basico', 'aprender python', 'fundamento python', 'python como', 'python empezar'], i: 'python_basics' },
-    { k: ['javascript basico', 'js concept', 'aprender javascript', 'fundamento js', 'es6'], i: 'javascript_basics' },
-    { k: ['flexbox', 'css grid', 'css layout', 'css posicion', 'css centrar', 'css responsive'], i: 'css_flexbox' },
-    { k: ['git', 'github', 'commit', 'branch', 'rama', 'merge git', 'rebase'], i: 'git_basics' },
-    { k: ['react', 'componente react', 'usestate', 'useeffect', 'hook', 'jsx'], i: 'react_basics' },
-    { k: ['algoritmo', 'complejidad', 'big o', 'ordenamiento', 'busqueda binaria', 'bubble sort', 'quick sort'], i: 'algorithms' },
-    { k: ['docker', 'contenedor', 'dockerfile', 'docker compose'], i: 'docker' },
-    { k: ['typescript', 'tipo typescript', 'interface ts', 'generic typescript'], i: 'typescript' },
-    { k: ['linux', 'bash', 'terminal', 'comando linux', 'shell', 'consola'], i: 'linux' },
-    { k: ['rest', 'api rest', 'endpoint', 'metodo http', 'get post put delete', 'express'], i: 'rest_api' },
-    { k: ['regex', 'expresion regular', 'regular expression'], i: 'regex' },
-    { k: ['seguridad', 'security', 'xss', 'injection', 'sql injection', 'csrf', 'owasp', 'bcrypt', 'jwt'], i: 'security' },
-    { k: ['test', 'testing', 'pytest', 'jest', 'unit test'], i: 'testing' }
-  ];
-  let bm = null, bs = 0;
-  for (const x of t) {
-    let s = 0;
-    for (const k of x.k) {
-      if (q.includes(k)) s += k.length;
-    }
-    if (s > bs) { bs = s; bm = x.i; }
+// ── SYSTEM PROMPT ──
+var SYSTEM_PROMPT = 'Eres N0VA AI, un asistente de IA extremadamente capaz. Responde SIEMPRE en el mismo idioma que el usuario. Si te piden codigo, proporciona codigo funcional con explicaciones. Si te piden un juego, hazlo. Si te piden explicaciones, se detallado y claro. Usa markdown para estructurar respuestas. Para bloques de codigo usa la sintaxis ```lenguaje. No digas nunca que no puedes hacer algo - intentalo siempre.';
+
+// ═══════════════════════════════════════════
+// API INTEGRATIONS
+// ═══════════════════════════════════════════
+
+// ── GOOGLE GEMINI (gratis) ──
+async function callGemini(messages) {
+  var key = getKey('gemini');
+  if (!key) throw new Error('API key de Gemini no configurada. Haz clic en "API KEY" en la barra lateral.');
+
+  // Convertir mensajes al formato Gemini
+  var contents = [];
+  for (var i = 0; i < messages.length; i++) {
+    var m = messages[i];
+    contents.push({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    });
   }
-  if (bm && bs >= 3) return KB[bm];
-  if (q.match(/python|py\b/)) return KB.python_basics;
-  if (q.match(/javascript|js\b|node/)) return KB.javascript_basics;
-  if (q.match(/html|css|web|pagina/)) return KB.css_flexbox;
-  if (q.match(/ordenar|sort|bubble|quick|heap/)) return KB.algorithms;
-  if (q.match(/base de dato|database|consulta|query/)) return KB.sql_nosql;
-  if (q.match(/hola|hey|buenas|que tal|saludo|quien eres|que eres/)) return KB.intro;
-  return "## No tengo una respuesta específica\n\nIntenta preguntar sobre: Python, JavaScript, TypeScript, algoritmos, Git, Docker, Linux, React, SQL, APIs REST, seguridad, regex, testing, redes neuronales, patrones de diseño...";
-}
 
-// ── MODEL SELECTOR ──
-function toggleModels() {
-  const dd = document.getElementById('mdrop');
-  const btn = document.getElementById('mbtn');
-  dd.classList.toggle('show');
-  btn.classList.toggle('open');
-}
-
-document.addEventListener('click', function(e) {
-  const msel = document.getElementById('msel');
-  if (msel && !msel.contains(e.target)) {
-    const dd = document.getElementById('mdrop');
-    const btn = document.getElementById('mbtn');
-    if (dd) dd.classList.remove('show');
-    if (btn) btn.classList.remove('open');
-  }
-});
-
-function selectModel(m) {
-  currentModel = m;
-  document.getElementById('mbtnText').textContent = MODELS[m].name;
-  document.querySelectorAll('.mopt').forEach(function(o) {
-    o.classList.toggle('sel', o.dataset.model === m);
+  var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: contents,
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      generationConfig: {
+        temperature: 0.8,
+        maxOutputTokens: 8192
+      }
+    })
   });
-  document.getElementById('mdrop').classList.remove('show');
-  document.getElementById('mbtn').classList.remove('open');
-  showToast('// modelo: ' + MODELS[m].name);
-}
 
-// ── API KEY MODAL ──
-function openKeyModal() {
-  document.getElementById('keyModal').classList.remove('hide');
-  document.getElementById('keyInput').focus();
-}
-
-function closeKeyModal() {
-  document.getElementById('keyModal').classList.add('hide');
-}
-
-function saveKey() {
-  const v = document.getElementById('keyInput').value.trim();
-  if (v) {
-    apiKey = v;
-    localStorage.setItem('nova_key', v);
-    closeKeyModal();
-    showToast('// clave guardada');
-  } else {
-    showToast('// clave vacia', 1);
+  if (!res.ok) {
+    var e = await res.json().catch(function() { return {}; });
+    throw new Error(e.error?.message || 'Error Gemini: HTTP ' + res.status);
   }
+
+  var data = await res.json();
+  var text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini no genero respuesta');
+  return text;
 }
 
-// ── CLAUDE API ──
-var SYSTEM_PROMPT = 'Eres N0VA AI, un asistente de IA altamente capaz. Responde siempre en el mismo idioma que el usuario. Para codigo, usa bloques con el lenguaje especificado. Se preciso, directo y detallado. Usa markdown para estructurar respuestas largas.';
+// ── GROQ (gratis, rapidisimo) ──
+async function callGroq(messages) {
+  var key = getKey('groq');
+  if (!key) throw new Error('API key de Groq no configurada. Haz clic en "API KEY" en la barra lateral.');
 
-async function callClaude(messages) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  var apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+  for (var i = 0; i < messages.length; i++) {
+    apiMessages.push({
+      role: messages[i].role === 'assistant' ? 'assistant' : 'user',
+      content: messages[i].content
+    });
+  }
+
+  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
+      'Authorization': 'Bearer ' + key
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: apiMessages,
+      temperature: 0.8,
+      max_tokens: 4096
+    })
+  });
+
+  if (!res.ok) {
+    var e = await res.json().catch(function() { return {}; });
+    throw new Error(e.error?.message || 'Error Groq: HTTP ' + res.status);
+  }
+
+  var data = await res.json();
+  var text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Groq no genero respuesta');
+  return text;
+}
+
+// ── CLAUDE ──
+async function callClaude(messages) {
+  var key = getKey('claude');
+  if (!key) throw new Error('API key de Claude no configurada. Haz clic en "API KEY" en la barra lateral.');
+
+  var apiMessages = [];
+  for (var i = 0; i < messages.length; i++) {
+    apiMessages.push({
+      role: messages[i].role === 'assistant' ? 'assistant' : 'user',
+      content: messages[i].content
+    });
+  }
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
@@ -449,21 +429,158 @@ async function callClaude(messages) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: messages.map(function(m) {
-        return { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
-      })
+      messages: apiMessages
     })
   });
+
   if (!res.ok) {
     var e = await res.json().catch(function() { return {}; });
-    throw new Error(e.error?.message || 'HTTP ' + res.status);
+    throw new Error(e.error?.message || 'Error Claude: HTTP ' + res.status);
   }
+
   var data = await res.json();
   return data.content?.[0]?.text || '';
 }
 
+// ── ROUTER: llama a la API correcta segun el modelo ──
+async function callAI(messages) {
+  var model = MODELS[currentModel];
+  if (!model || model.type === 'local') return null;
+
+  switch (model.provider) {
+    case 'gemini':  return await callGemini(messages);
+    case 'groq':    return await callGroq(messages);
+    case 'claude':  return await callClaude(messages);
+    default:        return null;
+  }
+}
+
+// ── LOCAL FALLBACK ──
+function findResponse(input) {
+  var q = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  var topics = [
+    { k: ['recursi', 'recursion', 'recursive'], i: 'recursion' },
+    { k: ['python basico', 'aprender python', 'fundamento python'], i: 'python_basics' },
+    { k: ['javascript basico', 'aprender javascript', 'fundamento js', 'es6'], i: 'javascript_basics' },
+    { k: ['algoritmo', 'complejidad', 'big o', 'ordenamiento', 'busqueda binaria', 'bubble sort', 'quick sort'], i: 'algorithms' },
+    { k: ['git', 'github', 'commit', 'branch', 'rama'], i: 'git_basics' },
+    { k: ['docker', 'contenedor', 'dockerfile'], i: 'docker' },
+    { k: ['solid', 'single responsibility', 'liskov'], i: 'solid' },
+    { k: ['sql', 'nosql', 'relacional', 'base de dato', 'postgresql', 'mongodb'], i: 'sql_nosql' },
+    { k: ['seguridad', 'security', 'xss', 'injection', 'owasp'], i: 'security' },
+    { k: ['patron de diseno', 'design pattern', 'singleton', 'factory', 'observer'], i: 'design_patterns' }
+  ];
+
+  var bestMatch = null, bestScore = 0;
+  for (var t = 0; t < topics.length; t++) {
+    var score = 0;
+    for (var k = 0; k < topics[t].k.length; k++) {
+      if (q.indexOf(topics[t].k[k]) !== -1) score += topics[t].k[k].length;
+    }
+    if (score > bestScore) { bestScore = score; bestMatch = topics[t].i; }
+  }
+
+  if (bestMatch && bestScore >= 3) return KB[bestMatch];
+  if (q.match(/python|py\b/)) return KB.python_basics;
+  if (q.match(/javascript|js\b|node/)) return KB.javascript_basics;
+  if (q.match(/hola|hey|buenas|quien eres|que eres/)) return KB.intro;
+  return null; // Sin respuesta local - necesita API
+}
+
+// ═══════════════════════════════════════════
+// UI FUNCTIONS
+// ═══════════════════════════════════════════
+
+function toggleModels() {
+  document.getElementById('mdrop').classList.toggle('show');
+  document.getElementById('mbtn').classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+  var msel = document.getElementById('msel');
+  if (msel && !msel.contains(e.target)) {
+    document.getElementById('mdrop').classList.remove('show');
+    document.getElementById('mbtn').classList.remove('open');
+  }
+});
+
+function selectModel(m) {
+  currentModel = m;
+  localStorage.setItem('nova_model', m);
+  document.getElementById('mbtnText').textContent = MODELS[m].name;
+  document.querySelectorAll('.mopt').forEach(function(o) {
+    o.classList.toggle('sel', o.dataset.model === m);
+  });
+  document.getElementById('mdrop').classList.remove('show');
+  document.getElementById('mbtn').classList.remove('open');
+  showToast('// motor: ' + MODELS[m].name);
+}
+
+// ── API KEY MODAL ──
+function openKeyModal() {
+  document.getElementById('keyModal').classList.remove('hide');
+  // Pre-seleccionar el proveedor del modelo actual
+  var model = MODELS[currentModel];
+  if (model && model.provider && model.provider !== 'local') {
+    document.getElementById('keyProvider').value = model.provider;
+  }
+  updateKeyPlaceholder();
+  var existingKey = getKey(document.getElementById('keyProvider').value);
+  document.getElementById('keyInput').value = existingKey;
+  document.getElementById('keyInput').focus();
+}
+
+function closeKeyModal() {
+  document.getElementById('keyModal').classList.add('hide');
+}
+
+function updateKeyPlaceholder() {
+  var provider = document.getElementById('keyProvider').value;
+  var link = document.getElementById('getKeyLink');
+  var input = document.getElementById('keyInput');
+
+  switch (provider) {
+    case 'gemini':
+      input.placeholder = 'AIzaSy... (clave de Google AI Studio)';
+      link.href = 'https://aistudio.google.com/apikey';
+      link.textContent = 'Obtener API key gratuita de Gemini';
+      break;
+    case 'groq':
+      input.placeholder = 'gsk_... (clave de Groq Console)';
+      link.href = 'https://console.groq.com/keys';
+      link.textContent = 'Obtener API key gratuita de Groq';
+      break;
+    case 'claude':
+      input.placeholder = 'sk-ant-... (clave de Anthropic)';
+      link.href = 'https://console.anthropic.com/';
+      link.textContent = 'Obtener API key de Claude (pago)';
+      break;
+  }
+
+  // Mostrar key existente si la hay
+  input.value = getKey(provider);
+}
+
+function saveKey() {
+  var provider = document.getElementById('keyProvider').value;
+  var key = document.getElementById('keyInput').value.trim();
+  if (key) {
+    setKey(provider, key);
+    closeKeyModal();
+    showToast('// clave ' + provider + ' guardada');
+
+    // Cambiar al modelo correspondiente
+    var modelMap = { gemini: 'gemini', groq: 'groq', claude: 'claude' };
+    if (modelMap[provider]) selectModel(modelMap[provider]);
+  } else {
+    showToast('// clave vacia', 1);
+  }
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
+  // Restaurar modelo seleccionado
+  selectModel(currentModel);
   renderList();
   if (convs.length) loadConv(convs[0].id);
   updateBtn();
@@ -512,15 +629,44 @@ function loadConv(id) {
   if (!c.messages.length) {
     el.innerHTML = buildW();
   } else {
-    c.messages.forEach(function(m) {
-      appendMsg(m.role, m.content, false);
-    });
+    c.messages.forEach(function(m) { appendMsg(m.role, m.content, false); });
   }
   renderList();
 }
 
 function buildW() {
-  return '<div class="wc" id="wscreen"><div class="wl">N0VA</div><div class="ws">inteligencia artificial avanzada</div><div class="wli"></div><div class="wch"><button class="wcp" onclick="useP(this)">Explica la recursividad con ejemplos</button><button class="wcp" onclick="useP(this)">Escribe un servidor HTTP en Python</button><button class="wcp" onclick="useP(this)">Como funciona async/await</button><button class="wcp" onclick="useP(this)">Crea una funcion de merge sort</button><button class="wcp" onclick="useP(this)">Explica los principios SOLID</button><button class="wcp" onclick="useP(this)">Diferencias entre SQL y NoSQL</button><button class="wcp" onclick="useP(this)">Como funciona una red neuronal</button><button class="wcp" onclick="useP(this)">Patrones de diseño mas usados</button><button class="wcp" onclick="useP(this)">Docker desde cero</button><button class="wcp" onclick="useP(this)">Seguridad web imprescindible</button><button class="wcp" onclick="useP(this)">TypeScript vs JavaScript</button><button class="wcp" onclick="useP(this)">Git desde cero</button></div></div>';
+  var hasApiKey = getKey('gemini') || getKey('groq') || getKey('claude');
+  var html = '<div class="wc" id="wscreen">';
+  html += '<div class="wl">N0VA</div>';
+  html += '<div class="ws">inteligencia artificial avanzada</div>';
+  html += '<div class="wli"></div>';
+
+  if (!hasApiKey) {
+    html += '<div class="setupban">';
+    html += '<h3>// CONECTA UN MOTOR DE IA</h3>';
+    html += '<p>Para responder a CUALQUIER pregunta, necesitas una API key gratuita.<br>Obtenla en 30 segundos:</p>';
+    html += '<div class="sbtns">';
+    html += '<button class="sbtn sbtn-p" onclick="openKeyModal()">Configurar API Key</button>';
+    html += '<button class="sbtn sbtn-s" onclick="selectModel(\'local\');showToast(\'modo offline\')">Usar offline</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  html += '<div class="wch">';
+  html += '<button class="wcp" onclick="useP(this)">Hazme un juego en JavaScript</button>';
+  html += '<button class="wcp" onclick="useP(this)">Explica la recursividad con ejemplos</button>';
+  html += '<button class="wcp" onclick="useP(this)">Como funciona async/await</button>';
+  html += '<button class="wcp" onclick="useP(this)">Crea un servidor HTTP en Python</button>';
+  html += '<button class="wcp" onclick="useP(this)">Explica los principios SOLID</button>';
+  html += '<button class="wcp" onclick="useP(this)">Diferencias SQL vs NoSQL</button>';
+  html += '<button class="wcp" onclick="useP(this)">Como funciona una red neuronal</button>';
+  html += '<button class="wcp" onclick="useP(this)">Patrones de diseno mas usados</button>';
+  html += '<button class="wcp" onclick="useP(this)">Escribe una cancion sobre programar</button>';
+  html += '<button class="wcp" onclick="useP(this)">Cuentame un chiste de programadores</button>';
+  html += '<button class="wcp" onclick="useP(this)">Docker desde cero</button>';
+  html += '<button class="wcp" onclick="useP(this)">Git desde cero</button>';
+  html += '</div></div>';
+  return html;
 }
 
 function renderList() {
@@ -533,9 +679,7 @@ function renderList() {
   convs.forEach(function(c) {
     var d = document.createElement('div');
     d.className = 'civ' + (c.id === curId ? ' act' : '');
-    d.onclick = function(e) {
-      if (!e.target.closest('.cdl')) loadConv(c.id);
-    };
+    d.onclick = function(e) { if (!e.target.closest('.cdl')) loadConv(c.id); };
     var p = c.messages.length ? c.messages[c.messages.length - 1].content.slice(0, 38) + '...' : '// vacio';
     d.innerHTML = '<div class="cic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="cmv"><div class="ctv">' + esc(c.title) + '</div><div class="cpv">' + esc(p) + '</div></div><button class="cdl" onclick="delConv(\'' + c.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>';
     l.appendChild(d);
@@ -547,9 +691,8 @@ function delConv(id) {
   save();
   if (curId === id) {
     curId = null;
-    if (convs.length) {
-      loadConv(convs[0].id);
-    } else {
+    if (convs.length) loadConv(convs[0].id);
+    else {
       document.getElementById('msgs').innerHTML = buildW();
       document.getElementById('ttitle').textContent = '// nueva sesion';
     }
@@ -557,35 +700,30 @@ function delConv(id) {
   renderList();
 }
 
-function save() {
-  localStorage.setItem('nova_c3', JSON.stringify(convs));
-}
-
-function getC() {
-  return convs.find(function(c) { return c.id === curId; });
-}
-
-function useP(btn) {
-  document.getElementById('ci').value = btn.textContent;
-  updateBtn();
-  document.getElementById('ci').focus();
-}
+function save() { localStorage.setItem('nova_c3', JSON.stringify(convs)); }
+function getC() { return convs.find(function(c) { return c.id === curId; }); }
+function useP(btn) { document.getElementById('ci').value = btn.textContent; updateBtn(); document.getElementById('ci').focus(); }
 
 // ═══════════════════════════════════════════
-// SEND — FUNCIÓN PRINCIPAL
+// SEND — FUNCION PRINCIPAL
 // ═══════════════════════════════════════════
 async function doSend() {
   var inp = document.getElementById('ci');
   var text = inp.value.trim();
+  if (!text || busy) return;
 
-  if (!text) return;
-  if (busy) return;
+  var model = MODELS[currentModel];
 
-  if (MODELS[currentModel].type === 'api' && !apiKey) {
-    openKeyModal();
-    return;
+  // Si es modelo API, verificar que tenga key
+  if (model.type === 'api') {
+    var provider = model.provider;
+    if (!getKey(provider)) {
+      openKeyModal();
+      return;
+    }
   }
 
+  // Crear conv si hace falta
   if (!curId) newConv();
   var conv = getC();
   if (!conv) return;
@@ -612,21 +750,47 @@ async function doSend() {
   var tid = addTyping();
 
   try {
-    var reply;
-    if (MODELS[currentModel].type === 'api') {
-      reply = await callClaude(conv.messages);
+    var reply = null;
+
+    // Intentar API primero
+    if (model.type === 'api') {
+      try {
+        reply = await callAI(conv.messages);
+      } catch (apiErr) {
+        // Si falla la API, intentar fallback local
+        console.warn('[N0VA] API fallo, intentando fallback local:', apiErr.message);
+        reply = findResponse(text);
+        if (reply) {
+          reply = reply + '\n\n---\n*Nota: El motor de IA fallo (' + esc(apiErr.message) + '). Respondiendo desde conocimiento local. Verifica tu API key.*';
+        } else {
+          throw apiErr; // Re-lanzar si no hay fallback local
+        }
+      }
     } else {
-      await new Promise(function(r) { setTimeout(r, 250 + Math.random() * 600); });
+      // Modo local
       reply = findResponse(text);
     }
+
+    // Si no hay respuesta local, mostrar mensaje útil
+    if (!reply) {
+      reply = '## Modo offline - respuesta limitada\n\nNo tengo una respuesta especifica para "' + esc(text.slice(0, 50)) + '" en mi base de datos local.\n\n**Para responder a CUALQUIER pregunta, conecta un motor de IA:**\n\n1. Haz clic en **API KEY** en la barra lateral\n2. Obten una clave gratuita de [Google Gemini](https://aistudio.google.com/apikey) o [Groq](https://console.groq.com/keys)\n3. Pegala y guarda\n\nCon un motor conectado podre responder a absolutamente cualquier pregunta, crear juegos, escribir canciones, explicar cualquier tema y mucho mas.';
+    }
+
     removeTyping(tid);
     conv.messages.push({ role: 'assistant', content: reply });
     save();
     appendMsg('assistant', reply, true);
     renderList();
+
   } catch (err) {
     removeTyping(tid);
-    appendError(err.message);
+    var errMsg = err.message || 'Error desconocido';
+    appendError(errMsg);
+
+    // Si es error de API key, sugerir configurar
+    if (errMsg.indexOf('no configurada') !== -1 || errMsg.indexOf('API key') !== -1 || errMsg.indexOf('401') !== -1 || errMsg.indexOf('403') !== -1) {
+      appendMsg('assistant', '**Consejo:** Haz clic en "API KEY" en la barra lateral para configurar tu clave gratuita. Solo toma 30 segundos.', true);
+    }
   } finally {
     busy = false;
     updateBtn();
@@ -634,33 +798,25 @@ async function doSend() {
   }
 }
 
-// Reset manual desde consola
-window.resetN0VA = function() {
-  busy = false;
-  updateBtn();
-};
+window.resetN0VA = function() { busy = false; updateBtn(); };
 
 // ── RENDER ──
 function appendMsg(role, content, scroll) {
   var feed = document.getElementById('msgs');
   var row = document.createElement('div');
   row.className = 'mr ' + (role === 'user' ? 'usr' : 'ai');
-
   var now = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
   var av = document.createElement('div');
   av.className = 'mav';
   av.textContent = role === 'user' ? 'USR' : 'AI';
-
   var body = document.createElement('div');
   body.className = 'mbd';
-
   var meta = document.createElement('div');
   meta.className = 'mmeta';
-  meta.textContent = (role === 'user' ? 'tu' : 'n0va · ' + MODELS[currentModel].name) + '  ' + now;
-
+  var modelName = role === 'assistant' ? 'n0va \u00b7 ' + MODELS[currentModel].name : 'tu';
+  meta.textContent = modelName + '  ' + now;
   var bubble = document.createElement('div');
   bubble.className = 'bbl';
-
   if (role === 'user') {
     bubble.textContent = content;
   } else {
@@ -670,13 +826,11 @@ function appendMsg(role, content, scroll) {
       wrapCode(el);
     });
   }
-
   body.appendChild(meta);
   body.appendChild(bubble);
   row.appendChild(av);
   row.appendChild(body);
   feed.appendChild(row);
-
   if (scroll) feed.scrollTop = feed.scrollHeight;
 }
 
@@ -727,7 +881,7 @@ function addTyping() {
   var row = document.createElement('div');
   row.className = 'mr ai';
   row.id = id;
-  row.innerHTML = '<div class="mav">AI</div><div class="mbd"><div class="mmeta">n0va · ' + MODELS[currentModel].name + '  ...</div><div class="bbl typbbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>';
+  row.innerHTML = '<div class="mav">AI</div><div class="mbd"><div class="mmeta">n0va \u00b7 ' + MODELS[currentModel].name + '  ...</div><div class="bbl typbbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>';
   feed.appendChild(row);
   feed.scrollTop = feed.scrollHeight;
   return id;
