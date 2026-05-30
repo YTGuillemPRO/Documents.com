@@ -3,1560 +3,778 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>N0VA AI</title>
+<title>N0VA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
 <style>
-:root{--p:#9333ea;--pb:#a855f7;--pd:#7e22ce;--m:#d946ef;--pk:#f472b6;--c:#22d3ee;--bg:#030014;--bg2:#0a0118;--bg3:#0f0520;--card:rgba(20,8,40,.7);--bh:rgba(147,51,234,.1);--ba:rgba(147,51,234,.15);--bd:rgba(147,51,234,.1);--bm:rgba(147,51,234,.25);--t1:#f5f0ff;--t2:#c4b5fd;--tm:#7e6aa3;--fd:'Orbitron',monospace;--fb:'Rajdhani',sans-serif;--fm:'Share Tech Mono',monospace;--gp:0 0 12px rgba(147,51,234,.6),0 0 30px rgba(147,51,234,.2);--gm:0 0 12px rgba(217,70,239,.5)}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:16px}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(147,51,234,.3);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:var(--pb)}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(147,51,234,.012) 2px,rgba(147,51,234,.012) 4px);pointer-events:none;z-index:9999}
-.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.bl{position:absolute;border-radius:50%;filter:blur(120px);opacity:.15;animation:dr 20s ease-in-out infinite}
-.bl1{width:600px;height:600px;background:var(--p);top:-15%;left:-10%}.bl2{width:500px;height:500px;background:var(--m);bottom:-10%;right:-10%;animation-delay:-7s}.bl3{width:350px;height:350px;background:var(--c);top:40%;left:40%;opacity:.05;animation-delay:-14s}
-@keyframes dr{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.1)}66%{transform:translate(-30px,35px) scale(.9)}}
-.app{display:flex;height:100vh;position:relative;z-index:1}
-.sb{width:270px;background:linear-gradient(180deg,rgba(15,5,32,.98),rgba(5,1,15,.98));border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden;backdrop-filter:blur(15px)}
-.sb::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(180deg,transparent,var(--pb),var(--m),transparent);opacity:.5;animation:sv 6s ease-in-out infinite}
-@keyframes sv{0%,100%{transform:translateY(-100%)}50%{transform:translateY(100%)}}
-.sl{padding:22px 18px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
-.li{width:38px;height:38px;border:1px solid var(--pb);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--gp);flex-shrink:0;background:rgba(147,51,234,.1)}
-.li svg{width:20px;height:20px;fill:var(--pb)}
-.lt{font-family:var(--fd);font-size:18px;font-weight:900;color:var(--pb);text-shadow:var(--gp);letter-spacing:5px}
-.nb{margin:16px 14px;padding:11px 16px;background:linear-gradient(90deg,rgba(147,51,234,.15),rgba(217,70,239,.1));border:1px solid var(--bm);border-radius:10px;color:var(--pb);font-family:var(--fb);font-size:14px;font-weight:600;letter-spacing:1.5px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .25s;text-transform:uppercase}
-.nb:hover{background:linear-gradient(90deg,rgba(147,51,234,.3),rgba(217,70,239,.2));border-color:var(--pb);box-shadow:var(--gp);transform:translateY(-1px)}
-.nb svg{width:16px;height:16px;stroke:var(--pb)}
-.slab{padding:10px 16px 6px;font-size:10px;font-family:var(--fm);color:var(--tm);letter-spacing:2px;text-transform:uppercase}
-.cl{flex:1;overflow-y:auto;padding:6px 10px 10px}
-.ci{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;border:1px solid transparent;margin-bottom:3px;position:relative}
-.ci:hover{background:var(--bh);border-color:var(--bd)}
-.ci.act{background:var(--ba);border-color:var(--bm)}
-.ci.act::before{content:'';position:absolute;left:0;top:15%;height:70%;width:3px;background:linear-gradient(180deg,var(--pb),var(--m));border-radius:3px;box-shadow:var(--gp)}
-.cic{width:28px;height:28px;border-radius:6px;background:rgba(147,51,234,.08);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cic svg{width:13px;height:13px;stroke:var(--pb);opacity:.7}
-.cm{flex:1;min-width:0}
-.ct{font-size:13px;font-weight:500;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ci.act .ct{color:var(--t1)}
-.cpv{font-size:11px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;font-family:var(--fm)}
-.cdel{opacity:0;background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;transition:opacity .15s}
-.cdel svg{width:12px;height:12px;stroke:var(--pk)}
-.ci:hover .cdel{opacity:1}
-.sf{padding:16px;border-top:1px solid var(--bd)}
-.lbadge{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(147,51,234,.05);border:1px solid var(--bd);border-radius:8px;font-family:var(--fm);font-size:10px;color:var(--t2);letter-spacing:1px}
-.ldot{width:6px;height:6px;border-radius:50%;background:var(--pb);box-shadow:0 0 8px var(--pb);animation:pu 2s ease-in-out infinite}
-@keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.mn{flex:1;display:flex;flex-direction:column;background:transparent;overflow:hidden;position:relative}
-.mn::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(147,51,234,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(147,51,234,.02) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
-.tb{display:flex;align-items:center;padding:14px 24px;border-bottom:1px solid var(--bd);background:rgba(5,1,15,.7);backdrop-filter:blur(15px);z-index:10;flex-shrink:0;gap:14px}
-.mbadge{display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--bm);border-radius:6px;background:rgba(147,51,234,.06);font-family:var(--fm);font-size:11px;color:var(--pb);letter-spacing:1px}
-.tt{flex:1;font-size:13px;font-weight:500;color:var(--tm);font-family:var(--fm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ta{display:flex;gap:10px;margin-left:auto}
-.tbtn{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 9px;cursor:pointer;display:flex;align-items:center;transition:all .2s;color:var(--tm)}
-.tbtn:hover{border-color:var(--bm);color:var(--pb);background:rgba(147,51,234,.05);box-shadow:0 0 10px rgba(147,51,234,.1)}
-.tbtn svg{width:14px;height:14px;stroke:currentColor}
-.msgs{flex:1;overflow-y:auto;padding:28px 32px;display:flex;flex-direction:column;gap:24px;position:relative;z-index:1}
-.wc{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px 20px;gap:24px;animation:fi .8s ease}
-.wl{font-family:var(--fd);font-size:52px;font-weight:900;background:linear-gradient(135deg,var(--pb),var(--m),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(147,51,234,.5));letter-spacing:10px;line-height:1;animation:lp 4s ease-in-out infinite}
-@keyframes lp{0%,100%{filter:drop-shadow(0 0 20px rgba(147,51,234,.5))}50%{filter:drop-shadow(0 0 35px rgba(217,70,239,.8))}}
-.ws{font-family:var(--fm);font-size:13px;color:var(--tm);letter-spacing:4px;text-transform:uppercase}
-.wli{width:140px;height:1px;background:linear-gradient(90deg,transparent,var(--pb),var(--m),transparent)}
-.wch{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:620px}
-.wcp{padding:9px 18px;border:1px solid var(--bm);border-radius:22px;font-size:13px;font-family:var(--fb);font-weight:500;color:var(--t2);background:rgba(147,51,234,.04);cursor:pointer;transition:all .25s;letter-spacing:.5px}
-.wcp:hover{border-color:var(--pb);color:var(--t1);background:rgba(147,51,234,.1);box-shadow:0 0 15px rgba(147,51,234,.2);transform:translateY(-2px)}
-@keyframes fi{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
-.mr{display:flex;gap:14px;align-items:flex-start;animation:mi .3s cubic-bezier(.16,1,.3,1)}
-.mr.usr{flex-direction:row-reverse}
-@keyframes mi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.mav{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:1px}
-.mr.ai .mav{background:linear-gradient(135deg,rgba(147,51,234,.2),rgba(217,70,239,.1));border:1px solid rgba(147,51,234,.4);color:var(--pb);box-shadow:var(--gp)}
-.mr.usr .mav{background:linear-gradient(135deg,rgba(244,114,182,.15),rgba(217,70,239,.1));border:1px solid rgba(244,114,182,.3);color:var(--pk);box-shadow:0 0 10px rgba(244,114,182,.3)}
-.mbd{max-width:78%;display:flex;flex-direction:column;gap:5px}
-.mmeta{font-size:10px;font-family:var(--fm);color:var(--tm);letter-spacing:1px}
-.mr.usr .mmeta{text-align:right}
-.bbl{padding:14px 18px;border-radius:14px;font-size:15px;line-height:1.7;font-family:var(--fb);font-weight:400;position:relative;backdrop-filter:blur(8px)}
-.mr.ai .bbl{background:rgba(20,8,40,.75);border:1px solid var(--bd);color:var(--t1);border-top-left-radius:4px}
-.mr.ai .bbl::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--pb),var(--m),transparent);border-radius:14px 14px 0 0;opacity:.5}
-.mr.usr .bbl{background:linear-gradient(135deg,rgba(147,51,234,.15),rgba(217,70,239,.08));border:1px solid rgba(147,51,234,.2);color:var(--t1);border-top-right-radius:4px;box-shadow:inset 0 0 25px rgba(147,51,234,.05)}
-.bbl p{margin:0 0 10px}.bbl p:last-child{margin-bottom:0}
-.bbl strong{color:var(--t1);font-weight:700}
-.bbl em{color:var(--m);font-style:italic}
-.bbl a{color:var(--c);text-decoration:underline}
-.bbl h1,.bbl h2,.bbl h3{font-family:var(--fd);color:var(--pb);margin:14px 0 10px;text-shadow:0 0 10px rgba(147,51,234,.3);letter-spacing:1px}
-.bbl h1{font-size:18px}.bbl h2{font-size:16px}.bbl h3{font-size:14px}
-.bbl ul,.bbl ol{padding-left:22px;margin:8px 0}
-.bbl li{margin:5px 0}.bbl li::marker{color:var(--pb)}
-.bbl hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
-.bbl blockquote{border-left:3px solid var(--m);padding:8px 14px;margin:10px 0;color:var(--t2);font-style:italic;background:rgba(217,70,239,.03);border-radius:0 6px 6px 0}
-.bbl table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px;font-family:var(--fm)}
-.bbl th{background:rgba(147,51,234,.1);color:var(--pb);padding:8px 12px;border:1px solid var(--bd);text-align:left;letter-spacing:1px;text-transform:uppercase;font-size:11px}
-.bbl td{padding:8px 12px;border:1px solid var(--bd);color:var(--t2)}
-.bbl tr:hover td{background:rgba(147,51,234,.03)}
-.cw{margin:12px 0;border-radius:10px;overflow:hidden;border:1px solid rgba(147,51,234,.2);box-shadow:0 0 25px rgba(147,51,234,.05)}
-.chead{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(147,51,234,.08);border-bottom:1px solid rgba(147,51,234,.12)}
-.clng{font-family:var(--fm);font-size:11px;color:var(--pb);letter-spacing:2px;text-transform:uppercase}
-.cpb{background:rgba(147,51,234,.1);border:1px solid var(--bd);border-radius:4px;padding:4px 10px;cursor:pointer;font-family:var(--fm);font-size:10px;color:var(--tm);letter-spacing:1px;transition:all .15s;display:flex;align-items:center;gap:5px}
-.cpb:hover{border-color:var(--pb);color:var(--pb);background:rgba(147,51,234,.15)}
-.cpb.ok{color:var(--c);border-color:var(--c)}
-.cpb svg{width:10px;height:10px;stroke:currentColor}
-.bbl pre{margin:0!important}
-.bbl pre code.hljs{padding:16px 18px!important;font-family:var(--fm)!important;font-size:13px!important;background:rgba(5,1,15,.9)!important;line-height:1.7!important}
-.bbl :not(pre)>code{font-family:var(--fm);font-size:13px;background:rgba(147,51,234,.12);color:var(--m);padding:3px 8px;border-radius:4px;border:1px solid rgba(147,51,234,.2)}
-.typbbl{padding:16px 20px;display:flex;align-items:center;gap:8px}
-.tdot{width:8px;height:8px;border-radius:50%;background:var(--pb);animation:tda 1.4s infinite ease-in-out;box-shadow:0 0 8px var(--pb)}
-.tdot:nth-child(2){animation-delay:.2s;background:var(--m);box-shadow:0 0 8px var(--m)}
-.tdot:nth-child(3){animation-delay:.4s;background:var(--pk);box-shadow:0 0 8px var(--pk)}
-@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-8px);opacity:1}}
-.iz{padding:18px 24px 24px;border-top:1px solid var(--bd);background:linear-gradient(to top,rgba(5,1,15,.95),rgba(5,1,15,.7));backdrop-filter:blur(15px);z-index:10;flex-shrink:0}
-.iw{display:flex;gap:12px;align-items:flex-end;background:rgba(20,8,40,.6);border:1px solid var(--bm);border-radius:14px;padding:12px 16px;transition:border-color .3s,box-shadow .3s;backdrop-filter:blur(10px)}
-.iw:focus-within{border-color:rgba(147,51,234,.6);box-shadow:0 0 0 4px rgba(147,51,234,.08),0 0 20px rgba(147,51,234,.15)}
-#ci{flex:1;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--fb);font-size:16px;font-weight:400;resize:none;max-height:150px;line-height:1.6;padding:2px 0}
-#ci::placeholder{color:var(--tm);font-style:italic}
-.ia{display:flex;align-items:flex-end;gap:8px}
-.ccnt{font-family:var(--fm);font-size:10px;color:var(--tm);align-self:flex-end;padding-bottom:4px;min-width:32px;text-align:right}
-/* Botón enviar - SIEMPRE clickeable, sin cursor bloqueado */
-.sbtn{
-  width:42px;height:42px;background:linear-gradient(135deg,var(--p),var(--m));
-  border:none;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .25s;flex-shrink:0;box-shadow:0 0 15px rgba(147,51,234,.3);
-  position:relative;overflow:hidden;
-}
-.sbtn:hover{box-shadow:0 0 25px rgba(147,51,234,.5);transform:translateY(-2px) scale(1.04)}
-.sbtn:active{transform:scale(.93)}
-.sbtn svg{width:20px;height:20px;stroke:white;fill:none;filter:drop-shadow(0 0 3px rgba(255,255,255,.4))}
-/* Estado inactivo: visualmente atenuado PERO clickeable */
-.sbtn.off{
-  opacity:.35;box-shadow:none;
-  background:linear-gradient(135deg,rgba(147,51,234,.4),rgba(217,70,239,.3));
-}
-.sbtn.off:hover{opacity:.55;box-shadow:0 0 10px rgba(147,51,234,.2);transform:translateY(-1px)}
-.ih{font-family:var(--fm);font-size:10px;color:var(--tm);text-align:center;margin-top:10px;letter-spacing:1.5px;text-transform:uppercase}
-.ih span{color:rgba(147,51,234,.5)}
-#toast{position:fixed;bottom:100px;right:28px;padding:12px 20px;background:rgba(20,8,40,.9);border:1px solid var(--bm);border-radius:8px;font-family:var(--fm);font-size:12px;color:var(--pb);z-index:9998;opacity:0;transform:translateY(12px);transition:all .3s;letter-spacing:1px;pointer-events:none;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(147,51,234,.15)}
-#toast.show{opacity:1;transform:translateY(0)}
-.stg{display:none;background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 8px;cursor:pointer;color:var(--pb)}
-.stg svg{width:16px;height:16px;stroke:currentColor;display:block}
-@media(max-width:768px){.sb{position:fixed;top:0;left:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(.16,1,.3,1);width:280px}.sb.open{transform:translateX(0)}.stg{display:flex}.msgs{padding:20px 16px}.iz{padding:12px 16px 18px}.mbd{max-width:88%}}
-</style>
-</head>
-<body>
-<div class="amb"><div class="bl bl1"></div><div class="bl bl2"></div><div class="bl bl3"></div></div>
-<div class="app">
-<aside class="sb" id="sidebar">
-<div class="sl"><div class="li"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><span class="lt">N0VA</span></div>
-<button class="nb" onclick="newConv()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva sesión</button>
-<div class="slab">// historial</div>
-<div class="cl" id="clist"></div>
-<div class="sf"><div class="lbadge"><div class="ldot"></div>n0va-ai · listo</div></div>
-</aside>
-<main class="mn">
-<div class="tb">
-<button class="stg" onclick="document.getElementById('sidebar').classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-<div class="mbadge"><div class="ldot"></div>n0va-ai</div>
-<div class="tt" id="ttitle">// nueva sesión</div>
-<div class="ta">
-<button class="tbtn" onclick="clearChat()" title="Limpiar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg></button>
-<button class="tbtn" onclick="exportChat()" title="Exportar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-</div>
-</div>
-<div class="msgs" id="msgs">
-<div class="wc" id="wscreen">
-<div class="wl">N0VA</div>
-<div class="ws">inteligencia artificial avanzada</div>
-<div class="wli"></div>
-<div class="wch">
-<button class="wcp" onclick="useP(this)">Explica la recursividad con ejemplos</button>
-<button class="wcp" onclick="useP(this)">Escribe un servidor HTTP en Python</button>
-<button class="wcp" onclick="useP(this)">Cómo funciona async/await</button>
-<button class="wcp" onclick="useP(this)">Crea una función de merge sort</button>
-<button class="wcp" onclick="useP(this)">Explica los principios SOLID</button>
-<button class="wcp" onclick="useP(this)">Diferencias entre SQL y NoSQL</button>
-<button class="wcp" onclick="useP(this)">Cómo funciona una red neuronal</button>
-<button class="wcp" onclick="useP(this)">Escribe un juego de snake en JS</button>
-<button class="wcp" onclick="useP(this)">Patrones de diseño más usados</button>
-<button class="wcp" onclick="useP(this)">Docker desde cero</button>
-<button class="wcp" onclick="useP(this)">Seguridad web imprescindible</button>
-<button class="wcp" onclick="useP(this)">TypeScript vs JavaScript</button>
-</div>
-</div>
-</div>
-<div class="iz">
-<div class="iw">
-<textarea id="ci" placeholder="Escribe tu pregunta..." rows="1"></textarea>
-<div class="ia"><div class="ccnt" id="ccnt">0</div><button class="sbtn off" id="sbtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
-</div>
-<div class="ih"><span>Enter</span> enviar · <span>Shift+Enter</span> nueva línea · <span>Ctrl+K</span> nuevo chat</div>
-</div>
-</main>
-</div>
-<div id="toast"></div>
-<script>
-const KB={
-
-recursion:`## Recursividad
-
-La recursividad es una técnica donde una función se llama a sí misma para resolver un problema dividiéndolo en subproblemas más pequeños.
-
-### Elementos clave
-
-- **Caso base**: condición de parada que evita llamadas infinitas
-- **Caso recursivo**: la función se llama a sí misma con un problema menor
-- **Pila de llamadas**: cada llamada se apila hasta llegar al caso base
-
-### Ejemplo: Factorial
-
-\`\`\`python
-def factorial(n):
-    """Calcula n! de forma recursiva."""
-    if n <= 1:           # caso base
-        return 1
-    return n * factorial(n - 1)  # caso recursivo
-
-print(factorial(5))  # 120
-print(factorial(0))  # 1
-\`\`\`
-
-### Ejemplo: Fibonacci con memoización
-
-\`\`\`python
-from functools import lru_cache
-
-@lru_cache(maxsize=None)
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-
-print(fibonacci(50))  # 12586269025 (instantáneo)
-\`\`\`
-
-### Ejemplo: Torres de Hanoi
-
-\`\`\`python
-def hanoi(n, origen, destino, auxiliar):
-    if n == 1:
-        print(f"Mover disco de {origen} a {destino}")
-        return
-    hanoi(n - 1, origen, auxiliar, destino)
-    print(f"Mover disco de {origen} a {destino}")
-    hanoi(n - 1, auxiliar, destino, origen)
-
-hanoi(3, 'A', 'C', 'B')
-\`\`\`
-
-### Ejemplo: Búsqueda binaria recursiva
-
-\`\`\`python
-def busqueda_binaria(arr, objetivo, izq=0, der=None):
-    if der is None:
-        der = len(arr) - 1
-    if izq > der:
-        return -1
-    medio = (izq + der) // 2
-    if arr[medio] == objetivo:
-        return medio
-    elif arr[medio] < objetivo:
-        return busqueda_binaria(arr, objetivo, medio + 1, der)
-    else:
-        return busqueda_binaria(arr, objetivo, izq, medio - 1)
-
-print(busqueda_binaria([1,3,5,7,9,11], 7))  # 3
-\`\`\`
-
-### Cuidado con la recursividad
-
-- Sin caso base correcto → **Stack Overflow**
-- Fibonacci recursivo simple: O(2^n) → siempre usar memoización
-- Python tiene límite de recursividad (default 1000), ajustable con \`sys.setrecursionlimit()\`
-- Siempre preferir iteración cuando la profundidad puede ser grande`,
-
-http_server:`## Servidor HTTP en Python
-
-### Opción 1: http.server (sin dependencias)
-
-\`\`\`python
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-import json
-
-class APIHandler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == '/':
-            self.send_json({'mensaje': 'Hola Mundo', 'version': '1.0'})
-        elif self.path == '/api/users':
-            self.send_json([{'id': 1, 'nombre': 'Ana'}, {'id': 2, 'nombre': 'Luis'}])
-        else:
-            self.send_error(404)
-    
-    def do_POST(self):
-        if self.path == '/api/users':
-            length = int(self.headers['Content-Length'])
-            data = json.loads(self.rfile.read(length))
-            self.send_json({'creado': data}, 201)
-        else:
-            self.send_error(404)
-    
-    def send_json(self, data, code=200):
-        self.send_response(code)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode())
-
-server = HTTPServer(('localhost', 8000), APIHandler)
-print("Servidor en http://localhost:8000")
-server.serve_forever()
-\`\`\`
-
-### Opción 2: Flask (más potente)
-
-\`\`\`python
-from flask import Flask, jsonify, request
-from functools import wraps
-
-app = Flask(__name__)
-todos = []
-
-def require_api_key(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if request.headers.get('X-API-Key') != 'mi-clave-secreta':
-            return jsonify({'error': 'No autorizado'}), 401
-        return f(*args, **kwargs)
-    return decorated
-
-@app.route('/api/todos', methods=['GET'])
-def get_todos():
-    return jsonify(todos)
-
-@app.route('/api/todos', methods=['POST'])
-@require_api_key
-def add_todo():
-    data = request.json
-    if not data or 'texto' not in data:
-        return jsonify({'error': 'Campo "texto" requerido'}), 400
-    todo = {'id': len(todos) + 1, 'texto': data['texto'], 'hecho': False}
-    todos.append(todo)
-    return jsonify(todo), 201
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-\`\`\`
-
-### Opción 3: FastAPI (moderno y rápido)
-
-\`\`\`python
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
-
-app = FastAPI(title="Mi API", version="1.0")
-
-class ItemCreate(BaseModel):
-    nombre: str
-    precio: float
-    descripcion: Optional[str] = None
-
-items_db = []
-counter = 0
-
-@app.post("/items", status_code=201)
-def crear(item: ItemCreate):
-    global counter
-    counter += 1
-    nuevo = {"id": counter, "creado": str(datetime.now()), **item.dict()}
-    items_db.append(nuevo)
-    return nuevo
-\`\`\`
-
-Ejecuta con: \`uvicorn main:app --reload\``,
-
-async_await:`## Async/Await — Guía Completa
-
-### JavaScript — Promesas
-
-\`\`\`javascript
-const esperar = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-async function obtenerUsuario(id) {
-    try {
-        const response = await fetch(\`/api/users/\${id}\`);
-        if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
-        const user = await response.json();
-        return user;
-    } catch (err) {
-        console.error('Error:', err.message);
-        return null;
-    }
-}
-
-// Ejecutar en paralelo
-async function obtenerVarios(ids) {
-    const promesas = ids.map(id => obtenerUsuario(id));
-    return Promise.all(promesas);
-}
-
-// Promise.allSettled — no falla si uno falla
-async function obtenerConErrores(ids) {
-    const resultados = await Promise.allSettled(
-        ids.map(id => obtenerUsuario(id))
-    );
-    return resultados.map(r => r.status === 'fulfilled' ? r.value : null);
-}
-\`\`\`
-
-### Python — asyncio
-
-\`\`\`python
-import asyncio
-import aiohttp
-
-async def obtener(url, session):
-    async with session.get(url) as resp:
-        return await resp.json()
-
-async def main():
-    urls = ['https://api.example.com/1', 'https://api.example.com/2']
-    async with aiohttp.ClientSession() as session:
-        resultados = await asyncio.gather(
-            *[obtener(url, session) for url in urls],
-            return_exceptions=True
-        )
-        for r in resultados:
-            if isinstance(r, Exception):
-                print(f"Error: {r}")
-            else:
-                print(r)
-
-asyncio.run(main())
-\`\`\`
-
-### Cuándo usar async
-
-- Llamadas HTTP / fetch
-- Lectura/escritura de archivos
-- Consultas a bases de datos
-- WebSockets
-
-### Cuándo NO usar
-
-- Cálculos intensivos en CPU → usar multiprocessing
-- Operaciones puramente síncronas
-- Lógica simple sin I/O`,
-
-merge_sort:`## Merge Sort
-
-Merge Sort es un algoritmo de ordenamiento divide y vencerás con complejidad **O(n log n)** en todos los casos.
-
-### Implementación en Python
-
-\`\`\`python
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
-    mid = len(arr) // 2
-    izquierda = merge_sort(arr[:mid])
-    derecha = merge_sort(arr[mid:])
-    return merge(izquierda, derecha)
-
-def merge(izq, der):
-    resultado = []
-    i = j = 0
-    while i < len(izq) and j < len(der):
-        if izq[i] <= der[j]:
-            resultado.append(izq[i]); i += 1
-        else:
-            resultado.append(der[j]); j += 1
-    resultado.extend(izq[i:])
-    resultado.extend(der[j:])
-    return resultado
-
-datos = [38, 27, 43, 3, 9, 82, 10]
-print(merge_sort(datos))  # [3, 9, 10, 27, 38, 43, 82]
-\`\`\`
-
-### Complejidad
-
-| Caso  | Tiempo    | Espacio |
-|-------|-----------|---------|
-| Mejor | O(n log n)| O(n)    |
-| Medio | O(n log n)| O(n)    |
-| Peor  | O(n log n)| O(n)    |
-
-Es **estable** (mantiene el orden de elementos iguales) y predecible, pero usa memoria adicional O(n).`,
-
-solid:`## Principios SOLID
-
-### S — Single Responsibility
-
-Una clase debe tener una sola razón para cambiar.
-
-\`\`\`python
-# MAL
-class Usuario:
-    def guardar_db(self): ...
-    def enviar_email(self): ...
-
-# BIEN
-class Usuario:
-    def __init__(self, nombre, email):
-        self.nombre = nombre; self.email = email
-
-class UsuarioRepository:
-    def guardar(self, usuario): ...
-
-class EmailService:
-    def enviar(self, destino, mensaje): ...
-\`\`\`
-
-### O — Open/Closed
-
-Abierto para extensión, cerrado para modificación.
-
-\`\`\`python
-from abc import ABC, abstractmethod
-
-class Descuento(ABC):
-    @abstractmethod
-    def calcular(self, precio): pass
-
-class DescuentoNormal(Descuento):
-    def calcular(self, precio): return precio * 0.9
-
-class DescuentoPremium(Descuento):
-    def calcular(self, precio): return precio * 0.8
-\`\`\`
-
-### L — Liskov Substitution
-
-Las subclases deben ser sustituibles por sus clases base.
-
-### I — Interface Segregation
-
-Mejor muchas interfaces específicas que una general.
-
-### D — Dependency Inversion
-
-Depender de abstracciones, no de implementaciones.
-
-\`\`\`python
-class ServicioUsuarios:
-    def __init__(self, notif):  # depende de abstracción
-        self.notif = notif
-    def registrar(self, nombre):
-        self.notif.enviar(f"Bienvenido {nombre}")
-\`\`\``,
-
-sql_nosql:`## SQL vs NoSQL
-
-### SQL (Relacional)
-
-- Estructura fija con tablas, filas y columnas
-- Esquema definido previamente
-- Relaciones entre tablas (JOINs)
-- ACID (Atomicidad, Consistencia, Isolation, Durabilidad)
-
-**Ejemplos**: PostgreSQL, MySQL, SQLite, SQL Server
-
-\`\`\`sql
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL
-);
-
-SELECT u.nombre, COUNT(p.id) as total
-FROM usuarios u
-LEFT JOIN posts p ON u.id = p.usuario_id
-GROUP BY u.nombre
-HAVING COUNT(p.id) > 5;
-\`\`\`
-
-### NoSQL
-
-- Esquema flexible o inexistente
-- Documentos, clave-valor, grafos o columnas anchas
-- Escalado horizontal (más servidores)
-
-**Ejemplos**: MongoDB, Redis, Cassandra, Neo4j
-
-### Cuándo usar cada uno
-
-| Criterio        | SQL              | NoSQL            |
-|-----------------|------------------|------------------|
-| Datos estructurados | Si           | No               |
-| Esquema variable | No            | Si               |
-| Transacciones ACID | Si          | Parcial          |
-| Escalar horizontal | Difícil     | Fácil            |
-
-- **Proyecto nuevo, requisitos claros** → PostgreSQL
-- **Prototipo rápido, datos variables** → MongoDB
-- **Cache/sesiones** → Redis`,
-
-neural_network:`## Redes Neuronales
-
-### Implementación completa en Python
-
-\`\`\`python
-import numpy as np
-
-class RedNeuronal:
-    def __init__(self, capas):
-        self.pesos = []
-        self.bias = []
-        for i in range(len(capas) - 1):
-            w = np.random.randn(capas[i], capas[i+1]) * np.sqrt(2.0 / capas[i])
-            b = np.zeros((1, capas[i+1]))
-            self.pesos.append(w)
-            self.bias.append(b)
-    
-    def relu(self, x):
-        return np.maximum(0, x)
-    
-    def relu_deriv(self, x):
-        return (x > 0).astype(float)
-    
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
-    
-    def forward(self, X):
-        self.z = []
-        self.a = [X]
-        for i, (w, b) in enumerate(zip(self.pesos, self.bias)):
-            z = X @ w + b
-            self.z.append(z)
-            X = self.relu(z) if i < len(self.pesos) - 1 else self.sigmoid(z)
-            self.a.append(X)
-        return X
-    
-    def backward(self, y, lr=0.01):
-        m = y.shape[0]
-        dz = self.a[-1] - y
-        for i in range(len(self.pesos) - 1, -1, -1):
-            dw = (self.a[i].T @ dz) / m
-            db = np.sum(dz, axis=0, keepdims=True) / m
-            if i > 0:
-                dz = (dz @ self.pesos[i].T) * self.relu_deriv(self.z[i-1])
-            self.pesos[i] -= lr * dw
-            self.bias[i] -= lr * db
-    
-    def train(self, X, y, epochs=1000, lr=0.01):
-        for epoch in range(epochs):
-            output = self.forward(X)
-            loss = np.mean((y - output) ** 2)
-            self.backward(y, lr)
-            if epoch % 100 == 0:
-                print(f"Epoch {epoch}, Loss: {loss:.6f}")
-
-# XOR
-X = np.array([[0,0],[0,1],[1,0],[1,1]])
-y = np.array([[0],[1],[1],[0]])
-nn = RedNeuronal([2, 8, 4, 1])
-nn.train(X, y, epochs=2000, lr=0.1)
-print(nn.forward(X).round(3))
-\`\`\`
-
-### Funciones de activación
-
-| Función  | Fórmula                  | Uso               |
-|----------|--------------------------|-------------------|
-| ReLU     | max(0, x)               | Capas ocultas     |
-| Sigmoid  | 1/(1+e^-x)             | Salida binaria    |
-| Softmax  | e^xj / sum(e^xi)       | Clasificación multiclase |`,
-
-snake_game:`## Juego de Snake en JavaScript
-
-\`\`\`html
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-  body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0118;color:#fff;flex-direction:column;font-family:monospace}
-  canvas{border:2px solid #9333ea;border-radius:8px;box-shadow:0 0 20px rgba(147,51,234,.3)}
-  #info{margin-top:15px;font-size:18px;color:#d946ef}
-</style>
-</head>
-<body>
-<canvas id="c" width="400" height="400"></canvas>
-<div id="info">Puntos: 0</div>
-<script>
-const c=document.getElementById('c'),ctx=c.getContext('2d');
-const S=20,C=c.width/S,R=c.height/S;
-let snake=[{x:10,y:10}],dir={x:1,y:0},ndir={x:1,y:0},food=newFood(),pts=0,run=true;
-
-function newFood(){
-  let p;
-  do{p={x:Math.floor(Math.random()*C),y:Math.floor(Math.random()*R)}}
-  while(snake.some(s=>s.x===p.x&&s.y===p.y));
-  return p;
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowUp'&&dir.y!==1)ndir={x:0,y:-1};
-  if(e.key==='ArrowDown'&&dir.y!==-1)ndir={x:0,y:1};
-  if(e.key==='ArrowLeft'&&dir.x!==1)ndir={x:-1,y:0};
-  if(e.key==='ArrowRight'&&dir.x!==-1)ndir={x:1,y:0};
-  if(e.key===' '&&!run)restart();
-});
-
-function restart(){snake=[{x:10,y:10}];dir=ndir={x:1,y:0};food=newFood();pts=0;run=true;}
-
-function update(){
-  if(!run)return;
-  dir=ndir;
-  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
-  if(h.x<0||h.x>=C||h.y<0||h.y>=R||snake.some(s=>s.x===h.x&&s.y===h.y)){run=false;return;}
-  snake.unshift(h);
-  if(h.x===food.x&&h.y===food.y){pts++;food=newFood();}
-  else snake.pop();
-}
-
-function draw(){
-  ctx.fillStyle='#0a0118';ctx.fillRect(0,0,c.width,c.height);
-  ctx.fillStyle='#f472b6';ctx.beginPath();ctx.arc(food.x*S+S/2,food.y*S+S/2,S/2-2,0,Math.PI*2);ctx.fill();
-  snake.forEach((s,i)=>{
-    ctx.fillStyle=i===0?'#c4b5fd':'#9333ea';
-    ctx.beginPath();ctx.roundRect(s.x*S+1,s.y*S+1,S-2,S-2,4);ctx.fill();
-  });
-  if(!run){
-    ctx.fillStyle='rgba(3,0,20,.8)';ctx.fillRect(0,0,c.width,c.height);
-    ctx.fillStyle='#9333ea';ctx.font='bold 28px monospace';ctx.textAlign='center';
-    ctx.fillText('GAME OVER',c.width/2,c.height/2-10);
-    ctx.font='14px monospace';ctx.fillStyle='#7e6aa3';
-    ctx.fillText('Espacio para reiniciar',c.width/2,c.height/2+20);
+  :root {
+    --bg: #030014;
+    --bg2: #0a0118;
+    --bg3: #120225;
+    --bd: #1e1035;
+    --bm: #9333ea;
+    --bl: #c084fc;
+    --pb: #06b6d4;
+    --pg: #22c55e;
+    --pk: #f472b6;
+    --py: #facc15;
+    --tx: #e2e8f0;
+    --t2: #94a3b8;
+    --tm: #475569;
+    --fm: 'JetBrains Mono', monospace;
+    --fs: 'Space Grotesk', sans-serif;
   }
-  document.getElementById('info').textContent='Puntos: '+pts;
-}
-
-let last=0;
-function loop(t){if(t-last>=120){update();draw();last=t;}requestAnimationFrame(loop);}
-requestAnimationFrame(loop);
-</script>
-</body>
-</html>
-\`\`\``,
-
-design_patterns:`## Patrones de Diseño Más Usados
-
-### Singleton — una sola instancia
-
-\`\`\`python
-class Database:
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-\`\`\`
-
-### Factory — crear objetos sin especificar clase
-
-\`\`\`python
-class NotifFactory:
-    _tipos = {'email': EmailNotif, 'sms': SMSNotif}
-    @classmethod
-    def crear(cls, tipo):
-        return cls._tipos[tipo]()
-\`\`\`
-
-### Decorator — agregar comportamiento
-
-\`\`\`python
-import functools, time
-
-def timer(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        inicio = time.perf_counter()
-        resultado = func(*args, **kwargs)
-        print(f"{func.__name__}: {time.perf_counter()-inicio:.4f}s")
-        return resultado
-    return wrapper
-
-@timer
-def calcular():
-    return sum(range(10**6))
-\`\`\`
-
-### Observer — notificar cambios
-
-\`\`\`javascript
-class EventEmitter {
-    constructor() { this.events = {}; }
-    on(event, fn) { (this.events[event] ??= []).push(fn); }
-    emit(event, data) { this.events[event]?.forEach(fn => fn(data)); }
-}
-\`\`\`
-
-### Strategy — intercambiar algoritmos
-
-\`\`\`python
-class Ordenador:
-    def __init__(self, estrategia):
-        self.estrategia = estrategia
-    def ordenar(self, datos):
-        return self.estrategia(datos)
-\`\`\``,
-
-docker:`## Docker — Guía Completa
-
-### Comandos esenciales
-
-\`\`\`bash
-docker pull nginx:latest
-docker run -d -p 8080:80 --name web nginx
-docker ps
-docker stop web
-docker logs -f web
-docker exec -it web bash
-docker build -t mi-app .
-\`\`\`
-
-### Dockerfile optimizado
-
-\`\`\`dockerfile
-FROM python:3.11-slim AS builder
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-FROM python:3.11-slim
-WORKDIR /app
-COPY --from=builder /root/.local /root/.local
-COPY . .
-ENV PATH=/root/.local/bin:$PATH
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-\`\`\`
-
-### Docker Compose
-
-\`\`\`yaml
-version: '3.8'
-services:
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-  db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: miapp
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-volumes:
-  pgdata:
-\`\`\`
-
-\`\`\`bash
-docker compose up -d
-docker compose down
-docker compose logs -f web
-\`\`\``,
-
-security:`## Seguridad Web — Guía Completa
-
-### XSS — Prevención
-
-\`\`\`javascript
-// MAL
-element.innerHTML = userInput;
-
-// BIEN
-element.textContent = userInput;
-
-// BIEN: sanitizar
-import DOMPurify from 'dompurify';
-element.innerHTML = DOMPurify.sanitize(userInput);
-\`\`\`
-
-### SQL Injection — Prevención
-
-\`\`\`python
-# MAL
-cursor.execute(f"SELECT * FROM users WHERE name = '{nombre}'")
-
-# BIEN
-cursor.execute("SELECT * FROM users WHERE name = %s", (nombre,))
-\`\`\`
-
-### Contraseñas
-
-\`\`\`python
-import bcrypt
-hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))
-bcrypt.checkpw(intento.encode('utf-8'), hash)
-\`\`\`
-
-### Headers de seguridad
-
-\`\`\`
-Content-Security-Policy: default-src 'self'
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-\`\`\`
-
-### JWT
-
-\`\`\`python
-import jwt
-from datetime import datetime, timedelta
-
-SECRET = "tu-clave-super-secreta"
-
-def crear_token(user_id):
-    payload = {'sub': user_id, 'exp': datetime.utcnow() + timedelta(hours=24)}
-    return jwt.encode(payload, SECRET, algorithm='HS256')
-\`\`\``,
-
-typescript:`## TypeScript vs JavaScript
-
-### Diferencias clave
-
-| Característica | JavaScript | TypeScript |
-|---------------|------------|------------|
-| Tipado        | Dinámico   | Estático   |
-| Errores       | En runtime | En compile time |
-| Interfaces    | No         | Si         |
-| Generics      | No         | Si         |
-
-### Tipos básicos
-
-\`\`\`typescript
-let nombre: string = "Ana";
-let edad: number = 25;
-let lista: number[] = [1, 2, 3];
-let tupla: [string, number] = ["hola", 42];
-\`\`\`
-
-### Interfaces y Generics
-
-\`\`\`typescript
-interface Usuario {
-    id: number;
-    nombre: string;
-    edad?: number;
-}
-
-function primero<T>(arr: T[]): T | undefined {
-    return arr[0];
-}
-
-// Utility Types
-Partial<Usuario>
-Pick<Usuario, 'id' | 'nombre'>
-Omit<Usuario, 'email'>
-Record<string, number>
-\`\`\``,
-
-python_basics:`## Python — Guía Completa
-
-### Variables y tipos
-
-\`\`\`python
-nombre = "Ana"           # str
-edad = 25                # int
-precio = 19.99           # float
-lista = [1, 2, 3]       # list
-dicc = {"k": "v"}       # dict
-\`\`\`
-
-### Estructuras de control
-
-\`\`\`python
-if edad >= 18:
-    print("Mayor de edad")
-elif edad >= 13:
-    print("Adolescente")
-else:
-    print("Niño")
-
-# Comprensión de listas
-cuadrados = [x**2 for x in range(10) if x % 2 == 0]
-
-# Walrus operator (Python 3.8+)
-if (n := len(datos)) > 10:
-    print(f"Demasiados: {n}")
-\`\`\`
-
-### Funciones
-
-\`\`\`python
-def saludar(nombre, saludo="Hola"):
-    return f"{saludo}, {nombre}!"
-
-# Decoradores
-import functools
-
-def timer(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        import time
-        inicio = time.perf_counter()
-        resultado = func(*args, **kwargs)
-        print(f"{func.__name__}: {time.perf_counter()-inicio:.4f}s")
-        return resultado
-    return wrapper
-
-# Generadores
-def fibonacci_infinito():
-    a, b = 0, 1
-    while True:
-        yield a
-        a, b = b, a + b
-\`\`\`
-
-### Clases
-
-\`\`\`python
-from dataclasses import dataclass
-
-@dataclass
-class Usuario:
-    nombre: str
-    email: str
-    activo: bool = True
-
-class Admin(Usuario):
-    def puede(self, accion):
-        return accion in self.permisos
-\`\`\``,
-
-javascript_basics:`## JavaScript — Guía Completa
-
-### Variables y destructuring
-
-\`\`\`javascript
-const nombre = "Ana";
-let edad = 25;
-
-const { nombre: n, ...resto } = persona;
-const [primero, , tercero] = [1, 2, 3];
-
-// Optional chaining
-const calle = user?.address?.street ?? 'Sin dirección';
-\`\`\`
-
-### Async/Await
-
-\`\`\`javascript
-async function obtenerDatos(url) {
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
-        return await res.json();
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
-}
-
-// En paralelo
-const [r1, r2] = await Promise.all([
-    fetch('/api/a'),
-    fetch('/api/b')
-]);
-\`\`\`
-
-### Iteradores y generadores
-
-\`\`\`javascript
-function* rango(inicio, fin, paso = 1) {
-    for (let i = inicio; i < fin; i += paso) yield i;
-}
-const gen = rango(0, 10, 2);
-console.log([...gen]); // [0, 2, 4, 6, 8]
-\`\`\``,
-
-css_flexbox:`## CSS Flexbox y Grid
-
-### Flexbox
-
-\`\`\`css
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-}
-.item { flex: 1; }
-\`\`\`
-
-### CSS Grid
-
-\`\`\`css
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.layout {
-    display: grid;
-    grid-template-areas:
-        "header header"
-        "sidebar content"
-        "footer footer";
-    grid-template-columns: 250px 1fr;
-}
-\`\`\`
-
-### Centrar perfecto
-
-\`\`\`css
-.centro { display:flex; justify-content:center; align-items:center; }
-\`\`\``,
-
-git_basics:`## Git — Guía Completa
-
-### Flujo básico
-
-\`\`\`bash
-git init
-git add .
-git commit -m "feat: añadir login"
-git status
-git log --oneline --graph --all
-\`\`\`
-
-### Ramas
-
-\`\`\`bash
-git checkout -b feature
-git merge feature
-git branch -d feature
-\`\`\`
-
-### Deshacer
-
-\`\`\`bash
-git restore archivo          # descartar cambios
-git reset --soft HEAD~1      # deshacer commit (mantiene staged)
-git revert HASH              # crear commit que deshace otro
-git reflog                   # recuperar commits perdidos
-\`\`\`
-
-### Stash
-
-\`\`\`bash
-git stash
-git stash pop
-\`\`\`
-
-### Conventional Commits
-
-\`\`\`
-feat: nueva funcionalidad
-fix: corrección de bug
-docs: documentación
-refactor: refactorización
-\`\`\``,
-
-react_basics:`## React — Guía Completa
-
-### useState
-
-\`\`\`jsx
-import { useState } from 'react';
-
-function Contador() {
-    const [count, setCount] = useState(0);
-    return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
-}
-\`\`\`
-
-### useEffect
-
-\`\`\`jsx
-import { useState, useEffect } from 'react';
-
-function Perfil({ userId }) {
-    const [user, setUser] = useState(null);
-    useEffect(() => {
-        let cancelado = false;
-        fetch(\`/api/users/\${userId}\`)
-            .then(r => r.json())
-            .then(data => { if (!cancelado) setUser(data); });
-        return () => { cancelado = true; };
-    }, [userId]);
-    if (!user) return <p>Cargando...</p>;
-    return <h1>{user.nombre}</h1>;
-}
-\`\`\`
-
-### Custom Hooks
-
-\`\`\`jsx
-function useDebounce(valor, delay = 300) {
-    const [debounced, setDebounced] = useState(valor);
-    useEffect(() => {
-        const t = setTimeout(() => setDebounced(valor), delay);
-        return () => clearTimeout(t);
-    }, [valor, delay]);
-    return debounced;
-}
-\`\`\``,
-
-algorithms:`## Algoritmos — Complejidades
-
-### Ordenamiento
-
-| Algoritmo    | Mejor      | Medio      | Peor       | Espacio  |
-|-------------|------------|------------|------------|----------|
-| Bubble Sort | O(n)       | O(n²)     | O(n²)     | O(1)     |
-| Merge Sort  | O(n log n) | O(n log n) | O(n log n) | O(n)   |
-| Quick Sort  | O(n log n) | O(n log n) | O(n²)     | O(log n) |
-| Heap Sort   | O(n log n) | O(n log n) | O(n log n) | O(1)   |
-
-### Búsqueda
-
-| Algoritmo    | Tiempo    | Requisito       |
-|-------------|-----------|-----------------|
-| Lineal       | O(n)      | Ninguno         |
-| Binaria      | O(log n)  | Array ordenado  |
-| Hash Table   | O(1)*     | Tabla hash      |
-
-### Big O
-
-O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2^n) < O(n!)`,
-
-linux:`## Linux — Comandos Esenciales
-
-\`\`\`bash
-pwd              # dónde estoy
-ls -la           # listar archivos
-cd /ruta         # cambiar directorio
-mkdir -p a/b/c   # crear directorios
-touch file.txt   # crear archivo
-cp -r src/ dst/  # copiar
-mv old new       # mover/renombrar
-rm -rf dir/      # eliminar
-cat archivo       # ver contenido
-tail -f log.txt   # seguir archivo
-find . -name "*.py"
-grep -r "texto" .
-chmod +x script.sh
-ps aux
-kill -9 PID
-\`\`\``,
-
-rest_api:`## APIs REST
-
-### Métodos HTTP
-
-| Método  | Acción            | Seguro | Idempotente |
-|---------|-------------------|--------|-------------|
-| GET     | Listar/Obtener    | Si     | Si          |
-| POST    | Crear             | No     | No          |
-| PUT     | Reemplazar        | No     | Si          |
-| PATCH   | Actualizar parcial| No     | Si          |
-| DELETE  | Eliminar          | No     | Si          |
-
-### Códigos de estado
-
-- **200** OK — éxito
-- **201** Created
-- **400** Bad Request
-- **401** Unauthorized
-- **404** Not Found
-- **500** Internal Server Error
-
-### Ejemplo con Express
-
-\`\`\`javascript
-const express = require('express');
-const app = express();
-app.use(express.json());
-
-app.get('/api/usuarios', (req, res) => res.json(usuarios));
-app.post('/api/usuarios', (req, res) => {
-    const user = { id: Date.now(), ...req.body };
-    usuarios.push(user);
-    res.status(201).json(user);
-});
-app.listen(3000);
-\`\`\``,
-
-regex:`## Expresiones Regulares
-
-### Sintaxis
-
-| Patrón  | Significado          |
-|---------|----------------------|
-| \\d      | Dígito [0-9]        |
-| \\w      | Palabra [a-zA-Z0-9_]|
-| ^ $     | Inicio/Fin          |
-| * + ?   | 0+, 1+, 0-1         |
-| {n,m}   | Entre n y m         |
-| [abc]   | Un carácter de a,b,c|
-| (a|b)   | a o b               |
-
-### Patrones útiles
-
-\`\`\`python
-import re
-re.match(r'^[\\w.-]+@[\\w.-]+\\.\\w{2,}$', email)  # Email
-re.match(r'^\\d+$', texto)                          # Solo números
-re.findall(r'#(\\w+)', texto)                        # Hashtags
-\`\`\``,
-
-testing:`## Testing — Guía Completa
-
-### Python — pytest
-
-\`\`\`python
-import pytest
-
-def test_suma():
-    assert suma(2, 3) == 5
-
-@pytest.mark.parametrize("a,b,esperado", [
-    (1, 2, 3), (0, 0, 0)
-])
-def test_suma_casos(a, b, esperado):
-    assert suma(a, b) == esperado
-
-# Fixtures
-@pytest.fixture
-def usuario():
-    return {"nombre": "Ana"}
-
-# Mock
-from unittest.mock import patch
-with patch('requests.get') as mock:
-    mock.return_value.json.return_value = {"id": 1}
-\`\`\`
-
-### JavaScript — Jest
-
-\`\`\`javascript
-describe('suma', () => {
-    test('suma dos números', () => {
-        expect(suma(2, 3)).toBe(5);
-    });
-});
-\`\`\``,
-
-intro:`Hola! Soy **N0VA AI**, tu asistente de inteligencia artificial.
-
-Puedo ayudarte con:
-
-- **Lenguajes**: Python, JavaScript, TypeScript, SQL, y más
-- **Conceptos**: algoritmos, estructuras de datos, patrones de diseño, SOLID
-- **Herramientas**: Git, Docker, Linux, APIs REST, regex
-- **Web**: HTML, CSS, React, frameworks
-- **Seguridad**: buenas prácticas, OWASP, testing
-- **IA**: redes neuronales, conceptos de ML
-
-Escribe tu pregunta y te responderé con código, ejemplos y explicaciones detalladas.`
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--tx); font-family:var(--fs); height:100vh; overflow:hidden; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--bd); border-radius:9px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--bm); }
+
+  .app { display:flex; height:100vh; }
+
+  /* SIDEBAR */
+  .sb { width:260px; background:var(--bg2); border-right:1px solid var(--bd); display:flex; flex-direction:column; flex-shrink:0; }
+  .sbh { padding:16px; border-bottom:1px solid var(--bd); }
+  .logo { font-family:var(--fm); font-size:20px; font-weight:700; color:var(--bm); letter-spacing:3px; }
+  .logo span { color:var(--pb); }
+  .sbsub { font-size:10px; color:var(--tm); font-family:var(--fm); margin-top:2px; letter-spacing:1px; }
+  .nbtn { width:100%; margin-top:12px; padding:10px; background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; border:none; border-radius:8px; font-family:var(--fm); font-size:12px; cursor:pointer; transition:.2s; letter-spacing:1px; }
+  .nbtn:hover { filter:brightness(1.2); transform:translateY(-1px); }
+  .sbc { flex:1; overflow-y:auto; padding:8px; }
+  .civ { display:flex; align-items:center; padding:10px 12px; border-radius:8px; cursor:pointer; transition:.15s; gap:10px; margin-bottom:2px; }
+  .civ:hover { background:var(--bg3); }
+  .civ.act { background:var(--bg3); border:1px solid var(--bd); }
+  .cic svg { width:16px; height:16px; stroke:var(--tm); flex-shrink:0; }
+  .civ.act .cic svg { stroke:var(--bl); }
+  .cmv { flex:1; min-width:0; }
+  .ctv { font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cpv { font-size:10px; color:var(--tm); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+  .cdl { opacity:0; background:none; border:none; cursor:pointer; padding:4px; transition:.15s; }
+  .civ:hover .cdl { opacity:.6; }
+  .cdl:hover { opacity:1!important; }
+  .cdl svg { width:14px; height:14px; stroke:var(--pk); }
+  .sbf { padding:12px; border-top:1px solid var(--bd); display:flex; gap:6px; flex-wrap:wrap; }
+  .sbf button { flex:1; min-width:70px; padding:7px; background:var(--bg3); border:1px solid var(--bd); color:var(--t2); border-radius:6px; font-family:var(--fm); font-size:10px; cursor:pointer; transition:.15s; }
+  .sbf button:hover { border-color:var(--bm); color:var(--bl); }
+
+  /* MAIN */
+  .mn { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  /* TOPBAR */
+  .tb { height:52px; background:var(--bg2); border-bottom:1px solid var(--bd); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; }
+  .ttitle { font-family:var(--fm); font-size:12px; color:var(--t2); letter-spacing:1px; }
+  .tright { display:flex; align-items:center; gap:12px; }
+
+  /* MODEL SELECTOR */
+  .msel { position:relative; }
+  .mbtn { display:flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--tx); font-family:var(--fm); font-size:11px; cursor:pointer; transition:.2s; }
+  .mbtn:hover,.mbtn.open { border-color:var(--bm); }
+  .mbtn .dot { width:7px; height:7px; border-radius:50%; background:var(--pg); }
+  .mbtn .arrow { font-size:9px; color:var(--tm); transition:.2s; }
+  .mbtn.open .arrow { transform:rotate(180deg); }
+  .mdrop { position:absolute; top:calc(100% + 6px); right:0; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; padding:6px; min-width:200px; z-index:99; display:none; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .mdrop.show { display:block; }
+  .mopt { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:12px; transition:.12s; }
+  .mopt:hover { background:var(--bg3); }
+  .mopt.sel { background:var(--bg3); color:var(--bl); }
+  .mopt .mdot { width:8px; height:8px; border-radius:50%; }
+  .mopt .mtag { margin-left:auto; font-family:var(--fm); font-size:9px; padding:2px 6px; border-radius:4px; background:var(--bg); color:var(--tm); }
+
+  /* CHAT AREA */
+  .ca { flex:1; overflow-y:auto; padding:20px; }
+  .mr { display:flex; gap:14px; margin-bottom:24px; animation:fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .mav { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:var(--fm); font-size:10px; font-weight:700; flex-shrink:0; }
+  .usr .mav { background:linear-gradient(135deg,#06b6d4,#0891b2); color:#fff; }
+  .ai .mav { background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; }
+  .mbd { flex:1; min-width:0; }
+  .mmeta { font-family:var(--fm); font-size:10px; color:var(--tm); margin-bottom:6px; letter-spacing:.5px; }
+  .bbl { padding:14px 18px; border-radius:14px; font-size:14px; line-height:1.7; }
+  .usr .bbl { background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(6,182,212,.05)); border:1px solid rgba(6,182,212,.15); }
+  .ai .bbl { background:var(--bg3); border:1px solid var(--bd); }
+  .ai .bbl h2 { font-size:16px; color:var(--bl); margin:16px 0 8px; border-bottom:1px solid var(--bd); padding-bottom:6px; }
+  .ai .bbl h3 { font-size:14px; color:var(--pb); margin:14px 0 6px; }
+  .ai .bbl p { margin:6px 0; }
+  .ai .bbl ul,.ai .bbl ol { padding-left:20px; margin:6px 0; }
+  .ai .bbl li { margin:3px 0; }
+  .ai .bbl strong { color:var(--py); }
+  .ai .bbl code { font-family:var(--fm); font-size:12px; background:rgba(147,51,234,.12); padding:2px 6px; border-radius:4px; color:var(--pk); }
+  .ai .bbl table { width:100%; border-collapse:collapse; margin:10px 0; font-size:12px; }
+  .ai .bbl th { background:var(--bg2); padding:8px; text-align:left; border:1px solid var(--bd); color:var(--bl); font-family:var(--fm); }
+  .ai .bbl td { padding:8px; border:1px solid var(--bd); }
+  .ai .bbl a { color:var(--pb); text-decoration:underline; }
+  .ai .bbl hr { border:none; border-top:1px solid var(--bd); margin:16px 0; }
+  .errbbl { padding:14px 18px; border-radius:14px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2); color:#fca5a5; font-family:var(--fm); font-size:12px; }
+
+  /* CODE BLOCKS */
+  .cw { margin:10px 0; border-radius:10px; overflow:hidden; border:1px solid var(--bd); }
+  .chead { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--bg2); }
+  .clng { font-family:var(--fm); font-size:10px; color:var(--tm); text-transform:uppercase; letter-spacing:1px; }
+  .cpb { display:flex; align-items:center; gap:5px; background:none; border:1px solid var(--bd); color:var(--t2); padding:4px 10px; border-radius:5px; font-family:var(--fm); font-size:10px; cursor:pointer; transition:.15s; }
+  .cpb:hover { border-color:var(--bm); color:var(--bl); }
+  .cpb.ok { border-color:var(--pg); color:var(--pg); }
+  .cpb svg { width:12px; height:12px; stroke:currentColor; }
+  .cw pre { margin:0!important; padding:14px!important; background:var(--bg)!important; overflow-x:auto; }
+  .cw code { font-family:var(--fm)!important; font-size:12px!important; line-height:1.6!important; }
+
+  /* TYPING */
+  .typbbl { display:flex; align-items:center; gap:5px; padding:18px 22px; }
+  .tdot { width:7px; height:7px; border-radius:50%; background:var(--bl); animation:tbounce 1.4s infinite; }
+  .tdot:nth-child(2) { animation-delay:.2s; }
+  .tdot:nth-child(3) { animation-delay:.4s; }
+  @keyframes tbounce { 0%,60%,100%{transform:translateY(0);opacity:.3} 30%{transform:translateY(-7px);opacity:1} }
+
+  /* WELCOME */
+  .wc { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; text-align:center; animation:fadeIn .6s ease; }
+  .wl { font-family:var(--fm); font-size:52px; font-weight:700; letter-spacing:8px; background:linear-gradient(135deg,var(--bm),var(--pb)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .ws { font-family:var(--fm); font-size:11px; color:var(--tm); letter-spacing:4px; margin-top:4px; text-transform:uppercase; }
+  .wli { width:50px; height:2px; background:linear-gradient(90deg,transparent,var(--bm),transparent); margin:30px 0; }
+  .wch { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:500px; width:100%; }
+  .wcp { padding:12px 16px; background:var(--bg3); border:1px solid var(--bd); border-radius:10px; color:var(--t2); font-size:12px; cursor:pointer; transition:.2s; text-align:left; font-family:var(--fs); }
+  .wcp:hover { border-color:var(--bm); color:var(--tx); transform:translateY(-2px); background:rgba(147,51,234,.06); }
+
+  /* INPUT */
+  .ib { padding:16px 20px; border-top:1px solid var(--bd); background:var(--bg2); }
+  .iw { display:flex; align-items:flex-end; gap:10px; background:var(--bg3); border:1px solid var(--bd); border-radius:14px; padding:10px 14px; transition:.2s; }
+  .iw:focus-within { border-color:var(--bm); box-shadow:0 0 0 3px rgba(147,51,234,.1); }
+  #ci { flex:1; background:none; border:none; color:var(--tx); font-family:var(--fs); font-size:14px; resize:none; outline:none; max-height:150px; line-height:1.5; }
+  #ci::placeholder { color:var(--tm); }
+  .ia { display:flex; align-items:center; gap:8px; }
+  #ccnt { font-family:var(--fm); font-size:9px; color:var(--tm); }
+  #sbtn { width:36px; height:36px; border-radius:10px; border:none; background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+  #sbtn:hover { filter:brightness(1.2); transform:scale(1.05); }
+  #sbtn.dim { opacity:.4; pointer-events:none; }
+  #sbtn svg { width:18px; height:18px; }
+  .ih { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+  .ihint { font-family:var(--fm); font-size:9px; color:var(--tm); }
+
+  /* MODAL */
+  .mo { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:999; }
+  .mo.hide { display:none; }
+  .md { background:var(--bg2); border:1px solid var(--bd); border-radius:16px; padding:28px; width:380px; }
+  .md h3 { font-family:var(--fm); font-size:14px; color:var(--bl); margin-bottom:16px; }
+  .md input { width:100%; padding:10px 14px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--tx); font-family:var(--fm); font-size:12px; outline:none; }
+  .md input:focus { border-color:var(--bm); }
+  .mda { display:flex; gap:8px; margin-top:16px; }
+  .mda button { flex:1; padding:9px; border-radius:8px; font-family:var(--fm); font-size:11px; cursor:pointer; border:1px solid var(--bd); transition:.15s; }
+  .mda .mp { background:linear-gradient(135deg,var(--bm),#7c3aed); color:#fff; border-color:transparent; }
+  .mda .mp:hover { filter:brightness(1.2); }
+  .mda .ms { background:var(--bg3); color:var(--t2); }
+  .mda .ms:hover { border-color:var(--bd); }
+
+  /* TOAST */
+  #toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg2); border:1px solid var(--bm); padding:8px 20px; border-radius:8px; font-family:var(--fm); font-size:11px; color:var(--pb); opacity:0; transition:.3s; z-index:999; pointer-events:none; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* MODEL TAG */
+  #modelTag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:8px; font-family:var(--fm); letter-spacing:1px; text-transform:uppercase; margin-left:4px; }
+
+  /* RESPONSIVE */
+  @media(max-width:768px) {
+    .sb { display:none; }
+    .wch { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sbh">
+      <div class="logo">N0VA <span>AI</span></div>
+      <div class="sbsub">// advanced intelligence</div>
+      <button class="nbtn" onclick="newConv()">+ NUEVO CHAT</button>
+    </div>
+    <div class="sbc" id="clist"></div>
+    <div class="sbf">
+      <button onclick="clearChat()">LIMPIAR</button>
+      <button onclick="exportChat()">EXPORTAR</button>
+      <button onclick="openKeyModal()">API KEY</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="mn">
+    <div class="tb">
+      <div class="ttitle" id="ttitle">// nueva sesion</div>
+      <div class="tright">
+        <div class="msel" id="msel">
+          <button class="mbtn" id="mbtn" onclick="toggleModels()">
+            <span class="dot"></span>
+            <span id="mbtnText">N0VA Local</span>
+            <span class="arrow">▼</span>
+          </button>
+          <div class="mdrop" id="mdrop">
+            <div class="mopt sel" data-model="local" onclick="selectModel('local')">
+              <span class="mdot" style="background:var(--pg)"></span>
+              N0VA Local
+              <span class="mtag">local</span>
+            </div>
+            <div class="mopt" data-model="code" onclick="selectModel('code')">
+              <span class="mdot" style="background:var(--pb)"></span>
+              N0VA Code
+              <span class="mtag">local</span>
+            </div>
+            <div class="mopt" data-model="claude" onclick="selectModel('claude')">
+              <span class="mdot" style="background:var(--pk)"></span>
+              Claude Sonnet 4
+              <span class="mtag">api</span>
+            </div>
+            <div class="mopt" data-model="creative" onclick="selectModel('creative')">
+              <span class="mdot" style="background:var(--py)"></span>
+              N0VA Creative
+              <span class="mtag">local</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca" id="msgs"></div>
+
+    <div class="ib">
+      <div class="iw">
+        <textarea id="ci" rows="1" placeholder="Escribe tu mensaje..." oninput="updateBtn()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doSend();}"></textarea>
+        <div class="ia">
+          <span id="ccnt">0</span>
+          <button id="sbtn" class="dim" onclick="doSend()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="ih">
+        <span class="ihint">Enter para enviar · Shift+Enter salto de linea · Ctrl+K nuevo chat</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- API KEY MODAL -->
+<div class="mo hide" id="keyModal">
+  <div class="md">
+    <h3>// API KEY</h3>
+    <input type="password" id="keyInput" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')saveKey();">
+    <div class="mda">
+      <button class="ms" onclick="closeKeyModal()">CANCELAR</button>
+      <button class="mp" onclick="saveKey()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// N0VA AI — Script Completo Corregido
+// ═══════════════════════════════════════════
+
+// ── KNOWLEDGE BASE ──
+const KB = {
+  recursion: "## Recursividad\n\nLa recursividad es una técnica donde una función se llama a sí misma para resolver un problema dividiéndolo en subproblemas más pequeños.\n\n### Elementos clave\n- **Caso base**: condición de parada que evita llamadas infinitas\n- **Caso recursivo**: la función se llama a sí misma con un problema menor\n- **Pila de llamadas**: cada llamada se apila hasta llegar al caso base\n\n### Factorial\n\n```python\ndef factorial(n):\n    \"\"\"Calcula n! de forma recursiva.\"\"\"\n    if n <= 1:           # caso base\n        return 1\n    return n * factorial(n - 1)  # caso recursivo\n\nprint(factorial(5))  # 120\nprint(factorial(0))  # 1\n```\n\n### Fibonacci con memoización\n\n```python\nfrom functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\nprint(fibonacci(50))  # 12586269025 (instantáneo)\n```\n\n### Torres de Hanoi\n\n```python\ndef hanoi(n, origen, destino, auxiliar):\n    if n == 1:\n        print(f\"Mover disco de {origen} a {destino}\")\n        return\n    hanoi(n - 1, origen, auxiliar, destino)\n    print(f\"Mover disco de {origen} a {destino}\")\n    hanoi(n - 1, auxiliar, destino, origen)\n\nhanoi(3, 'A', 'C', 'B')\n```\n\n### Búsqueda binaria recursiva\n\n```python\ndef busqueda_binaria(arr, objetivo, izq=0, der=None):\n    if der is None:\n        der = len(arr) - 1\n    if izq > der:\n        return -1\n    medio = (izq + der) // 2\n    if arr[medio] == objetivo:\n        return medio\n    elif arr[medio] < objetivo:\n        return busqueda_binaria(arr, objetivo, medio + 1, der)\n    else:\n        return busqueda_binaria(arr, objetivo, izq, medio - 1)\n\nprint(busqueda_binaria([1,3,5,7,9,11], 7))  # 3\n```\n\n### Permutaciones\n\n```python\ndef permutaciones(arr):\n    if len(arr) <= 1:\n        return [arr]\n    resultado = []\n    for i, elem in enumerate(arr):\n        resto = arr[:i] + arr[i+1:]\n        for p in permutaciones(resto):\n            resultado.append([elem] + p)\n    return resultado\n\nprint(permutaciones([1, 2, 3]))\n```\n\n### Cuidado con la recursividad\n\n- Sin caso base correcto → **Stack Overflow**\n- Fibonacci recursivo simple: O(2^n) → siempre usar memoización\n- Python tiene límite de recursividad (default 1000), ajustable con `sys.setrecursionlimit()`\n- Siempre preferir iteración cuando la profundidad puede ser grande\n- La recursividad de cola (tail recursion) puede optimizarse en algunos lenguajes, pero **no en Python**",
+
+  http_server: "## Servidor HTTP en Python\n\n### Opción 1: http.server (sin dependencias)\n\n```python\nfrom http.server import HTTPServer, SimpleHTTPRequestHandler\nimport json\n\nclass APIHandler(SimpleHTTPRequestHandler):\n    def do_GET(self):\n        if self.path == '/':\n            self.send_json({'mensaje': 'Hola Mundo', 'version': '1.0'})\n        elif self.path == '/api/users':\n            self.send_json([{'id': 1, 'nombre': 'Ana'}, {'id': 2, 'nombre': 'Luis'}])\n        else:\n            self.send_error(404)\n\n    def do_POST(self):\n        if self.path == '/api/users':\n            length = int(self.headers['Content-Length'])\n            data = json.loads(self.rfile.read(length))\n            self.send_json({'creado': data}, 201)\n        else:\n            self.send_error(404)\n\n    def send_json(self, data, code=200):\n        self.send_response(code)\n        self.send_header('Content-Type', 'application/json')\n        self.send_header('Access-Control-Allow-Origin', '*')\n        self.end_headers()\n        self.wfile.write(json.dumps(data).encode())\n\nserver = HTTPServer(('localhost', 8000), APIHandler)\nprint('Servidor en http://localhost:8000')\nserver.serve_forever()\n```\n\n### Opción 2: Flask (más potente)\n\n```python\nfrom flask import Flask, jsonify, request\nfrom functools import wraps\n\napp = Flask(__name__)\ntodos = []\n\ndef require_api_key(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        if request.headers.get('X-API-Key') != 'mi-clave-secreta':\n            return jsonify({'error': 'No autorizado'}), 401\n        return f(*args, **kwargs)\n    return decorated\n\n@app.route('/api/todos', methods=['GET'])\ndef get_todos():\n    return jsonify(todos)\n\n@app.route('/api/todos', methods=['POST'])\n@require_api_key\ndef add_todo():\n    data = request.json\n    if not data or 'texto' not in data:\n        return jsonify({'error': 'Campo \"texto\" requerido'}), 400\n    todo = {'id': len(todos) + 1, 'texto': data['texto'], 'hecho': False}\n    todos.append(todo)\n    return jsonify(todo), 201\n\nif __name__ == '__main__':\n    app.run(debug=True, port=8000)\n```\n\n### Opción 3: FastAPI (moderno y rápido)\n\n```python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import Optional\nfrom datetime import datetime\n\napp = FastAPI(title='Mi API', version='1.0')\n\nclass ItemCreate(BaseModel):\n    nombre: str\n    precio: float\n    descripcion: Optional[str] = None\n\nitems_db = []\ncounter = 0\n\n@app.post('/items', status_code=201)\ndef crear(item: ItemCreate):\n    global counter\n    counter += 1\n    nuevo = {'id': counter, 'creado': str(datetime.now()), **item.dict()}\n    items_db.append(nuevo)\n    return nuevo\n\n@app.get('/items')\ndef listar(skip: int = 0, limit: int = 10):\n    return items_db[skip:skip+limit]\n\n@app.get('/items/{item_id}')\ndef obtener(item_id: int):\n    for i in items_db:\n        if i['id'] == item_id:\n            return i\n    raise HTTPException(404, 'Item no encontrado')\n```\n\nEjecuta con: `uvicorn main:app --reload`",
+
+  async_await: "## Async/Await — Guía Completa\n\n### JavaScript — Promesas\n\n```javascript\nconst esperar = ms => new Promise(resolve => setTimeout(resolve, ms));\n\nasync function obtenerUsuario(id) {\n    try {\n        const response = await fetch('/api/users/' + id);\n        if (!response.ok) throw new Error('HTTP ' + response.status);\n        const user = await response.json();\n        return user;\n    } catch (err) {\n        console.error('Error:', err.message);\n        return null;\n    }\n}\n\n// Ejecutar en paralelo\nasync function obtenerVarios(ids) {\n    const promesas = ids.map(id => obtenerUsuario(id));\n    return Promise.all(promesas);\n}\n```\n\n### JavaScript — Semáforo de concurrencia\n\n```javascript\nclass Semaphore {\n    constructor(max) {\n        this.max = max;\n        this.current = 0;\n        this.queue = [];\n    }\n    async acquire() {\n        if (this.current < this.max) {\n            this.current++;\n            return;\n        }\n        await new Promise(resolve => this.queue.push(resolve));\n    }\n    release() {\n        this.current--;\n        if (this.queue.length > 0) {\n            this.current++;\n            this.queue.shift()();\n        }\n    }\n}\n```\n\n### Python — asyncio\n\n```python\nimport asyncio\nimport aiohttp\n\nasync def obtener(url):\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url) as resp:\n            return await resp.json()\n\nasync def main():\n    urls = ['https://api.example.com/1', 'https://api.example.com/2']\n    async with aiohttp.ClientSession() as session:\n        resultados = await asyncio.gather(\n            *[obtener(url, session) for url in urls],\n            return_exceptions=True\n        )\n\nasyncio.run(main())\n```\n\n### Cuándo usar async\n\n- Llamadas HTTP / fetch\n- Lectura/escritura de archivos\n- Consultas a bases de datos\n- WebSockets\n- Cualquier I/O\n\n### Cuándo NO usar async\n\n- Cálculos intensivos en CPU → usar multiprocessing/workers\n- Operaciones puramente síncronas\n- Lógica simple sin I/O",
+
+  merge_sort: "## Merge Sort\n\nMerge Sort es un algoritmo de ordenamiento divide y vencerás con complejidad **O(n log n)** en todos los casos.\n\n### Funcionamiento\n\n1. Dividir el array en dos mitades\n2. Ordenar cada mitad recursivamente\n3. Combinar (merge) las dos mitades ordenadas\n\n### Implementación en Python\n\n```python\ndef merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    izquierda = merge_sort(arr[:mid])\n    derecha = merge_sort(arr[mid:])\n    return merge(izquierda, derecha)\n\ndef merge(izq, der):\n    resultado = []\n    i = j = 0\n    while i < len(izq) and j < len(der):\n        if izq[i] <= der[j]:\n            resultado.append(izq[i])\n            i += 1\n        else:\n            resultado.append(der[j])\n            j += 1\n    resultado.extend(izq[i:])\n    resultado.extend(der[j:])\n    return resultado\n\ndatos = [38, 27, 43, 3, 9, 82, 10]\nprint(merge_sort(datos))  # [3, 9, 10, 27, 38, 43, 82]\n```\n\n### Complejidad\n\n| Caso  | Tiempo    | Espacio |\n|-------|-----------|---------|\n| Mejor | O(n log n)| O(n)    |\n| Medio | O(n log n)| O(n)    |\n| Peor  | O(n log n)| O(n)    |\n\nEs **estable** (mantiene el orden de elementos iguales) y predecible, pero usa memoria adicional O(n).",
+
+  solid: "## Principios SOLID\n\n### S — Single Responsibility Principle\n\nUna clase debe tener una sola razón para cambiar.\n\n```python\n# MAL: una clase hace todo\nclass Usuario:\n    def guardar_db(self): ...\n    def enviar_email(self): ...\n    def generar_reporte(self): ...\n\n# BIEN: separar responsabilidades\nclass Usuario:\n    def __init__(self, nombre, email):\n        self.nombre = nombre\n        self.email = email\n\nclass UsuarioRepository:\n    def guardar(self, usuario): ...\n    def buscar(self, id): ...\n\nclass EmailService:\n    def enviar(self, destino, mensaje): ...\n```\n\n### O — Open/Closed Principle\n\nAbierto para extensión, cerrado para modificación.\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Descuento(ABC):\n    @abstractmethod\n    def calcular(self, precio): pass\n\nclass DescuentoNormal(Descuento):\n    def calcular(self, precio): return precio * 0.9\n\nclass DescuentoPremium(Descuento):\n    def calcular(self, precio): return precio * 0.8\n\nclass CalculadoraPrecio:\n    def __init__(self, descuento: Descuento):\n        self.descuento = descuento\n    def calcular(self, precio):\n        return self.descuento.calcular(precio)\n```\n\n### L — Liskov Substitution Principle\n\nLas subclases deben ser sustituibles por sus clases base.\n\n### I — Interface Segregation Principle\n\nMejor muchas interfaces específicas que una general.\n\n### D — Dependency Inversion Principle\n\nDepender de abstracciones, no de implementaciones.",
+
+  sql_nosql: "## SQL vs NoSQL\n\n### SQL (Relacional)\n\n- Estructura fija con tablas, filas y columnas\n- Esquema definido previamente\n- Relaciones entre tablas (JOINs)\n- ACID\n- Escalado vertical\n\n**Ejemplos**: PostgreSQL, MySQL, SQLite\n\n```sql\nCREATE TABLE usuarios (\n    id SERIAL PRIMARY KEY,\n    nombre VARCHAR(100) NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL\n);\n\nSELECT u.nombre, COUNT(p.id) as total_posts\nFROM usuarios u\nLEFT JOIN posts p ON u.id = p.usuario_id\nGROUP BY u.nombre\nHAVING COUNT(p.id) > 5;\n```\n\n### NoSQL (No Relacional)\n\n- Esquema flexible\n- Sin JOINs nativos\n- Escalado horizontal\n\n**Ejemplos**: MongoDB, Redis, Cassandra\n\n### Cuándo usar cada uno\n\n| Criterio        | SQL              | NoSQL            |\n|-----------------|------------------|------------------|\n| Datos estructurados | Si           | No               |\n| Esquema variable | No            | Si               |\n| Transacciones ACID | Si          | Parcial          |\n| Escalar horizontal | Difícil     | Fácil            |",
+
+  neural_network: "## Redes Neuronales\n\n### La neurona (perceptrón)\n\n`salida = activación(w1*x1 + w2*x2 + ... + wn*xn + bias)`\n\n### Implementación con backpropagation\n\n```python\nimport numpy as np\n\nclass RedNeuronal:\n    def __init__(self, capas):\n        self.pesos = []\n        self.bias = []\n        for i in range(len(capas) - 1):\n            w = np.random.randn(capas[i], capas[i+1]) * np.sqrt(2.0 / capas[i])\n            b = np.zeros((1, capas[i+1]))\n            self.pesos.append(w)\n            self.bias.append(b)\n\n    def sigmoid(self, x):\n        return 1 / (1 + np.exp(-np.clip(x, -500, 500)))\n\n    def forward(self, X):\n        self.z = []\n        self.a = [X]\n        for i, (w, b) in enumerate(zip(self.pesos, self.bias)):\n            z = X @ w + b\n            self.z.append(z)\n            X = self.sigmoid(z)\n            self.a.append(X)\n        return X\n\n    def backward(self, y, lr=0.01):\n        m = y.shape[0]\n        dz = self.a[-1] - y\n        for i in range(len(self.pesos) - 1, -1, -1):\n            dw = (self.a[i].T @ dz) / m\n            db = np.sum(dz, axis=0, keepdims=True) / m\n            if i > 0:\n                dz = (dz @ self.pesos[i].T) * (self.a[i] * (1 - self.a[i]))\n            self.pesos[i] -= lr * dw\n            self.bias[i] -= lr * db\n\n# XOR\nX = np.array([[0,0],[0,1],[1,0],[1,1]])\ny = np.array([[0],[1],[1],[0]])\nnn = RedNeuronal([2, 8, 4, 1])\n```\n\n### Funciones de activación\n\n| Función  | Fórmula                  | Uso               |\n|----------|--------------------------|-------------------|\n| ReLU     | max(0, x)               | Capas ocultas     |\n| Sigmoid  | 1/(1+e^-x)             | Salida binaria    |\n| Tanh     | (e^x-e^-x)/(e^x+e^-x) | Ocultas (-1 a 1)  |\n| Softmax  | e^xj / sum(e^xi)       | Multiclase        |",
+
+  design_patterns: "## Patrones de Diseño Más Usados\n\n### Singleton — una sola instancia global\n\n```python\nclass Database:\n    _instance = None\n    _initialized = False\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance\n    def __init__(self):\n        if not self._initialized:\n            self.connection = 'conectado'\n            self._initialized = True\n```\n\n### Factory — crear objetos sin especificar clase exacta\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Notificacion(ABC):\n    @abstractmethod\n    def enviar(self, msg): pass\n\nclass EmailNotif(Notificacion):\n    def enviar(self, msg): print(f'Email: {msg}')\n\nclass NotifFactory:\n    _tipos = {'email': EmailNotif}\n    @classmethod\n    def crear(cls, tipo):\n        return cls._tipos[tipo]()\n```\n\n### Observer — notificar cambios a suscriptores\n\n```javascript\nclass EventEmitter {\n    constructor() { this.events = {}; }\n    on(event, fn) {\n        (this.events[event] ??= []).push(fn);\n        return () => this.off(event, fn);\n    }\n    emit(event, data) {\n        this.events[event]?.forEach(fn => fn(data));\n    }\n}\n```\n\n### Strategy — intercambiar algoritmos\n\n```python\nclass Ordenador:\n    def __init__(self, estrategia):\n        self.estrategia = estrategia\n    def ordenar(self, datos):\n        return self.estrategia(datos)\n```",
+
+  python_basics: "## Python — Guía Completa\n\n### Variables y tipos\n\n```python\nnombre = 'Ana'           # str\nedad = 25                # int\nprecio = 19.99           # float\nactivo = True            # bool\nlista = [1, 2, 3]       # list\ndicc = {'k': 'v'}       # dict\n```\n\n### Estructuras de control\n\n```python\nfor i, elemento in enumerate(lista):\n    print(f'{i}: {elemento}')\n\n# Dict comprehension\ncuadrados = {x: x**2 for x in range(6)}\n\n# Walrus operator (Python 3.8+)\nif (n := len(datos)) > 10:\n    print(f'Demasiados datos: {n}')\n```\n\n### Funciones\n\n```python\nimport functools\n\ndef timer(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        import time\n        inicio = time.perf_counter()\n        resultado = func(*args, **kwargs)\n        print(f'{func.__name__}: {time.perf_counter()-inicio:.4f}s')\n        return resultado\n    return wrapper\n\n@timer\ndef calcular():\n    return sum(range(10**6))\n```\n\n### Clases\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass Usuario:\n    nombre: str\n    email: str\n    activo: bool = True\n```",
+
+  javascript_basics: "## JavaScript — Guía Completa\n\n### Variables y destructuring\n\n```javascript\nconst { nombre: n, ...resto } = persona;\nconst [primero, , tercero, ...rest] = [1, 2, 3, 4, 5];\n\n// Optional chaining\nconst calle = user?.address?.street ?? 'Sin dirección';\n```\n\n### Promesas y async\n\n```javascript\nasync function obtenerDatos(url) {\n    try {\n        const res = await fetch(url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);\n        return await res.json();\n    } catch (err) {\n        console.error(err);\n        return null;\n    }\n}\n```\n\n### Iteradores y generadores\n\n```javascript\nfunction* rango(inicio, fin, paso = 1) {\n    for (let i = inicio; i < fin; i += paso) {\n        yield i;\n    }\n}\nconst gen = rango(0, 10, 2);\nconsole.log([...gen]); // [0, 2, 4, 6, 8]\n```",
+
+  css_flexbox: "## CSS Flexbox y Grid\n\n### Flexbox\n\n```css\n.container {\n    display: flex;\n    justify-content: center;\n    align-items: stretch;\n    flex-wrap: nowrap;\n    gap: 16px;\n}\n.item {\n    flex: 1;\n    align-self: center;\n    order: 0;\n}\n```\n\n### CSS Grid\n\n```css\n.grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));\n    gap: 20px;\n}\n```\n\n### Responsive sin media queries\n\n```css\n.grid { display:flex; flex-wrap:wrap; gap:16px; }\n.card { flex:1 1 300px; max-width:100%; }\n```",
+
+  git_basics: "## Git — Guía Completa\n\n### Configuración\n\n```bash\ngit config --global user.name 'Tu Nombre'\ngit config --global user.email 'tu@email.com'\ngit config --global init.defaultBranch main\n```\n\n### Flujo básico\n\n```bash\ngit init\ngit add .\ngit commit -m 'feat: añadir login'\ngit status\ngit log --oneline --graph --all\n```\n\n### Ramas\n\n```bash\ngit switch -c feature             # crear + cambiar\ngit merge feature                  # fusionar\ngit branch -d feature              # eliminar\n```\n\n### Deshacer\n\n```bash\ngit restore archivo                # descartar cambios\ngit reset --soft HEAD~1            # deshacer commit (mantiene staged)\ngit revert HASH                    # crear commit que deshace otro\ngit reflog                         # recuperar commits perdidos\n```\n\n### Conventional Commits\n\n```\nfeat: nueva funcionalidad\nfix: corrección de bug\ndocs: documentación\nrefactor: refactorización\n```",
+
+  react_basics: "## React — Guía Completa\n\n### useState\n\n```jsx\nimport { useState } from 'react';\n\nfunction Contador() {\n    const [count, setCount] = useState(0);\n    return (\n        <div>\n            <p>{count}</p>\n            <button onClick={() => setCount(c => c + 1)}>+1</button>\n        </div>\n    );\n}\n```\n\n### useEffect\n\n```jsx\nimport { useState, useEffect } from 'react';\n\nfunction Perfil({ userId }) {\n    const [user, setUser] = useState(null);\n    useEffect(() => {\n        let cancelado = false;\n        fetch('/api/users/' + userId)\n            .then(r => r.json())\n            .then(data => { if (!cancelado) setUser(data); });\n        return () => { cancelado = true; };\n    }, [userId]);\n    return <h1>{user?.nombre}</h1>;\n}\n```\n\n### Custom Hooks\n\n```jsx\nfunction useDebounce(valor, delay = 300) {\n    const [debounced, setDebounced] = useState(valor);\n    useEffect(() => {\n        const timer = setTimeout(() => setDebounced(valor), delay);\n        return () => clearTimeout(timer);\n    }, [valor, delay]);\n    return debounced;\n}\n```",
+
+  algorithms: "## Algoritmos — Complejidades y Ejemplos\n\n### Ordenamiento\n\n| Algoritmo    | Mejor      | Medio      | Peor       | Espacio  |\n|-------------|------------|------------|------------|----------|\n| Bubble Sort | O(n)       | O(n²)     | O(n²)     | O(1)     |\n| Merge Sort  | O(n log n) | O(n log n) | O(n log n) | O(n)   |\n| Quick Sort  | O(n log n) | O(n log n) | O(n²)     | O(log n) |\n| Heap Sort   | O(n log n) | O(n log n) | O(n log n) | O(1)   |\n\n### Búsqueda binaria\n\n```python\ndef busqueda_binaria(arr, objetivo):\n    izq, der = 0, len(arr) - 1\n    while izq <= der:\n        medio = (izq + der) // 2\n        if arr[medio] == objetivo:\n            return medio\n        elif arr[medio] < objetivo:\n            izq = medio + 1\n        else:\n            der = medio - 1\n    return -1\n```\n\n### Big O de menor a mayor\n\nO(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2^n) < O(n!)",
+
+  docker: "## Docker — Guía Completa\n\n### Comandos esenciales\n\n```bash\ndocker pull nginx:latest\ndocker run -d -p 8080:80 --name web nginx\ndocker ps\ndocker logs -f web\ndocker exec -it web bash\ndocker volume create mi_data\ndocker network create mi-red\n```\n\n### Dockerfile optimizado (multi-stage)\n\n```dockerfile\nFROM python:3.11-slim AS builder\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir --user -r requirements.txt\n\nFROM python:3.11-slim\nWORKDIR /app\nCOPY --from=builder /root/.local /root/.local\nCOPY . .\nENV PATH=/root/.local/bin:$PATH\nEXPOSE 8000\nCMD ['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000']\n```\n\n### Docker Compose\n\n```yaml\nversion: '3.8'\nservices:\n  web:\n    build: .\n    ports:\n      - '8000:8000'\n    depends_on:\n      - db\n  db:\n    image: postgres:15-alpine\n    environment:\n      POSTGRES_DB: miapp\n```",
+
+  typescript: "## TypeScript vs JavaScript\n\n### Tipos básicos\n\n```typescript\nlet nombre: string = 'Ana';\nlet edad: number = 25;\nlet lista: number[] = [1, 2, 3];\nlet cualquiera: any = 'lo que sea';\nlet desconocido: unknown = 'más seguro que any';\n```\n\n### Interfaces y Types\n\n```typescript\ninterface Usuario {\n    id: number;\n    nombre: string;\n    edad?: number;           // opcional\n    readonly creado: Date;   // solo lectura\n}\n\ntype Status = 'activo' | 'inactivo' | 'suspendido';\n```\n\n### Generics\n\n```typescript\nfunction primero<T>(arr: T[]): T | undefined {\n    return arr[0];\n}\n\nclass Pila<T> {\n    private items: T[] = [];\n    push(item: T) { this.items.push(item); }\n    pop(): T | undefined { return this.items.pop(); }\n}\n```",
+
+  linux: "## Linux — Comandos Esenciales\n\n### Navegación\n\n```bash\npwd\nls -la\ncd /ruta\ntree -L 2\n```\n\n### Archivos\n\n```bash\nmkdir -p a/b/c\ncp -r src/ dst/\nmv old new\nrm -rf dir/\ncat archivo\nless archivo\nhead -n 20 file\ntail -f log.txt\n```\n\n### Búsqueda\n\n```bash\nfind . -name '*.py' -type f\ngrep -r 'texto' . --include='*.py'\n```\n\n### Procesos\n\n```bash\nps aux\ntop / htop\nkill -9 PID\n```",
+
+  rest_api: "## APIs REST — Guía Completa\n\n### Métodos HTTP\n\n| Método  | URL           | Acción            | Idempotente |\n|---------|---------------|-------------------|-------------|\n| GET     | /usuarios     | Listar todos      | Si          |\n| POST    | /usuarios     | Crear             | No          |\n| PUT     | /usuarios/42  | Reemplazar        | Si          |\n| PATCH   | /usuarios/42  | Actualizar parcial| Si          |\n| DELETE  | /usuarios/42  | Eliminar          | Si          |\n\n### Ejemplo con Express\n\n```javascript\nconst express = require('express');\nconst app = express();\napp.use(express.json());\n\nlet usuarios = [{ id: 1, nombre: 'Ana' }];\n\napp.get('/api/usuarios', (req, res) => {\n    res.json(usuarios);\n});\n\napp.post('/api/usuarios', (req, res) => {\n    const user = { id: usuarios.length + 1, ...req.body };\n    usuarios.push(user);\n    res.status(201).json(user);\n});\n\napp.listen(3000);\n```",
+
+  regex: "## Expresiones Regulares — Referencia\n\n### Sintaxis\n\n| Patrón  | Significado                    |\n|---------|--------------------------------|\n| \\d      | Dígito [0-9]                  |\n| \\w      | Palabra [a-zA-Z0-9_]          |\n| \\s      | Espacio en blanco             |\n| ^       | Inicio de cadena              |\n| $       | Fin de cadena                 |\n| *       | 0 o más                       |\n| +       | 1 o más                       |\n| ?       | 0 o 1 (opcional)              |\n| {n,m}   | Entre n y m veces             |\n| (...)   | Grupo de captura              |\n\n### Patrones útiles\n\n```python\nimport re\nre.match(r'^[\\w.-]+@[\\w.-]+\\.\\w{2,}$', email)  # Email\nre.match(r'^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$', fecha)  # Fecha\n```",
+
+  security: "## Seguridad Web — Guía Completa\n\n### XSS — Cross-Site Scripting\n\n```javascript\n// MAL\nelement.innerHTML = userInput;\n// BIEN\nelement.textContent = userInput;\n// BIEN: sanitizar\nimport DOMPurify from 'dompurify';\nelement.innerHTML = DOMPurify.sanitize(userInput);\n```\n\n### SQL Injection\n\n```python\n# MAL\ncursor.execute(f\"SELECT * FROM users WHERE name = '{nombre}'\")\n# BIEN\ncursor.execute('SELECT * FROM users WHERE name = %s', (nombre,))\n```\n\n### Headers de seguridad\n\n```\nContent-Security-Policy: default-src 'self'\nX-Content-Type-Options: nosniff\nStrict-Transport-Security: max-age=31536000\n```\n\n### Contraseñas con bcrypt\n\n```python\nimport bcrypt\nhash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))\nif bcrypt.checkpw(intento.encode('utf-8'), hash):\n    print('Contraseña correcta')\n```",
+
+  testing: "## Testing — Guía Completa\n\n### Python — pytest\n\n```python\nimport pytest\n\ndef test_suma():\n    assert suma(2, 3) == 5\n\n@pytest.mark.parametrize('a,b,esperado', [\n    (1, 2, 3), (0, 0, 0), (-1, 1, 0)\n])\ndef test_suma_casos(a, b, esperado):\n    assert suma(a, b) == esperado\n\n@pytest.fixture\ndef usuario():\n    return {'nombre': 'Ana', 'email': 'ana@mail.com'}\n\nfrom unittest.mock import Mock, patch\n\ndef test_api_call():\n    mock_response = Mock()\n    mock_response.json.return_value = {'id': 1}\n    with patch('requests.get', return_value=mock_response):\n        resultado = obtener_usuario(1)\n        assert resultado['id'] == 1\n```\n\n### Principios AAA\n\n- **Arrange**: preparar datos\n- **Act**: ejecutar lo que se prueba\n- **Assert**: verificar resultado",
+
+  intro: "Hola! Soy **N0VA AI**, tu asistente de inteligencia artificial.\n\nPuedo ayudarte con:\n\n- **Lenguajes**: Python, JavaScript, TypeScript, SQL, y más\n- **Conceptos**: algoritmos, estructuras de datos, patrones de diseño, SOLID\n- **Herramientas**: Git, Docker, Linux, APIs REST\n- **Web**: HTML, CSS, React\n- **Seguridad**: buenas prácticas, OWASP\n- **IA**: redes neuronales, conceptos de ML\n\nEscribe tu pregunta y te responderé con código, ejemplos y explicaciones detalladas."
 
 };
 
-function findResponse(input){const q=input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-const topics=[
-{keys:['recursi','recursive','recursion'],id:'recursion'},
-{keys:['servidor http','http server','flask','fastapi','servidor web','api python','crear api','crear servidor'],id:'http_server'},
-{keys:['async','await','asincron','promesa','promise','asyncio'],id:'async_await'},
-{keys:['merge sort','mergesort','ordenamiento merge'],id:'merge_sort'},
-{keys:['solid','single responsibility','open closed','liskov'],id:'solid'},
-{keys:['sql','nosql','relacional','base de dato','postgresql','mongodb','mysql','sqlite'],id:'sql_nosql'},
-{keys:['red neuronal','neural network','perceptron','deep learning','machine learning','ia ','inteligencia artificial'],id:'neural_network'},
-{keys:['snake','juego snake','game snake'],id:'snake_game'},
-{keys:['patron de diseno','design pattern','singleton','factory','observer','decorator','strategy','builder'],id:'design_patterns'},
-{keys:['python basico','python concept','aprender python','fundamento python','python como'],id:'python_basics'},
-{keys:['javascript basico','js concept','aprender javascript','fundamento js','es6'],id:'javascript_basics'},
-{keys:['flexbox','css grid','css layout','css posicion','css centrar','css responsive'],id:'css_flexbox'},
-{keys:['git','github','commit','branch','rama','merge git','pull push','rebase'],id:'git_basics'},
-{keys:['react','componente react','usestate','useeffect','hook','jsx'],id:'react_basics'},
-{keys:['algoritmo','complejidad','big o','ordenamiento','busqueda binaria','bubble sort','quick sort'],id:'algorithms'},
-{keys:['docker','contenedor','dockerfile','docker compose'],id:'docker'},
-{keys:['typescript','tipo typescript','interface ts','generic typescript','ts vs js'],id:'typescript'},
-{keys:['linux','bash','terminal','comando linux','shell','consola'],id:'linux'},
-{keys:['rest','api rest','endpoint','metodo http','get post put delete','express'],id:'rest_api'},
-{keys:['regex','expresion regular','regular expression','patron busqueda'],id:'regex'},
-{keys:['seguridad','security','xss','injection','sql injection','csrf','owasp','bcrypt','jwt'],id:'security'},
-{keys:['test','testing','pytest','jest','unit test','prueba unitaria'],id:'testing'},
-];
-let bestMatch=null,bestScore=0;
-for(const t of topics){let s=0;for(const k of t.keys){if(q.includes(k))s+=k.length;}if(s>bestScore){bestScore=s;bestMatch=t.id;}}
-if(bestMatch&&bestScore>=3)return KB[bestMatch];
-if(q.match(/python|py\b/))return KB['python_basics'];
-if(q.match(/javascript|js\b|node/))return KB['javascript_basics'];
-if(q.match(/html|css|web|pagina/))return KB['css_flexbox'];
-if(q.match(/ordenar|sort|bubble|quick|heap/))return KB['algorithms'];
-if(q.match(/base de dato|database|consulta|query/))return KB['sql_nosql'];
-if(q.match(/hola|hey|buenas|que tal|saludo|quien eres|que eres/))return KB['intro'];
-return`## No tengo una respuesta específica para eso
+// ── MODELS ──
+const MODELS = {
+  local:    { name: 'N0VA Local',    type: 'local' },
+  code:     { name: 'N0VA Code',     type: 'local' },
+  claude:   { name: 'Claude Sonnet 4', type: 'api'  },
+  creative: { name: 'N0VA Creative', type: 'local' }
+};
 
-Intenta preguntar sobre:
+// ── STATE ──
+let currentModel = 'local';
+let apiKey = localStorage.getItem('nova_key') || '';
+let convs = JSON.parse(localStorage.getItem('nova_c3') || '[]');
+let curId = null;
+let busy = false;
 
-- **Lenguajes**: Python, JavaScript, TypeScript, SQL
-- **Conceptos**: recursividad, async/await, SOLID, patrones de diseño
-- **Algoritmos**: merge sort, complejidad Big O
-- **Herramientas**: Git, Docker, Linux, regex
-- **Web**: React, CSS, APIs REST
-- **Seguridad**: XSS, SQL injection, JWT
-- **IA**: redes neuronales
-
-Prueba con una pregunta más específica.`;
+// ── FIND RESPONSE ──
+function findResponse(input) {
+  const q = input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const t = [
+    { k: ['recursi', 'recursion', 'recursive'], i: 'recursion' },
+    { k: ['servidor http', 'flask', 'fastapi', 'http server', 'servidor web', 'api python'], i: 'http_server' },
+    { k: ['async', 'await', 'asincron', 'promise', 'promesa', 'asyncio'], i: 'async_await' },
+    { k: ['merge sort', 'mergesort'], i: 'merge_sort' },
+    { k: ['solid', 'single responsibility', 'liskov'], i: 'solid' },
+    { k: ['sql', 'nosql', 'relacional', 'base de dato', 'postgresql', 'mongodb', 'mysql'], i: 'sql_nosql' },
+    { k: ['red neuronal', 'neural network', 'perceptron', 'deep learning', 'machine learning', 'ia ', 'inteligencia artificial'], i: 'neural_network' },
+    { k: ['snake', 'juego snake'], i: 'snake_game' },
+    { k: ['patron de diseno', 'design pattern', 'singleton', 'factory', 'observer', 'decorator', 'strategy', 'builder'], i: 'design_patterns' },
+    { k: ['python basico', 'aprender python', 'fundamento python', 'python como', 'python empezar'], i: 'python_basics' },
+    { k: ['javascript basico', 'js concept', 'aprender javascript', 'fundamento js', 'es6'], i: 'javascript_basics' },
+    { k: ['flexbox', 'css grid', 'css layout', 'css posicion', 'css centrar', 'css responsive'], i: 'css_flexbox' },
+    { k: ['git', 'github', 'commit', 'branch', 'rama', 'merge git', 'rebase'], i: 'git_basics' },
+    { k: ['react', 'componente react', 'usestate', 'useeffect', 'hook', 'jsx'], i: 'react_basics' },
+    { k: ['algoritmo', 'complejidad', 'big o', 'ordenamiento', 'busqueda binaria', 'bubble sort', 'quick sort'], i: 'algorithms' },
+    { k: ['docker', 'contenedor', 'dockerfile', 'docker compose'], i: 'docker' },
+    { k: ['typescript', 'tipo typescript', 'interface ts', 'generic typescript'], i: 'typescript' },
+    { k: ['linux', 'bash', 'terminal', 'comando linux', 'shell', 'consola'], i: 'linux' },
+    { k: ['rest', 'api rest', 'endpoint', 'metodo http', 'get post put delete', 'express'], i: 'rest_api' },
+    { k: ['regex', 'expresion regular', 'regular expression'], i: 'regex' },
+    { k: ['seguridad', 'security', 'xss', 'injection', 'sql injection', 'csrf', 'owasp', 'bcrypt', 'jwt'], i: 'security' },
+    { k: ['test', 'testing', 'pytest', 'jest', 'unit test'], i: 'testing' }
+  ];
+  let bm = null, bs = 0;
+  for (const x of t) {
+    let s = 0;
+    for (const k of x.k) {
+      if (q.includes(k)) s += k.length;
+    }
+    if (s > bs) { bs = s; bm = x.i; }
+  }
+  if (bm && bs >= 3) return KB[bm];
+  if (q.match(/python|py\b/)) return KB.python_basics;
+  if (q.match(/javascript|js\b|node/)) return KB.javascript_basics;
+  if (q.match(/html|css|web|pagina/)) return KB.css_flexbox;
+  if (q.match(/ordenar|sort|bubble|quick|heap/)) return KB.algorithms;
+  if (q.match(/base de dato|database|consulta|query/)) return KB.sql_nosql;
+  if (q.match(/hola|hey|buenas|que tal|saludo|quien eres|que eres/)) return KB.intro;
+  return "## No tengo una respuesta específica\n\nIntenta preguntar sobre: Python, JavaScript, TypeScript, algoritmos, Git, Docker, Linux, React, SQL, APIs REST, seguridad, regex, testing, redes neuronales, patrones de diseño...";
 }
 
-let convs=JSON.parse(localStorage.getItem('nova_c')||'[]');
-let curId=null,busy=false;
+// ── MODEL SELECTOR ──
+function toggleModels() {
+  const dd = document.getElementById('mdrop');
+  const btn = document.getElementById('mbtn');
+  dd.classList.toggle('show');
+  btn.classList.toggle('open');
+}
 
-document.addEventListener('DOMContentLoaded',()=>{
-  renderList();
-  if(convs.length)loadConv(convs[0].id);
-  document.addEventListener('keydown',e=>{
-    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();newConv();}
-  });
-  const inp=document.getElementById('ci');
-  inp.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
-  });
-  inp.addEventListener('input',()=>updateBtn());
-  updateBtn();
+document.addEventListener('click', function(e) {
+  const msel = document.getElementById('msel');
+  if (msel && !msel.contains(e.target)) {
+    const dd = document.getElementById('mdrop');
+    const btn = document.getElementById('mbtn');
+    if (dd) dd.classList.remove('show');
+    if (btn) btn.classList.remove('open');
+  }
 });
 
-function updateBtn(){
-  const inp=document.getElementById('ci');
-  const btn=document.getElementById('sbtn');
-  const hasText=inp.value.trim().length>0;
-  if(hasText&&!busy){btn.classList.remove('off');}
-  else{btn.classList.add('off');}
-  document.getElementById('ccnt').textContent=inp.value.length||'0';
-  inp.style.height='auto';
-  inp.style.height=Math.min(inp.scrollHeight,150)+'px';
+function selectModel(m) {
+  currentModel = m;
+  document.getElementById('mbtnText').textContent = MODELS[m].name;
+  document.querySelectorAll('.mopt').forEach(function(o) {
+    o.classList.toggle('sel', o.dataset.model === m);
+  });
+  document.getElementById('mdrop').classList.remove('show');
+  document.getElementById('mbtn').classList.remove('open');
+  showToast('// modelo: ' + MODELS[m].name);
 }
 
-function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-
-function newConv(){
-  const id=gid();
-  convs.unshift({id,title:'Nueva sesión',messages:[],created:Date.now()});
-  save();loadConv(id);renderList();showToast('// nuevo chat');document.getElementById('ci').focus();
+// ── API KEY MODAL ──
+function openKeyModal() {
+  document.getElementById('keyModal').classList.remove('hide');
+  document.getElementById('keyInput').focus();
 }
 
-function loadConv(id){
-  curId=id;const c=convs.find(x=>x.id===id);if(!c)return;
-  const el=document.getElementById('msgs');el.innerHTML='';
-  document.getElementById('ttitle').textContent='// '+c.title;
-  if(!c.messages.length)el.innerHTML=buildW();else c.messages.forEach(m=>appendMsg(m.role,m.content,false));
+function closeKeyModal() {
+  document.getElementById('keyModal').classList.add('hide');
+}
+
+function saveKey() {
+  const v = document.getElementById('keyInput').value.trim();
+  if (v) {
+    apiKey = v;
+    localStorage.setItem('nova_key', v);
+    closeKeyModal();
+    showToast('// clave guardada');
+  } else {
+    showToast('// clave vacia', 1);
+  }
+}
+
+// ── CLAUDE API ──
+var SYSTEM_PROMPT = 'Eres N0VA AI, un asistente de IA altamente capaz. Responde siempre en el mismo idioma que el usuario. Para codigo, usa bloques con el lenguaje especificado. Se preciso, directo y detallado. Usa markdown para estructurar respuestas largas.';
+
+async function callClaude(messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      messages: messages.map(function(m) {
+        return { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
+      })
+    })
+  });
+  if (!res.ok) {
+    var e = await res.json().catch(function() { return {}; });
+    throw new Error(e.error?.message || 'HTTP ' + res.status);
+  }
+  var data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  renderList();
+  if (convs.length) loadConv(convs[0].id);
+  updateBtn();
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      newConv();
+    }
+  });
+});
+
+// ── UI UPDATES ──
+function updateBtn() {
+  var inp = document.getElementById('ci');
+  var btn = document.getElementById('sbtn');
+  var hasText = inp.value.trim().length > 0;
+  if (hasText && !busy) btn.classList.remove('dim');
+  else btn.classList.add('dim');
+  document.getElementById('ccnt').textContent = inp.value.length || '0';
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 150) + 'px';
+}
+
+function gid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ── CONVERSATIONS ──
+function newConv() {
+  var id = gid();
+  convs.unshift({ id: id, title: 'Nueva sesion', messages: [], created: Date.now() });
+  save();
+  loadConv(id);
+  renderList();
+  showToast('// nuevo chat');
+  document.getElementById('ci').focus();
+}
+
+function loadConv(id) {
+  curId = id;
+  var c = convs.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var el = document.getElementById('msgs');
+  el.innerHTML = '';
+  document.getElementById('ttitle').textContent = '// ' + c.title;
+  if (!c.messages.length) {
+    el.innerHTML = buildW();
+  } else {
+    c.messages.forEach(function(m) {
+      appendMsg(m.role, m.content, false);
+    });
+  }
   renderList();
 }
 
-function buildW(){
-  return`<div class="wc" id="wscreen"><div class="wl">N0VA</div><div class="ws">inteligencia artificial avanzada</div><div class="wli"></div><div class="wch"><button class="wcp" onclick="useP(this)">Explica la recursividad con ejemplos</button><button class="wcp" onclick="useP(this)">Escribe un servidor HTTP en Python</button><button class="wcp" onclick="useP(this)">Cómo funciona async/await</button><button class="wcp" onclick="useP(this)">Crea una función de merge sort</button><button class="wcp" onclick="useP(this)">Explica los principios SOLID</button><button class="wcp" onclick="useP(this)">Diferencias entre SQL y NoSQL</button><button class="wcp" onclick="useP(this)">Cómo funciona una red neuronal</button><button class="wcp" onclick="useP(this)">Escribe un juego de snake en JS</button><button class="wcp" onclick="useP(this)">Patrones de diseño más usados</button><button class="wcp" onclick="useP(this)">Docker desde cero</button><button class="wcp" onclick="useP(this)">Seguridad web imprescindible</button><button class="wcp" onclick="useP(this)">TypeScript vs JavaScript</button></div></div>`;
+function buildW() {
+  return '<div class="wc" id="wscreen"><div class="wl">N0VA</div><div class="ws">inteligencia artificial avanzada</div><div class="wli"></div><div class="wch"><button class="wcp" onclick="useP(this)">Explica la recursividad con ejemplos</button><button class="wcp" onclick="useP(this)">Escribe un servidor HTTP en Python</button><button class="wcp" onclick="useP(this)">Como funciona async/await</button><button class="wcp" onclick="useP(this)">Crea una funcion de merge sort</button><button class="wcp" onclick="useP(this)">Explica los principios SOLID</button><button class="wcp" onclick="useP(this)">Diferencias entre SQL y NoSQL</button><button class="wcp" onclick="useP(this)">Como funciona una red neuronal</button><button class="wcp" onclick="useP(this)">Patrones de diseño mas usados</button><button class="wcp" onclick="useP(this)">Docker desde cero</button><button class="wcp" onclick="useP(this)">Seguridad web imprescindible</button><button class="wcp" onclick="useP(this)">TypeScript vs JavaScript</button><button class="wcp" onclick="useP(this)">Git desde cero</button></div></div>';
 }
 
-function renderList(){
-  const l=document.getElementById('clist');l.innerHTML='';
-  if(!convs.length){l.innerHTML='<div style="padding:14px;font-family:var(--fm);font-size:11px;color:var(--tm);text-align:center;letter-spacing:1px">// sin historial</div>';return;}
-  convs.forEach(c=>{
-    const d=document.createElement('div');d.className='ci'+(c.id===curId?' act':'');
-    d.onclick=e=>{if(!e.target.closest('.cdel'))loadConv(c.id);};
-    const p=c.messages.length?c.messages[c.messages.length-1].content.slice(0,38)+'...':'// vacío';
-    d.innerHTML=`<div class="cic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="cm"><div class="ct">${esc(c.title)}</div><div class="cpv">${esc(p)}</div></div><button class="cdel" onclick="delConv('${c.id}')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>`;
+function renderList() {
+  var l = document.getElementById('clist');
+  l.innerHTML = '';
+  if (!convs.length) {
+    l.innerHTML = '<div style="padding:14px;font-family:var(--fm);font-size:11px;color:var(--tm);text-align:center">// sin historial</div>';
+    return;
+  }
+  convs.forEach(function(c) {
+    var d = document.createElement('div');
+    d.className = 'civ' + (c.id === curId ? ' act' : '');
+    d.onclick = function(e) {
+      if (!e.target.closest('.cdl')) loadConv(c.id);
+    };
+    var p = c.messages.length ? c.messages[c.messages.length - 1].content.slice(0, 38) + '...' : '// vacio';
+    d.innerHTML = '<div class="cic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="cmv"><div class="ctv">' + esc(c.title) + '</div><div class="cpv">' + esc(p) + '</div></div><button class="cdl" onclick="delConv(\'' + c.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>';
     l.appendChild(d);
   });
 }
 
-function delConv(id){
-  convs=convs.filter(c=>c.id!==id);save();
-  if(curId===id){curId=null;if(convs.length)loadConv(convs[0].id);else{document.getElementById('msgs').innerHTML=buildW();document.getElementById('ttitle').textContent='// nueva sesión';}}
-  renderList();showToast('// conversación eliminada');
+function delConv(id) {
+  convs = convs.filter(function(c) { return c.id !== id; });
+  save();
+  if (curId === id) {
+    curId = null;
+    if (convs.length) {
+      loadConv(convs[0].id);
+    } else {
+      document.getElementById('msgs').innerHTML = buildW();
+      document.getElementById('ttitle').textContent = '// nueva sesion';
+    }
+  }
+  renderList();
 }
 
-function save(){localStorage.setItem('nova_c',JSON.stringify(convs));}
-function getC(){return convs.find(c=>c.id===curId);}
-
-function useP(btn){const i=document.getElementById('ci');i.value=btn.textContent;updateBtn();i.focus();}
-
-async function send(){
-  const inp=document.getElementById('ci'),text=inp.value.trim();
-  if(!text||busy)return;
-  if(!curId)newConv();
-  const conv=getC();if(!conv)return;
-  const w=document.getElementById('wscreen');if(w)w.remove();
-  busy=true;inp.value='';updateBtn();
-  conv.messages.push({role:'user',content:text});
-  if(conv.messages.length===1){conv.title=text.slice(0,42)+(text.length>42?'...':'');document.getElementById('ttitle').textContent='// '+conv.title;}
-  save();appendMsg('user',text,true);renderList();
-  const tid=addTyping();
-  await new Promise(r=>setTimeout(r,300+Math.random()*800));
-  removeTyping(tid);
-  const reply=findResponse(text);
-  conv.messages.push({role:'assistant',content:reply});
-  save();appendMsg('assistant',reply,true);renderList();
-  busy=false;updateBtn();inp.focus();
+function save() {
+  localStorage.setItem('nova_c3', JSON.stringify(convs));
 }
 
-function appendMsg(role,content,scroll){
-  const feed=document.getElementById('msgs'),row=document.createElement('div');
-  row.className='mr '+(role==='user'?'usr':'ai');
-  const now=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
-  const av=document.createElement('div');av.className='mav';av.textContent=role==='user'?'USR':'AI';
-  const body=document.createElement('div');body.className='mbd';
-  const meta=document.createElement('div');meta.className='mmeta';meta.textContent=(role==='user'?'tú':'n0va_ai')+'  '+now;
-  const bubble=document.createElement('div');bubble.className='bbl';
-  if(role==='user'){bubble.textContent=content;}
-  else{bubble.innerHTML=renderMD(content);bubble.querySelectorAll('pre code').forEach(el=>{hljs.highlightElement(el);wrapCode(el);});}
-  body.appendChild(meta);body.appendChild(bubble);row.appendChild(av);row.appendChild(body);feed.appendChild(row);
-  if(scroll)feed.scrollTop=feed.scrollHeight;
+function getC() {
+  return convs.find(function(c) { return c.id === curId; });
 }
 
-function renderMD(t){marked.setOptions({breaks:true,gfm:true});return marked.parse(t);}
-
-function wrapCode(el){
-  const pre=el.parentElement;if(pre.parentElement?.classList.contains('cw'))return;
-  const lang=[...el.classList].find(c=>c.startsWith('language-'))?.replace('language-','')||'code';
-  const w=document.createElement('div');w.className='cw';
-  const h=document.createElement('div');h.className='chead';
-  h.innerHTML=`<span class="clng">${esc(lang)}</span><button class="cpb" onclick="copyC(this)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copiar</button>`;
-  pre.parentNode.insertBefore(w,pre);w.appendChild(h);w.appendChild(pre);
+function useP(btn) {
+  document.getElementById('ci').value = btn.textContent;
+  updateBtn();
+  document.getElementById('ci').focus();
 }
 
-function copyC(btn){
-  const code=btn.closest('.cw').querySelector('code');
-  navigator.clipboard.writeText(code.textContent).then(()=>{
-    btn.classList.add('ok');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>copiado';
-    setTimeout(()=>{btn.classList.remove('ok');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copiar';},2000);
+// ═══════════════════════════════════════════
+// SEND — FUNCIÓN PRINCIPAL
+// ═══════════════════════════════════════════
+async function doSend() {
+  var inp = document.getElementById('ci');
+  var text = inp.value.trim();
+
+  if (!text) return;
+  if (busy) return;
+
+  if (MODELS[currentModel].type === 'api' && !apiKey) {
+    openKeyModal();
+    return;
+  }
+
+  if (!curId) newConv();
+  var conv = getC();
+  if (!conv) return;
+
+  // Quitar welcome
+  var w = document.getElementById('wscreen');
+  if (w) w.remove();
+
+  // Bloquear
+  busy = true;
+  inp.value = '';
+  updateBtn();
+
+  // Guardar msg usuario
+  conv.messages.push({ role: 'user', content: text });
+  if (conv.messages.length === 1) {
+    conv.title = text.slice(0, 42) + (text.length > 42 ? '...' : '');
+    document.getElementById('ttitle').textContent = '// ' + conv.title;
+  }
+  save();
+  appendMsg('user', text, true);
+  renderList();
+
+  var tid = addTyping();
+
+  try {
+    var reply;
+    if (MODELS[currentModel].type === 'api') {
+      reply = await callClaude(conv.messages);
+    } else {
+      await new Promise(function(r) { setTimeout(r, 250 + Math.random() * 600); });
+      reply = findResponse(text);
+    }
+    removeTyping(tid);
+    conv.messages.push({ role: 'assistant', content: reply });
+    save();
+    appendMsg('assistant', reply, true);
+    renderList();
+  } catch (err) {
+    removeTyping(tid);
+    appendError(err.message);
+  } finally {
+    busy = false;
+    updateBtn();
+    try { inp.focus(); } catch (e) {}
+  }
+}
+
+// Reset manual desde consola
+window.resetN0VA = function() {
+  busy = false;
+  updateBtn();
+};
+
+// ── RENDER ──
+function appendMsg(role, content, scroll) {
+  var feed = document.getElementById('msgs');
+  var row = document.createElement('div');
+  row.className = 'mr ' + (role === 'user' ? 'usr' : 'ai');
+
+  var now = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+  var av = document.createElement('div');
+  av.className = 'mav';
+  av.textContent = role === 'user' ? 'USR' : 'AI';
+
+  var body = document.createElement('div');
+  body.className = 'mbd';
+
+  var meta = document.createElement('div');
+  meta.className = 'mmeta';
+  meta.textContent = (role === 'user' ? 'tu' : 'n0va · ' + MODELS[currentModel].name) + '  ' + now;
+
+  var bubble = document.createElement('div');
+  bubble.className = 'bbl';
+
+  if (role === 'user') {
+    bubble.textContent = content;
+  } else {
+    bubble.innerHTML = renderMD(content);
+    bubble.querySelectorAll('pre code').forEach(function(el) {
+      hljs.highlightElement(el);
+      wrapCode(el);
+    });
+  }
+
+  body.appendChild(meta);
+  body.appendChild(bubble);
+  row.appendChild(av);
+  row.appendChild(body);
+  feed.appendChild(row);
+
+  if (scroll) feed.scrollTop = feed.scrollHeight;
+}
+
+function appendError(msg) {
+  var feed = document.getElementById('msgs');
+  var row = document.createElement('div');
+  row.className = 'mr ai';
+  row.innerHTML = '<div class="mav">AI</div><div class="mbd"><div class="mmeta">error</div><div class="errbbl"><b>ERROR:</b> ' + esc(msg) + '</div></div>';
+  feed.appendChild(row);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function renderMD(t) {
+  marked.setOptions({ breaks: true, gfm: true });
+  return marked.parse(t);
+}
+
+function wrapCode(el) {
+  var pre = el.parentElement;
+  if (pre.parentElement && pre.parentElement.classList.contains('cw')) return;
+  var langClass = [].slice.call(el.classList).find(function(c) { return c.startsWith('language-'); });
+  var lang = langClass ? langClass.replace('language-', '') : 'code';
+  var w = document.createElement('div');
+  w.className = 'cw';
+  var h = document.createElement('div');
+  h.className = 'chead';
+  h.innerHTML = '<span class="clng">' + esc(lang) + '</span><button class="cpb" onclick="copyC(this)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copiar</button>';
+  pre.parentNode.insertBefore(w, pre);
+  w.appendChild(h);
+  w.appendChild(pre);
+}
+
+function copyC(btn) {
+  var code = btn.closest('.cw').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(function() {
+    btn.classList.add('ok');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>copiado';
+    setTimeout(function() {
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copiar';
+    }, 2000);
   });
 }
 
-function addTyping(){
-  const id='t'+gid(),feed=document.getElementById('msgs'),row=document.createElement('div');
-  row.className='mr ai';row.id=id;
-  row.innerHTML=`<div class="mav">AI</div><div class="mbd"><div class="mmeta">n0va_ai  procesando...</div><div class="bbl typbbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;
-  feed.appendChild(row);feed.scrollTop=feed.scrollHeight;return id;
+function addTyping() {
+  var id = 't' + gid();
+  var feed = document.getElementById('msgs');
+  var row = document.createElement('div');
+  row.className = 'mr ai';
+  row.id = id;
+  row.innerHTML = '<div class="mav">AI</div><div class="mbd"><div class="mmeta">n0va · ' + MODELS[currentModel].name + '  ...</div><div class="bbl typbbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>';
+  feed.appendChild(row);
+  feed.scrollTop = feed.scrollHeight;
+  return id;
 }
 
-function removeTyping(id){document.getElementById(id)?.remove();}
-
-function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function clearChat(){const c=getC();if(!c)return;c.messages=[];c.title='Nueva sesión';save();loadConv(c.id);showToast('// chat limpiado');}
-
-function exportChat(){
-  const c=getC();if(!c||!c.messages.length){showToast('// nada que exportar',true);return;}
-  const md=c.messages.map(m=>'## '+(m.role==='user'?'Usuario':'N0VA AI')+'\n\n'+m.content).join('\n\n---\n\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
-  a.download='nova-'+Date.now()+'.md';a.click();showToast('// exportado');
+function removeTyping(id) {
+  var el = document.getElementById(id);
+  if (el) el.remove();
 }
 
-let tt=null;
-function showToast(msg,err){
-  const el=document.getElementById('toast');el.textContent=msg;
-  el.style.color=err?'var(--pk)':'var(--pb)';el.style.borderColor=err?'rgba(244,114,182,.3)':'var(--bm)';
-  el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2800);
+function esc(t) {
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function clearChat() {
+  var c = getC();
+  if (!c) return;
+  c.messages = [];
+  c.title = 'Nueva sesion';
+  save();
+  loadConv(c.id);
+  showToast('// limpiado');
+}
+
+function exportChat() {
+  var c = getC();
+  if (!c || !c.messages.length) { showToast('// vacio', 1); return; }
+  var md = c.messages.map(function(m) {
+    return '## ' + (m.role === 'user' ? 'Usuario' : 'N0VA') + '\n\n' + m.content;
+  }).join('\n\n---\n\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+  a.download = 'nova-' + Date.now() + '.md';
+  a.click();
+  showToast('// exportado');
+}
+
+// ── TOAST ──
+var tt = null;
+function showToast(msg, err) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.color = err ? 'var(--pk)' : 'var(--pb)';
+  el.style.borderColor = err ? 'rgba(244,114,182,.3)' : 'var(--bm)';
+  el.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(function() { el.classList.remove('show'); }, 2800);
 }
 </script>
 </body>
