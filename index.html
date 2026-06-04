@@ -1236,9 +1236,9 @@ const FIREBASE_RULES = `{
     "gameLikes": { ".read": true, ".write": "auth != null" },
     "presence": { ".read": true, "online": { "$key": { ".write": "auth != null" } } },
     "stats": { ".read": true, "totalVisits": { ".write": true } },
-    "updateLog": { ".read": true, ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com' 'guillempro07@gmail.com" },
-    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com' 'guillempro07@gmail.com" },
-    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com' 'guillempro07@gmail.com" }
+    "updateLog": { ".read": true, ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" },
+    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && auth.token.email == 'guillevarelacors@gmail.com'" }
   }
 }`;
 
@@ -1259,7 +1259,7 @@ let selectedAvatarId = null, selectedLogType = 'new', adminFoundUser = null, bro
 let selectedAccentColorKey = 'accent';
 let currentImgBase64 = null;
 let activeUpdateFilter = 'all';
-const ADMIN_EMAIL = 'guillevarelacors@gmail.com' 'guillempro07@gmail.com';
+const ADMIN_EMAIL = 'guillevarelacors@gmail.com';
 
 // ─── LIGHTBOX ───
 function openLightbox(src) {
@@ -2361,7 +2361,7 @@ const provider = new GoogleAuthProvider();
 State.db = db;
 window._fbFns = { ref, set, get, onValue, runTransaction, remove, query, orderByChild, equalTo, push, onDisconnect };
 
-const ADMIN_EMAIL = 'guillevarelacors@gmail.com' 'guillempro07@gmail.com;
+const ADMIN_EMAIL = 'guillevarelacors@gmail.com';
 
 let myPresenceRef = null;
 try {
