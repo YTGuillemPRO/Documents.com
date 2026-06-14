@@ -712,6 +712,7 @@
       <div class="input-group"><label class="input-label">Email</label><input type="email" id="auth-email" class="modal-input" placeholder="tu@email.com"></div>
       <div class="input-group"><label class="input-label">Contraseña</label><input type="password" id="auth-pass" class="modal-input" placeholder="••••••••"></div>
       <button class="btn-full" id="btn-login">Iniciar sesión</button>
+      <button type="button" id="btn-forgot-pass" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#a78bfa;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;">¿Olvidaste tu contraseña?</button>
       <div class="divider"><span>o</span></div>
       <button class="btn-google-modal" id="btn-google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">Continuar con Google</button>
     </div>
@@ -1065,13 +1066,33 @@
         <div id="admin-users-list" style="overflow-x:auto;"><p style="font-size:13px;color:#8888a8;">Pulsa "Cargar" para ver los usuarios registrados.</p></div>
       </div>
 
+      <!-- Dar cosmético a usuario -->
+      <div class="admin-card">
+        <div class="admin-card-title" style="color:#f0abfc;"><span class="iconify" data-icon="mdi:gift" data-width="20"></span> Regalar cosmético</div>
+        <input type="text" class="admin-input" id="admin-cosmetic-user" placeholder="Nombre de usuario...">
+        <select class="admin-input" id="admin-cosmetic-item"></select>
+        <button class="admin-btn admin-btn-purple" onclick="adminGiveCosmetic()" style="width:100%;">🎁 Regalar cosmético</button>
+        <div class="admin-result-box" id="admin-cosmetic-result"></div>
+      </div>
+
+      <!-- Establecer nivel / monedas exactas -->
+      <div class="admin-card">
+        <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="mdi:tune-variant" data-width="20"></span> Establecer valores exactos</div>
+        <input type="text" class="admin-input" id="admin-set-user" placeholder="Nombre de usuario...">
+        <input type="number" class="admin-input" id="admin-set-coins" placeholder="Monedas exactas (vacío = no cambiar)">
+        <input type="number" class="admin-input" id="admin-set-xp" placeholder="XP exacta (vacío = no cambiar)">
+        <button class="admin-btn admin-btn-blue" onclick="adminSetValues()" style="width:100%;">✏️ Aplicar valores</button>
+        <div class="admin-result-box" id="admin-set-result"></div>
+      </div>
+
+      <!-- Mantenimiento -->
       <div class="admin-card" style="grid-column: 1 / -1;">
-        <div class="admin-card-title" style="color:#f97316;"><span class="iconify" data-icon="mdi:database-lock" data-width="20"></span> Reglas Firebase<button class="admin-btn admin-btn-outline" onclick="copyRules()" style="margin-left:auto;font-size:11px;padding:5px 12px;">📋 Copiar</button></div>
-        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:700;color:#fca5a5;margin-bottom:4px;">⚠️ Cómo arreglar "permission denied"</div>
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.7;">1. Ve a <strong style="color:#f97316;">console.firebase.google.com</strong><br>2. Selecciona tu proyecto → <strong>Realtime Database</strong> → <strong>Reglas</strong><br>3. Copia las reglas de abajo y reemplaza las existentes → <strong>Publicar</strong></div>
+        <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="mdi:wrench" data-width="20"></span> Mantenimiento</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="admin-btn admin-btn-outline" onclick="adminClearBroadcast()" style="flex:1;min-width:180px;">🧹 Borrar mensaje global</button>
+          <button class="admin-btn admin-btn-outline" onclick="refreshAdminStats()" style="flex:1;min-width:180px;">🔄 Refrescar estadísticas</button>
         </div>
-        <div class="rules-box" id="firebase-rules-display"></div>
+        <div class="admin-result-box" id="admin-maint-result"></div>
       </div>
     </div>
   </div>
@@ -1119,6 +1140,14 @@
       <input type="password" id="settings-pass-confirm" class="admin-input" placeholder="Confirmar nueva contraseña">
       <button class="admin-btn admin-btn-gold" onclick="settingsChangePassword()" style="width:100%;margin-top:4px;">🔑 Cambiar contraseña</button>
       <div class="admin-result-box" id="settings-pass-result"></div>
+    </div>
+
+    <!-- Restablecer contraseña por correo -->
+    <div class="admin-card" style="margin-bottom:16px;">
+      <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="mdi:email-lock" data-width="20"></span> Restablecer por correo</div>
+      <p style="font-size:13px;color:#9090b8;margin-bottom:14px;">¿No recuerdas tu contraseña? Te enviaremos un enlace seguro al correo (Gmail) de tu cuenta para crear una nueva.</p>
+      <button class="admin-btn admin-btn-blue" onclick="settingsSendResetEmail()" style="width:100%;">📧 Enviar correo de restablecimiento</button>
+      <div class="admin-result-box" id="settings-reset-result"></div>
     </div>
 
     <!-- Info de cuenta -->
@@ -1226,6 +1255,33 @@ const SHOP_ITEMS = [
   { id:'ti_ghost', name:'Gh0st Fan', type:'title', cat:'title', emoji:'👻', price:200, rarity:'rare', bg:'linear-gradient(135deg,#1e1b4b,#4c1d95,#7c3aed)', glowColor:'#7c3aed', particleColor:'#c4b5fd', description:'Fan número uno de Gh0st' },
   { id:'ti_god', name:'Gaming God', type:'title', cat:'title', emoji:'⚡', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#451a03,#d97706,#f59e0b,#4c1d95,#7c3aed)', glowColor:'#f59e0b', particleColor:'#fde68a', description:'Deidad del gaming' },
   { id:'ti_shadow', name:'Dark Lord', type:'title', cat:'title', emoji:'🌑', price:1200, rarity:'legendary', bg:'linear-gradient(135deg,#000000,#0f0f1a,#1e1b4b,#ef4444)', glowColor:'#ef4444', particleColor:'#fca5a5', description:'Señor de las tinieblas' },
+
+  // ─── NUEVOS AVATARES ───
+  { id:'av_ninja', name:'Sombra Ninja', type:'avatar', cat:'avatar', emoji:'🥷', price:450, rarity:'epic', bg:'linear-gradient(135deg,#0a0a0f 0%,#1f2937 50%,#ef4444 100%)', glowColor:'#ef4444', particleColor:'#fca5a5', description:'Sigiloso y letal' },
+  { id:'av_unicorn', name:'Unicornio Místico', type:'avatar', cat:'avatar', emoji:'🦄', price:700, rarity:'epic', bg:'linear-gradient(135deg,#312e81 0%,#ec4899 50%,#f9a8d4 100%)', glowColor:'#ec4899', particleColor:'#f9a8d4', description:'Magia pura y brillante' },
+  { id:'av_demon', name:'Demonio Carmesí', type:'avatar', cat:'avatar', emoji:'😈', price:850, rarity:'epic', bg:'linear-gradient(135deg,#450a0a 0%,#991b1b 50%,#ef4444 100%)', glowColor:'#ef4444', particleColor:'#fca5a5', description:'Travieso y poderoso' },
+  { id:'av_phoenix', name:'Ave Fénix', type:'avatar', cat:'avatar', emoji:'🦅', price:1200, rarity:'legendary', bg:'linear-gradient(135deg,#7c2d12 0%,#ea580c 40%,#f59e0b 70%,#fde047 100%)', glowColor:'#f59e0b', particleColor:'#fde68a', description:'Renace de las cenizas' },
+  { id:'av_yeti', name:'Yeti Glacial', type:'avatar', cat:'avatar', emoji:'🧊', price:500, rarity:'rare', bg:'linear-gradient(135deg,#0c2231 0%,#0891b2 50%,#a5f3fc 100%)', glowColor:'#06b6d4', particleColor:'#a5f3fc', description:'Helado hasta la médula' },
+  { id:'av_ufo', name:'Visitante', type:'avatar', cat:'avatar', emoji:'🛸', price:600, rarity:'epic', bg:'linear-gradient(135deg,#052e16 0%,#15803d 50%,#86efac 100%)', glowColor:'#22c55e', particleColor:'#86efac', description:'Llegó de las estrellas' },
+  { id:'av_ronin', name:'Rōnin Eterno', type:'avatar', cat:'avatar', emoji:'⚔️', price:1500, rarity:'legendary', bg:'linear-gradient(135deg,#1c1917 0%,#7c3aed 40%,#ec4899 70%,#f59e0b 100%)', glowColor:'#7c3aed', particleColor:'#c4b5fd', description:'El último samurái' },
+
+  // ─── NUEVOS MARCOS ───
+  { id:'fr_emerald', name:'Esmeralda', type:'frame', cat:'frame', emoji:'💚', price:300, rarity:'rare', bg:'linear-gradient(135deg,#052e16 0%,#059669 50%,#6ee7b7 100%)', glowColor:'#10b981', particleColor:'#6ee7b7', description:'Verde luminoso' },
+  { id:'fr_blood', name:'Sangre', type:'frame', cat:'frame', emoji:'🩸', price:450, rarity:'epic', bg:'linear-gradient(135deg,#450a0a 0%,#dc2626 50%,#fca5a5 100%)', glowColor:'#ef4444', particleColor:'#fca5a5', description:'Rojo intenso' },
+  { id:'fr_cyber', name:'Cyberpunk', type:'frame', cat:'frame', emoji:'🤖', price:900, rarity:'epic', bg:'linear-gradient(135deg,#0c1445 0%,#06b6d4 40%,#ec4899 100%)', glowColor:'#06b6d4', particleColor:'#67e8f9', description:'Estética futurista neón' },
+  { id:'fr_solar', name:'Corona Solar', type:'frame', cat:'frame', emoji:'☀️', price:1800, rarity:'legendary', bg:'linear-gradient(135deg,#451a03 0%,#ea580c 40%,#f59e0b 70%,#fde047 100%)', glowColor:'#f59e0b', particleColor:'#fde68a', description:'El brillo del astro rey' },
+
+  // ─── NUEVAS INSIGNIAS ───
+  { id:'bd_vip', name:'VIP', type:'badge', cat:'badge', emoji:'💎', price:1000, rarity:'epic', bg:'linear-gradient(135deg,#0c2a4a,#0891b2,#67e8f9)', glowColor:'#06b6d4', particleColor:'#a5f3fc', description:'Miembro exclusivo' },
+  { id:'bd_streamer', name:'Streamer', type:'badge', cat:'badge', emoji:'🎥', price:600, rarity:'rare', bg:'linear-gradient(135deg,#4c0519,#be123c,#fb7185)', glowColor:'#f43f5e', particleColor:'#fda4af', description:'Siempre en directo' },
+  { id:'bd_champion', name:'Campeón', type:'badge', cat:'badge', emoji:'🥇', price:2500, rarity:'legendary', bg:'linear-gradient(135deg,#451a03,#d97706,#fbbf24,#fde047)', glowColor:'#f59e0b', particleColor:'#fde68a', description:'Número uno indiscutible' },
+  { id:'bd_hacker', name:'H4ck3r', type:'badge', cat:'badge', emoji:'💻', price:1500, rarity:'legendary', bg:'linear-gradient(135deg,#022c22,#059669,#34d399)', glowColor:'#10b981', particleColor:'#6ee7b7', description:'Domina el código' },
+
+  // ─── NUEVOS TÍTULOS ───
+  { id:'ti_rookie', name:'Recién Llegado', type:'title', cat:'title', emoji:'🐣', price:30, rarity:'common', bg:'linear-gradient(135deg,#1f2937,#4b5563,#9ca3af)', glowColor:'#9ca3af', particleColor:'#e5e7eb', description:'Todo principio es difícil' },
+  { id:'ti_speed', name:'Velocista', type:'title', cat:'title', emoji:'⚡', price:400, rarity:'rare', bg:'linear-gradient(135deg,#1e3a8a,#2563eb,#60a5fa)', glowColor:'#3b82f6', particleColor:'#93c5fd', description:'Más rápido que nadie' },
+  { id:'ti_collector', name:'Coleccionista', type:'title', cat:'title', emoji:'🎒', price:900, rarity:'epic', bg:'linear-gradient(135deg,#422006,#a16207,#facc15)', glowColor:'#eab308', particleColor:'#fde68a', description:'Lo tiene absolutamente todo' },
+  { id:'ti_immortal', name:'Inmortal', type:'title', cat:'title', emoji:'♾️', price:6000, rarity:'legendary', bg:'linear-gradient(135deg,#020617,#4c1d95,#7c3aed,#ec4899,#f59e0b)', glowColor:'#7c3aed', particleColor:'#c4b5fd', description:'Tu leyenda nunca muere' },
 ];
 
 const ACCENT_COLORS = {
@@ -1236,39 +1292,6 @@ const ACCENT_COLORS = {
   gold: 'linear-gradient(90deg,#f59e0b,#fbbf24)',
   pink: 'linear-gradient(90deg,#ec4899,#f9a8d4)',
 };
-
-const FIREBASE_RULES = `{
-  "rules": {
-    ".read": false,
-    ".write": false,
-    "users": {
-      "$uid": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $uid",
-        "friendRequests": {
-          "$fromUid": {
-            ".read": "auth != null && auth.uid == $uid",
-            ".write": "auth != null && auth.uid == $fromUid"
-          }
-        },
-        "friends": {
-          "$friendUid": {
-            ".read": "auth != null && (auth.uid == $uid || auth.uid == $friendUid)",
-            ".write": "auth != null && (auth.uid == $uid || auth.uid == $friendUid)"
-          }
-        },
-        "online": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" }
-      }
-    },
-    "userFavorites": { "$uid": { ".read": "auth != null", ".write": "auth != null && auth.uid == $uid" } },
-    "gameLikes": { ".read": true, ".write": "auth != null" },
-    "presence": { ".read": true, "online": { "$key": { ".write": "auth != null" } } },
-    "stats": { ".read": true, "totalVisits": { ".write": true } },
-    "updateLog": { ".read": true, ".write": "auth != null && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')" },
-    "adminBroadcast": { ".read": "auth != null", ".write": "auth != null && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')" },
-    "bannedUsers": { ".read": "auth != null", ".write": "auth != null && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')" }
-  }
-}`;
 
 // ── DUAL ADMIN ──
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
@@ -1719,8 +1742,14 @@ window.checkNewUpdates=checkNewUpdates;
 // ═══════════════════════════════
 function initAdminPage(){
   if(!isAdmin(State.email))return;
-  document.getElementById('firebase-rules-display').textContent=FIREBASE_RULES;
+  populateCosmeticSelect();
   refreshAdminStats();loadBannedUsers();
+}
+function populateCosmeticSelect(){
+  const sel=document.getElementById('admin-cosmetic-item');
+  if(!sel||sel.dataset.filled)return;
+  sel.innerHTML=SHOP_ITEMS.map(it=>`<option value="${it.id}">${it.emoji} ${it.name} — ${it.type}</option>`).join('');
+  sel.dataset.filled='1';
 }
 async function refreshAdminStats(){
   if(!window._fbFns||!isAdmin(State.email))return;
@@ -1777,8 +1806,60 @@ window.adminBroadcast=adminBroadcast;
 async function adminLoadUsers(){if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const container=document.getElementById('admin-users-list');container.innerHTML='<p style="font-size:13px;color:#8888a8;">Cargando...</p>';try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){container.innerHTML='<p style="font-size:13px;color:#8888a8;">No hay usuarios.</p>';return;}const users=Object.entries(snap.val()).sort(([,a],[,b])=>(b.coins||0)-(a.coins||0));container.innerHTML=`<table class="users-table"><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Nivel</th><th>XP</th><th>Monedas</th><th>Acciones</th></tr></thead><tbody>${users.map(([uid,u],i)=>`<tr><td style="color:#6060a0;">${i+1}</td><td style="font-weight:700;">${u.username||'—'}</td><td style="color:#8888a8;font-size:12px;">${u.email||'—'}</td><td><span style="background:rgba(124,58,237,0.15);color:var(--accent2);padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;">Lv ${u.level||1}</span></td><td>${(u.xp||0).toLocaleString()}</td><td style="color:var(--gold);font-weight:700;">${(u.coins||0).toLocaleString()}</td><td><button onclick="document.getElementById('admin-give-user').value='${(u.username||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-right:4px;">💰</button><button onclick="document.getElementById('admin-ban-input').value='${(u.email||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);color:#fca5a5;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🚫</button></td></tr>`).join('')}</tbody></table>`;}catch(err){container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`;}}
 window.adminLoadUsers=adminLoadUsers;
 
-function copyRules(){navigator.clipboard.writeText(FIREBASE_RULES).then(()=>toast('📋 Reglas copiadas al portapapeles','success')).catch(()=>toast('No se pudo copiar','error'));}
-window.copyRules=copyRules;
+async function adminFindUidByUsername(username){
+  const{ref,get,query,orderByChild,equalTo}=window._fbFns;
+  const q=query(ref(State.db,'users'),orderByChild('username'),equalTo(username));
+  const snap=await get(q);
+  if(!snap.exists())return null;
+  let uid=null;snap.forEach(c=>{uid=c.key;});
+  return uid;
+}
+
+async function adminGiveCosmetic(){
+  if(!window._fbFns||!isAdmin(State.email))return;
+  const username=document.getElementById('admin-cosmetic-user').value.trim();
+  const itemId=document.getElementById('admin-cosmetic-item').value;
+  if(!username){adminShowResult('admin-cosmetic-result','Escribe un nombre de usuario','err');return;}
+  const item=SHOP_ITEMS.find(i=>i.id===itemId);
+  if(!item){adminShowResult('admin-cosmetic-result','Selecciona un cosmético','err');return;}
+  adminShowResult('admin-cosmetic-result','🔍 Buscando usuario...','info');
+  try{
+    const uid=await adminFindUidByUsername(username);
+    if(!uid){adminShowResult('admin-cosmetic-result','❌ Usuario no encontrado','err');return;}
+    const{ref,set}=window._fbFns;
+    await set(ref(State.db,`users/${uid}/owned/${itemId}`),true);
+    adminShowResult('admin-cosmetic-result',`✅ ${item.emoji} ${item.name} regalado a ${username}`,'ok');
+    toast(`🎁 ${item.name} regalado a ${username}`,'success');
+  }catch(err){adminShowResult('admin-cosmetic-result','Error: '+err.message,'err');}
+}
+window.adminGiveCosmetic=adminGiveCosmetic;
+
+async function adminSetValues(){
+  if(!window._fbFns||!isAdmin(State.email))return;
+  const username=document.getElementById('admin-set-user').value.trim();
+  const coinsRaw=document.getElementById('admin-set-coins').value;
+  const xpRaw=document.getElementById('admin-set-xp').value;
+  if(!username){adminShowResult('admin-set-result','Escribe un nombre de usuario','err');return;}
+  if(coinsRaw===''&&xpRaw===''){adminShowResult('admin-set-result','Escribe al menos un valor','err');return;}
+  adminShowResult('admin-set-result','🔍 Buscando usuario...','info');
+  try{
+    const uid=await adminFindUidByUsername(username);
+    if(!uid){adminShowResult('admin-set-result','❌ Usuario no encontrado','err');return;}
+    const{ref,runTransaction}=window._fbFns;
+    await runTransaction(ref(State.db,`users/${uid}`),u=>{if(!u)return u;if(coinsRaw!=='')u.coins=Math.max(0,parseInt(coinsRaw)||0);if(xpRaw!==''){const nx=Math.max(0,parseInt(xpRaw)||0);u.xp=nx;u.level=window.xpToLevel(nx).level;}return u;});
+    let msg=`✅ ${username} actualizado:`;if(coinsRaw!=='')msg+=` ${parseInt(coinsRaw)||0} monedas`;if(xpRaw!=='')msg+=` ${parseInt(xpRaw)||0} XP`;
+    adminShowResult('admin-set-result',msg,'ok');toast(msg,'success');
+  }catch(err){adminShowResult('admin-set-result','Error: '+err.message,'err');}
+}
+window.adminSetValues=adminSetValues;
+
+async function adminClearBroadcast(){
+  if(!window._fbFns||!isAdmin(State.email))return;
+  const{ref,remove}=window._fbFns;
+  try{await remove(ref(State.db,'adminBroadcast/current'));adminShowResult('admin-maint-result','🧹 Mensaje global borrado','ok');toast('Mensaje global borrado','success');}
+  catch(err){adminShowResult('admin-maint-result','Error: '+err.message,'err');}
+}
+window.adminClearBroadcast=adminClearBroadcast;
 
 
 // ─── SETTINGS PAGE ───
@@ -1851,6 +1932,21 @@ async function settingsChangePassword(){
   }
 }
 
+async function settingsSendResetEmail(){
+  if(!window._firebase_auth||!window._firebase_auth_fns){settingsShowResult('settings-reset-result','Error de conexión','err');return;}
+  const email=State.email;
+  if(!email){settingsShowResult('settings-reset-result','No hay correo asociado a esta cuenta','err');return;}
+  try{
+    const{sendPasswordResetEmail}=window._firebase_auth_fns;
+    await sendPasswordResetEmail(window._firebase_auth,email);
+    settingsShowResult('settings-reset-result',`✅ Correo enviado a ${email}. Revisa tu bandeja y la carpeta de spam.`,'ok');
+    toast('📧 Correo de restablecimiento enviado','success');
+  }catch(e){
+    settingsShowResult('settings-reset-result','Error: '+(e.message||e.code),'err');
+  }
+}
+window.settingsSendResetEmail=settingsSendResetEmail;
+
 function settingsLogout(){document.getElementById('btn-logout').click();}
 
 async function settingsDeleteAccount(){
@@ -1876,7 +1972,7 @@ renderShop();
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, onValue, onDisconnect, push, runTransaction, remove, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -1896,7 +1992,7 @@ const provider = new GoogleAuthProvider();
 State.db = db;
 window._fbFns = { ref, set, get, onValue, runTransaction, remove, query, orderByChild, equalTo, push, onDisconnect };
 window._firebase_auth = auth;
-window._firebase_auth_fns = { EmailAuthProvider, reauthenticateWithCredential, updatePassword };
+window._firebase_auth_fns = { EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail };
 
 let myPresenceRef = null;
 try {
@@ -1939,6 +2035,19 @@ async function loadUserData(uid){
 
 document.getElementById('btn-login').addEventListener('click',async()=>{const em=document.getElementById('auth-email').value.trim(),pw=document.getElementById('auth-pass').value;if(!em||!pw){toast('Rellena todos los campos','error');return;}try{await signInWithEmailAndPassword(auth,em,pw);toast('¡Sesión iniciada!','success');closeAuth();}catch(err){toast('Email o contraseña incorrectos','error');}});
 document.getElementById('btn-register').addEventListener('click',async()=>{const username=document.getElementById('reg-username').value.trim(),em=document.getElementById('reg-email').value.trim(),pw=document.getElementById('reg-pass').value;if(!username||!em||!pw){toast('Rellena todos los campos','error');return;}if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}try{const q=query(ref(db,'users'),orderByChild('username'),equalTo(username));const snap=await get(q);if(snap.exists()){toast('Ese nombre de usuario ya está en uso','error');return;}const cred=await createUserWithEmailAndPassword(auth,em,pw);await set(ref(db,`users/${cred.user.uid}`),{username,email:em,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida','success');closeAuth();}catch(err){toast('Error: '+err.message,'error');}});
+
+document.getElementById('btn-forgot-pass').addEventListener('click',async()=>{
+  let em=document.getElementById('auth-email').value.trim();
+  if(!em){em=(prompt('Escribe el email (Gmail) de tu cuenta para enviarte el enlace de recuperación:')||'').trim();}
+  if(!em){toast('Escribe tu email primero','error');return;}
+  try{
+    await sendPasswordResetEmail(auth,em);
+    toast('📧 Te enviamos un correo para restablecer la contraseña. Revisa tu bandeja (y spam).','success');
+  }catch(err){
+    const msg=err.code==='auth/invalid-email'?'Email no válido':err.code==='auth/user-not-found'?'No existe ninguna cuenta con ese email':'Error: '+err.message;
+    toast(msg,'error');
+  }
+});
 
 const googleSignIn=async()=>{try{const cred=await signInWithPopup(auth,provider);const snap=await get(ref(db,`users/${cred.user.uid}`));if(!snap.exists()){const emailUser=cred.user.email.split('@')[0];await set(ref(db,`users/${cred.user.uid}`),{username:emailUser,email:cred.user.email,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});toast('🎉 ¡Bienvenido! +100 monedas de bienvenida','success');}else{toast('¡Sesión iniciada con Google!','success');}closeAuth();}catch(err){toast('Error con Google: '+err.message,'error');}};
 document.getElementById('btn-google').addEventListener('click',googleSignIn);
