@@ -17,7 +17,7 @@
     --text: #f4f4f5;
     --muted: #a1a1aa;
     --subtle: #71717a;
-    --accent: #6366f1; /* Índigo profesional */
+    --accent: #6366f1;
     --accent-2: #818cf8;
     --accent-soft: rgba(99, 102, 241, 0.15);
     --accent-glow: rgba(99, 102, 241, 0.4);
@@ -34,7 +34,6 @@
   
   .app { display: flex; height: 100vh; position: relative; z-index: 1; }
   
-  /* ===== Sidebar ===== */
   .sidebar { width: var(--sidebar-w); background: rgba(16, 16, 20, 0.8); backdrop-filter: blur(24px) saturate(180%); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.35s ease; z-index: 30; }
   .sidebar-header { padding: 20px 18px 16px; display: flex; align-items: center; justify-content: space-between; }
   .brand { display: flex; align-items: center; gap: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--text); }
@@ -68,7 +67,6 @@
   .user-plan.loading::before { background: var(--muted); box-shadow: none; animation: none; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   
-  /* ===== Main Chat ===== */
   .chat { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
   .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(16, 16, 20, 0.6); backdrop-filter: blur(24px); z-index: 10; }
   .chat-header-left { display: flex; align-items: center; gap: 16px; }
@@ -112,7 +110,6 @@
   .typing-cursor::after { content: '▋'; color: var(--accent-2); animation: blink 1s steps(2) infinite; margin-left: 2px; }
   @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
   
-  /* ===== Input Area & Model Selector ===== */
   .input-area { padding: 16px 24px 24px; background: linear-gradient(to top, var(--bg) 60%, transparent); position: relative; }
   .input-wrapper { max-width: 800px; margin: 0 auto; background: rgba(22, 22, 28, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 8px 8px 8px 20px; display: flex; align-items: flex-end; gap: 12px; transition: all 0.25s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
   .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), 0 10px 30px rgba(0,0,0,0.2); }
@@ -123,7 +120,6 @@
   .send-btn:hover:not(:disabled) { transform: scale(1.05) translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
   .send-btn:disabled { background: var(--surface-3); color: var(--subtle); cursor: not-allowed; box-shadow: none; }
   
-  /* Model Selector (Below Chatbox) */
   .model-selector { max-width: 800px; margin: 0 auto 12px; display: flex; justify-content: flex-start; position: relative; }
   .model-dropdown-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 100px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
   .model-dropdown-btn:hover { background: var(--surface-3); border-color: var(--border-light); }
@@ -205,9 +201,7 @@
           <span id="currentModelName">Claude 3.5 Haiku</span>
           <i class="fa-solid fa-chevron-up"></i>
         </button>
-        <div class="model-menu" id="modelMenu">
-          <!-- Los modelos se inyectan aquí por JS -->
-        </div>
+        <div class="model-menu" id="modelMenu"></div>
       </div>
       <div class="input-wrapper">
         <textarea class="input-field" id="inputField" placeholder="Conectando con LevelUp..." rows="1" disabled></textarea>
@@ -256,7 +250,6 @@
     { id:'av_robot', emoji:'🤖', bg:'linear-gradient(135deg,#0c1445 0%,#1d4ed8 50%,#60a5fa 100%)' }
   ];
 
-  // Lista gigante de modelos profesionales
   const MODELS = [
     { id: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku', desc: 'Rápido y experto en programación.', tag: 'Top', tagColor: 'green' },
     { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Líder en redacción y análisis complejo.', tag: 'Pro', tagColor: 'purple' },
@@ -330,8 +323,17 @@
     }
   });
 
+  // LÓGICA DE AUTENTICACIÓN A PRUEBA DE CUELGES
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // 1. Desbloquear instantly sin esperar a la base de datos
+      els.authBlocker.classList.remove('show');
+      els.inputField.disabled = false;
+      els.inputField.placeholder = `Pregúntame algo...`;
+      els.userName.textContent = 'Usuario';
+      els.userLevel.textContent = 'Cargando datos...';
+      
+      // 2. Cargar datos de LevelUp en segundo plano
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
         const data = snap.val() || {};
@@ -350,16 +352,17 @@
           els.userAvatar.style.background = 'linear-gradient(135deg, #7c3aed, #a78bfa)';
           els.userAvatar.textContent = (data.username || 'U')[0].toUpperCase();
         }
-
-        els.authBlocker.classList.remove('show');
-        els.inputField.disabled = false;
         els.inputField.placeholder = `Pregúntame algo, ${data.username}...`;
         
       } catch (err) {
         console.error("Error cargando datos:", err);
-        els.userName.textContent = 'Error';
+        // Si falla la base de datos, no bloqueamos al usuario, simplemente usamos datos genéricos
+        els.userName.textContent = 'Usuario';
+        els.userLevel.textContent = 'Modo Seguro';
+        els.userLevel.classList.remove('loading');
       }
     } else {
+      // Usuario NO logueado
       state.userData = null;
       els.authBlocker.classList.add('show');
       els.inputField.disabled = true;
