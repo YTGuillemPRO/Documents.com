@@ -131,15 +131,19 @@
   .model-dropdown-btn.open i { transform: rotate(180deg); }
   .model-dropdown-btn .model-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
   
-  .model-menu { position: absolute; bottom: calc(100% + 8px); left: 0; width: 320px; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 4px; z-index: 100; max-height: 400px; overflow-y: auto; }
+  .model-menu { position: absolute; bottom: calc(100% + 8px); left: 0; width: 340px; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 4px; z-index: 100; max-height: 450px; overflow-y: auto; }
+  .model-menu::-webkit-scrollbar { width: 4px; }
+  .model-menu::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
   .model-menu.open { display: flex; animation: fadeUp 0.2s ease; }
-  .model-option { padding: 12px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; }
+  .model-option { padding: 12px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; border: 1px solid transparent; }
   .model-option:hover { background: var(--surface-2); }
-  .model-option.active { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .model-option.active { background: var(--accent-soft); border-color: var(--accent); }
   .model-name { font-weight: 600; font-size: 14px; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
   .model-tag { font-size: 9px; padding: 2px 6px; background: var(--accent); color: #fff; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
   .model-tag.green { background: var(--success); }
   .model-tag.orange { background: #f97316; }
+  .model-tag.blue { background: #3b82f6; }
+  .model-tag.purple { background: #a855f7; }
   .model-desc { font-size: 12px; color: var(--muted); }
   
   .auth-blocker { position: fixed; inset: 0; background: rgba(8, 8, 10, 0.95); backdrop-filter: blur(16px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -202,7 +206,7 @@
           <i class="fa-solid fa-chevron-up"></i>
         </button>
         <div class="model-menu" id="modelMenu">
-          <!-- Los modelos se inyectan aquí por JS para mantenerlo limpio -->
+          <!-- Los modelos se inyectan aquí por JS -->
         </div>
       </div>
       <div class="input-wrapper">
@@ -224,7 +228,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
@@ -241,9 +245,6 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // Forzar persistencia local para no perder la sesión al cambiar de página
-  setPersistence(auth, browserLocalPersistence).catch(console.error);
-
   const SHOP_ITEMS = [
     { id:'av_flame', emoji:'🔥', bg:'linear-gradient(135deg,#7f1d1d 0%,#ef4444 50%,#fbbf24 100%)' },
     { id:'av_star', emoji:'⭐', bg:'linear-gradient(135deg,#1a1a2e 0%,#f59e0b 50%,#fbbf24 100%)' },
@@ -255,18 +256,25 @@
     { id:'av_robot', emoji:'🤖', bg:'linear-gradient(135deg,#0c1445 0%,#1d4ed8 50%,#60a5fa 100%)' }
   ];
 
-  // Lista de modelos profesionales
+  // Lista gigante de modelos profesionales
   const MODELS = [
     { id: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku', desc: 'Rápido y experto en programación.', tag: 'Top', tagColor: 'green' },
-    { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Líder en redacción y análisis complejo.', tag: 'Pro', tagColor: '' },
-    { id: 'openai', name: 'OpenAI GPT-4o', desc: 'El modelo multimodal más avanzado.', tag: 'Top', tagColor: 'green' },
-    { id: 'openai-fast', name: 'GPT-4o Mini', desc: 'Versión ligera y ultrarrápida.', tag: 'Fast', tagColor: 'orange' },
-    { id: 'gemini', name: 'Gemini 1.5 Pro', desc: 'IA avanzada de Google con contexto enorme.', tag: 'Pro', tagColor: '' },
+    { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Líder en redacción y análisis complejo.', tag: 'Pro', tagColor: 'purple' },
+    { id: 'claude-3-opus', name: 'Claude 3 Opus', desc: 'El modelo más potente de Anthropic.', tag: 'Max', tagColor: 'purple' },
+    { id: 'openai', name: 'GPT-4o', desc: 'El modelo multimodal más avanzado de OpenAI.', tag: 'Top', tagColor: 'green' },
+    { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', desc: 'Versión optimizada de GPT-4.', tag: 'Pro', tagColor: 'blue' },
+    { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', desc: 'Rápido y económico para tareas simples.', tag: 'Fast', tagColor: 'orange' },
+    { id: 'gemini', name: 'Gemini 1.5 Pro', desc: 'IA avanzada de Google con contexto enorme.', tag: 'Pro', tagColor: 'blue' },
     { id: 'gemini-flash', name: 'Gemini 1.5 Flash', desc: 'IA de Google optimizada para velocidad.', tag: 'Fast', tagColor: 'orange' },
-    { id: 'llama', name: 'Llama 3.1 70B', desc: 'Potente modelo de código abierto de Meta.', tag: 'Open', tagColor: '' },
-    { id: 'mistral', name: 'Mistral Large', desc: 'Modelo europeo de alto rendimiento.', tag: 'Pro', tagColor: '' },
-    { id: 'qwen-coder', name: 'Qwen 2.5 Coder', desc: 'Especializado en matemáticas y código.', tag: 'Code', tagColor: 'orange' },
-    { id: 'glm-4.6', name: 'Z.ai GLM 4.6', desc: 'Modelo bilingüe de Zhipu AI.', tag: 'New', tagColor: '' }
+    { id: 'llama-3.1-70b', name: 'Llama 3.1 70B', desc: 'Potente modelo de código abierto de Meta.', tag: 'Open', tagColor: 'blue' },
+    { id: 'llama-3.1-8b', name: 'Llama 3.1 8B', desc: 'Versión ligera y ultrarrápida de Meta.', tag: 'Fast', tagColor: 'orange' },
+    { id: 'mistral-large', name: 'Mistral Large', desc: 'Modelo europeo de alto rendimiento.', tag: 'Pro', tagColor: 'orange' },
+    { id: 'mixtral-8x7b', name: 'Mixtral 8x7B', desc: 'Arquitectura MoE de código abierto.', tag: 'Open', tagColor: 'blue' },
+    { id: 'qwen-2.5-coder', name: 'Qwen 2.5 Coder', desc: 'Especializado en matemáticas y código.', tag: 'Code', tagColor: 'green' },
+    { id: 'qwen-2.5-72b', name: 'Qwen 2.5 72B', desc: 'Modelo multilingüe de Alibaba.', tag: 'Pro', tagColor: 'purple' },
+    { id: 'phi-3', name: 'Phi-3 Mini', desc: 'IA compacta y eficiente de Microsoft.', tag: 'Fast', tagColor: 'orange' },
+    { id: 'zephyr-7b', name: 'Zephyr 7B', desc: 'Modelo afinado para asistentes.', tag: 'Open', tagColor: 'blue' },
+    { id: 'glm-4.6', name: 'GLM 4.6', desc: 'Modelo bilingüe de Zhipu AI.', tag: 'New', tagColor: 'purple' }
   ];
 
   const state = {
@@ -288,7 +296,6 @@
     userAvatar: $('#userAvatar'), userName: $('#userName'), userLevel: $('#userLevel')
   };
 
-  // Renderizar lista de modelos
   function renderModels() {
     els.modelMenu.innerHTML = MODELS.map(m => `
       <div class="model-option ${m.id === state.currentModel ? 'active' : ''}" data-model="${m.id}" data-name="${m.name}">
@@ -353,7 +360,6 @@
         els.userName.textContent = 'Error';
       }
     } else {
-      // Si Firebase confirma que NO hay usuario, mostramos el bloqueo
       state.userData = null;
       els.authBlocker.classList.add('show');
       els.inputField.disabled = true;
