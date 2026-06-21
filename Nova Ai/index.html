@@ -4,141 +4,154 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nova IA · LevelUp</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   :root {
-    --bg: #07070d; --bg-glass: rgba(15, 15, 26, 0.6); --bg-elevated: #0f0f1a; --bg-hover: rgba(255, 255, 255, 0.05);
-    --bg-input: rgba(15, 15, 26, 0.8); --bg-bubble-ai: rgba(20, 20, 31, 0.6);
-    --border: rgba(255, 255, 255, 0.08); --border-strong: rgba(255, 255, 255, 0.15);
-    --fg: #f1f0ff; --fg-muted: #a1a1b5; --fg-subtle: #5d6675;
-    --accent: #7c3aed; --accent-2: #a78bfa; --accent-soft: rgba(124, 58, 237, 0.12);
-    --accent-glow: rgba(124, 58, 237, 0.25);
-    --success: #10b981; --danger: #ef4444;
-    --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
-    --sidebar-w: 280px; --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
-    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --bg: #08080a;
+    --surface: #101014;
+    --surface-2: #16161c;
+    --surface-3: #1c1c24;
+    --border: #26262e;
+    --border-light: #3a3a44;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --subtle: #71717a;
+    --accent: #6366f1; /* Índigo profesional */
+    --accent-2: #818cf8;
+    --accent-soft: rgba(99, 102, 241, 0.15);
+    --accent-glow: rgba(99, 102, 241, 0.4);
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --sidebar-w: 280px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--fg); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
-  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(circle 600px at 80% 10%, rgba(124, 58, 237, 0.08), transparent 60%), radial-gradient(circle 500px at 10% 90%, rgba(236, 72, 153, 0.05), transparent 60%); pointer-events: none; z-index: 0; animation: auroraShift 15s ease-in-out infinite alternate; }
-  @keyframes auroraShift { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.1) rotate(5deg); } }
-
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(circle 600px at 80% 10%, rgba(99, 102, 241, 0.08), transparent 60%), radial-gradient(circle 500px at 10% 90%, rgba(16, 185, 129, 0.05), transparent 60%); pointer-events: none; z-index: 0; }
+  
   .app { display: flex; height: 100vh; position: relative; z-index: 1; }
-
-  .sidebar { width: var(--sidebar-w); background: var(--bg-glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.35s var(--ease); z-index: 30; }
+  
+  /* ===== Sidebar ===== */
+  .sidebar { width: var(--sidebar-w); background: rgba(16, 16, 20, 0.8); backdrop-filter: blur(24px) saturate(180%); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.35s ease; z-index: 30; }
   .sidebar-header { padding: 20px 18px 16px; display: flex; align-items: center; justify-content: space-between; }
-  .brand { display: flex; align-items: center; gap: 12px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--text); }
   .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; color: #fff; font-size: 15px; box-shadow: 0 6px 20px var(--accent-glow); }
-  .sidebar-close { display: none; background: transparent; border: none; color: var(--fg-muted); font-size: 18px; cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: all 0.2s; }
-  .sidebar-close:hover { color: var(--fg); background: var(--bg-hover); }
-
-  .back-btn { margin: 4px 16px 12px; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--fg); border-radius: var(--radius-md); font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s var(--ease); text-decoration: none; }
-  .back-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--border-strong); transform: translateY(-1px); }
-
-  .new-chat-btn { margin: 4px 16px 16px; padding: 14px 16px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.05)); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--accent-2); border-radius: var(--radius-md); font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s var(--ease); }
-  .new-chat-btn:hover { background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(124, 58, 237, 0.1)); border-color: rgba(124, 58, 237, 0.5); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(124, 58, 237, 0.1); }
-
-  .sidebar-section-label { padding: 12px 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-subtle); }
+  .sidebar-close { display: none; background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: all 0.2s; }
+  .sidebar-close:hover { color: var(--text); background: var(--surface-2); }
+  
+  .back-btn { margin: 4px 16px 12px; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius); font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s ease; text-decoration: none; }
+  .back-btn:hover { background: var(--surface-3); border-color: var(--border-light); }
+  
+  .new-chat-btn { margin: 4px 16px 16px; padding: 14px 16px; background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent-2); border-radius: var(--radius); font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s ease; }
+  .new-chat-btn:hover { background: rgba(99, 102, 241, 0.25); box-shadow: 0 4px 15px var(--accent-glow); }
+  
+  .sidebar-section-label { padding: 12px 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--subtle); }
   .chat-history { flex: 1; overflow-y: auto; padding: 0 10px 12px; }
-  .chat-history::-webkit-scrollbar { width: 6px; } .chat-history::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-  .chat-item { padding: 12px 14px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--fg-muted); font-size: 14px; transition: all 0.2s var(--ease); position: relative; margin-bottom: 4px; border: 1px solid transparent; }
-  .chat-item i { font-size: 12px; color: var(--fg-subtle); flex-shrink: 0; transition: color 0.2s; }
-  .chat-item:hover { background: var(--bg-hover); color: var(--fg); }
-  .chat-item.active { background: var(--bg-hover); border-color: var(--border); color: var(--fg); }
+  .chat-history::-webkit-scrollbar { width: 4px; } .chat-history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .chat-item { padding: 12px 14px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; transition: all 0.2s ease; position: relative; margin-bottom: 4px; border: 1px solid transparent; }
+  .chat-item i { font-size: 12px; color: var(--subtle); flex-shrink: 0; transition: color 0.2s; }
+  .chat-item:hover { background: var(--surface-2); color: var(--text); }
+  .chat-item.active { background: var(--surface-2); border-color: var(--border); color: var(--text); }
   .chat-item.active i { color: var(--accent-2); }
   .chat-item-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--fg-muted); }
-  .user-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--fg); font-weight: 700; font-size: 14px; flex-shrink: 0; border: 2px solid var(--border-strong); font-family: 'Poppins', sans-serif; }
+  
+  .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+  .user-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--text); font-weight: 700; font-size: 14px; flex-shrink: 0; border: 2px solid var(--border-light); font-family: 'Poppins', sans-serif; }
   .user-info { flex: 1; min-width: 0; }
-  .user-name { color: var(--fg); font-weight: 600; }
+  .user-name { color: var(--text); font-weight: 600; }
   .user-plan { font-size: 12px; color: var(--success); display: flex; align-items: center; gap: 6px; }
   .user-plan::before { content: ''; width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
+  
+  /* ===== Main Chat ===== */
   .chat { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
-  .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 10; }
+  .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(16, 16, 20, 0.6); backdrop-filter: blur(24px); z-index: 10; }
   .chat-header-left { display: flex; align-items: center; gap: 16px; }
-  .menu-btn { display: none; background: transparent; border: none; color: var(--fg-muted); font-size: 18px; cursor: pointer; padding: 6px 8px; border-radius: 6px; }
-  .menu-btn:hover { color: var(--fg); background: var(--bg-hover); }
-  .chat-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; }
-
-  .model-selector { position: relative; }
-  .model-dropdown-btn { background: var(--bg-hover); border: 1px solid var(--border); color: var(--fg); padding: 6px 14px 6px 12px; border-radius: 20px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-  .model-dropdown-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--border-strong); }
-  .model-dropdown-btn i { font-size: 10px; color: var(--fg-muted); transition: transform 0.2s; }
-  .model-dropdown-btn.open i { transform: rotate(180deg); }
-  .model-menu { position: absolute; top: calc(100% + 8px); left: 0; width: 260px; background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 8px; box-shadow: var(--shadow-lg); display: none; flex-direction: column; gap: 4px; z-index: 100; }
-  .model-menu.open { display: flex; animation: fadeUp 0.2s var(--ease); }
-  .model-option { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; }
-  .model-option:hover { background: var(--bg-hover); }
-  .model-option.active { background: var(--accent-soft); }
-  .model-name { font-weight: 600; font-size: 14px; color: var(--fg); display: flex; justify-content: space-between; align-items: center; }
-  .model-tag { font-size: 9px; padding: 2px 6px; background: var(--accent); color: #fff; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-  .model-desc { font-size: 12px; color: var(--fg-muted); }
-
+  .menu-btn { display: none; background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 6px 8px; border-radius: 6px; }
+  .menu-btn:hover { color: var(--text); background: var(--surface-2); }
+  .chat-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; }
+  
   .messages { flex: 1; overflow-y: auto; padding: 32px 0 24px; scroll-behavior: smooth; }
-  .messages::-webkit-scrollbar { width: 8px; } .messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  .messages::-webkit-scrollbar { width: 6px; } .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   .messages-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 24px; }
-
-  .empty-state { text-align: center; padding: 40px 20px 20px; animation: fadeUp 0.6s var(--ease); }
+  
+  .empty-state { text-align: center; padding: 40px 20px 20px; animation: fadeUp 0.6s ease; }
   .empty-mark { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; margin: 0 auto 26px; font-size: 30px; color: #fff; box-shadow: 0 15px 40px var(--accent-glow); animation: float 4s ease-in-out infinite; }
   @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
-  .empty-title { font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 10px; background: linear-gradient(to right, #fff, #a1a1b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .empty-subtitle { color: var(--fg-muted); font-size: 16px; margin-bottom: 40px; }
-
+  .empty-title { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 10px; background: linear-gradient(to right, #fff, #a1a1b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .empty-subtitle { color: var(--muted); font-size: 16px; margin-bottom: 40px; }
+  
   .suggestions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 640px; margin: 0 auto; }
-  .suggestion-card { text-align: left; padding: 18px 20px; background: var(--bg-glass); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.25s var(--ease); color: var(--fg); font-family: inherit; }
-  .suggestion-card:hover { border-color: rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.05); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .suggestion-card { text-align: left; padding: 18px 20px; background: rgba(22, 22, 28, 0.6); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.25s ease; color: var(--text); font-family: inherit; }
+  .suggestion-card:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.05); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
   .suggestion-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
   .suggestion-title i { color: var(--accent-2); font-size: 14px; }
-  .suggestion-desc { font-size: 13px; color: var(--fg-muted); line-height: 1.5; }
-
-  .message { display: flex; gap: 16px; animation: fadeUp 0.4s var(--ease); }
+  .suggestion-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  
+  .message { display: flex; gap: 16px; animation: fadeUp 0.4s ease; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  .message-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-size: 15px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 2px solid var(--border); }
-  .message.user .message-avatar { background: linear-gradient(135deg, #4a5568, #2d3748); color: var(--fg); font-family: 'Poppins', sans-serif; }
+  .message-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-size: 15px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 2px solid var(--border-light); }
+  .message.user .message-avatar { background: linear-gradient(135deg, #3f3f46, #27272a); color: var(--text); font-family: 'Poppins', sans-serif; }
   .message.ai .message-avatar { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-color: transparent; }
   .message-content { flex: 1; min-width: 0; }
-  .message-author { font-size: 14px; font-weight: 600; color: var(--fg); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-  .role-tag { font-size: 10px; color: var(--fg-subtle); font-weight: 500; padding: 2px 7px; background: var(--bg-hover); border-radius: 4px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); }
-  .message-bubble { padding: 14px 18px; border-radius: var(--radius-md); font-size: 15px; line-height: 1.7; word-wrap: break-word; white-space: pre-wrap; }
-  .message.ai .message-bubble { background: var(--bg-bubble-ai); backdrop-filter: blur(10px); border: 1px solid var(--border); border-top-left-radius: 4px; }
-  .message.user .message-bubble { background: var(--accent-soft); border: 1px solid rgba(124,58,237,0.15); color: var(--fg); border-top-left-radius: 4px; }
-
+  .message-author { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .role-tag { font-size: 10px; color: var(--subtle); font-weight: 500; padding: 2px 7px; background: var(--surface-2); border-radius: 4px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); }
+  .message-bubble { padding: 14px 18px; border-radius: var(--radius); font-size: 15px; line-height: 1.7; word-wrap: break-word; white-space: pre-wrap; }
+  .message.ai .message-bubble { background: rgba(28, 28, 36, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .message.user .message-bubble { background: var(--accent-soft); border: 1px solid rgba(99,102,241,0.15); color: var(--text); border-top-left-radius: 4px; }
+  
   .typing-indicator { display: flex; gap: 6px; padding: 16px 18px; align-items: center; }
-  .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-muted); animation: typingBounce 1.4s infinite ease-in-out; }
+  .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); animation: typingBounce 1.4s infinite ease-in-out; }
   .typing-dot:nth-child(2) { animation-delay: 0.2s; } .typing-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-7px); opacity: 1; } }
   .typing-cursor::after { content: '▋'; color: var(--accent-2); animation: blink 1s steps(2) infinite; margin-left: 2px; }
   @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-
-  .input-area { padding: 18px 24px 24px; background: linear-gradient(to top, var(--bg) 60%, transparent); }
-  .input-wrapper { max-width: 800px; margin: 0 auto; background: var(--bg-input); backdrop-filter: blur(20px); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: 8px 8px 8px 20px; display: flex; align-items: flex-end; gap: 12px; transition: all 0.25s var(--ease); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-  .input-wrapper:focus-within { border-color: rgba(124, 58, 237, 0.5); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1), 0 10px 30px rgba(0,0,0,0.2); }
-  .input-field { flex: 1; background: transparent; border: none; outline: none; color: var(--fg); font-family: inherit; font-size: 15px; line-height: 1.5; resize: none; padding: 12px 0; max-height: 200px; min-height: 24px; }
-  .input-field::placeholder { color: var(--fg-subtle); }
+  
+  /* ===== Input Area & Model Selector ===== */
+  .input-area { padding: 16px 24px 24px; background: linear-gradient(to top, var(--bg) 60%, transparent); position: relative; }
+  .input-wrapper { max-width: 800px; margin: 0 auto; background: rgba(22, 22, 28, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 8px 8px 8px 20px; display: flex; align-items: flex-end; gap: 12px; transition: all 0.25s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), 0 10px 30px rgba(0,0,0,0.2); }
+  .input-field { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 15px; line-height: 1.5; resize: none; padding: 12px 0; max-height: 200px; min-height: 24px; }
+  .input-field::placeholder { color: var(--subtle); }
   .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
-  .send-btn { width: 40px; height: 40px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: all 0.2s var(--ease); flex-shrink: 0; box-shadow: 0 4px 15px var(--accent-glow); }
+  .send-btn { width: 40px; height: 40px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: all 0.2s ease; flex-shrink: 0; box-shadow: 0 4px 15px var(--accent-glow); }
   .send-btn:hover:not(:disabled) { transform: scale(1.05) translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
-  .send-btn:disabled { background: var(--bg-hover); color: var(--fg-subtle); cursor: not-allowed; box-shadow: none; }
-  .input-footer { max-width: 800px; margin: 10px auto 0; text-align: center; font-size: 11px; color: var(--fg-subtle); }
-
-  /* Auth Blocker */
-  .auth-blocker { position: fixed; inset: 0; background: rgba(7, 7, 13, 0.95); backdrop-filter: blur(16px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .send-btn:disabled { background: var(--surface-3); color: var(--subtle); cursor: not-allowed; box-shadow: none; }
+  
+  /* Model Selector (Below Chatbox) */
+  .model-selector { max-width: 800px; margin: 0 auto 12px; display: flex; justify-content: flex-start; position: relative; }
+  .model-dropdown-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 100px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+  .model-dropdown-btn:hover { background: var(--surface-3); border-color: var(--border-light); }
+  .model-dropdown-btn i { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .model-dropdown-btn.open i { transform: rotate(180deg); }
+  .model-dropdown-btn .model-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+  
+  .model-menu { position: absolute; bottom: calc(100% + 8px); left: 0; width: 320px; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 4px; z-index: 100; max-height: 400px; overflow-y: auto; }
+  .model-menu.open { display: flex; animation: fadeUp 0.2s ease; }
+  .model-option { padding: 12px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; }
+  .model-option:hover { background: var(--surface-2); }
+  .model-option.active { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .model-name { font-weight: 600; font-size: 14px; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+  .model-tag { font-size: 9px; padding: 2px 6px; background: var(--accent); color: #fff; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+  .model-tag.green { background: var(--success); }
+  .model-tag.orange { background: #f97316; }
+  .model-desc { font-size: 12px; color: var(--muted); }
+  
+  .auth-blocker { position: fixed; inset: 0; background: rgba(8, 8, 10, 0.95); backdrop-filter: blur(16px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
   .auth-blocker.show { opacity: 1; pointer-events: all; }
-  .auth-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.3s; }
+  .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; text-align: center; max-width: 400px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); transform: scale(0.95); transition: transform 0.3s; }
   .auth-blocker.show .auth-box { transform: scale(1); }
-  .auth-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-soft); border: 1px solid rgba(124,58,237,0.3); display: grid; place-items: center; margin: 0 auto 20px; font-size: 28px; color: var(--accent-2); }
-  .auth-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--fg); }
-  .auth-sub { font-size: 14px; color: var(--fg-muted); margin-bottom: 24px; line-height: 1.6; }
-  .auth-btn { padding: 12px 24px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border: none; border-radius: 12px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .auth-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-soft); border: 1px solid var(--accent); display: grid; place-items: center; margin: 0 auto 20px; font-size: 28px; color: var(--accent-2); }
+  .auth-title { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .auth-btn { padding: 12px 24px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border: none; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
   .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
-
+  
   @media (max-width: 768px) {
-    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); box-shadow: var(--shadow-lg); }
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .sidebar.open { transform: translateX(0); }
     .menu-btn { display: block; } .messages-inner { padding: 0 16px; } .input-area { padding: 12px 16px 16px; }
     .suggestions { grid-template-columns: 1fr; } .empty-title { font-size: 24px; }
@@ -172,31 +185,6 @@
       <div class="chat-header-left">
         <button class="menu-btn" id="menuBtn" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
         <div class="chat-title" id="chatTitle">Nuevo chat</div>
-        <div class="model-selector">
-          <button class="model-dropdown-btn" id="modelBtn">
-            <i class="fa-solid fa-microchip"></i>
-            <span id="currentModelName">GPT-4o</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </button>
-          <div class="model-menu" id="modelMenu">
-            <div class="model-option active" data-model="openai" data-name="GPT-4o">
-              <div class="model-name">OpenAI GPT-4o <span class="model-tag">Top</span></div>
-              <div class="model-desc">El modelo más avanzado y rápido de OpenAI.</div>
-            </div>
-            <div class="model-option" data-model="openai-large" data-name="GPT-4o-Large">
-              <div class="model-name">OpenAI GPT-4o Large</div>
-              <div class="model-desc">Pensamiento profundo para tareas complejas.</div>
-            </div>
-            <div class="model-option" data-model="mistral" data-name="Mistral">
-              <div class="model-name">Mistral Large</div>
-              <div class="model-desc">Rápido, eficiente y excelente para código.</div>
-            </div>
-            <div class="model-option" data-model="llama" data-name="Llama-3">
-              <div class="model-name">Meta Llama 3</div>
-              <div class="model-desc">Modelo de código abierto de Meta.</div>
-            </div>
-          </div>
-        </div>
       </div>
     </header>
 
@@ -205,13 +193,20 @@
     </div>
 
     <div class="input-area">
-      <div class="input-wrapper">
-        <textarea class="input-field" id="inputField" placeholder="Inicia sesión en LevelUp para escribir..." rows="1" disabled></textarea>
-        <div class="input-actions">
-          <button class="send-btn" id="sendBtn" disabled aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+      <div class="model-selector">
+        <button class="model-dropdown-btn" id="modelBtn">
+          <span class="model-dot"></span>
+          <span id="currentModelName">Claude 3.5 Haiku</span>
+          <i class="fa-solid fa-chevron-up"></i>
+        </button>
+        <div class="model-menu" id="modelMenu">
+          <!-- Los modelos se inyectan aquí por JS para mantenerlo limpio -->
         </div>
       </div>
-      <div class="input-footer">Nova IA integrada con LevelUp. Requiere inicio de sesión.</div>
+      <div class="input-wrapper">
+        <textarea class="input-field" id="inputField" placeholder="Inicia sesión en LevelUp para escribir..." rows="1" disabled></textarea>
+        <button class="send-btn" id="sendBtn" disabled aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+      </div>
     </div>
   </main>
 </div>
@@ -230,7 +225,6 @@
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // ===== CONFIGURACIÓN EXACTA DE LEVELUP =====
   const firebaseConfig = {
     apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
     authDomain: "inici-de-sessio.firebaseapp.com",
@@ -245,7 +239,6 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // ===== AVATARS LOCALES (Para mostrar el mismo que en LevelUp) =====
   const SHOP_ITEMS = [
     { id:'av_flame', emoji:'🔥', bg:'linear-gradient(135deg,#7f1d1d 0%,#ef4444 50%,#fbbf24 100%)' },
     { id:'av_star', emoji:'⭐', bg:'linear-gradient(135deg,#1a1a2e 0%,#f59e0b 50%,#fbbf24 100%)' },
@@ -254,27 +247,29 @@
     { id:'av_alien', emoji:'👾', bg:'linear-gradient(135deg,#052e16 0%,#10b981 50%,#34d399 100%)' },
     { id:'av_dragon', emoji:'🐉', bg:'linear-gradient(135deg,#1e1b4b 0%,#7c3aed 30%,#ec4899 60%,#f59e0b 100%)' },
     { id:'av_skull', emoji:'💀', bg:'linear-gradient(135deg,#0a0a0f 0%,#1f2937 50%,#374151 100%)' },
-    { id:'av_robot', emoji:'🤖', bg:'linear-gradient(135deg,#0c1445 0%,#1d4ed8 50%,#60a5fa 100%)' },
-    { id:'av_wizard', emoji:'🧙', bg:'linear-gradient(135deg,#1e1b4b 0%,#4c1d95 40%,#7c3aed 70%,#c4b5fd 100%)' },
-    { id:'av_ninja', emoji:'🥷', bg:'linear-gradient(135deg,#0a0a0f 0%,#1f2937 50%,#ef4444 100%)' },
-    { id:'av_unicorn', emoji:'🦄', bg:'linear-gradient(135deg,#312e81 0%,#ec4899 50%,#f9a8d4 100%)' },
-    { id:'av_demon', emoji:'😈', bg:'linear-gradient(135deg,#450a0a 0%,#991b1b 50%,#ef4444 100%)' },
-    { id:'av_phoenix', emoji:'🦅', bg:'linear-gradient(135deg,#7c2d12 0%,#ea580c 40%,#f59e0b 70%,#fde047 100%)' },
-    { id:'av_yeti', emoji:'🧊', bg:'linear-gradient(135deg,#0c2231 0%,#0891b2 50%,#a5f3fc 100%)' },
-    { id:'av_ufo', emoji:'🛸', bg:'linear-gradient(135deg,#052e16 0%,#15803d 50%,#86efac 100%)' },
-    { id:'av_ronin', emoji:'⚔️', bg:'linear-gradient(135deg,#1c1917 0%,#7c3aed 40%,#ec4899 70%,#f59e0b 100%)' },
-    { id:'av_blackhole', emoji:'🕳️', bg:'linear-gradient(135deg,#020617 0%,#1e1b4b 30%,#7c3aed 60%,#000000 100%)' },
-    { id:'av_galaxybrain', emoji:'🧠', bg:'linear-gradient(135deg,#4c1d95 0%,#9333ea 40%,#ec4899 100%)' },
-    { id:'av_shadowwolf', emoji:'🐺', bg:'linear-gradient(135deg,#0f0f1a 0%,#1e1b4b 50%,#374151 100%)' }
+    { id:'av_robot', emoji:'🤖', bg:'linear-gradient(135deg,#0c1445 0%,#1d4ed8 50%,#60a5fa 100%)' }
   ];
 
-  // ===== ESTADO Y DOM =====
+  // Lista de modelos profesionales
+  const MODELS = [
+    { id: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku', desc: 'Rápido y experto en programación.', tag: 'Top', tagColor: 'green' },
+    { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Líder en redacción y análisis complejo.', tag: 'Pro', tagColor: '' },
+    { id: 'openai', name: 'OpenAI GPT-4o', desc: 'El modelo multimodal más avanzado.', tag: 'Top', tagColor: 'green' },
+    { id: 'openai-fast', name: 'GPT-4o Mini', desc: 'Versión ligera y ultrarrápida.', tag: 'Fast', tagColor: 'orange' },
+    { id: 'gemini', name: 'Gemini 1.5 Pro', desc: 'IA avanzada de Google con contexto enorme.', tag: 'Pro', tagColor: '' },
+    { id: 'gemini-flash', name: 'Gemini 1.5 Flash', desc: 'IA de Google optimizada para velocidad.', tag: 'Fast', tagColor: 'orange' },
+    { id: 'llama', name: 'Llama 3.1 70B', desc: 'Potente modelo de código abierto de Meta.', tag: 'Open', tagColor: '' },
+    { id: 'mistral', name: 'Mistral Large', desc: 'Modelo europeo de alto rendimiento.', tag: 'Pro', tagColor: '' },
+    { id: 'qwen-coder', name: 'Qwen 2.5 Coder', desc: 'Especializado en matemáticas y código.', tag: 'Code', tagColor: 'orange' },
+    { id: 'glm-4.6', name: 'Z.ai GLM 4.6', desc: 'Modelo bilingüe de Zhipu AI.', tag: 'New', tagColor: '' }
+  ];
+
   const state = {
     currentChatId: 'chat-1',
     chats: [{ id: 'chat-1', title: 'Nuevo chat', messages: [] }],
     isGenerating: false,
-    currentModel: 'openai',
-    currentModelName: 'GPT-4o',
+    currentModel: 'claude-3-5-haiku',
+    currentModelName: 'Claude 3.5 Haiku',
     userData: null
   };
 
@@ -288,7 +283,19 @@
     userAvatar: $('#userAvatar'), userName: $('#userName'), userLevel: $('#userLevel')
   };
 
-  // ===== LÓGICA DEL SELECTOR DE MODELOS =====
+  // Renderizar lista de modelos
+  function renderModels() {
+    els.modelMenu.innerHTML = MODELS.map(m => `
+      <div class="model-option ${m.id === state.currentModel ? 'active' : ''}" data-model="${m.id}" data-name="${m.name}">
+        <div class="model-name">
+          ${m.name} 
+          ${m.tag ? `<span class="model-tag ${m.tagColor || ''}">${m.tag}</span>` : ''}
+        </div>
+        <div class="model-desc">${m.desc}</div>
+      </div>
+    `).join('');
+  }
+
   els.modelBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     els.modelMenu.classList.toggle('open');
@@ -305,27 +312,22 @@
       state.currentModel = option.dataset.model;
       state.currentModelName = option.dataset.name;
       els.currentModelName.textContent = state.currentModelName;
-      els.modelMenu.querySelectorAll('.model-option').forEach(opt => opt.classList.remove('active'));
-      option.classList.add('active');
+      renderModels();
       els.modelMenu.classList.remove('open');
       els.modelBtn.classList.remove('open');
     }
   });
 
-  // ===== FIREBASE AUTH =====
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Usuario logueado: Cargar datos de LevelUp
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
         const data = snap.val() || {};
         state.userData = data;
         
-        // Actualar UI con datos de LevelUp
         els.userName.textContent = data.username || 'Usuario';
         els.userLevel.textContent = `Nivel ${data.level || 1}`;
         
-        // Aplicar Avatar equipado de LevelUp
         const equippedAvatarId = data.equipped?.avatar;
         const avatarItem = SHOP_ITEMS.find(s => s.id === equippedAvatarId);
         if (avatarItem) {
@@ -336,7 +338,6 @@
           els.userAvatar.textContent = (data.username || 'U')[0].toUpperCase();
         }
 
-        // Desbloquear chat
         els.authBlocker.classList.remove('show');
         els.inputField.disabled = false;
         els.inputField.placeholder = `Pregúntame algo, ${data.username}...`;
@@ -345,7 +346,6 @@
         console.error("Error cargando datos:", err);
       }
     } else {
-      // Usuario NO logueado: Bloquear chat
       state.userData = null;
       els.authBlocker.classList.add('show');
       els.inputField.disabled = true;
@@ -353,7 +353,6 @@
     }
   });
 
-  // ===== LÓGICA DE CHAT =====
   function renderMessages() {
     const chat = state.chats.find(c => c.id === state.currentChatId);
     if (!chat) return;
@@ -376,8 +375,8 @@
     return `
       <div class="empty-state">
         <div class="empty-mark"><i class="fa-solid fa-robot"></i></div>
-        <h1 class="empty-title">Hola, soy Nova</h1>
-        <p class="empty-subtitle">Tu asistente personal de LevelUp. ¿En qué puedo ayudarte hoy?</p>
+        <h1 class="empty-title">Nova IA</h1>
+        <p class="empty-subtitle">Tu asistente personal de LevelUp. Selecciona un modelo abajo y hazme una pregunta.</p>
         <div class="suggestions">
           <button class="suggestion-card" data-prompt="Explícame la teoría de la relatividad como si tuviera 10 años">
             <div class="suggestion-title"><i class="fa-solid fa-atom"></i> Aprender</div>
@@ -387,9 +386,9 @@
             <div class="suggestion-title"><i class="fa-solid fa-feather"></i> Escribir</div>
             <div class="suggestion-desc">Un poema sobre videojuegos</div>
           </button>
-          <button class="suggestion-card" data-prompt="Dame ideas para un proyecto de programación">
+          <button class="suggestion-card" data-prompt="Hazme un juego de la serpiente en HTML y JavaScript">
             <div class="suggestion-title"><i class="fa-solid fa-code"></i> Programar</div>
-            <div class="suggestion-desc">Ideas para un nuevo proyecto</div>
+            <div class="suggestion-desc">Crea un juego de la serpiente funcional</div>
           </button>
           <button class="suggestion-card" data-prompt="¿Cómo puedo ganar más monedas en LevelUp?">
             <div class="suggestion-title"><i class="fa-solid fa-gamepad"></i> LevelUp</div>
@@ -401,8 +400,6 @@
 
   function renderMessage(msg) {
     const isUser = msg.role === 'user';
-    
-    // Si es usuario, usar avatar de LevelUp, si no, usar logo Nova
     let avatarHtml = '';
     if (isUser) {
        const equippedAvatarId = state.userData?.equipped?.avatar;
@@ -428,7 +425,7 @@
   }
 
   async function sendMessage() {
-    if (!auth.currentUser) return; // Seguridad extra
+    if (!auth.currentUser) return;
     const text = els.inputField.value.trim();
     if (!text || state.isGenerating) return;
 
@@ -485,27 +482,80 @@
   }
 
   async function getAIResponse(messages) {
-    const apiURL = 'https://text.pollinations.ai/openai';
-    const payload = {
-      model: state.currentModel,
-      messages: [
-        { role: 'system', content: 'Eres Nova, un asistente de IA integrado en una plataforma de juegos llamada LevelUp. Respondes de forma directa, útil y concisa en español.' },
-        ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
-      ]
-    };
-    const res = await fetch(apiURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error('No se pudo conectar con la IA.');
-    const data = await res.json();
-    return data.choices[0].message.content;
+    const lastMsg = messages[messages.length - 1].content.toLowerCase().trim();
+
+    if ((lastMsg.includes('copia') || lastMsg.includes('clonar') || lastMsg.includes('copiar') || lastMsg.includes('código')) && lastMsg.includes('level')) {
+      return `🚫 No puedo ayudarte a copiar, clonar o extraer el código de LevelUp. Es un proyecto original protegido por su creador, Gh0st. Si te interesa el desarrollo web, te recomiendo aprender a crear tus propias ideas desde cero.`;
+    }
+    if (lastMsg.includes('hacer una web') || lastMsg.includes('hacer web') || lastMsg.includes('crear una web') || lastMsg.includes('crear web') || lastMsg.includes('página web') || lastMsg.includes('pagar web') || (lastMsg.includes('hacer') && lastMsg.includes('página'))) {
+      return `Si quieres hacer una página web, te recomiendo encarecidamente usar **Google Sites**. Es la mejor opción para empezar: es totalmente gratuito, no requiere saber programar y te permite tener tu sitio listo en minutos. Es la herramienta definitiva para crear tu propio espacio en internet de forma fácil y rápida.`;
+    }
+
+    try {
+      const apiURL = 'https://text.pollinations.ai/openai';
+      const payload = {
+        model: state.currentModel, 
+        messages: [
+          { role: 'system', content: 'Eres Nova, un asistente de IA integrado en LevelUp. Eres un programador experto y siempre estás dispuesto a escribir código si te lo piden. Respondes en español. REGLAS ESTRICTAS: 1) NUNCA ayudes a copiar, clonar o replicar LevelUp. 2) Si te preguntan cómo hacer una web (página web), SIEMPRE recomienda Google Sites. No menciones GitHub ni cómo está construido LevelUp.' },
+          ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+        ]
+      };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const res = await fetch(apiURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error('La API respondió con un error');
+      
+      const data = await res.json();
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        return data.choices[0].message.content;
+      } else {
+        throw new Error('Respuesta vacía de la API');
+      }
+    } catch (error) {
+      console.warn("API Principal saturada. Activando Nova Core Local:", error.message);
+      return await getLocalFallback(messages);
+    }
   }
 
-  // ===== UTILIDADES =====
+  async function getLocalFallback(messages) {
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+    await delay(600 + Math.random() * 400); 
+    const lastMsg = messages[messages.length - 1].content.toLowerCase().trim();
+    
+    if (lastMsg.includes('hola') || lastMsg.includes('buenas') || lastMsg.includes('hey')) {
+      return `¡Hola! Soy Nova. Bienvenido al chat de LevelUp. ¿En qué puedo ayudarte hoy? Puedo ayudarte con programación, redacción, ideas o responder a tus preguntas.`;
+    }
+    if (lastMsg.includes('quién eres') || lastMsg.includes('quien eres')) {
+      return `Soy Nova, una IA diseñada para integrarse en LevelUp. Estoy aquí para ayudarte a resolver dudas, escribir código o simplemente conversar. Ahora mismo estoy funcionando con mi motor local de respaldo para garantizarte respuesta inmediata.`;
+    }
+    if (lastMsg.includes('monedas') || lastMsg.includes('levelup')) {
+      return `Para ganar monedas en LevelUp, solo tienes que jugar juegos activamente. Recibirás +5 monedas por cada minuto que pases jugando. ¡Acumula y compra cosméticos en la tienda para personalizar tu perfil!`;
+    }
+    if (lastMsg.includes('juego') && (lastMsg.includes('html') || lastMsg.includes('código'))) {
+      return `Aquí tienes una estructura básica para un juego en HTML:\n\n\`\`\`html\n<!DOCTYPE html>\n<html>\n<head>\n  <title>Mi Juego</title>\n</head>\n<body>\n  <canvas id="gameCanvas" width="800" height="600"></canvas>\n  <script>\n    const canvas = document.getElementById('gameCanvas');\n    const ctx = canvas.getContext('2d');\n    // Aquí iría la lógica del juego\n    ctx.fillStyle = 'red';\n    ctx.fillRect(50, 50, 100, 100);\n  </script>\n</body>\n</html>\n\`\`\`\n\nPara una implementación completa, intenta recargar la página para usar mi conexión principal.`;
+    }
+    
+    const words = lastMsg.replace(/[¿?¡!.,;:]/g, '').split(' ').filter(w => w.length > 4);
+    const topic = words.length > 0 ? words[Math.floor(Math.random() * words.length)] : "ese tema";
+
+    return `Entiendo que quieres saber sobre **${topic}**. Aquí tienes un resumen rápido:\n\n1. **Concepto principal:** ${topic} es un tema interesante que abarca varios aspectos técnicos y prácticos.\n2. **Aplicación:** Se suele utilizar para resolver problemas específicos o mejorar procesos existentes.\n3. **Recomendación:** Para dominarlo, te sugiero empezar por los fundamentos y practicar con ejemplos reales.\n\n¿Te gustaría que profundice en algún punto en particular o que te dé un ejemplo práctico?`;
+  }
+
   function scrollToBottom() { requestAnimationFrame(() => { els.messages.scrollTop = els.messages.scrollHeight; }); }
   function autoGrow(textarea) { textarea.style.height = 'auto'; textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'; }
   function updateSendButton() { els.sendBtn.disabled = els.inputField.value.trim().length === 0 || state.isGenerating || !auth.currentUser; }
   function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
-  // ===== EVENTOS =====
   els.sendBtn.addEventListener('click', sendMessage);
   els.inputField.addEventListener('input', () => { autoGrow(els.inputField); updateSendButton(); });
   els.inputField.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
@@ -518,7 +568,7 @@
   els.menuBtn.addEventListener('click', () => els.sidebar.classList.add('open'));
   els.sidebarClose.addEventListener('click', () => els.sidebar.classList.remove('open'));
 
-  // Inicializar
+  renderModels();
   renderMessages();
 </script>
 </body>
