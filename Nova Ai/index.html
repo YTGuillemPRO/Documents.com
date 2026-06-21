@@ -64,6 +64,8 @@
   .user-name { color: var(--text); font-weight: 600; }
   .user-plan { font-size: 12px; color: var(--success); display: flex; align-items: center; gap: 6px; }
   .user-plan::before { content: ''; width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
+  .user-plan.loading { color: var(--muted); }
+  .user-plan.loading::before { background: var(--muted); box-shadow: none; animation: none; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   
   /* ===== Main Chat ===== */
@@ -174,8 +176,8 @@
     <div class="sidebar-footer">
       <div class="user-avatar" id="userAvatar">?</div>
       <div class="user-info">
-        <div class="user-name" id="userName">Invitado</div>
-        <div class="user-plan" id="userLevel">Nivel 1</div>
+        <div class="user-name" id="userName">Cargando...</div>
+        <div class="user-plan loading" id="userLevel">Conectando...</div>
       </div>
     </div>
   </aside>
@@ -204,7 +206,7 @@
         </div>
       </div>
       <div class="input-wrapper">
-        <textarea class="input-field" id="inputField" placeholder="Inicia sesión en LevelUp para escribir..." rows="1" disabled></textarea>
+        <textarea class="input-field" id="inputField" placeholder="Conectando con LevelUp..." rows="1" disabled></textarea>
         <button class="send-btn" id="sendBtn" disabled aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
       </div>
     </div>
@@ -222,7 +224,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
@@ -238,6 +240,9 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
+
+  // Forzar persistencia local para no perder la sesión al cambiar de página
+  setPersistence(auth, browserLocalPersistence).catch(console.error);
 
   const SHOP_ITEMS = [
     { id:'av_flame', emoji:'🔥', bg:'linear-gradient(135deg,#7f1d1d 0%,#ef4444 50%,#fbbf24 100%)' },
@@ -327,6 +332,7 @@
         
         els.userName.textContent = data.username || 'Usuario';
         els.userLevel.textContent = `Nivel ${data.level || 1}`;
+        els.userLevel.classList.remove('loading');
         
         const equippedAvatarId = data.equipped?.avatar;
         const avatarItem = SHOP_ITEMS.find(s => s.id === equippedAvatarId);
@@ -344,12 +350,17 @@
         
       } catch (err) {
         console.error("Error cargando datos:", err);
+        els.userName.textContent = 'Error';
       }
     } else {
+      // Si Firebase confirma que NO hay usuario, mostramos el bloqueo
       state.userData = null;
       els.authBlocker.classList.add('show');
       els.inputField.disabled = true;
       els.inputField.placeholder = 'Inicia sesión en LevelUp para escribir...';
+      els.userName.textContent = 'Invitado';
+      els.userLevel.textContent = 'Desconectado';
+      els.userLevel.classList.add('loading');
     }
   });
 
