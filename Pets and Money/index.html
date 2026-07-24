@@ -70,6 +70,24 @@ h1{font-family:'Russo One',sans-serif;font-size:15px;letter-spacing:.5px;backgro
 #toasts{position:absolute;bottom:12px;left:12px;right:12px;z-index:400;display:flex;flex-direction:column-reverse;gap:3px;pointer-events:none}.toast{padding:6px 10px;border-radius:8px;font-size:9px;font-weight:700;color:#fff;animation:tI .3s cubic-bezier(.175,.885,.32,1.275),tO .3s ease 2.5s forwards;pointer-events:auto}.t-ok{background:rgba(16,185,129,.9)}.t-err{background:rgba(244,63,94,.9)}.t-inf{background:rgba(56,189,248,.9)}.t-rwd{background:rgba(251,191,36,.95);color:#1a1a1a}@keyframes tI{from{transform:translateY(15px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}@keyframes tO{from{opacity:1}to{opacity:0;transform:translateY(-8px)}}
 .fm{position:absolute;font-size:12px;font-weight:900;color:#10b981;pointer-events:none;animation:fU 1.2s ease-out forwards;z-index:50;text-shadow:0 2px 8px rgba(0,0,0,.5)}@keyframes fU{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-20px) scale(1.2)}100%{opacity:0;transform:translateY(-40px) scale(.8)}}
 .world-flash{animation:wf .5s ease-out}@keyframes wf{0%{filter:brightness(2.5)}100%{filter:brightness(1)}}
+
+/* LEVELUP SHOP STYLES */
+.lu-container{padding:10px;flex:1;overflow-y:auto}
+.lu-balance{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(217,119,6,.05));border:1px solid rgba(245,158,11,.35);color:#fbbf24;padding:14px;border-radius:14px;text-align:center;font-weight:900;font-size:18px;margin-bottom:12px;box-shadow:0 4px 15px rgba(245,158,11,.1)}
+.lu-balance i{margin-right:5px}
+.lu-balance span{font-size:22px}
+.lu-shop{display:flex;flex-direction:column;gap:8px}
+.lu-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:12px;transition:all .2s}
+.lu-item:hover{background:rgba(255,255,255,.06);border-color:rgba(245,158,11,.2)}
+.lu-item-icon{font-size:22px;width:38px;height:38px;background:rgba(245,158,11,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fbbf24;flex-shrink:0}
+.lu-item-info{flex:1;min-width:0}
+.lu-item-name{font-size:12px;font-weight:800;color:#f1f5f9}
+.lu-item-desc{font-size:9px;font-weight:600;color:#7a8ba8;margin-top:2px}
+.lu-btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1a1a;border:none;padding:8px 12px;border-radius:8px;font-weight:800;cursor:pointer;font-size:10px;font-family:inherit;display:flex;align-items:center;gap:4px;flex-shrink:0;transition:all .2s}
+.lu-btn:hover:not(:disabled){transform:scale(1.05);box-shadow:0 4px 12px rgba(245,158,11,.3)}
+.lu-btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.5)}
+.lu-login{text-align:center;color:#f43f5e;font-size:11px;font-weight:700;padding:40px 10px;background:rgba(244,63,94,.05);border:1px solid rgba(244,63,94,.1);border-radius:12px}
+
 @media(max-height:680px){#game{height:95vh;padding:8px 10px 6px}#habitat{height:100px}h1{font-size:13px}}
 </style>
 </head>
@@ -79,11 +97,12 @@ h1{font-family:'Russo One',sans-serif;font-size:15px;letter-spacing:.5px;backgro
 <header><div style="display:flex;align-items:center"><h1>PET SIMULATOR ULTRA</h1><span class="world-badge" id="worldBadge">BOSQUE</span></div><div class="hdr-btns"><button class="hdr-btn" id="btnMute"><i class="fas fa-volume-high"></i></button><button class="hdr-btn" id="btnReset"><i class="fas fa-rotate-left"></i></button></div></header>
 <div id="habitat"><span class="habitat-label" id="habLabel">Habitat</span></div>
 <div class="stats"><div class="st st-money"><i class="fas fa-coins"></i><span class="st-v" id="sMoney">$10</span><span class="st-l">Dinero</span></div><div class="st st-inc"><i class="fas fa-chart-line"></i><span class="st-v" id="sInc">$0/s</span><span class="st-l">Ingreso</span></div><div class="st st-pets"><i class="fas fa-paw"></i><span class="st-v" id="sPets">0</span><span class="st-l">Mascotas</span></div><div class="st st-wb"><i class="fas fa-globe"></i><span class="st-v" id="sWB">x1.0</span><span class="st-l">Mundo</span></div></div>
-<nav class="tabs" id="navTabs"><button class="tab on" data-t="game">JUEGO</button><button class="tab" data-t="worlds">MUNDOS</button><button class="tab" data-t="index">INDEX</button><button class="tab" data-t="rank">RANK</button></nav>
+<nav class="tabs" id="navTabs"><button class="tab on" data-t="game">JUEGO</button><button class="tab" data-t="worlds">MUNDOS</button><button class="tab" data-t="index">INDEX</button><button class="tab" data-t="rank">RANK</button><button class="tab" data-t="lu">LU 🪙</button></nav>
 <section id="pGame" class="panel on"><div class="eggs" id="navEggs"></div><button class="btn btn-buy can" id="btnBuy"><i class="fas fa-egg"></i> ABRIR HUEVO</button><button class="btn btn-auto no" id="btnAuto"><i class="fas fa-robot"></i> AUTO ($10B)</button><button class="btn btn-rb" id="btnRb" disabled><i class="fas fa-bolt"></i> REBIRTH ($500K)</button><div id="petList" class="plist"></div></section>
 <section id="pWorlds" class="panel"><div id="worldMap" class="wmap"></div></section>
 <section id="pIndex" class="panel"><div class="idx-hd"><span>Coleccion</span><span id="idxPct">0%</span></div><div class="bar"><div class="bar-f" id="idxBar" style="width:0%"></div></div><div id="idxList" class="igrid"></div></section>
 <section id="pRank" class="panel"><div class="rk-hd"><div class="rk-name-wrap"><i class="fas fa-fort-awesome"></i><input type="text" class="rk-name-input" id="rkName" maxlength="14" value="Mi Base" spellcheck="false"></div><div class="rk-live"><span class="rk-live-dot"></span><span style="color:#10b981;font-size:7px;font-weight:800">En vivo</span></div></div><div class="rk-status" id="rkStatus"><i class="fas fa-circle-check"></i><span>200 jugadores conectados</span></div><div class="rk-my"><span class="rk-my-l">Tu posicion:</span><span class="rk-my-v" id="rkPos">#200</span><span class="rk-my-e" id="rkMyEarn">$0/s</span></div><div id="rkList" class="rk-list"></div></section>
+<section id="pLu" class="panel"><div class="lu-container"><div class="lu-balance"><i class="fas fa-coins"></i> <span id="luCoins">--</span> Monedas LevelUp</div><div class="lu-shop" id="luShop"></div></div></section>
 <div id="overlay"><canvas id="hatchCanvas"></canvas><div id="obox"><div class="egg-3d-container" id="oegg3d"><div class="egg-3d" id="egg3d"><div class="egg-3d-body" id="egg3dBody"></div><div class="egg-3d-shine"></div><div id="crackContainer"><canvas id="crackCanvas"></canvas></div></div><div class="egg-3d-shadow"></div></div><div class="tap-hint" id="tapHint">Toca para romper!</div><div class="tap-progress" id="tapProgress"></div><div class="rev-wrap" id="oRev"><div class="rev-glow" id="oRevGlow"></div><div class="rev-ring rr1" id="oR1"></div><div class="rev-ring rr2" id="oR2"></div><div class="rev-ring rr3" id="oR3"></div><div id="revSphere3d"></div><div class="rev-shadow"></div></div><h2 id="oname"></h2><p id="orar"></p><p id="oinfo"></p><button id="oclose">CONTINUAR</button></div></div>
 <div id="confirmBox"><div class="confirm-card"><div class="confirm-icon" id="confirmIcon">⚠️</div><div class="confirm-title" id="confirmTitle">Confirmar</div><div class="confirm-msg" id="confirmMsg">Esta accion no se puede deshacer.</div><div class="confirm-btns"><button class="confirm-btn confirm-yes" id="confirmYes">CONFIRMAR</button><button class="confirm-btn confirm-no" id="confirmNo">CANCELAR</button></div></div></div>
 <div id="toasts"></div>
@@ -91,6 +110,9 @@ h1{font-family:'Russo One',sans-serif;font-size:15px;letter-spacing:.5px;backgro
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get, set, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // ===== DATOS =====
 var WORLDS=[
@@ -159,7 +181,7 @@ function showCf(i,t,m,cb){document.getElementById('confirmIcon').textContent=i;d
 function hideCf(){document.getElementById('confirmBox').classList.remove('show');cfCb=null}
 function gW(){for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===G.world)return WORLDS[i];return WORLDS[0]}
 function isUW(w){return G.uw.indexOf(w)!==-1}
-function pE(p){return(p.be||1)*(1+.2*((p.lv||1)-1))*(G.mult||1)*(gW().bonus||1)}
+function pE(p){return(p.be||1)*(1+.2*((p.lv||1)-1))*(G.mult||1)*(gW().bonus||1)*(boostActive?2:1)}
 function tI(){var s=0;for(var i=0;i<G.pets.length;i++)s+=pE(G.pets[i]);return s}
 function rbCo(){return Math.floor(5e5*Math.pow(2,G.rb))}
 function uCo(p){return Math.floor((p.be||1)*25*(p.lv||1))}
@@ -324,10 +346,10 @@ function updateUI(){
     var bb=document.getElementById('btnBuy');if(G.money>=G.pr[selE]){bb.classList.add('can');bb.classList.remove('no')}else{bb.classList.remove('can');bb.classList.add('no')}
     var ba=document.getElementById('btnAuto');if(!G.ao){ba.innerHTML='<i class="fas fa-robot"></i> AUTO ($10B)';if(G.money>=1e10){ba.classList.add('can');ba.classList.remove('no','on')}else{ba.classList.add('no');ba.classList.remove('can','on')}}else{if(G.aon){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can')}else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no')}}
     if(!rbC){var rb=document.getElementById('btnRb');rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCo())+')';rb.disabled=G.money<rbCo();rb.classList.remove('yes')}
-    rPets();rEggs();if(aTab==='worlds')rWorlds();if(aTab==='rank')renderRk();
+    rPets();rEggs();if(aTab==='worlds')rWorlds();if(aTab==='rank')renderRk();if(aTab==='lu')renderLuShop();
 }
 
-function setTab(t){snd.click();aTab=t;var ps=document.querySelectorAll('.panel'),bs=document.querySelectorAll('.tab');for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');var mp={game:'pGame',worlds:'pWorlds',index:'pIndex',rank:'pRank'};var pe=document.getElementById(mp[t]);if(pe)pe.classList.add('on');var be=document.querySelector('.tab[data-t="'+t+'"]');if(be)be.classList.add('on');if(t==='index')rIdx();if(t==='rank')renderRk();if(t==='worlds')rWorlds()}
+function setTab(t){snd.click();aTab=t;var ps=document.querySelectorAll('.panel'),bs=document.querySelectorAll('.tab');for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');var mp={game:'pGame',worlds:'pWorlds',index:'pIndex',rank:'pRank',lu:'pLu'};var pe=document.getElementById(mp[t]);if(pe)pe.classList.add('on');var be=document.querySelector('.tab[data-t="'+t+'"]');if(be)be.classList.add('on');if(t==='index')rIdx();if(t==='rank')renderRk();if(t==='worlds')rWorlds();if(t==='lu')renderLuShop();}
 
 // ===== INIT =====
 load();var cw=gW();if(cw.eggs.indexOf(selE)===-1)selE=cw.eggs[0];
@@ -373,6 +395,125 @@ requestAnimationFrame(rLoop);
 // ===== AUDIO INIT ON FIRST INTERACTION =====
 document.addEventListener('click',function(){snd.go()},{once:true});
 document.addEventListener('touchstart',function(){snd.go()},{once:true});
+
+
+// =====================================================================
+// ===== INTEGRACIÓN LEVELUP (TIENDA CON MONEDAS GLOBALES) =============
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDpmb0duQ3ZgjbipPWsMvpLx3d-vojQAxM",
+  authDomain: "inici-de-sessio.firebaseapp.com",
+  databaseURL: "https://inici-de-sessio-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "inici-de-sessio",
+  storageBucket: "inici-de-sessio.firebasestorage.app",
+  messagingSenderId: "106046428749",
+  appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
+};
+const fbApp = initializeApp(firebaseConfig);
+const fbAuth = getAuth(fbApp);
+const fbDb = getDatabase(fbApp);
+
+let luUid = null;
+let luCoins = 0;
+let boostActive = false;
+
+var LU_SHOP_ITEMS = [
+  { id: 'money1', name: '10K Dinero', desc: 'Añade $10,000 al juego', icon: 'fa-sack-dollar', cost: 10, action: function() { G.money += 10000; save(); updateUI(); } },
+  { id: 'money2', name: '1M Dinero', desc: 'Añade $1,000,000 al juego', icon: 'fa-money-bill-trend-up', cost: 50, action: function() { G.money += 1000000; save(); updateUI(); } },
+  { id: 'boost', name: 'Boost x2 (5 min)', desc: 'Duplica tus ingresos por 5 minutos', icon: 'fa-bolt', cost: 30, action: function() { activateBoost(); } },
+  { id: 'egg', name: 'Huevo LevelUp', desc: 'Mascota exclusiva Gh0st', icon: 'fa-egg', cost: 150, action: function() { openLuEgg(); } }
+];
+
+function activateBoost() {
+  boostActive = true;
+  toast('Boost 2x Activado!', 'rwd');
+  updateUI();
+  setTimeout(function() { 
+    boostActive = false; 
+    toast('Boost terminado', 'inf'); 
+    updateUI(); 
+  }, 300000); // 5 minutos
+}
+
+function openLuEgg() {
+  var luPet = {ic:'fa-solid fa-ghost', n:'Gh0st LU', r:'og', be:100000, lv:1, id:G.nid++, c:'#a78bfa', eg:['lu']};
+  G.pets.push(luPet);
+  G.tot++;
+  if (G.disc.indexOf(luPet.n) === -1) G.disc.push(luPet.n);
+  save(); updateUI(); refHP();
+  showH(luPet); // Mostrar animación de eclosión
+}
+
+function renderLuShop() {
+  var el = document.getElementById('luShop');
+  if (!el) return;
+  if (!luUid) {
+    el.innerHTML = '<div class="lu-login">Inicia sesión en el portal LevelUp para usar tus monedas aquí.</div>';
+    return;
+  }
+  var h = '';
+  for (var i=0; i<LU_SHOP_ITEMS.length; i++) {
+    var item = LU_SHOP_ITEMS[i];
+    var can = luCoins >= item.cost;
+    h += '<div class="lu-item">' +
+      '<div class="lu-item-icon"><i class="fas ' + item.icon + '"></i></div>' +
+      '<div class="lu-item-info"><div class="lu-item-name">' + item.name + '</div><div class="lu-item-desc">' + item.desc + '</div></div>' +
+      '<button class="lu-btn" data-lu="' + i + '" ' + (can?'':'disabled') + '><i class="fas fa-coins"></i> ' + item.cost + '</button>' +
+      '</div>';
+  }
+  el.innerHTML = h;
+}
+
+async function buyWithLu(item) {
+  if (!luUid) { toast('Inicia sesión en LevelUp', 'err'); return; }
+  try {
+    toast('Procesando compra...', 'inf');
+    const result = await runTransaction(ref(fbDb, 'users/' + luUid + '/coins'), function(c) {
+      if (c === null) return 0;
+      if (c < item.cost) return; // Abortar si no hay suficientes monedas
+      return c - item.cost;
+    });
+    
+    if (result.committed) {
+      item.action();
+      toast('¡Compra exitosa!', 'ok');
+    } else {
+      snd.err();
+      toast('Monedas LU insuficientes', 'err');
+    }
+  } catch (e) {
+    toast('Error al procesar la compra', 'err');
+    console.error(e);
+  }
+}
+
+onAuthStateChanged(fbAuth, function(user) {
+  if (user) {
+    luUid = user.uid;
+    // Escuchar cambios en las monedas en tiempo real
+    onValue(ref(fbDb, 'users/' + luUid + '/coins'), function(snap) {
+      luCoins = snap.val() || 0;
+      var el = document.getElementById('luCoins');
+      if (el) el.textContent = luCoins;
+      if (aTab === 'lu') renderLuShop();
+    });
+  } else {
+    luUid = null;
+    luCoins = 0;
+    var el = document.getElementById('luCoins');
+    if (el) el.textContent = 'N/A';
+    if (aTab === 'lu') renderLuShop();
+  }
+});
+
+// Listener para los botones de compra
+document.addEventListener('click', function(e) {
+  var b = e.target.closest('[data-lu]');
+  if (!b) return;
+  var idx = parseInt(b.dataset.lu, 10);
+  buyWithLu(LU_SHOP_ITEMS[idx]);
+});
+
 </script>
 </body>
 </html>
