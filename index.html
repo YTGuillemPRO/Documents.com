@@ -299,7 +299,8 @@
     .empty-state p { font-size: 13px; color: var(--muted); }
     .xp-notif { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--gold); padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; opacity: 0; transition: all 0.4s; z-index: 9998; pointer-events: none; }
     .xp-notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .coins-min-indicator { position: fixed; bottom: 24px; left: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-size: 13px; font-weight: 700; }
+    .coins-min-indicator { position: fixed; bottom: 24px; left: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-size: 13px; font-weight: 700; cursor: pointer; }
+    .coins-min-indicator:hover { transform: scale(1.02); }
     .coins-min-indicator .timer-ring { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--surface2); border-top-color: var(--gold); animation: spin 1s linear infinite; }
     .coins-min-indicator.paused .timer-ring { border-top-color: var(--muted); animation: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -444,7 +445,7 @@
 
 <div class="toast-container" id="toast-container"></div>
 <div class="xp-notif" id="xp-notif"><span class="iconify" data-icon="mdi:star" data-width="16"></span><span id="xp-notif-text">+50 XP</span></div>
-<div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;">
+<div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;" title="Click para detener la sesión de juego">
   <div class="timer-ring"></div>
   <div>
     <div style="color:var(--gold);font-size:14px;display:flex;align-items:center;gap:4px;"><span class="iconify" data-icon="mdi:bitcoin" data-width="16"></span><span id="coins-min-timer">60s</span><span class="game-playing-label">JUGANDO</span></div>
@@ -781,9 +782,9 @@
           <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:13px;margin-bottom:10px;">
             <div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:8px;" id="admin-detail-name">—</div>
             <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">Email</span><span style="font-size:12px;color:var(--muted);" id="admin-detail-email">—</span></div>
-            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">Nivel</span><span class="stat-row-val" style="font-size:14px;" id="admin-detail-level">—</span></div>
-            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">XP</span><span class="stat-row-val" style="font-size:14px;" id="admin-detail-xp">—</span></div>
-            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">Monedas</span><span class="stat-row-val" style="font-size:14px;color:var(--gold);" id="admin-detail-coins">—</span></div>
+            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">Nivel</span><span style="font-size:14px;font-weight:700;color:var(--accent2);" id="admin-detail-level">—</span></div>
+            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">XP</span><span style="font-size:14px;font-weight:700;color:var(--text);" id="admin-detail-xp">—</span></div>
+            <div class="stat-row" style="padding:6px 0;"><span class="stat-row-label">Monedas</span><span style="font-size:14px;font-weight:700;color:var(--gold);" id="admin-detail-coins">—</span></div>
             <div class="stat-row" style="padding:6px 0;border:none;"><span class="stat-row-label">UID</span><span style="font-size:10px;color:var(--muted);word-break:break-all;" id="admin-detail-uid">—</span></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -806,7 +807,6 @@
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🌍 Recompensa global</div>
           <button class="admin-btn admin-btn-all-users" onclick="adminGiveCoinsToAll()">🌍 Dar monedas / XP a TODOS los usuarios</button>
-          <div class="give-all-progress" id="give-all-progress"><div class="give-all-progress-fill" id="give-all-progress-fill"></div></div>
         </div>
         <div class="admin-result-box" id="admin-give-result"></div>
       </div>
@@ -834,7 +834,6 @@
           <button class="admin-btn" style="flex:1;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--gold);" onclick="setMsgType('warning')">⚠️ Aviso</button>
           <button class="admin-btn" style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;" onclick="setMsgType('alert')">🚨 Alerta</button>
         </div>
-        <div id="broadcast-preview" class="broadcast-preview" style="display:none;"></div>
         <button class="admin-btn admin-btn-purple" onclick="adminBroadcast()" style="width:100%;margin-top:8px;">📢 Enviar a todos</button>
         <div class="admin-result-box" id="admin-broadcast-result"></div>
       </div>
@@ -872,7 +871,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- PAGE: SETTINGS -->
 <div class="page" id="page-settings">
@@ -991,7 +989,7 @@ const GAMES = [
   { name:"1 V 1 Arco", path:"juego13/index.html", icon:"mdi:bow-arrow", color:"#14b8a6", category:"accion", tag:"" },
   { name:"Fortnite", path:"Fornite/index.html", icon:"mdi:shield-sword", color:"#6366f1", category:"accion", tag:"Top" },
   { name:"DeadZone", path:"DeadZone/index.html", icon:"DeadZone/DeadZone.jpg", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
-  { name:"Nova Ai", path:"Nova Ai/index.html", icon:"Nova Ai/Novalogo.jpg", isImage:true, color:"#f59e0b", category:"chill", tag:"Popular" },,
+  { name:"Nova Ai", path:"Nova Ai/index.html", icon:"Nova Ai/Novalogo.jpg", isImage:true, color:"#f59e0b", category:"chill", tag:"Popular" },
   { name:"Tap On Goal", path:"tap-on-goal/index.html", icon:"mdi:goal", color:"#f59e0b", category:"deportes", tag:"" },
   { name:"Crónicas del Multiverso", path:"Crónicas-del-Multiverso/src/index.html", icon:"mdi:sword-cross", color:"#a855f7", category:"estrategia", tag:"Beta" },
   { name:"AETHER STRANDED", path:"AETHER STRANDED/index.html", icon:"mdi:weather-dust", color:"#6366f1", category:"accion", tag:"Nuevo" },
@@ -1063,8 +1061,6 @@ const SHOP_ITEMS = [
   { id:'ti_speed', name:'Velocista', type:'title', cat:'title', emoji:'⚡', price:400, rarity:'rare', bg:'linear-gradient(135deg,#1e3a8a,#2563eb,#60a5fa)', glowColor:'#3b82f6', particleColor:'#93c5fd', description:'Más rápido que nadie' },
   { id:'ti_collector', name:'Coleccionista', type:'title', cat:'title', emoji:'🎒', price:900, rarity:'epic', bg:'linear-gradient(135deg,#422006,#a16207,#facc15)', glowColor:'#eab308', particleColor:'#fde68a', description:'Lo tiene absolutamente todo' },
   { id:'ti_immortal', name:'Inmortal', type:'title', cat:'title', emoji:'♾️', price:6000, rarity:'legendary', bg:'linear-gradient(135deg,#020617,#4c1d95,#7c3aed,#ec4899,#f59e0b)', glowColor:'#7c3aed', particleColor:'#c4b5fd', description:'Tu leyenda nunca muere' },
-
-  // NUEVOS COSMÉTICOS COOLS AÑADIDOS
   { id:'av_blackhole', name:'Agujero Negro', type:'avatar', cat:'avatar', emoji:'🕳️', price:2500, rarity:'legendary', bg:'linear-gradient(135deg,#020617 0%,#1e1b4b 30%,#7c3aed 60%,#000000 100%)', glowColor:'#7c3aed', particleColor:'#c4b5fd', description:'Absorbe la luz' },
   { id:'av_galaxybrain', name:'Mente Galáctica', type:'avatar', cat:'avatar', emoji:'🧠', price:1800, rarity:'legendary', bg:'linear-gradient(135deg,#4c1d95 0%,#9333ea 40%,#ec4899 100%)', glowColor:'#ec4899', particleColor:'#f9a8d4', description:'Inteligencia universal' },
   { id:'av_shadowwolf', name:'Lobo Sombrío', type:'avatar', cat:'avatar', emoji:'🐺', price:800, rarity:'epic', bg:'linear-gradient(135deg,#0f0f1a 0%,#1e1b4b 50%,#374151 100%)', glowColor:'#8b5cf6', particleColor:'#ddd6fe', description:'Cazador nocturno' },
@@ -1075,6 +1071,15 @@ const SHOP_ITEMS = [
   { id:'ti_overlord', name:'Cosmic Overlord', type:'title', cat:'title', emoji:'🌌', price:5000, rarity:'legendary', bg:'linear-gradient(135deg,#020617 0%,#4c1d95 30%,#9333ea 60%,#ec4899 100%)', glowColor:'#9333ea', particleColor:'#f9a8d4', description:'Dominador del universo' },
   { id:'ti_chosen', name:'The Chosen One', type:'title', cat:'title', emoji:'☄️', price:3000, rarity:'legendary', bg:'linear-gradient(135deg,#1e3a8a 0%,#3b82f6 40%,#93c5fd 100%)', glowColor:'#3b82f6', particleColor:'#bfdbfe', description:'El elegido de la profecía' }
 ];
+
+const ACCENT_COLORS = {
+  accent: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
+  green: 'linear-gradient(90deg, #10b981, #34d399)',
+  red: 'linear-gradient(90deg, #ef4444, #fca5a5)',
+  blue: 'linear-gradient(90deg, #3b82f6, #93c5fd)',
+  gold: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+  pink: 'linear-gradient(90deg, #ec4899, #f9a8d4)'
+};
 
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
 function isAdmin(email) { return ADMIN_EMAILS.includes(email); }
@@ -1119,9 +1124,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if(zone){zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragover');});zone.addEventListener('dragleave',()=>zone.classList.remove('dragover'));zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');const file=e.dataTransfer.files[0];if(file&&file.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(file);const input=document.getElementById('log-img-input');input.files=dt.files;handleImgSelect(input);}});}
   const textarea=document.getElementById('log-body-input');
   if(textarea){textarea.addEventListener('input',()=>{const len=textarea.value.length,counter=document.getElementById('body-char-counter');if(counter){counter.textContent=`${len} / 2000`;counter.className='char-counter'+(len>1800?' over':len>1500?' warn':'');}});}
-  
-  // Inicializar el botón del tema
   updateThemeBtn();
+  const ind = document.getElementById('coins-min-indicator');
+  if(ind) ind.addEventListener('click', () => { if(isPlayingGame) { toast('Juego finalizado. Monedas acumuladas entregadas.', 'success'); stopGameSession(); } });
 });
 
 function insertFormat(before,after){const ta=document.getElementById('log-body-input');if(!ta)return;const start=ta.selectionStart,end=ta.selectionEnd;const sel=ta.value.substring(start,end);const replacement=before+(sel||'texto')+after;ta.setRangeText(replacement,start,end,'select');ta.focus();}
@@ -1162,11 +1167,103 @@ document.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>
 
 function showXP(amount){const el=document.getElementById('xp-notif');document.getElementById('xp-notif-text').textContent=`+${amount} XP`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
 
-function startGameSession(gameName){if(!State.uid)return;isPlayingGame=true;gameStartTime=Date.now();coinsSecondCount=0;State.currentGameName=gameName||'un juego';sessionStorage.setItem('levelup_playing','true');sessionStorage.setItem('levelup_game_start',gameStartTime.toString());sessionStorage.setItem('levelup_uid',State.uid);sessionStorage.setItem('levelup_game_name',State.currentGameName);const ind=document.getElementById('coins-min-indicator');ind.style.display='flex';ind.classList.remove('paused');if(window._fbFns){const{ref,set}=window._fbFns;set(ref(State.db,`users/${State.uid}/online`),true).catch(()=>{});set(ref(State.db,`users/${State.uid}/currentGame`),State.currentGameName).catch(()=>{});const myFriends=State.friends||{};Object.keys(myFriends).forEach(fUid=>{set(ref(State.db,`users/${fUid}/friends/${State.uid}/online`),true).catch(()=>{});set(ref(State.db,`users/${fUid}/friends/${State.uid}/currentGame`),State.currentGameName).catch(()=>{});});}if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);coinsMinuteTimer=setInterval(()=>{coinsSecondCount++;document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';if(coinsSecondCount>=60){coinsSecondCount=0;if(sessionStorage.getItem('levelup_playing')==='true'&&sessionStorage.getItem('levelup_uid')===State.uid)awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');else stopGameSession();}},1000);}
-function stopGameSession(){isPlayingGame=false;gameStartTime=null;sessionStorage.removeItem('levelup_playing');sessionStorage.removeItem('levelup_game_start');sessionStorage.removeItem('levelup_uid');sessionStorage.removeItem('levelup_game_name');if(coinsMinuteTimer){clearInterval(coinsMinuteTimer);coinsMinuteTimer=null;}const ind=document.getElementById('coins-min-indicator');ind.style.display='none';ind.classList.add('paused');if(window._fbFns&&State.uid){const{ref,set,remove}=window._fbFns;remove(ref(State.db,`users/${State.uid}/currentGame`)).catch(()=>{});const myFriends=State.friends||{};Object.keys(myFriends).forEach(fUid=>{set(ref(State.db,`users/${fUid}/friends/${State.uid}/online`),false).catch(()=>{});remove(ref(State.db,`users/${fUid}/friends/${State.uid}/currentGame`)).catch(()=>{});});}}
+function startGameSession(gameName){
+  if(!State.uid)return;
+  isPlayingGame=true;
+  gameStartTime=Date.now();
+  coinsSecondCount=0;
+  State.currentGameName=gameName||'un juego';
+  sessionStorage.setItem('levelup_playing','true');
+  sessionStorage.setItem('levelup_game_start',gameStartTime.toString());
+  sessionStorage.setItem('levelup_uid',State.uid);
+  sessionStorage.setItem('levelup_game_name',State.currentGameName);
+  
+  const ind=document.getElementById('coins-min-indicator');
+  ind.style.display='flex';
+  ind.classList.remove('paused');
+  
+  if(window._fbFns){
+    const{ref,set}=window._fbFns;
+    set(ref(State.db,`users/${State.uid}/online`),true).catch(()=>{});
+    set(ref(State.db,`users/${State.uid}/currentGame`),State.currentGameName).catch(()=>{});
+  }
+  
+  if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);
+  coinsMinuteTimer=setInterval(()=>{
+    coinsSecondCount++;
+    document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';
+    if(coinsSecondCount>=60){
+      coinsSecondCount=0;
+      if(sessionStorage.getItem('levelup_playing')==='true'){
+        awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');
+        sessionStorage.setItem('levelup_game_start',Date.now().toString());
+      } else {
+        stopGameSession();
+      }
+    }
+  },1000);
+}
+
+function stopGameSession(){
+  isPlayingGame=false;
+  gameStartTime=null;
+  sessionStorage.removeItem('levelup_playing');
+  sessionStorage.removeItem('levelup_game_start');
+  sessionStorage.removeItem('levelup_uid');
+  sessionStorage.removeItem('levelup_game_name');
+  if(coinsMinuteTimer){clearInterval(coinsMinuteTimer);coinsMinuteTimer=null;}
+  const ind=document.getElementById('coins-min-indicator');
+  ind.style.display='none';
+  ind.classList.add('paused');
+  if(window._fbFns&&State.uid){
+    const{ref,set,remove}=window._fbFns;
+    remove(ref(State.db,`users/${State.uid}/currentGame`)).catch(()=>{});
+    set(ref(State.db,`users/${State.uid}/online`),false).catch(()=>{});
+  }
+}
 window.stopGameSession=stopGameSession;
 
-function checkActiveGameSession(){if(!State.uid)return;const wasPlaying=sessionStorage.getItem('levelup_playing')==='true';const savedUid=sessionStorage.getItem('levelup_uid');const gameStart=sessionStorage.getItem('levelup_game_start');if(wasPlaying&&savedUid===State.uid&&gameStart){coinsSecondCount=Math.floor((Date.now()-parseInt(gameStart))/1000)%60;isPlayingGame=true;gameStartTime=parseInt(gameStart);const ind=document.getElementById('coins-min-indicator');ind.style.display='flex';ind.classList.remove('paused');if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);coinsMinuteTimer=setInterval(()=>{coinsSecondCount++;document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';if(coinsSecondCount>=60){coinsSecondCount=0;if(sessionStorage.getItem('levelup_playing')==='true')awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');else stopGameSession();}},1000);}}
+function checkActiveGameSession(){
+  if(!State.uid)return;
+  const wasPlaying=sessionStorage.getItem('levelup_playing')==='true';
+  const savedUid=sessionStorage.getItem('levelup_uid');
+  const gameStart=parseInt(sessionStorage.getItem('levelup_game_start')||'0');
+  if(wasPlaying&&savedUid===State.uid&&gameStart>0){
+    const elapsedSeconds = Math.floor((Date.now() - gameStart) / 1000);
+    const minutesPlayed = Math.floor(elapsedSeconds / 60);
+    const secondsIntoCurrentMinute = elapsedSeconds % 60;
+    if(minutesPlayed > 0){
+      const xpToAward = minutesPlayed * XP_PER_MINUTE;
+      const coinsToAward = minutesPlayed * COINS_PER_MINUTE;
+      toast(`🎁 ¡Bienvenido! Ganaste ${coinsToAward} monedas y ${xpToAward} XP por tu tiempo de juego.`, 'success');
+      awardXPandCoins(xpToAward, coinsToAward, 'Tiempo en juego (retroactivo)');
+      const newGameStart = gameStart + (minutesPlayed * 60000);
+      sessionStorage.setItem('levelup_game_start', newGameStart.toString());
+      gameStartTime = newGameStart;
+    } else {
+      gameStartTime = gameStart;
+    }
+    isPlayingGame=true;
+    coinsSecondCount=secondsIntoCurrentMinute;
+    const ind=document.getElementById('coins-min-indicator');
+    ind.style.display='flex';
+    ind.classList.remove('paused');
+    if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);
+    coinsMinuteTimer=setInterval(()=>{
+      coinsSecondCount++;
+      document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';
+      if(coinsSecondCount>=60){
+        coinsSecondCount=0;
+        if(sessionStorage.getItem('levelup_playing')==='true'){
+          awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');
+          sessionStorage.setItem('levelup_game_start',Date.now().toString());
+        } else {
+          stopGameSession();
+        }
+      }
+    },1000);
+  }
+}
 
 function openAuth(){document.getElementById('auth-modal').classList.add('open');}
 function closeAuth(){document.getElementById('auth-modal').classList.remove('open');}
@@ -1236,7 +1333,10 @@ document.getElementById('games-grid').addEventListener('click',async e=>{
   const likeBtn=e.target.closest('.like-btn');
   if(likeBtn){e.preventDefault();e.stopPropagation();if(!State.uid){toast('Inicia sesión para dar like ❤️','error');openAuth();return;}await toggleLike(likeBtn.dataset.gid,likeBtn);return;}
   const card=e.target.closest('.game-card');
-  if(card&&card.dataset.path){if(State.uid)startGameSession(card.querySelector('.game-name')?.textContent||'un juego');window.location.href=card.dataset.path;}
+  if(card&&card.dataset.path){
+    if(State.uid) startGameSession(card.querySelector('.game-name')?.textContent||'un juego');
+    window.location.href=card.dataset.path;
+  }
 });
 
 async function toggleLike(gid,btn){
@@ -1257,14 +1357,27 @@ function spawnHeart(btn){const r=btn.getBoundingClientRect();const p=document.cr
 
 async function awardXPandCoins(xpAmt,coinsAmt,reason){
   if(!State.uid||!window._fbFns)return;
-  const{ref,runTransaction}=window._fbFns;
+  const {ref,runTransaction}=window._fbFns;
   try{
-    const newXP=State.xp+xpAmt,newCoins=State.coins+coinsAmt;
-    const lvData=xpToLevel(newXP),prevLevel=State.level;
-    await runTransaction(ref(State.db,`users/${State.uid}`),u=>{if(!u)return u;u.xp=(u.xp||0)+xpAmt;u.coins=(u.coins||0)+coinsAmt;u.level=lvData.level;return u;});
-    State.xp=newXP;State.coins=newCoins;State.level=lvData.level;
-    if(xpAmt>0)showXP(xpAmt);if(lvData.level>prevLevel)toast(`🎉 ¡Subiste al nivel ${lvData.level}!`,'success');
-    updateNavUser();document.getElementById('shop-coins-val').textContent=State.coins;document.getElementById('p-coins').textContent=State.coins;updateXPBar();
+    const userRef = ref(State.db, `users/${State.uid}`);
+    await runTransaction(userRef, u => {
+      if(!u) return u;
+      u.xp = (u.xp || 0) + xpAmt;
+      u.coins = (u.coins || 0) + coinsAmt;
+      u.level = window.xpToLevel(u.xp).level;
+      return u;
+    });
+    State.xp += xpAmt;
+    State.coins += coinsAmt;
+    const lvData = xpToLevel(State.xp);
+    const prevLevel = State.level;
+    State.level = lvData.level;
+    if(xpAmt>0)showXP(xpAmt);
+    if(lvData.level>prevLevel)toast(`🎉 ¡Subiste al nivel ${lvData.level}!`,'success');
+    updateNavUser();
+    document.getElementById('shop-coins-val').textContent=State.coins;
+    document.getElementById('p-coins').textContent=State.coins;
+    updateXPBar();
   }catch(err){console.error('XP error:',err);}
 }
 function updateXPBar(){const lvData=xpToLevel(State.xp);const pct=Math.min(100,(lvData.current/lvData.needed)*100);document.getElementById('xp-bar-fill').style.width=pct+'%';document.getElementById('xp-text').textContent=`${lvData.current} / ${lvData.needed} XP`;document.getElementById('xp-next-lv').textContent=`Nivel ${lvData.level+1}`;}
@@ -1506,7 +1619,7 @@ function initAdminPage(){
 function populateCosmeticSelect(){
   const sel=document.getElementById('admin-cosmetic-item');
   if(!sel||sel.dataset.filled)return;
-  sel.innerHTML=SHOP_ITEMS.map(it=>`<option value="${it.id}">${it.emoji} ${it.name} — ${it.type}</option>`).join('');
+  sel.innerHTML=SHOP_ITEMS.map(it=>`<option value="${it.id}">${it.emoji} ${it.name} — ${it.type}</option>`).join(' ');
   sel.dataset.filled='1';
 }
 async function refreshAdminStats(){
@@ -1537,10 +1650,10 @@ async function adminGiveCoinsToAll(){
   const coins=parseInt(document.getElementById('admin-give-coins').value||'0');const xp=parseInt(document.getElementById('admin-give-xp').value||'0');
   if(!coins&&!xp){adminShowResult('admin-give-result','⚠️ Escribe primero una cantidad de monedas y/o XP','err');return;}
   const confirmed=confirm(`⚠️ ¿Dar ${coins>0?`${coins} monedas`:''}${coins>0&&xp>0?' y ':''}${xp>0?`${xp} XP`:''} a TODOS los usuarios?\n\nEsta acción no se puede deshacer.`);if(!confirmed)return;
-  const{ref,get,set}=window._fbFns;const progressBar=document.getElementById('give-all-progress');const progressFill=document.getElementById('give-all-progress-fill');progressBar.classList.add('show');progressFill.style.width='0%';adminShowResult('admin-give-result','⏳ Cargando usuarios...','info');
-  try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){adminShowResult('admin-give-result','❌ No hay usuarios','err');progressBar.classList.remove('show');return;}const users=Object.entries(snap.val());const total=users.length;let done=0,errors=0;adminShowResult('admin-give-result',`⏳ Procesando 0 / ${total} usuarios...`,'info');
-  const BATCH_SIZE=10;for(let i=0;i<users.length;i+=BATCH_SIZE){const batch=users.slice(i,i+BATCH_SIZE);await Promise.all(batch.map(async([uid,userData])=>{try{const updates={};if(coins>0)updates[`users/${uid}/coins`]=(userData.coins||0)+coins;if(xp>0){const newXp=(userData.xp||0)+xp;updates[`users/${uid}/xp`]=newXp;updates[`users/${uid}/level`]=window.xpToLevel(newXp).level;}await Promise.all(Object.entries(updates).map(([path,val])=>set(ref(State.db,path),val)));done++;}catch(e){errors++;console.warn(`Error en usuario ${uid}:`,e);}}));const pct=Math.round(((i+BATCH_SIZE)/total)*100);progressFill.style.width=Math.min(100,pct)+'%';adminShowResult('admin-give-result',`⏳ Procesando ${Math.min(i+BATCH_SIZE,total)} / ${total} usuarios...`,'info');await new Promise(r=>setTimeout(r,100));}
-  progressFill.style.width='100%';let resultMsg=`✅ Recompensa enviada a ${done} usuarios`;if(errors>0)resultMsg+=` (${errors} errores)`;if(coins>0)resultMsg+=` · +${coins} monedas`;if(xp>0)resultMsg+=` · +${xp} XP`;adminShowResult('admin-give-result',resultMsg,'ok');toast(`🌍 Recompensa global enviada a ${done} usuarios`,'success');setTimeout(()=>progressBar.classList.remove('show'),2000);}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');progressBar.classList.remove('show');console.error('Give all error:',err);}
+  const{ref,get,set}=window._fbFns;
+  try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){adminShowResult('admin-give-result','❌ No hay usuarios','err');return;}const users=Object.entries(snap.val());const total=users.length;let done=0,errors=0;adminShowResult('admin-give-result',`⏳ Procesando 0 / ${total} usuarios...`,'info');
+  const BATCH_SIZE=10;for(let i=0;i<users.length;i+=BATCH_SIZE){const batch=users.slice(i,i+BATCH_SIZE);await Promise.all(batch.map(async([uid,userData])=>{try{const updates={};if(coins>0)updates[`users/${uid}/coins`]=(userData.coins||0)+coins;if(xp>0){const newXp=(userData.xp||0)+xp;updates[`users/${uid}/xp`]=newXp;updates[`users/${uid}/level`]=window.xpToLevel(newXp).level;}await Promise.all(Object.entries(updates).map(([path,val])=>set(ref(State.db,path),val)));done++;}catch(e){errors++;console.warn(`Error en usuario ${uid}:`,e);}}));adminShowResult('admin-give-result',`⏳ Procesando ${Math.min(i+BATCH_SIZE,total)} / ${total} usuarios...`,'info');await new Promise(r=>setTimeout(r,100));}
+  let resultMsg=`✅ Recompensa enviada a ${done} usuarios`;if(errors>0)resultMsg+=` (${errors} errores)`;if(coins>0)resultMsg+=` · +${coins} monedas`;if(xp>0)resultMsg+=` · +${xp} XP`;adminShowResult('admin-give-result',resultMsg,'ok');toast(`🌍 Recompensa global enviada a ${done} usuarios`,'success');}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');console.error('Give all error:',err);}
 }
 window.adminGiveCoinsToAll=adminGiveCoinsToAll;
 
@@ -1670,10 +1783,10 @@ async function settingsChangePassword(){
   if(!window._firebase_auth)return;
   const current=document.getElementById('settings-pass-current').value;
   const newPass=document.getElementById('settings-pass-new').value;
-  const confirm=document.getElementById('settings-pass-confirm').value;
-  if(!current||!newPass||!confirm){settingsShowResult('settings-pass-result','Rellena todos los campos','err');return;}
+  const confirmPass=document.getElementById('settings-pass-confirm').value;
+  if(!current||!newPass||!confirmPass){settingsShowResult('settings-pass-result','Rellena todos los campos','err');return;}
   if(newPass.length<6){settingsShowResult('settings-pass-result','La nueva contraseña necesita mínimo 6 caracteres','err');return;}
-  if(newPass!==confirm){settingsShowResult('settings-pass-result','Las contraseñas no coinciden','err');return;}
+  if(newPass!==confirmPass){settingsShowResult('settings-pass-result','Las contraseñas no coinciden','err');return;}
   try{
     const{EmailAuthProvider,reauthenticateWithCredential,updatePassword}=window._firebase_auth_fns;
     const user=window._firebase_auth.currentUser;
@@ -1694,7 +1807,6 @@ async function settingsSendResetEmail(){
   if(!email){settingsShowResult('settings-reset-result','No hay correo asociado a esta cuenta','err');return;}
   try{
     const{sendPasswordResetEmail}=window._firebase_auth_fns;
-    // Configuración de Action Code para asegurar la redirección al dominio actual
     const actionCodeSettings = {
       url: window.location.origin,
       handleCodeInApp: false
