@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LevelUp</title>
+  <title>LevelUppppp</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <style>
@@ -356,7 +356,7 @@
     .update-entry:hover { border-color: rgba(124,58,237,0.2); }
     .update-entry-accent { height: 3px; width: 100%; }
     .update-entry-body-wrap { padding: 20px 24px 20px; }
-    .update-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .update-entry-header { display: flex; align-items: flex-start; justify-content:space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
     .update-entry-title { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
     .update-entry-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .update-type-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
@@ -789,29 +789,32 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="admin-btn admin-btn-gold" onclick="adminGiveCoinsToFound()" style="flex:1;">💰 Dar monedas</button>
-            <button class="admin-btn admin-btn-red" onclick="adminBanFound()" style="flex:1;">🚫 Banear</button>
+            <button class="admin-btn admin-btn-red distributor-hidden" onclick="adminBanFound()" style="flex:1;">🚫 Banear</button>
           </div>
         </div>
       </div>
 
       <div class="admin-card">
         <div class="admin-card-title" style="color:var(--gold);"><span class="iconify" data-icon="mdi:bitcoin" data-width="20"></span> Dar monedas / XP</div>
-        <input type="text" class="admin-input" id="admin-give-user" placeholder="Nombre de usuario (o dejar vacío para TODOS)...">
+        <div id="dist-balance-info" class="hidden" style="font-size:13px;color:var(--gold);margin-bottom:10px;background:rgba(245,158,11,0.1);padding:8px;border-radius:8px;text-align:center;">
+          Tu saldo para repartir: <strong id="dist-balance-val">0</strong> monedas
+        </div>
+        <input type="text" class="admin-input" id="admin-give-user" placeholder="Nombre de usuario...">
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <input type="number" class="admin-input" id="admin-give-coins" placeholder="Monedas" min="0" style="margin-bottom:0;">
-          <input type="number" class="admin-input" id="admin-give-xp" placeholder="XP" min="0" style="margin-bottom:0;">
+          <input type="number" class="admin-input distributor-hidden" id="admin-give-xp" placeholder="XP" min="0" style="margin-bottom:0;">
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="admin-btn admin-btn-gold" onclick="adminGiveRewards()" style="flex:1;margin-top:4px;">💰 Dar (usuario)</button>
+          <button class="admin-btn admin-btn-gold" onclick="adminGiveRewards()" style="flex:1;margin-top:4px;">💰 Transferir</button>
         </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <div id="admin-give-global-section" class="distributor-hidden" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🌍 Recompensa global</div>
           <button class="admin-btn admin-btn-all-users" onclick="adminGiveCoinsToAll()">🌍 Dar monedas / XP a TODOS los usuarios</button>
         </div>
         <div class="admin-result-box" id="admin-give-result"></div>
       </div>
 
-      <div class="admin-card">
+      <div class="admin-card distributor-hidden">
         <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="mdi:account-cancel" data-width="20"></span> Banear usuario</div>
         <input type="text" class="admin-input" id="admin-ban-input" placeholder="Email o nombre de usuario...">
         <input type="text" class="admin-input" id="admin-ban-reason" placeholder="Motivo del ban (opcional)">
@@ -826,7 +829,7 @@
         </div>
       </div>
 
-      <div class="admin-card">
+      <div class="admin-card distributor-hidden">
         <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="mdi:bullhorn" data-width="20"></span> Mensaje global (Broadcast)</div>
         <input type="text" class="admin-input" id="admin-broadcast-msg" placeholder="Mensaje para todos los usuarios...">
         <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
@@ -838,12 +841,12 @@
         <div class="admin-result-box" id="admin-broadcast-result"></div>
       </div>
 
-      <div class="admin-card" style="grid-column: 1 / -1;">
+      <div class="admin-card distributor-hidden" style="grid-column: 1 / -1;">
         <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:account-group" data-width="20"></span> Lista de usuarios<button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button></div>
         <div id="admin-users-list" style="overflow-x:auto;"><p style="font-size:13px;color:var(--muted);">Pulsa "Cargar" para ver los usuarios registrados.</p></div>
       </div>
 
-      <div class="admin-card">
+      <div class="admin-card distributor-hidden">
         <div class="admin-card-title" style="color:#f0abfc;"><span class="iconify" data-icon="mdi:gift" data-width="20"></span> Regalar cosmético</div>
         <input type="text" class="admin-input" id="admin-cosmetic-user" placeholder="Nombre de usuario...">
         <select class="admin-input" id="admin-cosmetic-item"></select>
@@ -851,7 +854,7 @@
         <div class="admin-result-box" id="admin-cosmetic-result"></div>
       </div>
 
-      <div class="admin-card">
+      <div class="admin-card distributor-hidden">
         <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="mdi:tune-variant" data-width="20"></span> Establecer valores exactos</div>
         <input type="text" class="admin-input" id="admin-set-user" placeholder="Nombre de usuario...">
         <input type="number" class="admin-input" id="admin-set-coins" placeholder="Monedas exactas (vacío = no cambiar)">
@@ -860,7 +863,7 @@
         <div class="admin-result-box" id="admin-set-result"></div>
       </div>
 
-      <div class="admin-card" style="grid-column: 1 / -1;">
+      <div class="admin-card distributor-hidden" style="grid-column: 1 / -1;">
         <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="mdi:wrench" data-width="20"></span> Mantenimiento</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="admin-btn admin-btn-outline" onclick="adminClearBroadcast()" style="flex:1;min-width:180px;">🧹 Borrar mensaje global</button>
@@ -1082,8 +1085,12 @@ const ACCENT_COLORS = {
 };
 
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
-function isAdmin(email) { return ADMIN_EMAILS.includes(email); }
+const DISTRIBUTOR_EMAILS = ['ovarela@ietemple.cat'];
+
+function isAdmin(email) { return ADMIN_EMAILS.includes(email) || DISTRIBUTOR_EMAILS.includes(email); }
+function isDistributor(email) { return DISTRIBUTOR_EMAILS.includes(email); }
 window.isAdmin = isAdmin;
+window.isDistributor = isDistributor;
 
 const State = {
   uid: null, username: '', email: '',
@@ -1295,7 +1302,12 @@ function updateNavUser(){
     if(adminTab)adminTab.classList.toggle('hidden',!isAdmin(State.email));
     checkActiveGameSession();
     const adminPanel=document.getElementById('admin-update-panel');
-    if(adminPanel)adminPanel.classList.toggle('hidden',!isAdmin(State.email));
+    if(adminPanel)adminPanel.classList.toggle('hidden',!isAdmin(State.email) || isDistributor(State.email));
+    
+    if(isDistributor(State.email)) {
+      const distEl = document.getElementById('dist-balance-val');
+      if(distEl) distEl.textContent = State.coins;
+    }
   }else{
     stopGameSession();
     if(adminTab)adminTab.classList.add('hidden');
@@ -1496,7 +1508,8 @@ function renderProfile(){
   if(equippedBadge)badgesEl.innerHTML+=`<div class="profile-badge"><span>${equippedBadge.emoji}</span>${equippedBadge.name}</div>`;
   if(equippedTitle)badgesEl.innerHTML+=`<div class="profile-badge" style="background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.25);color:var(--accent3)">✏️ ${equippedTitle.name}</div>`;
   if(State.level>=5)badgesEl.innerHTML+=`<div class="profile-badge" style="color:var(--gold);border-color:rgba(245,158,11,0.25);">⭐ Lv 5+</div>`;
-  if(isAdmin(State.email))badgesEl.innerHTML+=`<div class="profile-badge" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.1));border-color:rgba(245,158,11,0.4);color:#fbbf24;">🛡️ Admin</div>`;
+  if(isAdmin(State.email)&&!isDistributor(State.email))badgesEl.innerHTML+=`<div class="profile-badge" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.1));border-color:rgba(245,158,11,0.4);color:#fbbf24;">🛡️ Admin</div>`;
+  if(isDistributor(State.email))badgesEl.innerHTML+=`<div class="profile-badge" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.1));border-color:rgba(245,158,11,0.4);color:#fbbf24;">🛡️ Distribuidor</div>`;
   const colEl=document.getElementById('profile-collection');
   const myItems=SHOP_ITEMS.filter(i=>State.owned[i.id]||i.free);
   if(myItems.length===0){colEl.innerHTML=`<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🛍️</div><h3>Sin colección</h3><p>Gana monedas jugando y compra cosméticos</p></div>`;}else{
@@ -1558,7 +1571,7 @@ function selectLogType(type){selectedLogType=type;document.querySelectorAll('.lo
 window.selectLogType=selectLogType;
 
 async function publishUpdate(){
-  if(!State.uid||!isAdmin(State.email)){toast('Sin permisos','error');return;}
+  if(!State.uid||!isAdmin(State.email)||isDistributor(State.email)){toast('Sin permisos','error');return;}
   if(!window._fbFns){toast('Firebase no cargado','error');return;}
   const title=document.getElementById('log-title-input').value.trim();
   const body=document.getElementById('log-body-input').value.trim();
@@ -1571,10 +1584,10 @@ async function publishUpdate(){
 }
 window.publishUpdate=publishUpdate;
 
-async function deleteUpdate(entryId){if(!State.uid||!isAdmin(State.email))return;if(!window._fbFns)return;if(!confirm('¿Eliminar este update?'))return;try{const{ref,remove}=window._fbFns;await remove(ref(State.db,`updateLog/${entryId}`));toast('Update eliminado','info');}catch(err){toast('Error','error');}}
+async function deleteUpdate(entryId){if(!State.uid||!isAdmin(State.email)||isDistributor(State.email))return;if(!window._fbFns)return;if(!confirm('¿Eliminar este update?'))return;try{const{ref,remove}=window._fbFns;await remove(ref(State.db,`updateLog/${entryId}`));toast('Update eliminado','info');}catch(err){toast('Error','error');}}
 window.deleteUpdate=deleteUpdate;
 
-async function togglePinUpdate(entryId,currentPinned){if(!State.uid||!isAdmin(State.email)||!window._fbFns)return;try{const{ref,set}=window._fbFns;await set(ref(State.db,`updateLog/${entryId}/pinned`),!currentPinned);toast(currentPinned?'Update desfijado':'📌 Update fijado','success');}catch(err){toast('Error','error');}}
+async function togglePinUpdate(entryId,currentPinned){if(!State.uid||!isAdmin(State.email)||isDistributor(State.email)||!window._fbFns)return;try{const{ref,set}=window._fbFns;await set(ref(State.db,`updateLog/${entryId}/pinned`),!currentPinned);toast(currentPinned?'Update desfijado':'📌 Update fijado','success');}catch(err){toast('Error','error');}}
 window.togglePinUpdate=togglePinUpdate;
 
 async function reactToUpdate(entryId,emoji){if(!State.uid){toast('Inicia sesión para reaccionar','error');openAuth();return;}if(!window._fbFns)return;try{const{ref,runTransaction}=window._fbFns;await runTransaction(ref(State.db,`updateLog/${entryId}/reactions/${emoji}/${State.uid}`),val=>val?null:true);}catch(err){console.error('Reaction error:',err);}}
@@ -1583,7 +1596,7 @@ window.reactToUpdate=reactToUpdate;
 function renderUpdates(){
   const container=document.getElementById('updates-list'),emptyEl=document.getElementById('updates-empty');
   const adminPanel=document.getElementById('admin-update-panel');
-  if(adminPanel)adminPanel.classList.toggle('hidden',!isAdmin(State.email));
+  if(adminPanel)adminPanel.classList.toggle('hidden',!isAdmin(State.email) || isDistributor(State.email));
   let entries=Object.entries(updateLogCache);
   if(activeUpdateFilter!=='all')entries=entries.filter(([,e])=>e.type===activeUpdateFilter);
   document.getElementById('update-count').textContent=Object.keys(updateLogCache).length;
@@ -1601,7 +1614,7 @@ function renderUpdates(){
     let reactionsHtml='';
     if(entry.allowReactions!==false){const reactions=entry.reactions||{};reactionsHtml=`<div class="update-reactions">`;REACTION_EMOJIS.forEach(emoji=>{const emojiReactions=reactions[emoji]||{};const count=Object.keys(emojiReactions).length;const hasReacted=State.uid&&!!emojiReactions[State.uid];reactionsHtml+=`<button class="reaction-btn ${hasReacted?'reacted':''}" onclick="reactToUpdate('${id}','${emoji}')"><span>${emoji}</span><span class="reaction-count">${count||''}</span></button>`;});reactionsHtml+=`</div>`;}
     const div=document.createElement('div');div.className=`update-entry${entry.pinned?' pinned':''}`;
-    div.innerHTML=`<div class="update-entry-accent" style="background:${accentGrad}"></div><div class="update-entry-body-wrap"><div class="update-entry-header"><div class="update-entry-title">${entry.title||''}</div><div class="update-entry-meta">${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}<span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span><span class="update-date">${date}</span></div></div><div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code style="background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent3);">$1</code>')}</div>${reactionsHtml}${entry.author?`<div style="margin-top:10px;font-size:12px;color:var(--muted);font-weight:600;">— ${entry.author}</div>`:''} ${isAdmin(State.email)?`<div class="update-entry-actions"><button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button><button class="btn-pin-entry" onclick="togglePinUpdate('${id}',${!!entry.pinned})">${entry.pinned?'📌 Desfijar':'📌 Fijar'}</button></div>`:''}</div>${imageHtml}`;
+    div.innerHTML=`<div class="update-entry-accent" style="background:${accentGrad}"></div><div class="update-entry-body-wrap"><div class="update-entry-header"><div class="update-entry-title">${entry.title||''}</div><div class="update-entry-meta">${entry.pinned?'<span class="pin-badge">📌 Fijado</span>':''}<span class="update-type-badge type-${entry.type||'new'}">${typeLabels[entry.type||'new']||'🆕 Nuevo'}</span><span class="update-date">${date}</span></div></div><div class="update-entry-body">${(entry.body||'').replace(/</g,'&lt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code style="background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent3);">$1</code>')}</div>${reactionsHtml}${entry.author?`<div style="margin-top:10px;font-size:12px;color:var(--muted);font-weight:600;">— ${entry.author}</div>`:''} ${isAdmin(State.email)&&!isDistributor(State.email)?`<div class="update-entry-actions"><button class="btn-del-entry" onclick="deleteUpdate('${id}')">🗑 Eliminar</button><button class="btn-pin-entry" onclick="togglePinUpdate('${id}',${!!entry.pinned})">${entry.pinned?'📌 Desfijar':'📌 Fijar'}</button></div>`:''}</div>${imageHtml}`;
     container.appendChild(div);
   });
 }
@@ -1615,6 +1628,14 @@ function initAdminPage(){
   if(!isAdmin(State.email))return;
   populateCosmeticSelect();
   refreshAdminStats();loadBannedUsers();
+  
+  if(isDistributor(State.email)) {
+    document.getElementById('dist-balance-info').classList.remove('hidden');
+    document.querySelectorAll('.distributor-hidden').forEach(el => el.classList.add('hidden'));
+    document.getElementById('dist-balance-val').textContent = State.coins;
+  } else {
+    document.getElementById('dist-balance-info').classList.add('hidden');
+  }
 }
 function populateCosmeticSelect(){
   const sel=document.getElementById('admin-cosmetic-item');
@@ -1634,18 +1655,72 @@ function adminShowResult(elId,msg,type='ok'){const el=document.getElementById(el
 async function adminSearchUser(){if(!window._fbFns||!isAdmin(State.email))return;const username=document.getElementById('admin-search-user').value.trim();if(!username){adminShowResult('admin-search-result','Escribe un nombre de usuario','err');return;}const{ref,get,query,orderByChild,equalTo}=window._fbFns;adminShowResult('admin-search-result','🔍 Buscando...','info');try{const q=query(ref(State.db,'users'),orderByChild('username'),equalTo(username));const snap=await get(q);if(!snap.exists()){adminShowResult('admin-search-result','❌ Usuario no encontrado','err');document.getElementById('admin-user-detail').style.display='none';return;}let uid=null,data=null;snap.forEach(child=>{uid=child.key;data=child.val();});adminFoundUser={uid,...data};document.getElementById('admin-detail-name').textContent=data.username||'—';document.getElementById('admin-detail-email').textContent=data.email||'—';document.getElementById('admin-detail-level').textContent=data.level||1;document.getElementById('admin-detail-xp').textContent=data.xp||0;document.getElementById('admin-detail-coins').textContent=data.coins||0;document.getElementById('admin-detail-uid').textContent=uid;document.getElementById('admin-user-detail').style.display='block';document.getElementById('admin-search-result').className='admin-result-box';}catch(err){adminShowResult('admin-search-result','Error: '+err.message,'err');}}
 window.adminSearchUser=adminSearchUser;
 
-async function adminGiveCoinsToFound(){if(!adminFoundUser){toast('Busca primero un usuario','error');return;}const amount=parseInt(prompt(`¿Cuántas monedas darle a ${adminFoundUser.username}?`)||'0');if(!amount||amount<=0)return;await adminGiveToUID(adminFoundUser.uid,adminFoundUser.username,amount,0);document.getElementById('admin-detail-coins').textContent=(adminFoundUser.coins||0)+amount;adminFoundUser.coins=(adminFoundUser.coins||0)+amount;}
+async function adminGiveCoinsToFound(){if(!adminFoundUser){toast('Busca primero un usuario','error');return;}const amount=parseInt(prompt(`¿Cuántas monedas darle a ${adminFoundUser.username}?`)||'0');if(!amount||amount<=0)return;
+  if(isDistributor(State.email) && amount > State.coins) { toast('No tienes suficientes monedas en tu cartera', 'error'); return; }
+  await adminGiveToUID(adminFoundUser.uid,adminFoundUser.username,amount,0);document.getElementById('admin-detail-coins').textContent=(adminFoundUser.coins||0)+amount;adminFoundUser.coins=(adminFoundUser.coins||0)+amount;
+}
 window.adminGiveCoinsToFound=adminGiveCoinsToFound;
 
-async function adminBanFound(){if(!adminFoundUser)return;const reason=prompt(`Motivo del ban para ${adminFoundUser.username}:`)||'Ban por admin';await performBan(adminFoundUser.email||adminFoundUser.username,reason);}
+async function adminBanFound(){if(!adminFoundUser)return;if(isDistributor(State.email)){toast('No tienes permisos para banear','error');return;}const reason=prompt(`Motivo del ban para ${adminFoundUser.username}:`)||'Ban por admin';await performBan(adminFoundUser.email||adminFoundUser.username,reason);}
 window.adminBanFound=adminBanFound;
 
-async function adminGiveRewards(){if(!window._fbFns||!isAdmin(State.email))return;const username=document.getElementById('admin-give-user').value.trim();const coins=parseInt(document.getElementById('admin-give-coins').value||'0');const xp=parseInt(document.getElementById('admin-give-xp').value||'0');if(!username){adminShowResult('admin-give-result','Escribe un nombre de usuario','err');return;}if(!coins&&!xp){adminShowResult('admin-give-result','Escribe una cantidad de monedas o XP','err');return;}const{ref,get,query,orderByChild,equalTo}=window._fbFns;adminShowResult('admin-give-result','🔍 Buscando usuario...','info');try{const q=query(ref(State.db,'users'),orderByChild('username'),equalTo(username));const snap=await get(q);if(!snap.exists()){adminShowResult('admin-give-result','❌ Usuario no encontrado','err');return;}let uid=null;snap.forEach(child=>{uid=child.key;});await adminGiveToUID(uid,username,coins,xp);}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');}}
+async function adminGiveRewards(){
+  if(!window._fbFns||!isAdmin(State.email))return;
+  const username=document.getElementById('admin-give-user').value.trim();
+  const coinsToGive=parseInt(document.getElementById('admin-give-coins').value||'0');
+  const xpToGive=parseInt(document.getElementById('admin-give-xp').value||'0');
+  
+  if(!username){adminShowResult('admin-give-result','Escribe un nombre de usuario','err');return;}
+  if(coinsToGive<=0 && xpToGive<=0){adminShowResult('admin-give-result','Escribe una cantidad de monedas o XP','err');return;}
+
+  if(isDistributor(State.email)) {
+    if(xpToGive > 0) { adminShowResult('admin-give-result','Los distribuidores solo pueden dar monedas','err'); return; }
+    if(coinsToGive > State.coins) { adminShowResult('admin-give-result',`Saldo insuficiente. Tienes ${State.coins} monedas.`,'err'); return; }
+    
+    adminShowResult('admin-give-result','Procesando transferencia...','info');
+    try {
+      const targetUid = await adminFindUidByUsername(username);
+      if(!targetUid){adminShowResult('admin-give-result','❌ Usuario no encontrado','err');return;}
+      
+      const { ref, runTransaction } = window._fbFns;
+      const distRes = await runTransaction(ref(State.db, `users/${State.uid}/coins`), c => {
+        if((c||0) < coinsToGive) return;
+        return (c||0) - coinsToGive;
+      });
+      
+      if(!distRes.committed) { adminShowResult('admin-give-result','Error: No tienes suficientes monedas en el momento de la transacción.','err'); return; }
+      
+      await runTransaction(ref(State.db, `users/${targetUid}/coins`), c => (c||0) + coinsToGive);
+      
+      State.coins -= coinsToGive;
+      updateNavUser();
+      
+      adminShowResult('admin-give-result',`✅ ${coinsToGive} monedas enviadas a ${username}.`,'ok');
+      toast(`Transferencia exitosa a ${username}`,'success');
+    } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
+    return;
+  }
+
+  const{ref,get,query,orderByChild,equalTo}=window._fbFns;
+  adminShowResult('admin-give-result','🔍 Buscando usuario...','info');
+  try{
+    const q=query(ref(State.db,'users'),orderByChild('username'),equalTo(username));
+    const snap=await get(q);
+    if(!snap.exists()){adminShowResult('admin-give-result','❌ Usuario no encontrado','err');return;}
+    let uid=null;snap.forEach(child=>{uid=child.key;});
+    await adminGiveToUID(uid,username,coinsToGive,xpToGive);
+  }catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');}
+}
 window.adminGiveRewards=adminGiveRewards;
 
-async function adminGiveToUID(uid,username,coins,xp){const{ref,runTransaction}=window._fbFns;try{await runTransaction(ref(State.db,`users/${uid}`),u=>{if(!u)return u;if(coins>0)u.coins=(u.coins||0)+coins;if(xp>0){u.xp=(u.xp||0)+xp;u.level=window.xpToLevel(u.xp).level;}return u;});let msg=`✅ ${username} recibió:`;if(coins>0)msg+=` +${coins} monedas`;if(xp>0)msg+=` +${xp} XP`;adminShowResult('admin-give-result',msg,'ok');toast(msg,'success');}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');}}
+async function adminGiveToUID(uid,username,coins,xp){
+  if(isDistributor(State.email)) return; // Should not reach here, but safety first
+  const{ref,runTransaction}=window._fbFns;
+  try{await runTransaction(ref(State.db,`users/${uid}`),u=>{if(!u)return u;if(coins>0)u.coins=(u.coins||0)+coins;if(xp>0){u.xp=(u.xp||0)+xp;u.level=window.xpToLevel(u.xp).level;}return u;});let msg=`✅ ${username} recibió:`;if(coins>0)msg+=` +${coins} monedas`;if(xp>0)msg+=` +${xp} XP`;adminShowResult('admin-give-result',msg,'ok');toast(msg,'success');}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');}
+}
 
 async function adminGiveCoinsToAll(){
+  if(isDistributor(State.email)){toast('No tienes permisos para hacer esto','error');return;}
   if(!window._fbFns||!isAdmin(State.email)){toast('Sin permisos','error');return;}
   const coins=parseInt(document.getElementById('admin-give-coins').value||'0');const xp=parseInt(document.getElementById('admin-give-xp').value||'0');
   if(!coins&&!xp){adminShowResult('admin-give-result','⚠️ Escribe primero una cantidad de monedas y/o XP','err');return;}
@@ -1657,24 +1732,24 @@ async function adminGiveCoinsToAll(){
 }
 window.adminGiveCoinsToAll=adminGiveCoinsToAll;
 
-async function adminBanUser(){if(!window._fbFns||!isAdmin(State.email))return;const target=document.getElementById('admin-ban-input').value.trim();const reason=document.getElementById('admin-ban-reason').value.trim()||'Ban por administrador';if(!target){adminShowResult('admin-ban-result','Escribe un email o nombre de usuario','err');return;}await performBan(target,reason);}
+async function adminBanUser(){if(isDistributor(State.email)){toast('No tienes permisos para banear','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const target=document.getElementById('admin-ban-input').value.trim();const reason=document.getElementById('admin-ban-reason').value.trim()||'Ban por administrador';if(!target){adminShowResult('admin-ban-result','Escribe un email o nombre de usuario','err');return;}await performBan(target,reason);}
 window.adminBanUser=adminBanUser;
 
 async function performBan(target,reason){const{ref,set}=window._fbFns;try{const key=target.replace(/[.#$/\[\]]/g,'_');await set(ref(State.db,`bannedUsers/${key}`),{target,reason,ts:Date.now(),bannedBy:State.email});adminShowResult('admin-ban-result',`🚫 ${target} baneado`,'ok');toast(`🚫 ${target} baneado`,'success');loadBannedUsers();}catch(err){adminShowResult('admin-ban-result','Error: '+err.message,'err');}}
 
-async function adminUnbanUser(){if(!window._fbFns||!isAdmin(State.email))return;const target=document.getElementById('admin-ban-input').value.trim();if(!target){adminShowResult('admin-ban-result','Escribe el email o usuario a desbanear','err');return;}const{ref,remove}=window._fbFns;try{const key=target.replace(/[.#$/\[\]]/g,'_');await remove(ref(State.db,`bannedUsers/${key}`));adminShowResult('admin-ban-result',`✅ ${target} desbaneado`,'ok');toast(`✅ ${target} desbaneado`,'success');loadBannedUsers();}catch(err){adminShowResult('admin-ban-result','Error: '+err.message,'err');}}
+async function adminUnbanUser(){if(isDistributor(State.email)){toast('No tienes permisos para desbanear','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const target=document.getElementById('admin-ban-input').value.trim();if(!target){adminShowResult('admin-ban-result','Escribe el email o usuario a desbanear','err');return;}const{ref,remove}=window._fbFns;try{const key=target.replace(/[.#$/\[\]]/g,'_');await remove(ref(State.db,`bannedUsers/${key}`));adminShowResult('admin-ban-result',`✅ ${target} desbaneado`,'ok');toast(`✅ ${target} desbaneado`,'success');loadBannedUsers();}catch(err){adminShowResult('admin-ban-result','Error: '+err.message,'err');}}
 window.adminUnbanUser=adminUnbanUser;
 
 async function loadBannedUsers(){if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const el=document.getElementById('admin-banned-list');if(!el)return;try{const snap=await get(ref(State.db,'bannedUsers'));if(!snap.exists()){el.innerHTML='<span style="color:var(--muted);font-size:12px;">Ningún usuario baneado</span>';return;}const entries=Object.entries(snap.val());el.innerHTML=entries.map(([,d])=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;flex:1;color:#fca5a5;">${d.target}</span><span style="font-size:11px;color:var(--muted);">${d.reason||''}</span><button onclick="document.getElementById('admin-ban-input').value='${d.target}';adminUnbanUser();" style="padding:3px 8px;border-radius:5px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2);color:#34d399;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✅</button></div>`).join('');}catch(err){el.innerHTML='<span style="color:#ef4444;font-size:12px;">Error al cargar</span>';}}
 
-function setMsgType(type){broadcastType=type;const msg=document.getElementById('admin-broadcast-msg').value;const preview=document.getElementById('broadcast-preview');if(msg){preview.style.display='flex';preview.innerHTML=`<span>${type==='success'?'✅':type==='warning'?'⚠️':'🚨'}</span><span>${msg}</span>`;}}
+function setMsgType(type){if(isDistributor(State.email))return;broadcastType=type;const msg=document.getElementById('admin-broadcast-msg').value;const preview=document.getElementById('broadcast-preview');if(msg){preview.style.display='flex';preview.innerHTML=`<span>${type==='success'?'✅':type==='warning'?'⚠️':'🚨'}</span><span>${msg}</span>`;}}
 window.setMsgType=setMsgType;
-document.getElementById('admin-broadcast-msg')?.addEventListener('input',()=>{if(broadcastType)setMsgType(broadcastType);});
+document.getElementById('admin-broadcast-msg')?.addEventListener('input',()=>{if(broadcastType&&!isDistributor(State.email))setMsgType(broadcastType);});
 
-async function adminBroadcast(){if(!window._fbFns||!isAdmin(State.email))return;const msg=document.getElementById('admin-broadcast-msg').value.trim();if(!msg){adminShowResult('admin-broadcast-result','Escribe un mensaje','err');return;}const{ref,set}=window._fbFns;try{await set(ref(State.db,'adminBroadcast/current'),{message:msg,type:broadcastType,ts:Date.now(),author:State.email});adminShowResult('admin-broadcast-result','📢 Mensaje enviado a todos los usuarios','ok');toast('📢 Broadcast enviado','success');document.getElementById('admin-broadcast-msg').value='';document.getElementById('broadcast-preview').style.display='none';}catch(err){adminShowResult('admin-broadcast-result','Error: '+err.message,'err');}}
+async function adminBroadcast(){if(isDistributor(State.email)){toast('No tienes permisos para enviar mensajes globales','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const msg=document.getElementById('admin-broadcast-msg').value.trim();if(!msg){adminShowResult('admin-broadcast-result','Escribe un mensaje','err');return;}const{ref,set}=window._fbFns;try{await set(ref(State.db,'adminBroadcast/current'),{message:msg,type:broadcastType,ts:Date.now(),author:State.email});adminShowResult('admin-broadcast-result','📢 Mensaje enviado a todos los usuarios','ok');toast('📢 Broadcast enviado','success');document.getElementById('admin-broadcast-msg').value='';document.getElementById('broadcast-preview').style.display='none';}catch(err){adminShowResult('admin-broadcast-result','Error: '+err.message,'err');}}
 window.adminBroadcast=adminBroadcast;
 
-async function adminLoadUsers(){if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const container=document.getElementById('admin-users-list');container.innerHTML='<p style="font-size:13px;color:var(--muted);">Cargando...</p>';try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){container.innerHTML='<p style="font-size:13px;color:var(--muted);">No hay usuarios.</p>';return;}const users=Object.entries(snap.val()).sort(([,a],[,b])=>(b.coins||0)-(a.coins||0));container.innerHTML=`<table class="users-table"><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Nivel</th><th>XP</th><th>Monedas</th><th>Acciones</th></tr></thead><tbody>${users.map(([uid,u],i)=>`<tr><td style="color:var(--muted);">${i+1}</td><td style="font-weight:700;color:var(--text);">${u.username||'—'}</td><td style="color:var(--muted);font-size:12px;">${u.email||'—'}</td><td><span style="background:rgba(124,58,237,0.15);color:var(--accent2);padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;">Lv ${u.level||1}</span></td><td style="color:var(--text);">${(u.xp||0).toLocaleString()}</td><td style="color:var(--gold);font-weight:700;">${(u.coins||0).toLocaleString()}</td><td><button onclick="document.getElementById('admin-give-user').value='${(u.username||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-right:4px;">💰</button><button onclick="document.getElementById('admin-ban-input').value='${(u.email||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);color:#fca5a5;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🚫</button></td></tr>`).join('')}</tbody></table>`;}catch(err){container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`;}}
+async function adminLoadUsers(){if(isDistributor(State.email)){toast('No tienes permisos para ver la lista de usuarios','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const container=document.getElementById('admin-users-list');container.innerHTML='<p style="font-size:13px;color:var(--muted);">Cargando...</p>';try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){container.innerHTML='<p style="font-size:13px;color:var(--muted);">No hay usuarios.</p>';return;}const users=Object.entries(snap.val()).sort(([,a],[,b])=>(b.coins||0)-(a.coins||0));container.innerHTML=`<table class="users-table"><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Nivel</th><th>XP</th><th>Monedas</th><th>Acciones</th></tr></thead><tbody>${users.map(([uid,u],i)=>`<tr><td style="color:var(--muted);">${i+1}</td><td style="font-weight:700;color:var(--text);">${u.username||'—'}</td><td style="color:var(--muted);font-size:12px;">${u.email||'—'}</td><td><span style="background:rgba(124,58,237,0.15);color:var(--accent2);padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;">Lv ${u.level||1}</span></td><td style="color:var(--text);">${(u.xp||0).toLocaleString()}</td><td style="color:var(--gold);font-weight:700;">${(u.coins||0).toLocaleString()}</td><td><button onclick="document.getElementById('admin-give-user').value='${(u.username||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-right:4px;">💰</button><button onclick="document.getElementById('admin-ban-input').value='${(u.email||'').replace(/'/g,"\\'")}';showPage('admin');" style="padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);color:#fca5a5;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🚫</button></td></tr>`).join('')}</tbody></table>`;}catch(err){container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`;}}
 window.adminLoadUsers=adminLoadUsers;
 
 async function adminFindUidByUsername(username){
@@ -1687,6 +1762,7 @@ async function adminFindUidByUsername(username){
 }
 
 async function adminGiveCosmetic(){
+  if(isDistributor(State.email)){toast('No tienes permisos para regalar cosméticos','error');return;}
   if(!window._fbFns||!isAdmin(State.email))return;
   const username=document.getElementById('admin-cosmetic-user').value.trim();
   const itemId=document.getElementById('admin-cosmetic-item').value;
@@ -1706,6 +1782,7 @@ async function adminGiveCosmetic(){
 window.adminGiveCosmetic=adminGiveCosmetic;
 
 async function adminSetValues(){
+  if(isDistributor(State.email)){toast('No tienes permisos para establecer valores','error');return;}
   if(!window._fbFns||!isAdmin(State.email))return;
   const username=document.getElementById('admin-set-user').value.trim();
   const coinsRaw=document.getElementById('admin-set-coins').value;
@@ -1725,6 +1802,7 @@ async function adminSetValues(){
 window.adminSetValues=adminSetValues;
 
 async function adminClearBroadcast(){
+  if(isDistributor(State.email)){toast('No tienes permisos para mantenimiento','error');return;}
   if(!window._fbFns||!isAdmin(State.email))return;
   const{ref,remove}=window._fbFns;
   try{await remove(ref(State.db,'adminBroadcast/current'));adminShowResult('admin-maint-result','🧹 Mensaje global borrado','ok');toast('Mensaje global borrado','success');}
