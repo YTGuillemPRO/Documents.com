@@ -1380,6 +1380,11 @@ document.getElementById('games-grid').addEventListener('click',async e=>{
   if(likeBtn){e.preventDefault();e.stopPropagation();if(!State.uid){toast('Inicia sesión para dar like ❤️','error');openAuth();return;}await toggleLike(likeBtn.dataset.gid,likeBtn);return;}
   const card=e.target.closest('.game-card');
   if(card&&card.dataset.path){
+    // BLOQUEO POR MANTENIMIENTO
+    if(window.maintenanceActive && !isAdmin(State.email)){
+      toast('🚧 La web está en mantenimiento. No puedes jugar ahora.','error');
+      return; // Detiene la redirección al juego
+    }
     if(State.uid) startGameSession(card.querySelector('.game-name')?.textContent||'un juego');
     window.location.href=card.dataset.path;
   }
@@ -2036,6 +2041,7 @@ try {
 
 // LISTEN FOR GLOBAL MAINTENANCE MODE
 let maintenanceTimerInterval = null;
+window.maintenanceActive = false; // <-- AÑADIDO: Variable global de bloqueo
 onValue(ref(db, 'maintenance/status'), snap => {
   const ov = document.getElementById('maintenance-overlay');
   const countdownEl = document.getElementById('maint-countdown');
@@ -2043,55 +2049,59 @@ onValue(ref(db, 'maintenance/status'), snap => {
   if (snap.exists()) {
     const data = snap.val();
     if (data.active && data.endAt > Date.now()) {
+      
       // Si es administrador, no le mostramos el cartel de mantenimiento
       if (State.email && isAdmin(State.email)) {
         ov.style.display = 'none';
         if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
+        window.maintenanceActive = false; // El admin puede jugar
       } else {
         // Mostrar el overlay de mantenimiento a los usuarios normales
         ov.style.display = 'flex';
-      
-      // Detener cualquier juego que estuviera activo
-      if (isPlayingGame) { stopGameSession(); }
-      
-      // Iniciar la cuenta atrás
-      if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
-      
-      const updateCountdown = () => {
-        const remaining = data.endAt - Date.now();
-        if (remaining <= 0) {
-          clearInterval(maintenanceTimerInterval);
-          countdownEl.textContent = "00:00:00";
-          // Recargar la página automáticamente cuando acabe
-          setTimeout(() => window.location.reload(), 2000);
-          return;
-        }
-        const hours = Math.floor(remaining / 3600000);
-        const minutes = Math.floor((remaining % 3600000) / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
+        window.maintenanceActive = true; // <-- AÑADIDO: Bloquear juegos para usuarios
         
-        countdownEl.textContent = 
-          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      };
-      
-      // Actualizar cada segundo
-      updateCountdown();
-      maintenanceTimerInterval = setInterval(updateCountdown, 1000);
+        // Detener cualquier juego que estuviera activo
+        if (isPlayingGame) { stopGameSession(); }
+        
+        // Iniciar la cuenta atrás
+        if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
+        
+        const updateCountdown = () => {
+          const remaining = data.endAt - Date.now();
+          if (remaining <= 0) {
+            clearInterval(maintenanceTimerInterval);
+            countdownEl.textContent = "00:00:00";
+            // Recargar la página automáticamente cuando acabe
+            setTimeout(() => window.location.reload(), 2000);
+            return;
+          }
+          const hours = Math.floor(remaining / 3600000);
+          const minutes = Math.floor((remaining % 3600000) / 60000);
+          const seconds = Math.floor((remaining % 60000) / 1000);
+          
+          countdownEl.textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+        
+        // Actualizar cada segundo
+        updateCountdown();
+        maintenanceTimerInterval = setInterval(updateCountdown, 1000);
+      }
       
     } else {
       // El tiempo de mantenimiento ya expiró o se desactivó
+      window.maintenanceActive = false; // <-- AÑADIDO: Desbloquear juegos
       ov.style.display = 'none';
       if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
       remove(ref(db, 'maintenance/status')).catch(()=>{});
     }
   } else {
     // No hay mantenimiento activo
+    window.maintenanceActive = false; // <-- AÑADIDO: Desbloquear juegos
     ov.style.display = 'none';
     if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
   }
 });
-}
-
 document.getElementById('btn-login').addEventListener('click',async()=>{
   const em=document.getElementById('auth-email').value.trim(),
         pw=document.getElementById('auth-pass').value;
