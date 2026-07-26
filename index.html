@@ -2043,8 +2043,13 @@ onValue(ref(db, 'maintenance/status'), snap => {
   if (snap.exists()) {
     const data = snap.val();
     if (data.active && data.endAt > Date.now()) {
-      // Mostrar el overlay de mantenimiento
-      ov.style.display = 'flex';
+      // Si es administrador, no le mostramos el cartel de mantenimiento
+      if (State.email && isAdmin(State.email)) {
+        ov.style.display = 'none';
+        if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
+      } else {
+        // Mostrar el overlay de mantenimiento a los usuarios normales
+        ov.style.display = 'flex';
       
       // Detener cualquier juego que estuviera activo
       if (isPlayingGame) { stopGameSession(); }
