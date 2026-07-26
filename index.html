@@ -443,6 +443,17 @@
 </head>
 <body>
 
+<!-- INICIO CIERRE RADICAL -->
+<div id="radical-close-overlay" style="position:fixed;inset:0;background:#07070d;z-index:100000;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:50px 40px; max-width:420px; box-shadow:0 30px 80px rgba(0,0,0,0.6);">
+    <div style="font-size:64px;margin-bottom:20px;">🛑</div>
+    <h1 style="font-family:'Poppins',sans-serif; font-size:30px; color:#ef4444; font-weight:800; margin-bottom:12px; letter-spacing:-0.5px;">SITIO CERRADO</h1>
+    <p style="color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 24px;">LevelUp está en mantenimiento. El acceso al público está restringido temporalmente.</p>
+    <button id="radical-admin-login" style="padding:12px 28px;background:linear-gradient(135deg, #7c3aed, #ec4899);color:white;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(124,58,237,0.4);transition:all 0.2s;">🔐 Acceso Staff</button>
+  </div>
+</div>
+<!-- FIN CIERRE RADICAL -->
+
 <div class="toast-container" id="toast-container"></div>
 <div class="xp-notif" id="xp-notif"><span class="iconify" data-icon="mdi:star" data-width="16"></span><span id="xp-notif-text">+50 XP</span></div>
 <div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;" title="Click para detener la sesión de juego">
@@ -1103,6 +1114,7 @@ const ACCENT_COLORS = {
 
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
 const DISTRIBUTOR_EMAILS = ['ovarela@ietemple.cat'];
+const RADICAL_CIERRE = true; // <-- CAMBIA ESTO A false PARA ABRIR LA WEB AL PÚBLICO
 
 function isAdmin(email) { return ADMIN_EMAILS.includes(email) || DISTRIBUTOR_EMAILS.includes(email); }
 function isDistributor(email) { return DISTRIBUTOR_EMAILS.includes(email); }
@@ -1964,6 +1976,18 @@ async function settingsDeleteAccount(){
 }
 window.settingsChangeName=settingsChangeName;window.settingsSaveBio=settingsSaveBio;window.settingsChangePassword=settingsChangePassword;window.settingsLogout=settingsLogout;window.settingsDeleteAccount=settingsDeleteAccount;
 
+// --- INICIO DEL CIERRE RADICAL ---
+if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
+    const rOverlay = document.getElementById('radical-close-overlay');
+    if (rOverlay) {
+        rOverlay.style.display = 'flex'; // Mostrar bloqueo por defecto
+        const btn = document.getElementById('radical-admin-login');
+        if (btn) btn.addEventListener('click', () => { 
+            if (typeof openAuth === 'function') openAuth(); // Abrir panel de login si el admin pulsa el botón
+        });
+    }
+}
+
 renderGames();
 renderShop();
 </script>
@@ -2054,7 +2078,25 @@ async function loadUserData(uid){
 }
 
 document.getElementById('btn-login').addEventListener('click',async()=>{const em=document.getElementById('auth-email').value.trim(),pw=document.getElementById('auth-pass').value;if(!em||!pw){toast('Rellena todos los campos','error');return;}try{await signInWithEmailAndPassword(auth,em,pw);toast('¡Sesión iniciada!','success');closeAuth();}catch(err){toast('Email o contraseña incorrectos','error');}});
-document.getElementById('btn-register').addEventListener('click',async()=>{const username=document.getElementById('reg-username').value.trim(),em=document.getElementById('reg-email').value.trim(),pw=document.getElementById('reg-pass').value;if(!username||!em||!pw){toast('Rellena todos los campos','error');return;}if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}try{const q=query(ref(db,'users'),orderByChild('username'),equalTo(username));const snap=await get(q);if(snap.exists()){toast('Ese nombre de usuario ya está en uso','error');return;}const cred=await createUserWithEmailAndPassword(auth,em,pw);await set(ref(db,`users/${cred.user.uid}`),{username,email:em,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida','success');closeAuth();}catch(err){toast('Error: '+err.message,'error');}});
+document.getElementById('btn-register').addEventListener('click',async()=>{const username=document.getElementById('reg-username').value.trim(),em=document.getElementById('reg-email').value.trim(),pw=document.getElementById('reg-pass').value;if(!username||!em||!pw){toast('Rellena todosdocument.getElementById('btn-register').addEventListener('click',async()=>{
+  const username=document.getElementById('reg-username').value.trim(),
+        em=document.getElementById('reg-email').value.trim(),
+        pw=document.getElementById('reg-pass').value;
+  if(!username||!em||!pw){toast('Rellena todos los campos','error');return;}
+  if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}
+  if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}
+  try{
+    const q=query(ref(db,'users'),orderByChild('username'),equalTo(username));
+    const snap=await get(q);
+    if(snap.exists()){toast('Ese nombre de usuario ya está en uso','error');return;}
+    const cred=await createUserWithEmailAndPassword(auth,em,pw);
+    await set(ref(db,`users/${cred.user.uid}`),{username,email:em,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});
+    toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida','success');
+    closeAuth();
+  }catch(err){
+    toast('Error: '+err.message,'error');
+  }
+});
 
 document.getElementById('btn-forgot-pass').addEventListener('click',async()=>{
   let em=document.getElementById('auth-email').value.trim();
@@ -2073,13 +2115,59 @@ document.getElementById('btn-forgot-pass').addEventListener('click',async()=>{
   }
 });
 
-const googleSignIn=async()=>{try{const cred=await signInWithPopup(auth,provider);const snap=await get(ref(db,`users/${cred.user.uid}`));if(!snap.exists()){const emailUser=cred.user.email.split('@')[0];await set(ref(db,`users/${cred.user.uid}`),{username:emailUser,email:cred.user.email,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});toast('🎉 ¡Bienvenido! +100 monedas de bienvenida','success');}else{toast('¡Sesión iniciada con Google!','success');}closeAuth();}catch(err){toast('Error con Google: '+err.message,'error');}};
+const googleSignIn=async()=>{
+  try{
+    const cred=await signInWithPopup(auth,provider);
+    const snap=await get(ref(db,`users/${cred.user.uid}`));
+    if(!snap.exists()){
+      const emailUser=cred.user.email.split('@')[0];
+      await set(ref(db,`users/${cred.user.uid}`),{username:emailUser,email:cred.user.email,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});
+      toast('🎉 ¡Bienvenido! +100 monedas de bienvenida','success');
+    }else{
+      toast('¡Sesión iniciada con Google!','success');
+    }
+    closeAuth();
+  }catch(err){
+    toast('Error con Google: '+err.message,'error');
+  }
+};
 document.getElementById('btn-google').addEventListener('click',googleSignIn);
 document.getElementById('btn-google-reg').addEventListener('click',googleSignIn);
 
-document.getElementById('btn-logout').addEventListener('click',async()=>{if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});await signOut(auth);State.uid=null;State.username='';State.email='';State.favs={};State.owned={};State.equipped={};State.friends={};State.friendRequests={};State.coins=0;State.xp=0;State.level=1;State.nameChanges=0;updateNavUser();window.stopGameSession&&window.stopGameSession();showPage('home');toast('Sesión cerrada','info');});
+document.getElementById('btn-logout').addEventListener('click',async()=>{
+  if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});
+  await signOut(auth);
+  State.uid=null;State.username='';State.email='';
+  State.favs={};State.owned={};State.equipped={};State.friends={};State.friendRequests={};
+  State.coins=0;State.xp=0;State.level=1;State.nameChanges=0;
+  updateNavUser();
+  window.stopGameSession&&window.stopGameSession();
+  showPage('home');
+  toast('Sesión cerrada','info');
+});
 
-onAuthStateChanged(auth,async user=>{
+// --- AQUÍ ESTÁ LA MAGIA DEL CIERRE RADICAL ---
+onAuthStateChanged(auth, async user => {
+  // 1. Comprobamos si el modo RADICAL_CIERRE está activado
+  if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
+    const rOverlay = document.getElementById('radical-close-overlay');
+    if (user && isAdmin(user.email)) {
+      // Es administrador: Quitamos el cartel y le dejamos pasar
+      if (rOverlay) rOverlay.style.display = 'none';
+    } else {
+      // Es usuario normal o invitado: Mostramos el cartel de cierre
+      if (rOverlay) rOverlay.style.display = 'flex';
+      
+      // Si un usuario normal intentó iniciar sesión, lo pateamos (signOut)
+      if (user) {
+        await signOut(auth);
+        if (window.toast) window.toast('Acceso denegado. Solo administradores.', 'error');
+      }
+      return; // Detiene la ejecución para que no cargue los datos del usuario
+    }
+  }
+  // -------------------------------------------
+
   if(user){
     State.uid=user.uid;State.email=user.email;
     await loadUserData(user.uid);
@@ -2090,12 +2178,19 @@ onAuthStateChanged(auth,async user=>{
     if(friendsSnap.exists()){Object.keys(friendsSnap.val()).forEach(fUid=>{set(ref(db,`users/${fUid}/friends/${user.uid}/online`),true).catch(()=>{});onDisconnect(ref(db,`users/${fUid}/friends/${user.uid}/online`)).set(false);onDisconnect(ref(db,`users/${fUid}/friends/${user.uid}/currentGame`)).remove();});}
     updateNavUser();
   }else{
-    const ok=await showConfirm();
-    if(!ok){if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});window.location.href='https://www.google.com';}
+    // La confirmación de "¿Estás en casa?" solo sale si NO estamos en modo cierre radical
+    if (typeof RADICAL_CIERRE === 'undefined' || !RADICAL_CIERRE) {
+      const ok=await showConfirm();
+      if(!ok){if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});window.location.href='https://www.google.com';}
+    }
   }
 });
 
-window.addEventListener('beforeunload',()=>{if(myPresenceRef)set(myPresenceRef,null).catch(()=>{});if(State.uid)set(ref(db,`users/${State.uid}/online`),false).catch(()=>{});window.stopGameSession&&window.stopGameSession();});
+window.addEventListener('beforeunload',()=>{
+  if(myPresenceRef)set(myPresenceRef,null).catch(()=>{});
+  if(State.uid)set(ref(db,`users/${State.uid}/online`),false).catch(()=>{});
+  window.stopGameSession&&window.stopGameSession();
+});
 </script>
 </body>
 </html>
