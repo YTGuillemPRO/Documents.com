@@ -464,11 +464,16 @@
   </div>
 </div>
 
-<div id="maintenance-overlay" style="position:fixed;inset:0;background:rgba(7,7,13,0.9);backdrop-filter:blur(15px);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
-    <div style="font-size: 50px; margin-bottom: 20px;">🚧</div>
-    <h2 style="font-family:'Poppins',sans-serif; font-size: 24px; color: var(--gold); margin-bottom: 10px;">Mantenimiento por Actualización</h2>
-    <p id="maint-msg" style="color: var(--muted); font-size: 14px; line-height: 1.6;">El sitio está temporalmente en mantenimiento. ¡Vuelve pronto!</p>
+<div id="maintenance-overlay" style="position:fixed;inset:0;background:#07070d;backdrop-filter:blur(20px);z-index:100001;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:50px 40px;max-width:450px;box-shadow:0 30px 80px rgba(0,0,0,0.6);">
+    <div style="font-size: 60px; margin-bottom: 20px;">🚧</div>
+    <h2 style="font-family:'Poppins',sans-serif; font-size: 26px; color: var(--gold); margin-bottom: 12px; font-weight: 800;">Mantenimiento por Actualización</h2>
+    <p style="color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 30px;">LevelUp se está actualizando para traer nuevas funciones. ¡Volverá a estar disponible muy pronto!</p>
+    
+    <div id="maint-countdown" style="font-family:'Poppins',sans-serif; font-size: 40px; font-weight:800; color:white; letter-spacing:2px; background:var(--bg); padding:20px 30px; border-radius:16px; border:1px solid var(--border); display:inline-block; box-shadow: 0 0 30px rgba(245,158,11,0.2);">
+      00:00:00
+    </div>
+    <p style="color: var(--muted); font-size: 12px; margin-top: 16px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;">Tiempo restante estimado</p>
   </div>
 </div>
 
@@ -504,7 +509,7 @@
       <div class="input-group"><label class="input-label">Email</label><input type="email" id="auth-email" class="modal-input" placeholder="tu@email.com"></div>
       <div class="input-group"><label class="input-label">Contraseña</label><input type="password" id="auth-pass" class="modal-input" placeholder="••••••••"></div>
       <button class="btn-full" id="btn-login">Iniciar sesión</button>
-      <button type="button" id="btn-forgot-pass" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#a78bfa;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;">¿Olvidaste tu contraseña?</button>
+      <button type="button" id="btn-forgmaintenance-overlayot-pass" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#a78bfa;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;">¿Olvidaste tu contraseña?</button>
       <div class="divider"><span>o</span></div>
       <button class="btn-google-modal" id="btn-google">
         <svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
@@ -2030,51 +2035,56 @@ try {
 }catch(e){}
 
 // LISTEN FOR GLOBAL MAINTENANCE MODE
+let maintenanceTimerInterval = null;
 onValue(ref(db, 'maintenance/status'), snap => {
   const ov = document.getElementById('maintenance-overlay');
-  const msgEl = document.getElementById('maint-msg');
+  const countdownEl = document.getElementById('maint-countdown');
+  
   if (snap.exists()) {
     const data = snap.val();
     if (data.active && data.endAt > Date.now()) {
-      const endTime = new Date(data.endAt);
-      const timeStr = endTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      msgEl.innerHTML = `El sitio está temporalmente en mantenimiento por actualización.<br>Volverá a estar disponible a las <strong style="color:var(--gold)">${timeStr}</strong>.`;
+      // Mostrar el overlay de mantenimiento
       ov.style.display = 'flex';
+      
+      // Detener cualquier juego que estuviera activo
       if (isPlayingGame) { stopGameSession(); }
-      if (currentPage !== 'home' && currentPage !== 'admin') { showPage('home'); }
+      
+      // Iniciar la cuenta atrás
+      if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
+      
+      const updateCountdown = () => {
+        const remaining = data.endAt - Date.now();
+        if (remaining <= 0) {
+          clearInterval(maintenanceTimerInterval);
+          countdownEl.textContent = "00:00:00";
+          // Recargar la página automáticamente cuando acabe
+          setTimeout(() => window.location.reload(), 2000);
+          return;
+        }
+        const hours = Math.floor(remaining / 3600000);
+        const minutes = Math.floor((remaining % 3600000) / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        
+        countdownEl.textContent = 
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      };
+      
+      // Actualizar cada segundo
+      updateCountdown();
+      maintenanceTimerInterval = setInterval(updateCountdown, 1000);
+      
     } else {
+      // El tiempo de mantenimiento ya expiró o se desactivó
       ov.style.display = 'none';
+      if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
       remove(ref(db, 'maintenance/status')).catch(()=>{});
     }
   } else {
+    // No hay mantenimiento activo
     ov.style.display = 'none';
+    if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
   }
 });
-
-onValue(ref(db,'gameLikes'),snap=>{State.gameLikes=snap.val()||{};document.querySelectorAll('.like-btn').forEach(btn=>{const lc=btn.querySelector('.lc');if(lc&&btn.dataset.gid)lc.textContent=State.gameLikes[btn.dataset.gid]||0;});});
-onValue(ref(db,'updateLog'),snap=>{updateLogCache=snap.val()||{};window.updateLogCache=updateLogCache;if(window.currentPage==='updates')window.renderUpdates();window.checkNewUpdates&&window.checkNewUpdates();});
-onValue(ref(db,'adminBroadcast/current'),snap=>{if(!snap.exists())return;const data=snap.val();if(!data||!data.message)return;const lastSeen=parseInt(sessionStorage.getItem('lv_last_broadcast')||'0');if(data.ts&&data.ts>lastSeen){sessionStorage.setItem('lv_last_broadcast',data.ts.toString());const type=data.type==='alert'?'error':data.type==='warning'?'info':'success';window.toast(`📢 Admin: ${data.message}`,type);}});
-
-async function loadUserData(uid){
-  const snap=await get(ref(db,`users/${uid}`));const data=snap.val()||{};
-  State.username=data.username||'';State.level=data.level||1;State.xp=data.xp||0;State.coins=data.coins||0;State.bio=data.bio||'';State.owned=data.owned||{};State.equipped=data.equipped||{};State.friends=data.friends||{};State.friendRequests=data.friendRequests||{};State.nameChanges=data.nameChanges||0;
-  onValue(ref(db,`userFavorites/${uid}`),s=>{State.favs=s.val()||{};if(window.renderGames)window.renderGames();});
-  onValue(ref(db,`users/${uid}/coins`),s=>{if(s.val()!==null){State.coins=s.val();updateNavUser();document.getElementById('shop-coins-val').textContent=State.coins;}});
-  onValue(ref(db,`users/${uid}/xp`),s=>{if(s.val()!==null){State.xp=s.val();const lv=window.xpToLevel(s.val());State.level=lv.level;updateNavUser();window.updateXPBar&&window.updateXPBar();}});
-  onValue(ref(db,`users/${uid}/friendRequests`),s=>{State.friendRequests=s.val()||{};window.updateReqBadge&&window.updateReqBadge();if(window.currentPage==='friends')window.renderFriends();});
-  onValue(ref(db,`users/${uid}/friends`),s=>{State.friends=s.val()||{};if(window.currentPage==='friends')window.renderFriends();});
-  onValue(ref(db,`users/${uid}/nameChanges`),s=>{if(s.val()!==null)State.nameChanges=s.val();});
-  onValue(ref(db,`users/${uid}/equipped`),async s=>{
-    const eq=s.val()||{};State.equipped=eq;
-    const myFriendsList=State.friends||{};
-    for(const friendUid of Object.keys(myFriendsList)){try{await set(ref(db,`users/${friendUid}/friends/${uid}/equippedAvatar`),eq.avatar||null);await set(ref(db,`users/${friendUid}/friends/${uid}/equippedBadge`),eq.badge||null);await set(ref(db,`users/${friendUid}/friends/${uid}/equippedTitle`),eq.title||null);}catch(e){}}
-    updateNavUser();
-  });
-  onValue(ref(db,'bannedUsers'),async snap=>{
-    if(!snap.exists()||!State.email)return;const bans=snap.val();
-    const emailKey=State.email.replace(/[.#$/\[\]]/g,'_');const usernameKey=(State.username||'').replace(/[.#$/\[\]]/g,'_');
-    if(bans[emailKey]||bans[usernameKey]){window.toast('Tu cuenta ha sido suspendida por el administrador','error');await signOut(auth);State.uid=null;State.username='';State.email='';updateNavUser();showPage('home');}
-  });
 }
 
 document.getElementById('btn-login').addEventListener('click',async()=>{
