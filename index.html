@@ -1114,7 +1114,7 @@ const ACCENT_COLORS = {
 
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
 const DISTRIBUTOR_EMAILS = ['ovarela@ietemple.cat'];
-const RADICAL_CIERRE = true; // <-- CAMBIA ESTO A false PARA ABRIR LA WEB AL PÚBLICO
+const RADICAL_CIERRE = false; // <-- CAMBIA ESTO A false PARA ABRIR LA WEB AL PÚBLICO
 
 function isAdmin(email) { return ADMIN_EMAILS.includes(email) || DISTRIBUTOR_EMAILS.includes(email); }
 function isDistributor(email) { return DISTRIBUTOR_EMAILS.includes(email); }
@@ -2078,11 +2078,25 @@ async function loadUserData(uid){
 }
 
 document.getElementById('btn-login').addEventListener('click',async()=>{const em=document.getElementById('auth-email').value.trim(),pw=document.getElementById('auth-pass').value;if(!em||!pw){toast('Rellena todos los campos','error');return;}try{await signInWithEmailAndPassword(auth,em,pw);toast('¡Sesión iniciada!','success');closeAuth();}catch(err){toast('Email o contraseña incorrectos','error');}});
-document.getElementById('btn-register').addEventListener('click',async()=>{const username=document.getElementById('reg-username').value.trim(),em=document.getElementById('reg-email').value.trim(),pw=document.getElementById('reg-pass').value;if(!username||!em||!pw){toast('Rellena todosdocument.getElementById('btn-register').addEventListener('click',async()=>{
+document.getElementById('btn-register').addEventListener('click',async()=>{
   const username=document.getElementById('reg-username').value.trim(),
         em=document.getElementById('reg-email').value.trim(),
         pw=document.getElementById('reg-pass').value;
   if(!username||!em||!pw){toast('Rellena todos los campos','error');return;}
+  if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}
+  if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}
+  try{
+    const q=query(ref(db,'users'),orderByChild('username'),equalTo(username));
+    const snap=await get(q);
+    if(snap.exists()){toast('Ese nombre de usuario ya está en uso','error');return;}
+    const cred=await createUserWithEmailAndPassword(auth,em,pw);
+    await set(ref(db,`users/${cred.user.uid}`),{username,email:em,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});
+    toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida','success');
+    closeAuth();
+  }catch(err){
+    toast('Error: '+err.message,'error');
+  }
+});
   if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}
   if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}
   try{
