@@ -1457,10 +1457,14 @@ document.getElementById('games-grid').addEventListener('click',async e=>{
       return; // Detiene la redirección al juego
     }
     if(State.uid) startGameSession(card.querySelector('.game-name')?.textContent||'un juego');
-    window.location.href=card.dataset.path;
+    
+    // Si es admin, le añadimos un parámetro a la URL para que el juego le deje pasar
+    let finalPath = card.dataset.path;
+    if(isAdmin(State.email)) {
+        finalPath += (finalPath.includes('?') ? '&' : '?') + 'admin=true';
+    }
+    window.location.href = finalPath;
   }
-});
-
 async function toggleLike(gid,btn){
   const newFav=!State.favs[gid];State.favs[gid]=newFav?true:undefined;if(!newFav)delete State.favs[gid];
   if(newFav)spawnHeart(btn);
