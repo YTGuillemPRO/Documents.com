@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LevelUp Max</title>
+  <title>LevelUp </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <style>
@@ -273,7 +273,21 @@
     .modal-input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid rgba(124,58,237,0.25); border-radius: 10px; color: var(--text); font-size: 14px; outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; }
     .modal-input:focus { border-color: rgba(124,58,237,0.6); }
     .modal-input::placeholder { color: #5a5a7a; }
-    .btn-full { width: 100%; padding: 12px; border-radius: 10px; background: var(--accent); color: white; font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s; margin-top: 4px; font-family: 'Inter', sans-serif; }
+    
+    /* NUEVO: Input Wrapper, Icons y Toggle Password */
+    .input-wrap { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; transition: color 0.2s; }
+    .modal-input.has-icon { padding-left: 42px; }
+    .modal-input:focus + .input-icon, .input-wrap:focus-within .input-icon { color: var(--accent2); }
+    .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: color 0.2s; }
+    .password-toggle:hover { color: var(--accent2); }
+    .link-btn { display:block; width:100%; margin-top:12px; background:none; border:none; color:#a78bfa; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; text-align:center; transition: color 0.2s; padding: 4px 0; }
+    .link-btn:hover { color: #c4b5fd; text-decoration: underline; }
+    .btn-full.loading, .btn-google-modal.loading { opacity: 0.7; pointer-events: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon { animation: spin 1s linear infinite; display: inline-flex; }
+
+    .btn-full { width: 100%; padding: 12px; border-radius: 10px; background: var(--accent); color: white; font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s; margin-top: 4px; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-full:hover { background: #6d28d9; transform: translateY(-1px); }
     .btn-google-modal { width: 100%; padding: 11px; border-radius: 10px; background: white; color: #333; font-weight: 600; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Inter', sans-serif; }
     .btn-google-modal:hover { background: #f4f4f4; }
@@ -303,7 +317,6 @@
     .coins-min-indicator:hover { transform: scale(1.02); }
     .coins-min-indicator .timer-ring { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--surface2); border-top-color: var(--gold); animation: spin 1s linear infinite; }
     .coins-min-indicator.paused .timer-ring { border-top-color: var(--muted); animation: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .game-playing-label { font-size: 10px; color: var(--green); background: rgba(16,185,129,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
 
     /* UPDATE LOG */
@@ -506,10 +519,23 @@
       <button class="modal-tab" data-tab="register">Registrarse</button>
     </div>
     <div id="auth-login-form">
-      <div class="input-group"><label class="input-label">Email</label><input type="email" id="auth-email" class="modal-input" placeholder="tu@email.com"></div>
-      <div class="input-group"><label class="input-label">Contraseña</label><input type="password" id="auth-pass" class="modal-input" placeholder="••••••••"></div>
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <div class="input-wrap">
+          <input type="email" id="auth-email" class="modal-input has-icon" placeholder="tu@email.com">
+          <span class="iconify input-icon" data-icon="mdi:email-outline" data-width="18"></span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="auth-pass" class="modal-input has-icon" placeholder="••••••••">
+          <span class="iconify input-icon" data-icon="mdi:lock-outline" data-width="18"></span>
+          <button type="button" class="password-toggle" data-target="auth-pass"><span class="iconify" data-icon="mdi:eye-outline" data-width="18"></span></button>
+        </div>
+      </div>
       <button class="btn-full" id="btn-login">Iniciar sesión</button>
-      <button type="button" id="btn-forgmaintenance-overlayot-pass" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#a78bfa;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;">¿Olvidaste tu contraseña?</button>
+      <button type="button" id="btn-forgot-pass" class="link-btn">¿Olvidaste tu contraseña?</button>
       <div class="divider"><span>o</span></div>
       <button class="btn-google-modal" id="btn-google">
         <svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
@@ -517,9 +543,28 @@
       </button>
     </div>
     <div id="auth-register-form" style="display:none;">
-      <div class="input-group"><label class="input-label">Nombre de usuario</label><input type="text" id="reg-username" class="modal-input" placeholder="Ej: Gh0stPlayer99" maxlength="20"></div>
-      <div class="input-group"><label class="input-label">Email</label><input type="email" id="reg-email" class="modal-input" placeholder="tu@email.com"></div>
-      <div class="input-group"><label class="input-label">Contraseña</label><input type="password" id="reg-pass" class="modal-input" placeholder="Mínimo 6 caracteres"></div>
+      <div class="input-group">
+        <label class="input-label">Nombre de usuario</label>
+        <div class="input-wrap">
+          <input type="text" id="reg-username" class="modal-input has-icon" placeholder="Ej: Gh0stPlayer99" maxlength="20">
+          <span class="iconify input-icon" data-icon="mdi:account-outline" data-width="18"></span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <div class="input-wrap">
+          <input type="email" id="reg-email" class="modal-input has-icon" placeholder="tu@email.com">
+          <span class="iconify input-icon" data-icon="mdi:email-outline" data-width="18"></span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-pass" class="modal-input has-icon" placeholder="Mínimo 6 caracteres">
+          <span class="iconify input-icon" data-icon="mdi:lock-outline" data-width="18"></span>
+          <button type="button" class="password-toggle" data-target="reg-pass"><span class="iconify" data-icon="mdi:eye-outline" data-width="18"></span></button>
+        </div>
+      </div>
       <button class="btn-full" id="btn-register">Crear cuenta</button>
       <div class="divider"><span>o</span></div>
       <button class="btn-google-modal" id="btn-google-reg">
@@ -1168,6 +1213,17 @@ document.addEventListener('DOMContentLoaded', () => {
   updateThemeBtn();
   const ind = document.getElementById('coins-min-indicator');
   if(ind) ind.addEventListener('click', () => { if(isPlayingGame) { toast('Juego finalizado. Monedas acumuladas entregadas.', 'success'); stopGameSession(); } });
+
+  // Password toggles
+  document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if(target) {
+        target.type = target.type === 'password' ? 'text' : 'password';
+        btn.querySelector('span').setAttribute('data-icon', target.type === 'password' ? 'mdi:eye-outline' : 'mdi:eye-off-outline');
+      }
+    });
+  });
 });
 
 function insertFormat(before,after){const ta=document.getElementById('log-body-input');if(!ta)return;const start=ta.selectionStart,end=ta.selectionEnd;const sel=ta.value.substring(start,end);const replacement=before+(sel||'texto')+after;ta.setRangeText(replacement,start,end,'select');ta.focus();}
@@ -1313,6 +1369,21 @@ document.getElementById('open-auth-btn').addEventListener('click',openAuth);
 document.getElementById('close-auth').addEventListener('click',closeAuth);
 document.getElementById('auth-modal').addEventListener('click',e=>{if(e.target===document.getElementById('auth-modal'))closeAuth();});
 document.querySelectorAll('.modal-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');const isReg=tab.dataset.tab==='register';document.getElementById('auth-login-form').style.display=isReg?'none':'block';document.getElementById('auth-register-form').style.display=isReg?'block':'none';});});
+
+// Helper para estados de carga en botones de autenticación
+function setAuthBtnLoading(btn, isLoading) {
+    if(!btn) return;
+    if(isLoading) {
+        btn.dataset.originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="iconify spin-icon" data-icon="mdi:loading" data-width="18"></span> Procesando...';
+        btn.disabled = true;
+        btn.classList.add('loading');
+    } else {
+        if(btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+        btn.disabled = false;
+        btn.classList.remove('loading');
+    }
+}
 
 let confirmRes=null;
 function showConfirm(){return new Promise(resolve=>{confirmRes=resolve;document.getElementById('confirm-overlay').classList.add('open');});}
@@ -1986,7 +2057,70 @@ async function settingsDeleteAccount(){
 }
 window.settingsChangeName=settingsChangeName;window.settingsSaveBio=settingsSaveBio;window.settingsChangePassword=settingsChangePassword;window.settingsLogout=settingsLogout;window.settingsDeleteAccount=settingsDeleteAccount;
 
-// --- INICIO DEL CIERRE RADICAL ---
+// NUEVA FUNCIÓN PARA CARGAR DATOS DEL USUARIO
+async function loadUserData(uid) {
+  if(!window._fbFns) return;
+  const { ref, get, onValue } = window._fbFns;
+  try {
+    const snap = await get(ref(State.db, `users/${uid}`));
+    if (snap.exists()) {
+      const data = snap.val();
+      State.username = data.username || (data.email ? data.email.split('@')[0] : 'Usuario');
+      State.level = data.level || 1;
+      State.xp = data.xp || 0;
+      State.coins = data.coins || 0;
+      State.favs = data.favs || {};
+      State.owned = data.owned || {};
+      State.equipped = data.equipped || { avatar: null, frame: null, badge: null, title: null };
+      State.friends = data.friends || {};
+      State.friendRequests = data.friendRequests || {};
+      State.bio = data.bio || '';
+      State.gameLikes = data.gameLikes || {};
+      State.nameChanges = data.nameChanges || 0;
+      
+      onValue(ref(State.db, `users/${uid}`), snap2 => {
+        if(snap2.exists()) {
+          const d = snap2.val();
+          State.coins = d.coins || 0; State.xp = d.xp || 0; State.level = d.level || 1;
+          State.username = d.username || State.username; State.bio = d.bio || '';
+          State.equipped = d.equipped || State.equipped; State.friends = d.friends || State.friends;
+          State.friendRequests = d.friendRequests || State.friendRequests; State.owned = d.owned || State.owned;
+          State.nameChanges = d.nameChanges || 0;
+          updateNavUser();
+          if(currentPage === 'profile') renderProfile();
+          if(currentPage === 'friends') renderFriends();
+          if(currentPage === 'shop') renderShop();
+          updateReqBadge();
+        }
+      });
+
+      const favSnap = await get(ref(State.db, `userFavorites/${uid}`));
+      if(favSnap.exists()) { State.favs = favSnap.val(); renderGames(); }
+
+      const likesSnap = await get(ref(State.db, 'gameLikes'));
+      if(likesSnap.exists()) { State.gameLikes = likesSnap.val(); renderGames(); }
+
+      onValue(ref(State.db, 'updateLog'), snap3 => {
+        updateLogCache = snap3.exists() ? snap3.val() : {};
+        if(currentPage === 'updates') renderUpdates();
+        checkNewUpdates();
+      });
+
+      onValue(ref(State.db, `users/${uid}/friendRequests`), snap4 => {
+        State.friendRequests = snap4.exists() ? snap4.val() : {};
+        updateReqBadge();
+        if(currentPage === 'friends') renderFriends();
+      });
+
+    } else {
+      State.username = State.email.split('@')[0]; State.coins = 100; State.owned = { bd_early: true }; State.equipped = {};
+      updateNavUser();
+    }
+  } catch(e) { console.error("Error loading user data:", e); }
+}
+window.loadUserData = loadUserData;
+
+// --- INICIO DEL CIERRE RADICAL ---/
 if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
     const rOverlay = document.getElementById('radical-close-overlay');
     if (rOverlay) {
@@ -2102,85 +2236,137 @@ onValue(ref(db, 'maintenance/status'), snap => {
     if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
   }
 });
-document.getElementById('btn-login').addEventListener('click',async()=>{
-  const em=document.getElementById('auth-email').value.trim(),
-        pw=document.getElementById('auth-pass').value;
-  if(!em||!pw){toast('Rellena todos los campos','error');return;}
-  try{
-    await signInWithEmailAndPassword(auth,em,pw);
-    toast('¡Sesión iniciada!','success');
-    closeAuth();
-  }catch(err){
-    toast('Email o contraseña incorrectos','error');
-  }
-});
 
-document.getElementById('btn-register').addEventListener('click',async()=>{
-  const username=document.getElementById('reg-username').value.trim(),
-        em=document.getElementById('reg-email').value.trim(),
-        pw=document.getElementById('reg-pass').value;
-  if(!username||!em||!pw){toast('Rellena todos los campos','error');return;}
-  if(username.length<3){toast('El nombre debe tener al menos 3 caracteres','error');return;}
-  if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres','error');return;}
-  try{
-    const q=query(ref(db,'users'),orderByChild('username'),equalTo(username));
-    const snap=await get(q);
-    if(snap.exists()){toast('Ese nombre de usuario ya está en uso','error');return;}
-    const cred=await createUserWithEmailAndPassword(auth,em,pw);
-    await set(ref(db,`users/${cred.user.uid}`),{username,email:em,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});
-    toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida','success');
-    closeAuth();
-  }catch(err){
-    toast('Error: '+err.message,'error');
-  }
-});
-
-document.getElementById('btn-forgot-pass').addEventListener('click',async()=>{
-  let em=document.getElementById('auth-email').value.trim();
-  if(!em){em=(prompt('Escribe el email (Gmail) de tu cuenta para enviarte el enlace de recuperación:')||'').trim();}
-  if(!em){toast('Escribe tu email primero','error');return;}
-  try{
-    const actionCodeSettings = {
-      url: window.location.origin,
-      handleCodeInApp: false
-    };
-    await sendPasswordResetEmail(auth,em, actionCodeSettings);
-    toast('📧 Te enviamos un correo para restablecer la contraseña. Revisa tu bandeja (y spam).','success');
-  }catch(err){
-    const msg=err.code==='auth/invalid-email'?'Email no válido':err.code==='auth/user-not-found'?'No existe ninguna cuenta con ese email':'Error: '+err.message;
-    toast(msg,'error');
-  }
-});
-
-const googleSignIn=async()=>{
-  try{
-    const cred=await signInWithPopup(auth,provider);
-    const snap=await get(ref(db,`users/${cred.user.uid}`));
-    if(!snap.exists()){
-      const emailUser=cred.user.email.split('@')[0];
-      await set(ref(db,`users/${cred.user.uid}`),{username:emailUser,email:cred.user.email,level:1,xp:0,coins:100,createdAt:Date.now(),owned:{bd_early:true},equipped:{},nameChanges:0});
-      toast('🎉 ¡Bienvenido! +100 monedas de bienvenida','success');
-    }else{
-      toast('¡Sesión iniciada con Google!','success');
+// --- AUTHENTICATION LISTENERS & LOGIN LOGIC ---
+document.getElementById('btn-login').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-login');
+    const em = document.getElementById('auth-email').value.trim();
+    const pw = document.getElementById('auth-pass').value;
+    
+    if(!em || !pw) { toast('Rellena todos los campos', 'error'); return; }
+    
+    setAuthBtnLoading(btn, true);
+    try {
+        await signInWithEmailAndPassword(auth, em, pw);
+        toast('¡Sesión iniciada!', 'success');
+        closeAuth();
+    } catch(err) {
+        let msg = 'Error al iniciar sesión';
+        if(err.code === 'auth/invalid-email') msg = 'El email no es válido';
+        else if(err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Email o contraseña incorrectos';
+        else if(err.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Inténtalo más tarde.';
+        else msg = err.message;
+        toast(msg, 'error');
+    } finally {
+        setAuthBtnLoading(btn, false);
     }
-    closeAuth();
-  }catch(err){
-    toast('Error con Google: '+err.message,'error');
-  }
-};
-document.getElementById('btn-google').addEventListener('click',googleSignIn);
-document.getElementById('btn-google-reg').addEventListener('click',googleSignIn);
+});
 
-document.getElementById('btn-logout').addEventListener('click',async()=>{
-  if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});
-  await signOut(auth);
-  State.uid=null;State.username='';State.email='';
-  State.favs={};State.owned={};State.equipped={};State.friends={};State.friendRequests={};
-  State.coins=0;State.xp=0;State.level=1;State.nameChanges=0;
-  updateNavUser();
-  window.stopGameSession&&window.stopGameSession();
-  showPage('home');
-  toast('Sesión cerrada','info');
+document.getElementById('btn-register').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-register');
+    const username = document.getElementById('reg-username').value.trim();
+    const em = document.getElementById('reg-email').value.trim();
+    const pw = document.getElementById('reg-pass').value;
+    
+    if(!username || !em || !pw) { toast('Rellena todos los campos', 'error'); return; }
+    if(username.length < 3) { toast('El nombre debe tener al menos 3 caracteres', 'error'); return; }
+    if(pw.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
+    
+    setAuthBtnLoading(btn, true);
+    try {
+        const q = query(ref(db, 'users'), orderByChild('username'), equalTo(username));
+        const snap = await get(q);
+        if(snap.exists()) { toast('Ese nombre de usuario ya está en uso', 'error'); return; }
+        
+        const cred = await createUserWithEmailAndPassword(auth, em, pw);
+        await set(ref(db, `users/${cred.user.uid}`), {
+            username, email: em, level: 1, xp: 0, coins: 100, createdAt: Date.now(), owned: {bd_early: true}, equipped: {}, nameChanges: 0
+        });
+        toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida', 'success');
+        closeAuth();
+    } catch(err) {
+        let msg = 'Error al registrar';
+        if(err.code === 'auth/email-already-in-use') msg = 'Este email ya está registrado';
+        else if(err.code === 'auth/invalid-email') msg = 'Email no válido';
+        else if(err.code === 'auth/weak-password') msg = 'Contraseña demasiado débil (mínimo 6 caracteres)';
+        else msg = err.message;
+        toast(msg, 'error');
+    } finally {
+        setAuthBtnLoading(btn, false);
+    }
+});
+
+document.getElementById('btn-forgot-pass').addEventListener('click', async () => {
+    let em = document.getElementById('auth-email').value.trim();
+    if(!em) {
+        em = prompt('Escribe el email de tu cuenta para enviarte el enlace de recuperación:');
+        if(!em) return;
+    }
+    try {
+        const actionCodeSettings = { url: window.location.origin, handleCodeInApp: false };
+        await sendPasswordResetEmail(auth, em, actionCodeSettings);
+        toast('📧 Te enviamos un correo para restablecer la contraseña. Revisa tu bandeja (y spam).', 'success');
+    } catch(err) {
+        let msg = 'Error';
+        if(err.code === 'auth/invalid-email') msg = 'Email no válido';
+        else if(err.code === 'auth/user-not-found') msg = 'No existe ninguna cuenta con ese email';
+        else msg = err.message;
+        toast(msg, 'error');
+    }
+});
+
+const googleSignIn = async () => {
+    const btns = ['btn-google', 'btn-google-reg'];
+    let targetBtn;
+    for(const id of btns) {
+        const b = document.getElementById(id);
+        if(b && b.classList.contains('loading')) targetBtn = b;
+    }
+    if(!targetBtn) targetBtn = document.getElementById('btn-google');
+    setAuthBtnLoading(targetBtn, true);
+    try {
+        const cred = await signInWithPopup(auth, provider);
+        const snap = await get(ref(db, `users/${cred.user.uid}`));
+        if(!snap.exists()) {
+            const emailUser = cred.user.email.split('@')[0];
+            await set(ref(db, `users/${cred.user.uid}`), {
+                username: emailUser, email: cred.user.email, level: 1, xp: 0, coins: 100, createdAt: Date.now(), owned: {bd_early: true}, equipped: {}, nameChanges: 0
+            });
+            toast('🎉 ¡Bienvenido! +100 monedas de bienvenida', 'success');
+        } else {
+            toast('¡Sesión iniciada con Google!', 'success');
+        }
+        closeAuth();
+    } catch(err) {
+        let msg = 'Error con Google';
+        if(err.code === 'auth/popup-closed-by-user') msg = 'Ventana cerrada antes de completar';
+        else if(err.code === 'auth/cancelled-popup-request') msg = 'Solicitud cancelada';
+        else msg = err.message;
+        toast(msg, 'error');
+    } finally {
+        setAuthBtnLoading(targetBtn, false);
+    }
+};
+document.getElementById('btn-google').addEventListener('click', googleSignIn);
+document.getElementById('btn-google-reg').addEventListener('click', googleSignIn);
+
+// Send form on Enter
+document.getElementById('auth-email').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('auth-pass').focus(); });
+document.getElementById('auth-pass').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btn-login').click(); });
+document.getElementById('reg-username').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('reg-email').focus(); });
+document.getElementById('reg-email').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('reg-pass').focus(); });
+document.getElementById('reg-pass').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btn-register').click(); });
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    if(myPresenceRef) await set(myPresenceRef, null).catch(()=>{});
+    await signOut(auth);
+    State.uid = null; State.username = ''; State.email = '';
+    State.favs = {}; State.owned = {}; State.equipped = {}; State.friends = {}; State.friendRequests = {};
+    State.coins = 0; State.xp = 0; State.level = 1; State.nameChanges = 0;
+    updateNavUser();
+    window.stopGameSession && window.stopGameSession();
+    showPage('home');
+    toast('Sesión cerrada', 'info');
 });
 
 // --- AQUÍ ESTÁ LA MAGIA DEL CIERRE RADICAL ---
