@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LevelUp </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
   <style>
     :root {
       --bg: #07070d; --surface: #0f0f1a; --surface2: #161625;
@@ -274,7 +274,7 @@
     .modal-input:focus { border-color: rgba(124,58,237,0.6); }
     .modal-input::placeholder { color: #5a5a7a; }
     
-    /* NUEVO: Input Wrapper, Icons y Toggle Password */
+    /* Input Wrapper, Icons y Toggle Password */
     .input-wrap { position: relative; }
     .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; transition: color 0.2s; }
     .modal-input.has-icon { padding-left: 42px; }
@@ -452,11 +452,16 @@
     .fade-up.visible { opacity: 1; transform: none; }
     .discord-btn { position: fixed; bottom: 24px; right: 24px; background: #5865F2; color: white; padding: 12px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 6px 24px rgba(88,101,242,0.4); transition: all 0.3s; font-family: 'Inter', sans-serif; }
     .discord-btn:hover { transform: translateY(-3px); background: #4752C4; }
+    
+    /* MEJORAS DE ICONOS */
+    .iconify { transition: transform 0.2s ease, color 0.2s ease; }
+    .nav-tab:hover .iconify { transform: scale(1.15) translateY(-1px); }
+    .icon-btn:hover .iconify { transform: scale(1.1); }
+    .btn-logout:hover .iconify { transform: translateX(2px); }
   </style>
 </head>
 <body>
 
-<!-- INICIO CIERRE RADICAL -->
 <div id="radical-close-overlay" style="position:fixed;inset:0;background:#07070d;z-index:100000;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
   <div style="background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:50px 40px; max-width:420px; box-shadow:0 30px 80px rgba(0,0,0,0.6);">
     <div style="font-size:64px;margin-bottom:20px;">🛑</div>
@@ -465,14 +470,13 @@
     <button id="radical-admin-login" style="padding:12px 28px;background:linear-gradient(135deg, #7c3aed, #ec4899);color:white;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(124,58,237,0.4);transition:all 0.2s;">🔐 Acceso Staff</button>
   </div>
 </div>
-<!-- FIN CIERRE RADICAL -->
 
 <div class="toast-container" id="toast-container"></div>
-<div class="xp-notif" id="xp-notif"><span class="iconify" data-icon="mdi:star" data-width="16"></span><span id="xp-notif-text">+50 XP</span></div>
+<div class="xp-notif" id="xp-notif"><span class="iconify" data-icon="lucide:star" data-width="16"></span><span id="xp-notif-text">+50 XP</span></div>
 <div class="coins-min-indicator paused" id="coins-min-indicator" style="display:none;" title="Click para detener la sesión de juego">
   <div class="timer-ring"></div>
   <div>
-    <div style="color:var(--gold);font-size:14px;display:flex;align-items:center;gap:4px;"><span class="iconify" data-icon="mdi:bitcoin" data-width="16"></span><span id="coins-min-timer">60s</span><span class="game-playing-label">JUGANDO</span></div>
+    <div style="color:var(--gold);font-size:14px;display:flex;align-items:center;gap:4px;"><span class="iconify" data-icon="lucide:coins" data-width="16"></span><span id="coins-min-timer">60s</span><span class="game-playing-label">JUGANDO</span></div>
     <div style="font-size:10px;color:var(--muted);">+5 monedas/min en juego</div>
   </div>
 </div>
@@ -482,7 +486,6 @@
     <div style="font-size: 60px; margin-bottom: 20px;">🚧</div>
     <h2 style="font-family:'Poppins',sans-serif; font-size: 26px; color: var(--gold); margin-bottom: 12px; font-weight: 800;">Mantenimiento por Actualización</h2>
     <p style="color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 30px;">LevelUp se está actualizando para traer nuevas funciones. ¡Volverá a estar disponible muy pronto!</p>
-    
     <div id="maint-countdown" style="font-family:'Poppins',sans-serif; font-size: 40px; font-weight:800; color:white; letter-spacing:2px; background:var(--bg); padding:20px 30px; border-radius:16px; border:1px solid var(--border); display:inline-block; box-shadow: 0 0 30px rgba(245,158,11,0.2);">
       00:00:00
     </div>
@@ -498,7 +501,7 @@
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-      <span class="iconify" data-icon="mdi:alert-outline" data-width="28" style="color:#f59e0b"></span>
+      <span class="iconify" data-icon="lucide:alert-triangle" data-width="28" style="color:#f59e0b"></span>
     </div>
     <h3 style="font-size:17px;font-weight:800;margin-bottom:8px;color:var(--text);">¿Estás en casa?</h3>
     <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">Esta web es para jugar en casa. Si estás en un colegio, entras asumiendo tu responsabilidad.</p>
@@ -511,7 +514,7 @@
 
 <div class="modal-overlay" id="auth-modal">
   <div class="modal modal-wrap">
-    <button class="modal-close" id="close-auth"><span class="iconify" data-icon="mdi:close" data-width="18"></span></button>
+    <button class="modal-close" id="close-auth"><span class="iconify" data-icon="lucide:x" data-width="18"></span></button>
     <div class="modal-title">Bienvenido a LevelUp</div>
     <div class="modal-sub">Inicia sesión o crea tu cuenta para empezar</div>
     <div class="modal-tabs">
@@ -523,15 +526,15 @@
         <label class="input-label">Email</label>
         <div class="input-wrap">
           <input type="email" id="auth-email" class="modal-input has-icon" placeholder="tu@email.com">
-          <span class="iconify input-icon" data-icon="mdi:email-outline" data-width="18"></span>
+          <span class="iconify input-icon" data-icon="lucide:mail" data-width="18"></span>
         </div>
       </div>
       <div class="input-group">
         <label class="input-label">Contraseña</label>
         <div class="input-wrap">
           <input type="password" id="auth-pass" class="modal-input has-icon" placeholder="••••••••">
-          <span class="iconify input-icon" data-icon="mdi:lock-outline" data-width="18"></span>
-          <button type="button" class="password-toggle" data-target="auth-pass"><span class="iconify" data-icon="mdi:eye-outline" data-width="18"></span></button>
+          <span class="iconify input-icon" data-icon="lucide:lock" data-width="18"></span>
+          <button type="button" class="password-toggle" data-target="auth-pass"><span class="iconify" data-icon="lucide:eye" data-width="18"></span></button>
         </div>
       </div>
       <button class="btn-full" id="btn-login">Iniciar sesión</button>
@@ -547,22 +550,22 @@
         <label class="input-label">Nombre de usuario</label>
         <div class="input-wrap">
           <input type="text" id="reg-username" class="modal-input has-icon" placeholder="Ej: Gh0stPlayer99" maxlength="20">
-          <span class="iconify input-icon" data-icon="mdi:account-outline" data-width="18"></span>
+          <span class="iconify input-icon" data-icon="lucide:user" data-width="18"></span>
         </div>
       </div>
       <div class="input-group">
         <label class="input-label">Email</label>
         <div class="input-wrap">
           <input type="email" id="reg-email" class="modal-input has-icon" placeholder="tu@email.com">
-          <span class="iconify input-icon" data-icon="mdi:email-outline" data-width="18"></span>
+          <span class="iconify input-icon" data-icon="lucide:mail" data-width="18"></span>
         </div>
       </div>
       <div class="input-group">
         <label class="input-label">Contraseña</label>
         <div class="input-wrap">
           <input type="password" id="reg-pass" class="modal-input has-icon" placeholder="Mínimo 6 caracteres">
-          <span class="iconify input-icon" data-icon="mdi:lock-outline" data-width="18"></span>
-          <button type="button" class="password-toggle" data-target="reg-pass"><span class="iconify" data-icon="mdi:eye-outline" data-width="18"></span></button>
+          <span class="iconify input-icon" data-icon="lucide:lock" data-width="18"></span>
+          <button type="button" class="password-toggle" data-target="reg-pass"><span class="iconify" data-icon="lucide:eye" data-width="18"></span></button>
         </div>
       </div>
       <button class="btn-full" id="btn-register">Crear cuenta</button>
@@ -577,7 +580,7 @@
 
 <div class="avatar-picker-overlay" id="avatar-picker-overlay">
   <div class="avatar-picker">
-    <button class="modal-close" onclick="closeAvatarPicker()" style="position:absolute;top:16px;right:16px;"><span class="iconify" data-icon="mdi:close" data-width="18"></span></button>
+    <button class="modal-close" onclick="closeAvatarPicker()" style="position:absolute;top:16px;right:16px;"><span class="iconify" data-icon="lucide:x" data-width="18"></span></button>
     <h3>Cambiar Avatar</h3>
     <p>Selecciona un avatar de tu colección</p>
     <div class="avatar-grid" id="avatar-grid"></div>
@@ -585,42 +588,40 @@
   </div>
 </div>
 
-<!-- NAVBAR -->
 <nav class="navbar">
   <div class="nav-logo">Level<span>Up</span></div>
   <div class="nav-credit">Creado por <strong>Gh0st</strong></div>
   <div class="nav-tabs" id="nav-tabs">
-    <button class="nav-tab active" data-page="home"><span class="iconify" data-icon="mdi:gamepad-variant" data-width="17"></span> Juegos</button>
-    <button class="nav-tab" data-page="shop"><span class="iconify" data-icon="mdi:shopping" data-width="17"></span> Tienda</button>
-    <button class="nav-tab" data-page="friends" id="friends-tab"><span class="iconify" data-icon="mdi:account-group" data-width="17"></span> Amigos<span class="badge hidden" id="req-badge">0</span></button>
-    <button class="nav-tab" data-page="profile"><span class="iconify" data-icon="mdi:account-circle" data-width="17"></span> Perfil</button>
-    <button class="nav-tab" data-page="updates"><span class="iconify" data-icon="mdi:bell-ring-outline" data-width="17"></span> Updates<span class="badge hidden" id="update-badge">!</span></button>
-    <button class="nav-tab" data-page="settings"><span class="iconify" data-icon="mdi:cog-outline" data-width="17"></span> Ajustes</button>
-    <button class="nav-tab admin-tab hidden" data-page="admin" id="admin-nav-tab"><span class="iconify" data-icon="mdi:shield-crown" data-width="17"></span> Admin</button>
+    <button class="nav-tab active" data-page="home"><span class="iconify" data-icon="lucide:gamepad-2" data-width="17"></span> Juegos</button>
+    <button class="nav-tab" data-page="shop"><span class="iconify" data-icon="lucide:shopping-bag" data-width="17"></span> Tienda</button>
+    <button class="nav-tab" data-page="friends" id="friends-tab"><span class="iconify" data-icon="lucide:users" data-width="17"></span> Amigos<span class="badge hidden" id="req-badge">0</span></button>
+    <button class="nav-tab" data-page="profile"><span class="iconify" data-icon="lucide:user-circle" data-width="17"></span> Perfil</button>
+    <button class="nav-tab" data-page="updates"><span class="iconify" data-icon="lucide:bell-dot" data-width="17"></span> Updates<span class="badge hidden" id="update-badge">!</span></button>
+    <button class="nav-tab" data-page="settings"><span class="iconify" data-icon="lucide:settings" data-width="17"></span> Ajustes</button>
+    <button class="nav-tab admin-tab hidden" data-page="admin" id="admin-nav-tab"><span class="iconify" data-icon="lucide:shield-check" data-width="17"></span> Admin</button>
   </div>
   <div class="nav-right">
     <div id="nav-guest"><button class="btn-auth" id="open-auth-btn">Iniciar sesión</button></div>
     <div id="nav-user" style="display:none;align-items:center;gap:10px;">
       <div class="coins-display" style="padding:6px 12px;font-size:13px;" id="nav-coins">
-        <span class="iconify" data-icon="mdi:bitcoin" data-width="16" style="color:var(--gold)"></span>
+        <span class="iconify" data-icon="lucide:coins" data-width="16" style="color:var(--gold)"></span>
         <span id="coins-val">0</span>
       </div>
       <div class="user-chip" onclick="showPage('profile')">
         <div class="avatar" id="nav-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;">?</div>
         <div><div class="username" id="nav-username">Usuario</div><div class="lv" id="nav-lv">LVL 1</div></div>
       </div>
-      <button class="btn-logout" id="btn-logout" title="Cerrar sesión"><span class="iconify" data-icon="mdi:logout" data-width="18"></span></button>
+      <button class="btn-logout" id="btn-logout" title="Cerrar sesión"><span class="iconify" data-icon="lucide:log-out" data-width="18"></span></button>
     </div>
   </div>
 </nav>
 
-<!-- PAGE: HOME -->
 <div class="page active" id="page-home">
   <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
     <div class="hero-content">
-      <div class="hero-eyebrow"><span class="iconify" data-icon="mdi:ghost" data-width="15"></span>Creado por Gh0st</div>
+      <div class="hero-eyebrow"><span class="iconify" data-icon="lucide:ghost" data-width="15"></span>Creado por Gh0st</div>
       <h1 class="hero-title"><span class="line1">Tu portal de</span><span class="line2">juegos infinitos</span></h1>
       <p class="hero-sub">Juega, gana XP, sube de nivel y desbloquea cosméticos épicos. Sin descargas, desde el navegador.</p>
       <div class="hero-stats">
@@ -632,7 +633,7 @@
   </section>
   <div class="section">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-      <div class="search-wrap"><span class="iconify search-icon" data-icon="mdi:magnify" data-width="18"></span><input type="text" class="search-input" id="search-input" placeholder="Buscar juegos..."></div>
+      <div class="search-wrap"><span class="iconify search-icon" data-icon="lucide:search" data-width="18"></span><input type="text" class="search-input" id="search-input" placeholder="Buscar juegos..."></div>
     </div>
     <div class="cat-bar" id="cat-bar">
       <button class="cat-pill active" data-cat="all">🎮 Todos</button>
@@ -652,12 +653,11 @@
   </div>
 </div>
 
-<!-- PAGE: SHOP -->
 <div class="page" id="page-shop">
   <div class="section">
     <div class="section-header">
       <div><h2 class="section-title">🛍️ Tienda de Cosméticos</h2><p style="font-size:13px;color:var(--muted);margin-top:4px;">Gana monedas jugando y personaliza tu perfil</p></div>
-      <div class="coins-display" id="shop-coins"><span class="iconify" data-icon="mdi:bitcoin" data-width="18"></span><span id="shop-coins-val">0</span> monedas</div>
+      <div class="coins-display" id="shop-coins"><span class="iconify" data-icon="lucide:coins" data-width="18"></span><span id="shop-coins-val">0</span> monedas</div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
       <button class="cat-pill active" data-shop-cat="all">Todo</button>
@@ -675,7 +675,6 @@
   </div>
 </div>
 
-<!-- PAGE: FRIENDS -->
 <div class="page" id="page-friends">
   <div class="section">
     <div class="section-header"><h2 class="section-title">👥 Amigos</h2></div>
@@ -686,7 +685,7 @@
           <div class="req-list" id="req-list"></div>
         </div>
         <h3 style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:0.05em;text-transform:uppercase;">Mis amigos</h3>
-        <div class="friends-list" id="friends-list"><div class="empty-state"><div class="icon">👥</div><h3>Sin amigos aún</h3><p>Busca a alguien por su nombre de usuario</p></div></div>
+        <div class="friends-list" id="friends-list"><div class="empty-state"><div class="icon">👥</div><h3>Sin amigos aún</h3><p>Busca a alguien por nombre de usuario</p></div></div>
       </div>
       <div>
         <div class="add-friend-box">
@@ -701,7 +700,6 @@
   </div>
 </div>
 
-<!-- PAGE: PROFILE -->
 <div class="page" id="page-profile">
   <div class="section">
     <div class="profile-hero">
@@ -743,7 +741,6 @@
   </div>
 </div>
 
-<!-- PAGE: UPDATES -->
 <div class="page" id="page-updates">
   <div class="update-log-container">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
@@ -757,7 +754,7 @@
       <button class="update-filter-btn" data-ufilter="improvement">⬆️ Mejoras</button>
     </div>
     <div class="admin-panel hidden" id="admin-update-panel">
-      <div class="admin-panel-title"><span class="iconify" data-icon="mdi:shield-crown" data-width="18"></span>Panel Admin — Publicar Update<span class="admin-badge">ADMIN</span></div>
+      <div class="admin-panel-title"><span class="iconify" data-icon="lucide:shield-check" data-width="18"></span>Panel Admin — Publicar Update<span class="admin-badge">ADMIN</span></div>
       <div class="update-editor">
         <input type="text" class="log-input" id="log-title-input" placeholder="Título del update (ej: v1.4 — Fix amigos)" maxlength="80">
         <div class="format-toolbar">
@@ -822,17 +819,16 @@
   </div>
 </div>
 
-<!-- PAGE: ADMIN -->
 <div class="page" id="page-admin">
   <div class="admin-page-container">
     <div class="admin-page-header">
       <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
-        <span class="iconify" data-icon="mdi:shield-crown" data-width="26" style="color:#1a0a00;"></span>
+        <span class="iconify" data-icon="lucide:shield-check" data-width="26" style="color:#1a0a00;"></span>
       </div>
       <div><h1>Panel de Administración</h1><p style="font-size:13px;color:var(--muted);margin-top:2px;">Admin Panel</p></div>
     </div>
     <div class="admin-card" style="margin-bottom:20px;">
-      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:chart-bar" data-width="20"></span> Estadísticas en tiempo real</div>
+      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="lucide:bar-chart-3" data-width="20"></span> Estadísticas en tiempo real</div>
       <div id="admin-stats-content">
         <div class="stat-row"><span class="stat-row-label">👥 Usuarios registrados</span><span class="stat-row-val" id="stat-total-users">—</span></div>
         <div class="stat-row"><span class="stat-row-label">🟢 En línea ahora</span><span class="stat-row-val" id="stat-online-admin">—</span></div>
@@ -843,7 +839,7 @@
     </div>
     <div class="admin-grid">
       <div class="admin-card">
-        <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="mdi:account-search" data-width="20"></span> Buscar usuario</div>
+        <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="lucide:user-search" data-width="20"></span> Buscar usuario</div>
         <input type="text" class="admin-input" id="admin-search-user" placeholder="Nombre de usuario...">
         <button class="admin-btn admin-btn-blue" onclick="adminSearchUser()" style="width:100%;">🔍 Buscar</button>
         <div class="admin-result-box" id="admin-search-result"></div>
@@ -864,7 +860,7 @@
       </div>
 
       <div class="admin-card">
-        <div class="admin-card-title" style="color:var(--gold);"><span class="iconify" data-icon="mdi:bitcoin" data-width="20"></span> Dar monedas / XP</div>
+        <div class="admin-card-title" style="color:var(--gold);"><span class="iconify" data-icon="lucide:coins" data-width="20"></span> Dar monedas / XP</div>
         <div id="dist-balance-info" class="hidden" style="font-size:13px;color:var(--gold);margin-bottom:10px;background:rgba(245,158,11,0.1);padding:8px;border-radius:8px;text-align:center;">
           Tu saldo para repartir: <strong id="dist-balance-val">0</strong> monedas
         </div>
@@ -884,7 +880,7 @@
       </div>
 
       <div class="admin-card distributor-hidden">
-        <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="mdi:account-cancel" data-width="20"></span> Banear usuario</div>
+        <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="lucide:user-x" data-width="20"></span> Banear usuario</div>
         <input type="text" class="admin-input" id="admin-ban-input" placeholder="Email o nombre de usuario...">
         <input type="text" class="admin-input" id="admin-ban-reason" placeholder="Motivo del ban (opcional)">
         <div style="display:flex;gap:8px;">
@@ -899,7 +895,7 @@
       </div>
 
       <div class="admin-card distributor-hidden">
-        <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="mdi:bullhorn" data-width="20"></span> Mensaje global (Broadcast)</div>
+        <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="lucide:megaphone" data-width="20"></span> Mensaje global (Broadcast)</div>
         <input type="text" class="admin-input" id="admin-broadcast-msg" placeholder="Mensaje para todos los usuarios...">
         <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
           <button class="admin-btn" style="flex:1;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#34d399;" onclick="setMsgType('success')">✅ Info</button>
@@ -911,12 +907,12 @@
       </div>
 
       <div class="admin-card distributor-hidden" style="grid-column: 1 / -1;">
-        <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:account-group" data-width="20"></span> Lista de usuarios<button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button></div>
+        <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="lucide:users" data-width="20"></span> Lista de usuarios<button class="admin-btn admin-btn-outline" onclick="adminLoadUsers()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar</button></div>
         <div id="admin-users-list" style="overflow-x:auto;"><p style="font-size:13px;color:var(--muted);">Pulsa "Cargar" para ver los usuarios registrados.</p></div>
       </div>
 
       <div class="admin-card distributor-hidden">
-        <div class="admin-card-title" style="color:#f0abfc;"><span class="iconify" data-icon="mdi:gift" data-width="20"></span> Regalar cosmético</div>
+        <div class="admin-card-title" style="color:#f0abfc;"><span class="iconify" data-icon="lucide:gift" data-width="20"></span> Regalar cosmético</div>
         <input type="text" class="admin-input" id="admin-cosmetic-user" placeholder="Nombre de usuario...">
         <select class="admin-input" id="admin-cosmetic-item"></select>
         <button class="admin-btn admin-btn-purple" onclick="adminGiveCosmetic()" style="width:100%;">🎁 Regalar cosmético</button>
@@ -924,7 +920,7 @@
       </div>
 
       <div class="admin-card distributor-hidden">
-        <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="mdi:tune-variant" data-width="20"></span> Establecer valores exactos</div>
+        <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="lucide:sliders-horizontal" data-width="20"></span> Establecer valores exactos</div>
         <input type="text" class="admin-input" id="admin-set-user" placeholder="Nombre de usuario...">
         <input type="number" class="admin-input" id="admin-set-coins" placeholder="Monedas exactas (vacío = no cambiar)">
         <input type="number" class="admin-input" id="admin-set-xp" placeholder="XP exacta (vacío = no cambiar)">
@@ -933,7 +929,7 @@
       </div>
 
       <div class="admin-card distributor-hidden" style="grid-column: 1 / -1;">
-        <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="mdi:wrench" data-width="20"></span> Mantenimiento</div>
+        <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="lucide:wrench" data-width="20"></span> Mantenimiento</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
           <button class="admin-btn admin-btn-outline" onclick="adminClearBroadcast()" style="flex:1;min-width:180px;">🧹 Borrar mensaje global</button>
           <button class="admin-btn admin-btn-outline" onclick="refreshAdminStats()" style="flex:1;min-width:180px;">🔄 Refrescar estadísticas</button>
@@ -953,23 +949,21 @@
   </div>
 </div>
 
-<!-- PAGE: SETTINGS -->
 <div class="page" id="page-settings">
   <div class="section" style="max-width:680px;">
     <h2 style="font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;color:var(--text);">⚙️ Ajustes de cuenta</h2>
     <p style="font-size:13px;color:var(--muted);margin-bottom:32px;">Gestiona tu cuenta y preferencias</p>
 
-    <!-- MODO OSCURO / CLARO -->
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:theme-light-dark" data-width="20"></span> Apariencia</div>
+      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="lucide:sun-moon" data-width="20"></span> Apariencia</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Personaliza el tema visual de la web.</p>
       <button class="admin-btn admin-btn-outline" onclick="toggleTheme()" id="theme-toggle-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span class="iconify" data-icon="mdi:weather-sunny" data-width="18"></span> Cambiar a Modo Claro
+        <span class="iconify" data-icon="lucide:sun" data-width="18"></span> Cambiar a Modo Claro
       </button>
     </div>
 
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="mdi:account-edit" data-width="20"></span> Nombre de usuario</div>
+      <div class="admin-card-title" style="color:var(--accent2);"><span class="iconify" data-icon="lucide:user-pen" data-width="20"></span> Nombre de usuario</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">El primer cambio es gratis. Los siguientes cuestan <strong style="color:var(--gold)">200 monedas</strong>.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <div style="flex:1;min-width:200px;">
@@ -982,7 +976,7 @@
     </div>
 
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="mdi:text-account" data-width="20"></span> Bio</div>
+      <div class="admin-card-title" style="color:#34d399;"><span class="iconify" data-icon="lucide:text" data-width="20"></span> Bio</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Una descripción corta de ti mismo (máx. 120 caracteres).</p>
       <textarea id="settings-bio-input" class="admin-input" rows="3" maxlength="120" placeholder="Escribe tu bio..." style="resize:vertical;min-height:72px;"></textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
@@ -993,7 +987,7 @@
     </div>
 
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="mdi:lock-reset" data-width="20"></span> Contraseña</div>
+      <div class="admin-card-title" style="color:#fbbf24;"><span class="iconify" data-icon="lucide:key-round" data-width="20"></span> Contraseña</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Solo disponible si iniciaste sesión con email y contraseña.</p>
       <input type="password" id="settings-pass-current" class="admin-input" placeholder="Contraseña actual">
       <input type="password" id="settings-pass-new" class="admin-input" placeholder="Nueva contraseña (mín. 6 caracteres)">
@@ -1003,14 +997,14 @@
     </div>
 
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="mdi:email-lock" data-width="20"></span> Restablecer por correo</div>
+      <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="lucide:mail-lock" data-width="20"></span> Restablecer por correo</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">¿No recuerdas tu contraseña? Te enviaremos un enlace seguro al correo (Gmail) de tu cuenta para crear una nueva.</p>
       <button class="admin-btn admin-btn-blue" onclick="settingsSendResetEmail()" style="width:100%;">📧 Enviar correo de restablecimiento</button>
       <div class="admin-result-box" id="settings-reset-result"></div>
     </div>
 
     <div class="admin-card" style="margin-bottom:16px;">
-      <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="mdi:information-outline" data-width="20"></span> Información de cuenta</div>
+      <div class="admin-card-title" style="color:#9ca3af;"><span class="iconify" data-icon="lucide:info" data-width="20"></span> Información de cuenta</div>
       <div class="stat-row"><span class="stat-row-label">Email</span><span style="font-size:13px;color:var(--muted);" id="settings-info-email">—</span></div>
       <div class="stat-row"><span class="stat-row-label">Usuario</span><span style="font-size:13px;font-weight:700;color:var(--text);" id="settings-info-username">—</span></div>
       <div class="stat-row"><span class="stat-row-label">Nivel</span><span style="font-size:13px;color:var(--accent2);font-weight:700;" id="settings-info-level">—</span></div>
@@ -1020,7 +1014,7 @@
     </div>
 
     <div class="admin-card" style="border-color:rgba(239,68,68,0.25);margin-bottom:16px;">
-      <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="mdi:alert" data-width="20"></span> Zona de peligro</div>
+      <div class="admin-card-title" style="color:#fca5a5;"><span class="iconify" data-icon="lucide:alert-octagon" data-width="20"></span> Zona de peligro</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="admin-btn admin-btn-outline" onclick="settingsLogout()" style="flex:1;min-width:140px;">🚪 Cerrar sesión</button>
         <button class="admin-btn admin-btn-red" onclick="settingsDeleteAccount()" style="flex:1;min-width:140px;">🗑️ Eliminar cuenta</button>
@@ -1037,7 +1031,6 @@
 <footer><span>LevelUp © 2025</span><span style="color:var(--muted)">·</span><span>Creado por <strong>Gh0st</strong></span></footer>
 
 <script>
-// THEME TOGGLE LOGIC
 function toggleTheme() {
   document.body.classList.toggle('light-theme');
   localStorage.setItem('lv_theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
@@ -1047,9 +1040,9 @@ function updateThemeBtn() {
   const btn = document.getElementById('theme-toggle-btn');
   if(!btn) return;
   if(document.body.classList.contains('light-theme')) {
-    btn.innerHTML = '<span class="iconify" data-icon="mdi:weather-night" data-width="18"></span> Cambiar a Modo Oscuro';
+    btn.innerHTML = '<span class="iconify" data-icon="lucide:moon" data-width="18"></span> Cambiar a Modo Oscuro';
   } else {
-    btn.innerHTML = '<span class="iconify" data-icon="mdi:weather-sunny" data-width="18"></span> Cambiar a Modo Claro';
+    btn.innerHTML = '<span class="iconify" data-icon="lucide:sun" data-width="18"></span> Cambiar a Modo Claro';
   }
 }
 window.toggleTheme = toggleTheme;
@@ -1057,42 +1050,42 @@ if(localStorage.getItem('lv_theme') === 'light') document.body.classList.add('li
 
 const GAMES = [
   { name:"Pets and Money", path:"Pets and Money/index.html", icon:"Pets and Money/pets.webp", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
-  { name:"No cliques el Botón", path:"juego2/index.html", icon:"mdi:cursor-default-click", color:"#ef4444", category:"casual", tag:"Reto" },
+  { name:"No cliques el Botón", path:"juego2/index.html", icon:"lucide:mouse-pointer-click", color:"#ef4444", category:"casual", tag:"Reto" },
   { name:"Steal a Brainrot", path:"Roba Un Brainrot/index.html", icon:"Roba Un Brainrot/wmremove-transformed.png", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
   { name:"Pitch Legends", path:"Fifa/index.html", icon:"Fifa/Fifa.jpg", isImage:false, color:"#3b82f6", category:"sports", tag:"Popular" },
   { name:"NovaStream", path:"NovaStream/index.html", icon:"NovaStream/pets.webp", isImage:true, color:"#f59e0b", category:"chill", tag:"Popular" },
-  { name:"La Serpiente", path:"juego7/index.html", icon:"mdi:snake", color:"#22c55e", category:"casual", tag:"Clásico" },
+  { name:"La Serpiente", path:"juego7/index.html", icon:"lucide:footprints", color:"#22c55e", category:"casual", tag:"Clásico" },
   { name:"OverDrive", path:"OverDrive/index.html", icon:"OverDrive/wmremove-transformed (2)", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
-  { name:"Speed per Click", path:"juego9/index.html", icon:"mdi:cursor-click", color:"#f97316", category:"casual", tag:"" },
+  { name:"Speed per Click", path:"juego9/index.html", icon:"lucide:zap", color:"#f97316", category:"casual", tag:"" },
   { name:"Minecraft", path:"Minecraft/index.html", icon:"Minecraft/images.jfif", isImage:true, color:"#f59e0b", category:"action", tag:"Top" },
-  { name:"Obby Practica", path:"juego11/index.html", icon:"mdi:obstacle-course", color:"#06b6d4", category:"accion", tag:"" },
-  { name:"Geometry Dash", path:"Geometry Dash/index.html", icon:"mdi:shape-outline", color:"#eab308", category:"accion", tag:"Popular" },
-  { name:"1 V 1 Arco", path:"juego13/index.html", icon:"mdi:bow-arrow", color:"#14b8a6", category:"accion", tag:"" },
-  { name:"Fortnite", path:"Fornite/index.html", icon:"mdi:shield-sword", color:"#6366f1", category:"accion", tag:"Top" },
+  { name:"Obby Practica", path:"juego11/index.html", icon:"lucide:blocks", color:"#06b6d4", category:"accion", tag:"" },
+  { name:"Geometry Dash", path:"Geometry Dash/index.html", icon:"lucide:triangle-right", color:"#eab308", category:"accion", tag:"Popular" },
+  { name:"1 V 1 Arco", path:"juego13/index.html", icon:"lucide:target", color:"#14b8a6", category:"accion", tag:"" },
+  { name:"Fortnite", path:"Fornite/index.html", icon:"lucide:shield-half", color:"#6366f1", category:"accion", tag:"Top" },
   { name:"DeadZone", path:"DeadZone/index.html", icon:"DeadZone/DeadZone.jpg", isImage:true, color:"#f59e0b", category:"casual", tag:"Popular" },
   { name:"Nova Ai", path:"Nova Ai/index.html", icon:"Nova Ai/Novalogo.jpg", isImage:true, color:"#f59e0b", category:"chill", tag:"Popular" },
-  { name:"Tap On Goal", path:"tap-on-goal/index.html", icon:"mdi:goal", color:"#f59e0b", category:"deportes", tag:"" },
-  { name:"Crónicas del Multiverso", path:"Crónicas-del-Multiverso/src/index.html", icon:"mdi:sword-cross", color:"#a855f7", category:"estrategia", tag:"Beta" },
-  { name:"AETHER STRANDED", path:"AETHER STRANDED/index.html", icon:"mdi:weather-dust", color:"#6366f1", category:"accion", tag:"Nuevo" },
-  { name:"Zora", path:"Zora/index.html", icon:"mdi:instagram", color:"#e4405f", category:"social", tag:"" },
-  { name:"Studio", path:"fl studio/index.html", icon:"mdi:music-circle", color:"#f97316", category:"musica", tag:"" },
-  { name:"Spotify", path:"Spotify/index.html", icon:"mdi:spotify", color:"#1db954", category:"musica", tag:"" },
-  { name:"Roblox", path:"Roblox/index.html", icon:"mdi:blocks", color:"#e11d48", category:"accion", tag:"Top" },
-  { name:"Un Juego Más", path:"One More Game/index.html", icon:"mdi:plus-circle", color:"#8b5cf6", category:"casual", tag:"" },
-  { name:"Clash Royale", path:"Clash Royale/index.html", icon:"mdi:crown", color:"#3b82f6", category:"estrategia", tag:"Popular" },
-  { name:"Mario Kart", path:"Mario Kart/index.html", icon:"mdi:car-sports", color:"#ef4444", category:"carreras", tag:"Clásico" },
-  { name:"TerraNova", path:"Terranova/index.html", icon:"mdi:earth", color:"#22c55e", category:"estrategia", tag:"Nuevo" },
-  { name:"La Forja", path:"The Forge/index.html", icon:"mdi:anvil", color:"#f59e0b", category:"estrategia", tag:"" },
+  { name:"Tap On Goal", path:"tap-on-goal/index.html", icon:"lucide:goal", color:"#f59e0b", category:"deportes", tag:"" },
+  { name:"Crónicas del Multiverso", path:"Crónicas-del-Multiverso/src/index.html", icon:"lucide:swords", color:"#a855f7", category:"estrategia", tag:"Beta" },
+  { name:"AETHER STRANDED", path:"AETHER STRANDED/index.html", icon:"lucide:wind", color:"#6366f1", category:"accion", tag:"Nuevo" },
+  { name:"Zora", path:"Zora/index.html", icon:"lucide:instagram", color:"#e4405f", category:"social", tag:"" },
+  { name:"Studio", path:"fl studio/index.html", icon:"lucide:music", color:"#f97316", category:"musica", tag:"" },
+  { name:"Spotify", path:"Spotify/index.html", icon:"lucide:music-2", color:"#1db954", category:"musica", tag:"" },
+  { name:"Roblox", path:"Roblox/index.html", icon:"lucide:boxes", color:"#e11d48", category:"accion", tag:"Top" },
+  { name:"Un Juego Más", path:"One More Game/index.html", icon:"lucide:plus-circle", color:"#8b5cf6", category:"casual", tag:"" },
+  { name:"Clash Royale", path:"Clash Royale/index.html", icon:"lucide:crown", color:"#3b82f6", category:"estrategia", tag:"Popular" },
+  { name:"Mario Kart", path:"Mario Kart/index.html", icon:"lucide:car-front", color:"#ef4444", category:"carreras", tag:"Clásico" },
+  { name:"TerraNova", path:"Terranova/index.html", icon:"lucide:globe", color:"#22c55e", category:"estrategia", tag:"Nuevo" },
+  { name:"La Forja", path:"The Forge/index.html", icon:"lucide:hammer", color:"#f59e0b", category:"estrategia", tag:"" },
   { name:"Futbol", path:"Futbol/index.html", icon:"Futbol/Futbol.jfif", isImage:true, color:"#f59e0b", category:"Deportes", tag:"" },
-  { name:"Five Nights at Freddy's", path:"FNAF/index.html", icon:"mdi:ghost-outline", color:"#78716c", category:"terror", tag:"Popular" },
-  { name:"Discord", path:"Discord/index.html", icon:"ic:baseline-discord", color:"#5865F2", category:"social", tag:"" },
-  { name:"Golf Orbit", path:"Golf Orbit/index.html", icon:"mdi:golf-tee", color:"#22c55e", category:"deportes", tag:"" },
-  { name:"Espada Pixel", path:"Pixel Blade/index.html", icon:"mdi:sword", color:"#ef4444", category:"accion", tag:"" },
-  { name:"Flip a Coin", path:"Flip a Coin/index.html", icon:"mdi:circle-outline", color:"#eab308", category:"casual", tag:"" },
-  { name:"1001 Juegos", path:"1001 Juegos/index.html", icon:"mdi:gamepad-square", color:"#6366f1", category:"casual", tag:"Grande" },
-  { name:"Brawl Stars", path:"Brawl Stars/index.html", icon:"mdi:star-shooting", color:"#14b8a6", category:"accion", tag:"Popular" },
+  { name:"Five Nights at Freddy's", path:"FNAF/index.html", icon:"lucide:ghost", color:"#78716c", category:"terror", tag:"Popular" },
+  { name:"Discord", path:"Discord/index.html", icon:"lucide:message-circle", color:"#5865F2", category:"social", tag:"" },
+  { name:"Golf Orbit", path:"Golf Orbit/index.html", icon:"lucide:golf", color:"#22c55e", category:"deportes", tag:"" },
+  { name:"Espada Pixel", path:"Pixel Blade/index.html", icon:"lucide:sword", color:"#ef4444", category:"accion", tag:"" },
+  { name:"Flip a Coin", path:"Flip a Coin/index.html", icon:"lucide:circle", color:"#eab308", category:"casual", tag:"" },
+  { name:"1001 Juegos", path:"1001 Juegos/index.html", icon:"lucide:gamepad", color:"#6366f1", category:"casual", tag:"Grande" },
+  { name:"Brawl Stars", path:"Brawl Stars/index.html", icon:"lucide:sparkles", color:"#14b8a6", category:"accion", tag:"Popular" },
   { name:"Drift", path:"Drift/index.html", icon:"Drift/Drift.png", isImage:true, color:"#f59e0b", category:"carreras", tag:"" },
-  { name:"GTA", path:"GTA/index.html", icon:"mdi:car-side", color:"#84cc16", category:"accion", tag:"Top" },
+  { name:"GTA", path:"GTA/index.html", icon:"lucide:car-taxi-front", color:"#84cc16", category:"accion", tag:"Top" },
   { name:"2 Jugadores", path:"2-Player/index.html", icon:"2-Player/2 player.jfif", isImage:true, color:"#f59e0b", category:"accion", tag:"Popular" },
   { name:"Vende limones", path:"Sell-Lemons/index.html", icon:"Sell-Lemons/noFilter.webp", isImage:true, color:"#f59e0b", category:"accion", tag:"Popular" }
 ];
@@ -1164,7 +1157,7 @@ const ACCENT_COLORS = {
 
 const ADMIN_EMAILS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
 const DISTRIBUTOR_EMAILS = ['ovarela@ietemple.cat'];
-const RADICAL_CIERRE = false; // <-- CAMBIA ESTO A false PARA ABRIR LA WEB AL PÚBLICO
+const RADICAL_CIERRE = false; // false para abrir la web al público
 
 function isAdmin(email) { return ADMIN_EMAILS.includes(email) || DISTRIBUTOR_EMAILS.includes(email); }
 function isDistributor(email) { return DISTRIBUTOR_EMAILS.includes(email); }
@@ -1214,13 +1207,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const ind = document.getElementById('coins-min-indicator');
   if(ind) ind.addEventListener('click', () => { if(isPlayingGame) { toast('Juego finalizado. Monedas acumuladas entregadas.', 'success'); stopGameSession(); } });
 
-  // Password toggles
   document.querySelectorAll('.password-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.target);
       if(target) {
         target.type = target.type === 'password' ? 'text' : 'password';
-        btn.querySelector('span').setAttribute('data-icon', target.type === 'password' ? 'mdi:eye-outline' : 'mdi:eye-off-outline');
+        btn.querySelector('span').setAttribute('data-icon', target.type === 'password' ? 'lucide:eye' : 'lucide:eye-off');
       }
     });
   });
@@ -1237,7 +1229,7 @@ document.querySelectorAll('[data-ufilter]').forEach(btn=>{btn.addEventListener('
 function toast(msg,type='info'){
   const tc=document.getElementById('toast-container');
   const t=document.createElement('div');t.className='toast';
-  const icons={info:'mdi:information',error:'mdi:alert-circle',success:'mdi:check-circle'};
+  const icons={info:'lucide:info',error:'lucide:alert-circle',success:'lucide:check-circle-2'};
   const cols={info:'#a78bfa',error:'#ef4444',success:'#10b981'};
   t.innerHTML=`<span class="iconify" data-icon="${icons[type]||icons.info}" data-width="16" style="color:${cols[type]||cols.info};flex-shrink:0"></span><span>${msg}</span>`;
   tc.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
@@ -1370,12 +1362,11 @@ document.getElementById('close-auth').addEventListener('click',closeAuth);
 document.getElementById('auth-modal').addEventListener('click',e=>{if(e.target===document.getElementById('auth-modal'))closeAuth();});
 document.querySelectorAll('.modal-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');const isReg=tab.dataset.tab==='register';document.getElementById('auth-login-form').style.display=isReg?'none':'block';document.getElementById('auth-register-form').style.display=isReg?'block':'none';});});
 
-// Helper para estados de carga en botones de autenticación
 function setAuthBtnLoading(btn, isLoading) {
     if(!btn) return;
     if(isLoading) {
         btn.dataset.originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="iconify spin-icon" data-icon="mdi:loading" data-width="18"></span> Procesando...';
+        btn.innerHTML = '<span class="iconify spin-icon" data-icon="lucide:loader-circle" data-width="18"></span> Procesando...';
         btn.disabled = true;
         btn.classList.add('loading');
     } else {
@@ -1436,7 +1427,7 @@ function renderGames(){
     const isLocalImg=game.isImage===true||(game.icon&&!game.icon.startsWith('mdi:')&&!game.icon.startsWith('ic:')&&(game.icon.includes('.webp')||game.icon.includes('.png')||game.icon.includes('.jpg')||game.icon.includes('.svg')));
     const thumbContent=isLocalImg?`<img src="${game.icon}" alt="${game.name}" class="game-thumb-img" onerror="this.style.display='none';">`:`<span class="iconify game-thumb-icon" data-icon="${game.icon}" data-width="52" style="color:${game.color};filter:drop-shadow(0 0 20px ${game.color}66)"></span>`;
     const card=document.createElement('div');card.className='game-card fade-up';card.style.transitionDelay=`${i*35}ms`;card.dataset.path=game.path;card.dataset.gameId=game.id;
-    card.innerHTML=`<div class="game-thumb" style="background:linear-gradient(135deg,${game.color}18,${game.color}06);">${game.tag?`<div class="game-tag" style="background:${game.color}22;color:${game.color};border:1px solid ${game.color}44">${game.tag}</div>`:''}<button class="like-btn ${liked?'liked':''}" data-gid="${game.id}"><span class="iconify icon-empty" data-icon="mdi:heart-outline" data-width="16"></span><span class="iconify icon-full" data-icon="mdi:heart" data-width="16"></span><span class="lc">${likeCount}</span></button>${thumbContent}</div><div class="card-glow"></div><div class="game-info"><div class="game-name">${game.name}</div><span class="game-cat" style="background:${game.color}18;color:${game.color};border:1px solid ${game.color}30;">${game.category}</span></div>`;
+    card.innerHTML=`<div class="game-thumb" style="background:linear-gradient(135deg,${game.color}18,${game.color}06);">${game.tag?`<div class="game-tag" style="background:${game.color}22;color:${game.color};border:1px solid ${game.color}44">${game.tag}</div>`:''}<button class="like-btn ${liked?'liked':''}" data-gid="${game.id}"><span class="iconify icon-empty" data-icon="lucide:heart" data-width="16"></span><span class="iconify icon-full" data-icon="lucide:heart" data-width="16" style="fill:currentColor"></span><span class="lc">${likeCount}</span></button>${thumbContent}</div><div class="card-glow"></div><div class="game-info"><div class="game-name">${game.name}</div><span class="game-cat" style="background:${game.color}18;color:${game.color};border:1px solid ${game.color}30;">${game.category}</span></div>`;
     grid.appendChild(card);
   });
   requestAnimationFrame(()=>{document.querySelectorAll('.game-card.fade-up').forEach(el=>setTimeout(()=>el.classList.add('visible'),30));});
@@ -1451,20 +1442,19 @@ document.getElementById('games-grid').addEventListener('click',async e=>{
   if(likeBtn){e.preventDefault();e.stopPropagation();if(!State.uid){toast('Inicia sesión para dar like ❤️','error');openAuth();return;}await toggleLike(likeBtn.dataset.gid,likeBtn);return;}
   const card=e.target.closest('.game-card');
   if(card&&card.dataset.path){
-    // BLOQUEO POR MANTENIMIENTO
     if(window.maintenanceActive && !isAdmin(State.email)){
       toast('🚧 La web está en mantenimiento. No puedes jugar ahora.','error');
-      return; // Detiene la redirección al juego
+      return;
     }
     if(State.uid) startGameSession(card.querySelector('.game-name')?.textContent||'un juego');
-    
-    // Si es admin, le añadimos un parámetro a la URL para que el juego le deje pasar
     let finalPath = card.dataset.path;
     if(isAdmin(State.email)) {
         finalPath += (finalPath.includes('?') ? '&' : '?') + 'admin=true';
     }
     window.location.href = finalPath;
   }
+});
+
 async function toggleLike(gid,btn){
   const newFav=!State.favs[gid];State.favs[gid]=newFav?true:undefined;if(!newFav)delete State.favs[gid];
   if(newFav)spawnHeart(btn);
@@ -1556,7 +1546,7 @@ function renderShop(cat) {
         <div class="skin-name">${item.name}</div>
         <div class="skin-type">${item.type}${item.description?` · ${item.description}`:''}</div>
         <div class="skin-price">
-          ${item.free?'<span style="color:#10b981;font-size:12px;font-weight:800;">GRATIS</span>':`<span class="iconify" data-icon="mdi:bitcoin" data-width="14"></span>${item.price.toLocaleString()}`}
+          ${item.free?'<span style="color:#10b981;font-size:12px;font-weight:800;">GRATIS</span>':`<span class="iconify" data-icon="lucide:coins" data-width="14"></span>${item.price.toLocaleString()}`}
         </div>
         ${btnHtml}
       </div>`;
@@ -1660,7 +1650,7 @@ function renderFriends(){
     const statusHtml=isOnline
       ?(playingGame?`<span style="color:#a78bfa;font-weight:700;">🎮 ${playingGame}</span>`:`<span style="color:var(--green);font-weight:700;">🟢 En línea</span>`)
       :`<span style="color:var(--muted);">⚫ Desconectado</span>`;
-    d.innerHTML=`<div class="friend-avatar-wrap"><div class="friend-avatar" style="background:${av.bg};">${av.content}</div><div class="friend-online-dot ${isOnline?'online':'offline'}"></div></div><div class="friend-info"><div class="friend-name">${data.username||'Usuario'} ${badgeHtml} ${titleHtml}</div><div class="friend-sub">${statusHtml}<span style="color:var(--muted);">·</span><span>Lv <strong style="color:var(--accent2)">${data.level||1}</strong></span></div></div><div class="friend-actions"><div class="icon-btn" onclick="removeFriend('${uid}')" title="Eliminar amigo"><span class="iconify" data-icon="mdi:account-minus" data-width="16"></span></div></div>`;
+    d.innerHTML=`<div class="friend-avatar-wrap"><div class="friend-avatar" style="background:${av.bg};">${av.content}</div><div class="friend-online-dot ${isOnline?'online':'offline'}"></div></div><div class="friend-info"><div class="friend-name">${data.username||'Usuario'} ${badgeHtml} ${titleHtml}</div><div class="friend-sub">${statusHtml}<span style="color:var(--muted);">·</span><span>Lv <strong style="color:var(--accent2)">${data.level||1}</strong></span></div></div><div class="friend-actions"><div class="icon-btn" onclick="removeFriend('${uid}')" title="Eliminar amigo"><span class="iconify" data-icon="lucide:user-minus" data-width="16"></span></div></div>`;
     list.appendChild(d);
   });
 }
@@ -1673,8 +1663,7 @@ async function searchAndAddFriend(username){if(!window._fbFns){toast('Error de c
 window.searchAndAddFriend=searchAndAddFriend;
 
 async function acceptFriend(fromUid,fromUsername){if(!window._fbFns)return;try{const{ref,set,remove}=window._fbFns;const myName=State.username||State.email.split('@')[0];const reqData=State.friendRequests[fromUid]||{};await Promise.all([set(ref(State.db,`users/${State.uid}/friends/${fromUid}`),{username:fromUsername,level:1,online:false,equippedAvatar:reqData.equippedAvatar||null,equippedBadge:reqData.equippedBadge||null,equippedTitle:reqData.equippedTitle||null}),set(ref(State.db,`users/${fromUid}/friends/${State.uid}`),{username:myName,level:State.level,online:true,equippedAvatar:State.equipped.avatar||null,equippedBadge:State.equipped.badge||null,equippedTitle:State.equipped.title||null}),remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`))]);State.friends[fromUid]={username:fromUsername,level:1,equippedAvatar:reqData.equippedAvatar||null,equippedBadge:reqData.equippedBadge||null,equippedTitle:reqData.equippedTitle||null};delete State.friendRequests[fromUid];toast(`✓ ¡Ahora eres amigo de ${fromUsername}!`,'success');renderFriends();updateReqBadge();}catch(err){toast('Error al aceptar solicitud','error');console.error(err);}}
-async function rejectFriend(fromUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`));delete State.friendRequests[fromUid];renderFriends();updateReqBadge();toast('Solicitud rechazada','info');}catch(err){toast('Error','error');}}
-async function removeFriend(friendUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await Promise.all([remove(ref(State.db,`users/${State.uid}/friends/${friendUid}`)),remove(ref(State.db,`users/${friendUid}/friends/${State.uid}`))]);delete State.friends[friendUid];renderFriends();toast('Amigo eliminado','info');}catch(err){toast('Error','error');}}
+async function rejectFriend(fromUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`));delete State.friendRequests[fromUid];renderFriends();updateReqBadge();toast('Solicitud rechazada','info');}catch(err){toast('Error','error');}async function removeFriend(friendUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await Promise.all([remove(ref(State.db,`users/${State.uid}/friends/${friendUid}`)),remove(ref(State.db,`users/${friendUid}/friends/${State.uid}`))]);delete State.friends[friendUid];renderFriends();toast('Amigo eliminado','info');}catch(err){toast('Error','error');}}
 function updateReqBadge(){const count=Object.keys(State.friendRequests).length,badge=document.getElementById('req-badge');if(count>0){badge.textContent=count;badge.classList.remove('hidden');}else{badge.classList.add('hidden');}}
 window.updateReqBadge=updateReqBadge;window.acceptFriend=acceptFriend;window.rejectFriend=rejectFriend;window.removeFriend=removeFriend;
 
@@ -1742,7 +1731,6 @@ function initAdminPage(){
   if(!isAdmin(State.email))return;
   populateCosmeticSelect();
   refreshAdminStats();loadBannedUsers();
-  
   if(isDistributor(State.email)) {
     document.getElementById('dist-balance-info').classList.remove('hidden');
     document.querySelectorAll('.distributor-hidden').forEach(el => el.classList.add('hidden'));
@@ -1783,38 +1771,29 @@ async function adminGiveRewards(){
   const username=document.getElementById('admin-give-user').value.trim();
   const coinsToGive=parseInt(document.getElementById('admin-give-coins').value||'0');
   const xpToGive=parseInt(document.getElementById('admin-give-xp').value||'0');
-  
   if(!username){adminShowResult('admin-give-result','Escribe un nombre de usuario','err');return;}
   if(coinsToGive<=0 && xpToGive<=0){adminShowResult('admin-give-result','Escribe una cantidad de monedas o XP','err');return;}
-
   if(isDistributor(State.email)) {
     if(xpToGive > 0) { adminShowResult('admin-give-result','Los distribuidores solo pueden dar monedas','err'); return; }
     if(coinsToGive > State.coins) { adminShowResult('admin-give-result',`Saldo insuficiente. Tienes ${State.coins} monedas.`,'err'); return; }
-    
     adminShowResult('admin-give-result','Procesando transferencia...','info');
     try {
       const targetUid = await adminFindUidByUsername(username);
       if(!targetUid){adminShowResult('admin-give-result','❌ Usuario no encontrado','err');return;}
-      
       const { ref, runTransaction } = window._fbFns;
       const distRes = await runTransaction(ref(State.db, `users/${State.uid}/coins`), c => {
         if((c||0) < coinsToGive) return;
         return (c||0) - coinsToGive;
       });
-      
       if(!distRes.committed) { adminShowResult('admin-give-result','Error: No tienes suficientes monedas en el momento de la transacción.','err'); return; }
-      
       await runTransaction(ref(State.db, `users/${targetUid}/coins`), c => (c||0) + coinsToGive);
-      
       State.coins -= coinsToGive;
       updateNavUser();
-      
       adminShowResult('admin-give-result',`✅ ${coinsToGive} monedas enviadas a ${username}.`,'ok');
       toast(`Transferencia exitosa a ${username}`,'success');
     } catch(err) { adminShowResult('admin-give-result','Error: '+err.message,'err'); }
     return;
   }
-
   const{ref,get,query,orderByChild,equalTo}=window._fbFns;
   adminShowResult('admin-give-result','🔍 Buscando usuario...','info');
   try{
@@ -1828,7 +1807,7 @@ async function adminGiveRewards(){
 window.adminGiveRewards=adminGiveRewards;
 
 async function adminGiveToUID(uid,username,coins,xp){
-  if(isDistributor(State.email)) return; // Should not reach here, but safety first
+  if(isDistributor(State.email)) return;
   const{ref,runTransaction}=window._fbFns;
   try{await runTransaction(ref(State.db,`users/${uid}`),u=>{if(!u)return u;if(coins>0)u.coins=(u.coins||0)+coins;if(xp>0){u.xp=(u.xp||0)+xp;u.level=window.xpToLevel(u.xp).level;}return u;});let msg=`✅ ${username} recibió:`;if(coins>0)msg+=` +${coins} monedas`;if(xp>0)msg+=` +${xp} XP`;adminShowResult('admin-give-result',msg,'ok');toast(msg,'success');}catch(err){adminShowResult('admin-give-result','Error: '+err.message,'err');}
 }
@@ -1921,7 +1900,6 @@ async function adminStartMaintenance(){
   const hoursInput = document.getElementById('admin-maint-hours');
   let hours = parseInt(hoursInput.value);
   if(!hours || hours < 1) hours = 1;
-  
   const endAt = Date.now() + (hours * 3600000);
   const { ref, set } = window._fbFns;
   try {
@@ -2029,10 +2007,7 @@ async function settingsSendResetEmail(){
   if(!email){settingsShowResult('settings-reset-result','No hay correo asociado a esta cuenta','err');return;}
   try{
     const{sendPasswordResetEmail}=window._firebase_auth_fns;
-    const actionCodeSettings = {
-      url: window.location.origin,
-      handleCodeInApp: false
-    };
+    const actionCodeSettings = { url: window.location.origin, handleCodeInApp: false };
     await sendPasswordResetEmail(window._firebase_auth,email, actionCodeSettings);
     settingsShowResult('settings-reset-result',`✅ Correo enviado a ${email}. Revisa tu bandeja de entrada y la carpeta de Spam.`,'ok');
     toast('📧 Correo de restablecimiento enviado','success');
@@ -2061,7 +2036,6 @@ async function settingsDeleteAccount(){
 }
 window.settingsChangeName=settingsChangeName;window.settingsSaveBio=settingsSaveBio;window.settingsChangePassword=settingsChangePassword;window.settingsLogout=settingsLogout;window.settingsDeleteAccount=settingsDeleteAccount;
 
-// NUEVA FUNCIÓN PARA CARGAR DATOS DEL USUARIO
 async function loadUserData(uid) {
   if(!window._fbFns) return;
   const { ref, get, onValue } = window._fbFns;
@@ -2124,14 +2098,13 @@ async function loadUserData(uid) {
 }
 window.loadUserData = loadUserData;
 
-// --- INICIO DEL CIERRE RADICAL ---/
 if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
     const rOverlay = document.getElementById('radical-close-overlay');
     if (rOverlay) {
-        rOverlay.style.display = 'flex'; // Mostrar bloqueo por defecto
+        rOverlay.style.display = 'flex';
         const btn = document.getElementById('radical-admin-login');
         if (btn) btn.addEventListener('click', () => { 
-            if (typeof openAuth === 'function') openAuth(); // Abrir panel de login si el admin pulsa el botón
+            if (typeof openAuth === 'function') openAuth();
         });
     }
 }
@@ -2177,78 +2150,57 @@ try {
   onValue(visRef,snap=>{document.getElementById('visits-count').textContent=(snap.val()||0).toLocaleString('es-ES');});
 }catch(e){}
 
-// LISTEN FOR GLOBAL MAINTENANCE MODE
 let maintenanceTimerInterval = null;
-window.maintenanceActive = false; // <-- AÑADIDO: Variable global de bloqueo
+window.maintenanceActive = false;
 onValue(ref(db, 'maintenance/status'), snap => {
   const ov = document.getElementById('maintenance-overlay');
   const countdownEl = document.getElementById('maint-countdown');
-  
   if (snap.exists()) {
     const data = snap.val();
     if (data.active && data.endAt > Date.now()) {
-      
-      // Si es administrador, no le mostramos el cartel de mantenimiento
       if (State.email && isAdmin(State.email)) {
         ov.style.display = 'none';
         if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
-        window.maintenanceActive = false; // El admin puede jugar
+        window.maintenanceActive = false;
       } else {
-        // Mostrar el overlay de mantenimiento a los usuarios normales
         ov.style.display = 'flex';
-        window.maintenanceActive = true; // <-- AÑADIDO: Bloquear juegos para usuarios
-        
-        // Detener cualquier juego que estuviera activo
+        window.maintenanceActive = true;
         if (isPlayingGame) { stopGameSession(); }
-        
-        // Iniciar la cuenta atrás
         if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
-        
         const updateCountdown = () => {
           const remaining = data.endAt - Date.now();
           if (remaining <= 0) {
             clearInterval(maintenanceTimerInterval);
             countdownEl.textContent = "00:00:00";
-            // Recargar la página automáticamente cuando acabe
             setTimeout(() => window.location.reload(), 2000);
             return;
           }
           const hours = Math.floor(remaining / 3600000);
           const minutes = Math.floor((remaining % 3600000) / 60000);
           const seconds = Math.floor((remaining % 60000) / 1000);
-          
-          countdownEl.textContent = 
-            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         };
-        
-        // Actualizar cada segundo
         updateCountdown();
         maintenanceTimerInterval = setInterval(updateCountdown, 1000);
       }
-      
     } else {
-      // El tiempo de mantenimiento ya expiró o se desactivó
-      window.maintenanceActive = false; // <-- AÑADIDO: Desbloquear juegos
+      window.maintenanceActive = false;
       ov.style.display = 'none';
       if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
       remove(ref(db, 'maintenance/status')).catch(()=>{});
     }
   } else {
-    // No hay mantenimiento activo
-    window.maintenanceActive = false; // <-- AÑADIDO: Desbloquear juegos
+    window.maintenanceActive = false;
     ov.style.display = 'none';
     if (maintenanceTimerInterval) clearInterval(maintenanceTimerInterval);
   }
 });
 
-// --- AUTHENTICATION LISTENERS & LOGIN LOGIC ---
 document.getElementById('btn-login').addEventListener('click', async () => {
     const btn = document.getElementById('btn-login');
     const em = document.getElementById('auth-email').value.trim();
     const pw = document.getElementById('auth-pass').value;
-    
     if(!em || !pw) { toast('Rellena todos los campos', 'error'); return; }
-    
     setAuthBtnLoading(btn, true);
     try {
         await signInWithEmailAndPassword(auth, em, pw);
@@ -2271,17 +2223,14 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     const username = document.getElementById('reg-username').value.trim();
     const em = document.getElementById('reg-email').value.trim();
     const pw = document.getElementById('reg-pass').value;
-    
     if(!username || !em || !pw) { toast('Rellena todos los campos', 'error'); return; }
     if(username.length < 3) { toast('El nombre debe tener al menos 3 caracteres', 'error'); return; }
     if(pw.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
-    
     setAuthBtnLoading(btn, true);
     try {
         const q = query(ref(db, 'users'), orderByChild('username'), equalTo(username));
         const snap = await get(q);
         if(snap.exists()) { toast('Ese nombre de usuario ya está en uso', 'error'); return; }
-        
         const cred = await createUserWithEmailAndPassword(auth, em, pw);
         await set(ref(db, `users/${cred.user.uid}`), {
             username, email: em, level: 1, xp: 0, coins: 100, createdAt: Date.now(), owned: {bd_early: true}, equipped: {}, nameChanges: 0
@@ -2354,7 +2303,6 @@ const googleSignIn = async () => {
 document.getElementById('btn-google').addEventListener('click', googleSignIn);
 document.getElementById('btn-google-reg').addEventListener('click', googleSignIn);
 
-// Send form on Enter
 document.getElementById('auth-email').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('auth-pass').focus(); });
 document.getElementById('auth-pass').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btn-login').click(); });
 document.getElementById('reg-username').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('reg-email').focus(); });
@@ -2373,27 +2321,20 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
     toast('Sesión cerrada', 'info');
 });
 
-// --- AQUÍ ESTÁ LA MAGIA DEL CIERRE RADICAL ---
 onAuthStateChanged(auth, async user => {
-  // 1. Comprobamos si el modo RADICAL_CIERRE está activado
   if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
     const rOverlay = document.getElementById('radical-close-overlay');
     if (user && isAdmin(user.email)) {
-      // Es administrador: Quitamos el cartel y le dejamos pasar
       if (rOverlay) rOverlay.style.display = 'none';
     } else {
-      // Es usuario normal o invitado: Mostramos el cartel de cierre
       if (rOverlay) rOverlay.style.display = 'flex';
-      
-      // Si un usuario normal intentó iniciar sesión, lo pateamos (signOut)
       if (user) {
         await signOut(auth);
         if (window.toast) window.toast('Acceso denegado. Solo administradores.', 'error');
       }
-      return; // Detiene la ejecución para que no cargue los datos del usuario
+      return;
     }
   }
-  // -------------------------------------------
 
   if(user){
     State.uid=user.uid;State.email=user.email;
@@ -2405,7 +2346,6 @@ onAuthStateChanged(auth, async user => {
     if(friendsSnap.exists()){Object.keys(friendsSnap.val()).forEach(fUid=>{set(ref(db,`users/${fUid}/friends/${user.uid}/online`),true).catch(()=>{});onDisconnect(ref(db,`users/${fUid}/friends/${user.uid}/online`)).set(false);onDisconnect(ref(db,`users/${fUid}/friends/${user.uid}/currentGame`)).remove();});}
     updateNavUser();
   }else{
-    // La confirmación de "¿Estás en casa?" solo sale si NO estamos en modo cierre radical
     if (typeof RADICAL_CIERRE === 'undefined' || !RADICAL_CIERRE) {
       const ok=await showConfirm();
       if(!ok){if(myPresenceRef)await set(myPresenceRef,null).catch(()=>{});window.location.href='https://www.google.com';}
