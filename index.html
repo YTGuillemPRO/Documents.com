@@ -71,6 +71,23 @@
     .hero { position: relative; min-height: 75vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.25), transparent), radial-gradient(ellipse 40% 40% at 20% 60%, rgba(236,72,153,0.08), transparent), radial-gradient(ellipse 50% 50% at 80% 80%, rgba(59,130,246,0.06), transparent); }
     .hero-grid { position: absolute; inset: 0; opacity: 0.04; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 40px 40px; }
+    /* Persistent galaxy depth: the scene is always alive, not only on hover. */
+    body::after { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .7; background-image: radial-gradient(circle at 18% 22%, rgba(167,139,250,.9) 0 1px, transparent 1.5px), radial-gradient(circle at 74% 18%, rgba(59,130,246,.8) 0 1px, transparent 1.5px), radial-gradient(circle at 42% 76%, rgba(236,72,153,.75) 0 1px, transparent 1.5px), radial-gradient(circle at 88% 68%, rgba(255,255,255,.7) 0 1px, transparent 1.5px); background-size: 170px 190px, 230px 260px, 290px 310px, 360px 390px; animation: galaxyDrift 28s linear infinite; }
+    @keyframes galaxyDrift { from { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-12px,8px,0) scale(1.03); } to { transform: translate3d(0,0,0) scale(1); } }
+    .page, .navbar { position: relative; z-index: 1; }
+    .shop-item { transform-style: preserve-3d; animation: galaxyFloat 6s ease-in-out infinite; }
+    .shop-item:nth-child(2n) { animation-delay: -1.7s; }
+    .shop-item:nth-child(3n) { animation-delay: -3.2s; }
+    .shop-item:nth-child(4n) { animation-delay: -4.4s; }
+    .shop-item:hover { transform: translateY(-8px) rotateX(4deg) rotateY(-4deg) scale(1.025); }
+    @keyframes galaxyFloat { 0%,100% { transform: translateY(0) rotateX(0) rotateY(0); } 50% { transform: translateY(-5px) rotateX(1.5deg) rotateY(-1.5deg); } }
+    .skin-visual { transform-style: preserve-3d; }
+    .skin-emoji { animation: cosmicBob 3.8s ease-in-out infinite; }
+    @keyframes cosmicBob { 0%,100% { transform: translateZ(12px) translateY(0) rotate(-2deg); } 50% { transform: translateZ(28px) translateY(-5px) rotate(2deg); } }
+    .skin-orbit { opacity: .75; animation: orbitSpin 5s linear infinite; }
+    .skin-orbit-dot { box-shadow: 0 0 10px currentColor; }
+    @media (prefers-reduced-motion: reduce) { body::after, .shop-item, .skin-emoji, .skin-orbit { animation: none; } }
+
     .hero-content { position: relative; z-index: 2; text-align: center; padding: 40px 24px; }
     .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25); color: var(--accent2); font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 100px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 28px; }
     .hero-title { font-size: clamp(42px, 8vw, 88px); font-weight: 800; line-height: 1; letter-spacing: -2px; margin-bottom: 20px; }
@@ -1456,17 +1473,53 @@ document.getElementById('games-grid').addEventListener('click',async e=>{
 });
 
 async function toggleLike(gid,btn){
-  const newFav=!State.favs[gid];State.favs[gid]=newFav?true:undefined;if(!newFav)delete State.favs[gid];
-  if(newFav)spawnHeart(btn);
-  btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');btn.classList.toggle('liked',newFav);
-  if(activeCat==='favoritos'&&!newFav)renderGames();
+  if(!State.uid||!window._fbFns){toast('Inicia sesión para dar like','error');openAuth();return;}
+  if(btn?.dataset.likeBusy==='true')return;
+  if(btn)btn.dataset.likeBusy='true';
+  const wasLiked=!!State.favs[gid];
+  const newFav=!wasLiked;
   try{
-    const{ref,set,runTransaction}=window._fbFns;
-    await set(ref(State.db,`userFavorites/${State.uid}/${gid}`),newFav?true:null);
-    await runTransaction(ref(State.db,`gameLikes/${gid}`),c=>newFav?(c||0)+1:Math.max(0,(c||1)-1));
-    toast(newFav?'❤️ Añadido a favoritos':'Eliminado de favoritos','success');
-    const lc=btn.querySelector('.lc');if(lc)lc.textContent=Math.max(0,(State.gameLikes[gid]||0)+(newFav?1:-1));
-  }catch(err){toast('Error al guardar like','error');console.error(err);}
+    const{ref,set,get,runTransaction}=window._fbFns;
+    const favoriteRef=ref(State.db,`userFavorites/${State.uid}/${gid}`);
+    const rewardRef=ref(State.db,`userLikeRewards/${State.uid}/${gid}`);
+    const countRef=ref(State.db,`gameLikes/${gid}`);
+    await set(favoriteRef,newFav?true:null);
+    const countResult=await runTransaction(countRef,current=>Math.max(0,Number(current||0)+(newFav?1:-1)));
+    if(!countResult.committed)throw new Error('No se pudo actualizar el contador');
+
+    State.favs[gid]=newFav?true:undefined;
+    if(!newFav)delete State.favs[gid];
+    State.gameLikes[gid]=Math.max(0,Number(countResult.snapshot.val()||0));
+
+    // Each game can award one coin per account, even after unlike/re-like.
+    if(newFav){
+      const rewardResult=await runTransaction(rewardRef,current=>current?undefined:true);
+      if(rewardResult.committed){
+        const coinResult=await runTransaction(ref(State.db,`users/${State.uid}/coins`),current=>Number(current||0)+1);
+        if(coinResult.committed){
+          State.coins=Number(coinResult.snapshot.val()||0);
+          updateNavUser();
+          toast('+1 moneda por tu like','success');
+        }
+      }
+      spawnHeart(btn);
+    }
+    if(btn){
+      btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');
+      btn.classList.toggle('liked',newFav);
+      btn.setAttribute('aria-pressed',String(newFav));
+      const lc=btn.querySelector('.lc');if(lc)lc.textContent=State.gameLikes[gid];
+    }
+    if(activeCat==='favoritos'&&!newFav)renderGames();
+    if(!newFav)toast('Eliminado de favoritos','success');
+  }catch(err){
+    State.favs[gid]=wasLiked?true:undefined;
+    if(!wasLiked)delete State.favs[gid];
+    toast('Error al guardar like','error');
+    console.error('[v0] Like error:',err);
+  }finally{
+    if(btn)window.setTimeout(()=>{btn.dataset.likeBusy='false';},450);
+  }
 }
 
 function spawnHeart(btn){const r=btn.getBoundingClientRect();const p=document.createElement('span');p.style.cssText=`position:fixed;z-index:9999;pointer-events:none;font-size:18px;left:${r.left+r.width/2-9}px;top:${r.top-4}px;animation:floatHeart 0.8s ease-out forwards;`;p.textContent='❤️';document.body.appendChild(p);if(!document.getElementById('floatHeartStyle')){const s=document.createElement('style');s.id='floatHeartStyle';s.textContent='@keyframes floatHeart{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-50px) scale(0.5)}}';document.head.appendChild(s);}setTimeout(()=>p.remove(),900);}
@@ -2379,35 +2432,6 @@ window.addEventListener('beforeunload',()=>{
   if(State.uid)set(ref(db,`users/${State.uid}/online`),false).catch(()=>{});
   window.stopGameSession&&window.stopGameSession();
 });
-</script>
-<script>
-/* LevelUp guard: one click = one like and one coin reward. */
-(() => {
-  const grid = document.getElementById('games-grid');
-  if (!grid) return;
-  grid.addEventListener('click', async (event) => {
-    const button = event.target.closest('.like-btn');
-    if (!button || button.dataset.likeBusy === 'true') return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    if (!window.State?.uid) return;
-    button.dataset.likeBusy = 'true';
-    const gameId = button.dataset.gid;
-    const wasLiked = !!window.State.favs[gameId];
-    try {
-      await toggleLike(gameId, button);
-      if (!wasLiked) {
-        const rewardKey = `levelup_like_reward:${window.State.uid}:${gameId}`;
-        if (!localStorage.getItem(rewardKey) && typeof window.awardXPandCoins === 'function') {
-          localStorage.setItem(rewardKey, '1');
-          await window.awardXPandCoins(0, 1, 'Like');
-        }
-      }
-    } finally {
-      window.setTimeout(() => { button.dataset.likeBusy = 'false'; }, 250);
-    }
-  }, true);
-})();
 </script>
 </body>
 </html>
