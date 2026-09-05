@@ -74,7 +74,7 @@
     /* Persistent galaxy depth: the scene is always alive, not only on hover. */
     body::after { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .7; background-image: radial-gradient(circle at 18% 22%, rgba(167,139,250,.9) 0 1px, transparent 1.5px), radial-gradient(circle at 74% 18%, rgba(59,130,246,.8) 0 1px, transparent 1.5px), radial-gradient(circle at 42% 76%, rgba(236,72,153,.75) 0 1px, transparent 1.5px), radial-gradient(circle at 88% 68%, rgba(255,255,255,.7) 0 1px, transparent 1.5px); background-size: 170px 190px, 230px 260px, 290px 310px, 360px 390px; animation: galaxyDrift 28s linear infinite; }
     @keyframes galaxyDrift { from { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-12px,8px,0) scale(1.03); } to { transform: translate3d(0,0,0) scale(1); } }
-    .page, .navbar { position: relative; z-index: 1; }
+    .page { position: relative; z-index: 1; }
     .shop-item { transform-style: preserve-3d; animation: galaxyFloat 6s ease-in-out infinite; }
     .shop-item:nth-child(2n) { animation-delay: -1.7s; }
     .shop-item:nth-child(3n) { animation-delay: -3.2s; }
