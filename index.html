@@ -607,7 +607,7 @@
 
 <nav class="navbar">
   <div class="nav-logo">Level<span>Up</span></div>
-  <div class="nav-credit">Creado por <strong>Gh0st</strong></div>
+  <a class="nav-credit blox-link" href="https://ytguillempro.github.io/Bloxi" target="_blank" rel="noopener noreferrer"><span class="iconify" data-icon="lucide:box" data-width="14"></span> Prueba también Bloxi</a>
   <div class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" data-page="home"><span class="iconify" data-icon="lucide:gamepad-2" data-width="17"></span> Juegos</button>
     <button class="nav-tab" data-page="shop"><span class="iconify" data-icon="lucide:shopping-bag" data-width="17"></span> Tienda</button>
@@ -1194,6 +1194,25 @@ let activeCat = 'all', activeShopCat = 'all', currentPage = 'home';
 window.currentPage = currentPage;
 let coinsMinuteTimer = null, coinsSecondCount = 0, isPlayingGame = false, gameStartTime = null;
 const COINS_PER_MINUTE = 5, XP_PER_MINUTE = 10, NAME_CHANGE_COST = 200;
+
+async function awardXPandCoins(xpAmount, coinAmount, reason='Tiempo en juego') {
+  if (!State.uid || !window._fbFns || !State.db) return false;
+  const { ref, runTransaction } = window._fbFns;
+  try {
+    const coinResult = await runTransaction(ref(State.db, `users/${State.uid}/coins`), current => Number(current || 0) + Math.max(0, Number(coinAmount || 0)));
+    const xpResult = await runTransaction(ref(State.db, `users/${State.uid}/xp`), current => Number(current || 0) + Math.max(0, Number(xpAmount || 0)));
+    if (coinResult.committed) State.coins = Number(coinResult.snapshot.val() || 0);
+    if (xpResult.committed) State.xp = Number(xpResult.snapshot.val() || 0);
+    updateNavUser();
+    if (coinAmount || xpAmount) toast(`+${coinAmount || 0} monedas · +${xpAmount || 0} XP`, 'success');
+    return coinResult.committed || xpResult.committed;
+  } catch (error) {
+    console.error('[v0] Play reward error:', error);
+    toast('No se pudo guardar la recompensa', 'error');
+    return false;
+  }
+}
+window.awardXPandCoins = awardXPandCoins;
 let selectedAvatarId = null, selectedLogType = 'new', adminFoundUser = null, broadcastType = 'success';
 let selectedAccentColorKey = 'accent';
 let currentImgBase64 = null;
@@ -1414,6 +1433,12 @@ function updateNavUser(){
     document.getElementById('shop-coins-val').textContent=State.coins;
     if(adminTab)adminTab.classList.toggle('hidden',!isAdmin(State.email));
     checkActiveGameSession();
+    if(window._fbFns && State.db && State.uid){
+      const { ref, set, onDisconnect } = window._fbFns;
+      const presenceRef = ref(State.db, `users/${State.uid}/online`);
+      set(presenceRef, true).catch(()=>{});
+      if(onDisconnect) onDisconnect(presenceRef).set(false).catch(()=>{});
+    }
     const adminPanel=document.getElementById('admin-update-panel');
     if(adminPanel)adminPanel.classList.toggle('hidden',!isAdmin(State.email) || isDistributor(State.email));
     
@@ -1491,19 +1516,8 @@ async function toggleLike(gid,btn){
     if(!newFav)delete State.favs[gid];
     State.gameLikes[gid]=Math.max(0,Number(countResult.snapshot.val()||0));
 
-    // Each game can award one coin per account, even after unlike/re-like.
-    if(newFav){
-      const rewardResult=await runTransaction(rewardRef,current=>current?undefined:true);
-      if(rewardResult.committed){
-        const coinResult=await runTransaction(ref(State.db,`users/${State.uid}/coins`),current=>Number(current||0)+1);
-        if(coinResult.committed){
-          State.coins=Number(coinResult.snapshot.val()||0);
-          updateNavUser();
-          toast('+1 moneda por tu like','success');
-        }
-      }
-      spawnHeart(btn);
-    }
+  if(newFav) spawnHeart(btn);
+  }
     if(btn){
       btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');
       btn.classList.toggle('liked',newFav);
