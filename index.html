@@ -2380,5 +2380,34 @@ window.addEventListener('beforeunload',()=>{
   window.stopGameSession&&window.stopGameSession();
 });
 </script>
+<script>
+/* LevelUp guard: one click = one like and one coin reward. */
+(() => {
+  const grid = document.getElementById('games-grid');
+  if (!grid) return;
+  grid.addEventListener('click', async (event) => {
+    const button = event.target.closest('.like-btn');
+    if (!button || button.dataset.likeBusy === 'true') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (!window.State?.uid) return;
+    button.dataset.likeBusy = 'true';
+    const gameId = button.dataset.gid;
+    const wasLiked = !!window.State.favs[gameId];
+    try {
+      await toggleLike(gameId, button);
+      if (!wasLiked) {
+        const rewardKey = `levelup_like_reward:${window.State.uid}:${gameId}`;
+        if (!localStorage.getItem(rewardKey) && typeof window.awardXPandCoins === 'function') {
+          localStorage.setItem(rewardKey, '1');
+          await window.awardXPandCoins(0, 1, 'Like');
+        }
+      }
+    } finally {
+      window.setTimeout(() => { button.dataset.likeBusy = 'false'; }, 250);
+    }
+  }, true);
+})();
+</script>
 </body>
 </html>
