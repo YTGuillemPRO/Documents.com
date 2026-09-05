@@ -1663,7 +1663,28 @@ async function searchAndAddFriend(username){if(!window._fbFns){toast('Error de c
 window.searchAndAddFriend=searchAndAddFriend;
 
 async function acceptFriend(fromUid,fromUsername){if(!window._fbFns)return;try{const{ref,set,remove}=window._fbFns;const myName=State.username||State.email.split('@')[0];const reqData=State.friendRequests[fromUid]||{};await Promise.all([set(ref(State.db,`users/${State.uid}/friends/${fromUid}`),{username:fromUsername,level:1,online:false,equippedAvatar:reqData.equippedAvatar||null,equippedBadge:reqData.equippedBadge||null,equippedTitle:reqData.equippedTitle||null}),set(ref(State.db,`users/${fromUid}/friends/${State.uid}`),{username:myName,level:State.level,online:true,equippedAvatar:State.equipped.avatar||null,equippedBadge:State.equipped.badge||null,equippedTitle:State.equipped.title||null}),remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`))]);State.friends[fromUid]={username:fromUsername,level:1,equippedAvatar:reqData.equippedAvatar||null,equippedBadge:reqData.equippedBadge||null,equippedTitle:reqData.equippedTitle||null};delete State.friendRequests[fromUid];toast(`✓ ¡Ahora eres amigo de ${fromUsername}!`,'success');renderFriends();updateReqBadge();}catch(err){toast('Error al aceptar solicitud','error');console.error(err);}}
-async function rejectFriend(fromUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`));delete State.friendRequests[fromUid];renderFriends();updateReqBadge();toast('Solicitud rechazada','info');}catch(err){toast('Error','error');}async function removeFriend(friendUid){if(!window._fbFns)return;try{const{ref,remove}=window._fbFns;await Promise.all([remove(ref(State.db,`users/${State.uid}/friends/${friendUid}`)),remove(ref(State.db,`users/${friendUid}/friends/${State.uid}`))]);delete State.friends[friendUid];renderFriends();toast('Amigo eliminado','info');}catch(err){toast('Error','error');}}
+async function rejectFriend(fromUid){
+  if(!window._fbFns)return;
+  try{
+    const{ref,remove}=window._fbFns;
+    await remove(ref(State.db,`users/${State.uid}/friendRequests/${fromUid}`));
+    delete State.friendRequests[fromUid];
+    renderFriends();
+    updateReqBadge();
+    toast('Solicitud rechazada','info');
+  }catch(err){toast('Error','error');}
+}
+
+async function removeFriend(friendUid){
+  if(!window._fbFns)return;
+  try{
+    const{ref,remove}=window._fbFns;
+    await Promise.all([remove(ref(State.db,`users/${State.uid}/friends/${friendUid}`)),remove(ref(State.db,`users/${friendUid}/friends/${State.uid}`))]);
+    delete State.friends[friendUid];
+    renderFriends();
+    toast('Amigo eliminado','info');
+  }catch(err){toast('Error','error');}
+}
 function updateReqBadge(){const count=Object.keys(State.friendRequests).length,badge=document.getElementById('req-badge');if(count>0){badge.textContent=count;badge.classList.remove('hidden');}else{badge.classList.add('hidden');}}
 window.updateReqBadge=updateReqBadge;window.acceptFriend=acceptFriend;window.rejectFriend=rejectFriend;window.removeFriend=removeFriend;
 
