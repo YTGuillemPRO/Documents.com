@@ -3,17 +3,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ===== DATOS =====
+// ===== MUNDOS (16) =====
 var WORLDS=[
 {id:'bosque',name:'Bosque Encantado',icon:'🌲',desc:'El inicio de tu aventura.',color:'#10b981',color2:'#84cc16',bonus:1,cost:0,eggs:['basico','dorado'],particles:'leaves'},
 {id:'pradera',name:'Pradera Dorada',icon:'🌾',desc:'Campos magicos.',color:'#84cc16',color2:'#a3e635',bonus:1.3,cost:25000,eggs:['campestre','arcano'],particles:'leaves'},
+{id:'jungla',name:'Jungla Profunda',icon:'🌴',desc:'Criaturas entre lianas.',color:'#22c55e',color2:'#84cc16',bonus:1.5,cost:2e5,eggs:['salvaje','toxico'],particles:'leaves'},
 {id:'oceano',name:'Oceano Profundo',icon:'🌊',desc:'Bestias del mar.',color:'#06b6d4',color2:'#3b82f6',bonus:1.7,cost:1e6,eggs:['marino','abisal'],particles:'bubbles'},
+{id:'desierto',name:'Desierto Faraonico',icon:'🏜️',desc:'Tesoros bajo la arena.',color:'#f59e0b',color2:'#fb923c',bonus:1.9,cost:8e6,eggs:['dunas','faraon'],particles:'stars'},
 {id:'cristal',name:'Cueva Cristal',icon:'💎',desc:'Gemas brillantes.',color:'#d946ef',color2:'#ec4899',bonus:2.2,cost:5e7,eggs:['cristalino','gema'],particles:'stars'},
+{id:'tundra',name:'Tundra Helada',icon:'❄️',desc:'El hielo guarda secretos.',color:'#38bdf8',color2:'#7dd3fc',bonus:2.6,cost:4e8,eggs:['glacial','polar'],particles:'stars'},
 {id:'volcan',name:'Volcan Infernal',icon:'🌋',desc:'Rios de lava.',color:'#f97316',color2:'#ef4444',bonus:3,cost:2e9,eggs:['magmatico','infernal'],particles:'embers'},
+{id:'cementerio',name:'Cementerio Antiguo',icon:'🪦',desc:'Los muertos despiertan.',color:'#a78bfa',color2:'#c084fc',bonus:3.6,cost:1.5e10,eggs:['tumba','maldito'],particles:'wisps'},
 {id:'templo',name:'Templo Sagrado',icon:'🏛️',desc:'Dioses ancestrales.',color:'#eab308',color2:'#f59e0b',bonus:4.5,cost:1e11,eggs:['divino','ancestral'],particles:'stars'},
+{id:'dulces',name:'Reino de Dulces',icon:'🍭',desc:'Un mundo comestible.',color:'#f472b6',color2:'#fb7185',bonus:5.3,cost:5e11,eggs:['goloso','pastel'],particles:'stars'},
+{id:'neon',name:'Ciudad Neon',icon:'🌃',desc:'Luces y datos sin fin.',color:'#22d3ee',color2:'#e879f9',bonus:6.2,cost:2e12,eggs:['neon','virtual'],particles:'stars'},
 {id:'cosmos',name:'Cosmos Infinito',icon:'🪐',desc:'Vacio entre estrellas.',color:'#a855f7',color2:'#ec4899',bonus:7,cost:5e12,eggs:['cosmico','estelar'],particles:'stars'},
-{id:'abismo',name:'Abismo Eterno',icon:'🌑',desc:'La dimension final.',color:'#6366f1',color2:'#06b6d4',bonus:12,cost:3e14,eggs:['umbral','absoluto'],particles:'wisps'}
+{id:'dragonico',name:'Nido Draconico',icon:'🐲',desc:'Donde duermen los dragones.',color:'#ef4444',color2:'#f97316',bonus:9,cost:4e13,eggs:['draconico','wyrm'],particles:'embers'},
+{id:'abismo',name:'Abismo Eterno',icon:'🌑',desc:'La dimension oscura.',color:'#6366f1',color2:'#06b6d4',bonus:12,cost:3e14,eggs:['umbral','absoluto'],particles:'wisps'},
+{id:'eterno',name:'Reino Eterno',icon:'⚔️',desc:'El trono final del universo.',color:'#fde047',color2:'#fbbf24',bonus:16,cost:5e15,eggs:['eterno','omega'],particles:'wisps'}
 ];
+
+// ===== MASCOTAS (199) =====
 var PETS=[
 {ic:'fa-solid fa-paw',n:'Raton',r:'common',e:2,eg:['basico'],c:'#78716c'},{ic:'fa-solid fa-dog',n:'Perro',r:'common',e:3,eg:['basico'],c:'#a0845c'},{ic:'fa-solid fa-cat',n:'Gato',r:'common',e:4,eg:['basico'],c:'#c9956b'},{ic:'fa-solid fa-paw',n:'Conejo',r:'common',e:5,eg:['basico'],c:'#d4a574'},{ic:'fa-solid fa-piggy-bank',n:'Cerdo',r:'common',e:7,eg:['basico'],c:'#e8879a'},{ic:'fa-solid fa-dove',n:'Pollito',r:'common',e:8,eg:['basico'],c:'#e8c84a'},{ic:'fa-solid fa-feather',n:'Pato',r:'rare',e:15,eg:['basico'],c:'#34d399'},{ic:'fa-solid fa-paw',n:'Zorro',r:'rare',e:20,eg:['basico'],c:'#f97316'},
 {ic:'fa-solid fa-paw',n:'Oso',r:'rare',e:25,eg:['dorado'],c:'#8b6f47'},{ic:'fa-solid fa-paw',n:'Panda',r:'rare',e:30,eg:['dorado'],c:'#d1d5db'},{ic:'fa-solid fa-paw',n:'Koala',r:'rare',e:35,eg:['dorado'],c:'#9ca3af'},{ic:'fa-solid fa-feather-pointed',n:'Aguila',r:'epic',e:55,eg:['dorado'],c:'#a855f7'},{ic:'fa-solid fa-paw',n:'Leon',r:'epic',e:65,eg:['dorado'],c:'#eab308'},{ic:'fa-solid fa-paw',n:'Tigre',r:'epic',e:75,eg:['dorado'],c:'#ea580c'},{ic:'fa-solid fa-dragon',n:'Dragon',r:'god',e:130,eg:['dorado'],c:'#dc2626'},
@@ -30,20 +40,166 @@ var PETS=[
 {ic:'fa-solid fa-rocket',n:'OVNI',r:'epic',e:420,eg:['cosmico'],c:'#0891b2'},{ic:'fa-solid fa-star',n:'Estrella Fugaz',r:'god',e:900,eg:['cosmico'],c:'#eab308'},{ic:'fa-solid fa-globe',n:'Planeta',r:'legendary',e:2500,eg:['cosmico'],c:'#7c3aed'},{ic:'fa-solid fa-cloud',n:'Nebulosa',r:'mythic',e:10000,eg:['cosmico'],c:'#9333ea'},{ic:'fa-solid fa-bolt',n:'Zeus',r:'mythic',e:12000,eg:['cosmico'],c:'#eab308'},{ic:'fa-solid fa-virus',n:'Glitch',r:'secret',e:28000,eg:['cosmico'],c:'#06b6d4'},{ic:'fa-solid fa-crown',n:'EL REY OG',r:'og',e:70000,eg:['cosmico'],c:'#ca8a04'},
 {ic:'fa-solid fa-explosion',n:'Supernova',r:'legendary',e:3000,eg:['estelar'],c:'#ea580c'},{ic:'fa-solid fa-circle',n:'Agujero Negro',r:'mythic',e:14000,eg:['estelar'],c:'#1e1b4b'},{ic:'fa-solid fa-meteor',n:'Cometa',r:'mythic',e:16000,eg:['estelar'],c:'#0284c7'},{ic:'fa-solid fa-satellite',n:'Pulsar',r:'secret',e:35000,eg:['estelar'],c:'#0891b2'},{ic:'fa-solid fa-explosion',n:'Big Bang',r:'og',e:90000,eg:['estelar'],c:'#db2777'},
 {ic:'fa-solid fa-ghost',n:'Entidad',r:'mythic',e:15000,eg:['umbral'],c:'#4f46e5'},{ic:'fa-solid fa-eye',n:'Vigilante',r:'mythic',e:18000,eg:['umbral'],c:'#3730a3'},{ic:'fa-solid fa-moon',n:'Sombra',r:'secret',e:40000,eg:['umbral'],c:'#312e81'},{ic:'fa-solid fa-circle-nodes',n:'Abismo',r:'og',e:110000,eg:['umbral'],c:'#4338ca'},
-{ic:'fa-solid fa-circle-xmark',n:'Nada Final',r:'secret',e:50000,eg:['absoluto'],c:'#1e1b4b'},{ic:'fa-solid fa-infinity',n:'Todo',r:'og',e:200000,eg:['absoluto'],c:'#c026d3'}
+{ic:'fa-solid fa-circle-xmark',n:'Nada Final',r:'secret',e:50000,eg:['absoluto'],c:'#1e1b4b'},{ic:'fa-solid fa-infinity',n:'Todo',r:'og',e:200000,eg:['absoluto'],c:'#c026d3'},
+// ===== NUEVAS: JUNGLA =====
+{ic:'fa-solid fa-paw',n:'Mono',r:'common',e:12,eg:['salvaje'],c:'#a16207'},
+{ic:'fa-solid fa-worm',n:'Serpiente',r:'common',e:16,eg:['salvaje'],c:'#4d7c0f'},
+{ic:'fa-solid fa-paw',n:'Jaguar',r:'rare',e:42,eg:['salvaje'],c:'#d97706'},
+{ic:'fa-solid fa-paw',n:'Gorila',r:'rare',e:55,eg:['salvaje'],c:'#57534e'},
+{ic:'fa-solid fa-paw',n:'Pantera',r:'epic',e:95,eg:['salvaje'],c:'#1f2937'},
+{ic:'fa-solid fa-worm',n:'Anaconda',r:'epic',e:115,eg:['salvaje'],c:'#166534'},
+{ic:'fa-solid fa-crown',n:'Rey Jungla',r:'god',e:230,eg:['salvaje'],c:'#65a30d'},
+{ic:'fa-solid fa-tree',n:'Arbol Milenario',r:'legendary',e:600,eg:['salvaje'],c:'#3f6212'},
+{ic:'fa-solid fa-frog',n:'Sapo Veneno',r:'rare',e:60,eg:['toxico'],c:'#84cc16'},
+{ic:'fa-solid fa-bug',n:'Escarabajo',r:'rare',e:78,eg:['toxico'],c:'#a3e635'},
+{ic:'fa-solid fa-spider',n:'Tarantula',r:'epic',e:150,eg:['toxico'],c:'#4c1d95'},
+{ic:'fa-solid fa-leaf',n:'Planta Carnivora',r:'god',e:320,eg:['toxico'],c:'#dc2626'},
+{ic:'fa-solid fa-radiation',n:'Esporas Vivas',r:'legendary',e:800,eg:['toxico'],c:'#22c55e'},
+{ic:'fa-solid fa-skull',n:'Guardian Toxico',r:'mythic',e:2000,eg:['toxico'],c:'#166534'},
+{ic:'fa-solid fa-vial-virus',n:'Virus Mutante',r:'secret',e:5000,eg:['toxico'],c:'#a3e635'},
+// ===== NUEVAS: DESIERTO =====
+{ic:'fa-solid fa-paw',n:'Jerbo',r:'common',e:30,eg:['dunas'],c:'#d4a574'},
+{ic:'fa-solid fa-paw',n:'Camello',r:'common',e:40,eg:['dunas'],c:'#b45309'},
+{ic:'fa-solid fa-paw',n:'Feneco',r:'rare',e:90,eg:['dunas'],c:'#fdba74'},
+{ic:'fa-solid fa-feather-pointed',n:'Halcon',r:'rare',e:110,eg:['dunas'],c:'#92400e'},
+{ic:'fa-solid fa-paw',n:'Chacal',r:'epic',e:200,eg:['dunas'],c:'#78716c'},
+{ic:'fa-solid fa-worm',n:'Cobra',r:'epic',e:260,eg:['dunas'],c:'#166534'},
+{ic:'fa-solid fa-wand-magic',n:'Djinn',r:'god',e:550,eg:['dunas'],c:'#0ea5e9'},
+{ic:'fa-solid fa-fire-flame-curved',n:'Fenix Menor',r:'legendary',e:1100,eg:['dunas'],c:'#f97316'},
+{ic:'fa-solid fa-cat',n:'Gato Egipcio',r:'rare',e:180,eg:['faraon'],c:'#eab308'},
+{ic:'fa-solid fa-bug',n:'Escarabajo Dorado',r:'epic',e:380,eg:['faraon'],c:'#fbbf24'},
+{ic:'fa-solid fa-worm',n:'Uraeus',r:'epic',e:450,eg:['faraon'],c:'#16a34a'},
+{ic:'fa-solid fa-dog',n:'Anubis',r:'god',e:950,eg:['faraon'],c:'#78716c'},
+{ic:'fa-solid fa-crown',n:'Esfinge Real',r:'legendary',e:2400,eg:['faraon'],c:'#d97706'},
+{ic:'fa-solid fa-ankh',n:'Faraon',r:'mythic',e:6500,eg:['faraon'],c:'#eab308'},
+{ic:'fa-solid fa-sun',n:'Ra',r:'secret',e:16000,eg:['faraon'],c:'#f59e0b'},
+// ===== NUEVAS: TUNDRA =====
+{ic:'fa-solid fa-paw',n:'Pinguino',r:'common',e:150,eg:['glacial'],c:'#334155'},
+{ic:'fa-solid fa-paw',n:'Foca',r:'common',e:190,eg:['glacial'],c:'#94a3b8'},
+{ic:'fa-solid fa-paw',n:'Zorro Nevada',r:'rare',e:420,eg:['glacial'],c:'#e2e8f0'},
+{ic:'fa-solid fa-paw',n:'Lobo Nieve',r:'rare',e:520,eg:['glacial'],c:'#cbd5e1'},
+{ic:'fa-solid fa-paw',n:'Oso Polar',r:'epic',e:1000,eg:['glacial'],c:'#f8fafc'},
+{ic:'fa-solid fa-snowflake',n:'Yeti',r:'god',e:2400,eg:['glacial'],c:'#bae6fd'},
+{ic:'fa-solid fa-wind',n:'Wendigo',r:'legendary',e:6000,eg:['glacial'],c:'#7dd3fc'},
+{ic:'fa-solid fa-water',n:'Morsa',r:'rare',e:900,eg:['polar'],c:'#94a3b8'},
+{ic:'fa-solid fa-fish-fins',n:'Narval',r:'epic',e:1800,eg:['polar'],c:'#38bdf8'},
+{ic:'fa-solid fa-water',n:'Leviatan Glacial',r:'god',e:3800,eg:['polar'],c:'#0284c7'},
+{ic:'fa-solid fa-snowflake',n:'Reina de Hielo',r:'legendary',e:9500,eg:['polar'],c:'#a5f3fc'},
+{ic:'fa-solid fa-dragon',n:'Dragon Glacial',r:'mythic',e:24000,eg:['polar'],c:'#60a5fa'},
+{ic:'fa-solid fa-temperature-low',n:'Cero Absoluto',r:'secret',e:60000,eg:['polar'],c:'#e0f2fe'},
+// ===== NUEVAS: CEMENTERIO =====
+{ic:'fa-solid fa-crow',n:'Murcielago',r:'common',e:400,eg:['tumba'],c:'#334155'},
+{ic:'fa-solid fa-crow',n:'Cuervo',r:'common',e:480,eg:['tumba'],c:'#1f2937'},
+{ic:'fa-solid fa-cat',n:'Gato Negro',r:'rare',e:900,eg:['tumba'],c:'#0f172a'},
+{ic:'fa-solid fa-ghost',n:'Zombie',r:'rare',e:1200,eg:['tumba'],c:'#4d7c0f'},
+{ic:'fa-solid fa-skull',n:'Esqueleto',r:'epic',e:2400,eg:['tumba'],c:'#e5e7eb'},
+{ic:'fa-solid fa-ghost',n:'Vampiro',r:'god',e:5200,eg:['tumba'],c:'#7f1d1d'},
+{ic:'fa-solid fa-book-skull',n:'Liche',r:'legendary',e:13000,eg:['tumba'],c:'#a78bfa'},
+{ic:'fa-solid fa-crown',n:'Conde Nocturno',r:'mythic',e:28000,eg:['tumba'],c:'#4c1d95'},
+{ic:'fa-solid fa-bandage',n:'Momia',r:'epic',e:3800,eg:['maldito'],c:'#d6d3d1'},
+{ic:'fa-solid fa-bone',n:'Golem de Hueso',r:'god',e:8000,eg:['maldito'],c:'#a8a29e'},
+{ic:'fa-solid fa-chess-knight',n:'Caballero Caido',r:'legendary',e:19000,eg:['maldito'],c:'#64748b'},
+{ic:'fa-solid fa-skull',n:'Segador',r:'mythic',e:32000,eg:['maldito'],c:'#475569'},
+{ic:'fa-solid fa-eye',n:'Sombra Antigua',r:'secret',e:45000,eg:['maldito'],c:'#312e81'},
+{ic:'fa-solid fa-hourglass',n:'Parca',r:'og',e:90000,eg:['maldito'],c:'#a78bfa'},
+// ===== NUEVAS: DULCES =====
+{ic:'fa-solid fa-paw',n:'Oso Gominola',r:'common',e:900,eg:['goloso'],c:'#f472b6'},
+{ic:'fa-solid fa-cat',n:'Gato Caramelo',r:'common',e:1100,eg:['goloso'],c:'#fb7185'},
+{ic:'fa-solid fa-dog',n:'Perro Chicle',r:'rare',e:2400,eg:['goloso'],c:'#f9a8d4'},
+{ic:'fa-solid fa-paw',n:'Conejo Masmallow',r:'rare',e:3000,eg:['goloso'],c:'#fbcfe8'},
+{ic:'fa-solid fa-paw',n:'Foca Gelatina',r:'epic',e:5500,eg:['goloso'],c:'#fda4af'},
+{ic:'fa-solid fa-star',n:'Arcoiris Dulce',r:'god',e:12000,eg:['goloso'],c:'#a5f3fc'},
+{ic:'fa-solid fa-cake-candles',n:'Pastel Vivo',r:'legendary',e:30000,eg:['goloso'],c:'#f472b6'},
+{ic:'fa-solid fa-bread-slice',n:'Croissant',r:'rare',e:5000,eg:['pastel'],c:'#d9a05b'},
+{ic:'fa-solid fa-ice-cream',n:'Helado Vivo',r:'epic',e:9000,eg:['pastel'],c:'#fbcfe8'},
+{ic:'fa-solid fa-cookie-bite',n:'Rey Donut',r:'god',e:18000,eg:['pastel'],c:'#b45309'},
+{ic:'fa-solid fa-crown',n:'Emperador Pastel',r:'legendary',e:38000,eg:['pastel'],c:'#ec4899'},
+{ic:'fa-solid fa-cookie',n:'Dulce Final',r:'mythic',e:55000,eg:['pastel'],c:'#f472b6'},
+{ic:'fa-solid fa-star',n:'Azucar Pura',r:'secret',e:68000,eg:['pastel'],c:'#fde68a'},
+// ===== NUEVAS: NEON =====
+{ic:'fa-solid fa-robot',n:'Robot',r:'rare',e:6000,eg:['neon'],c:'#94a3b8'},
+{ic:'fa-solid fa-satellite',n:'Drone',r:'rare',e:7500,eg:['neon'],c:'#22d3ee'},
+{ic:'fa-solid fa-gear',n:'Cyborg',r:'epic',e:12000,eg:['neon'],c:'#7dd3fc'},
+{ic:'fa-solid fa-user-secret',n:'Hacker',r:'epic',e:15000,eg:['neon'],c:'#a78bfa'},
+{ic:'fa-solid fa-motorcycle',n:'Moto Neón',r:'god',e:26000,eg:['neon'],c:'#e879f9'},
+{ic:'fa-solid fa-brain',n:'IA Viva',r:'legendary',e:48000,eg:['neon'],c:'#f0abfc'},
+{ic:'fa-solid fa-bolt',n:'Overclock',r:'mythic',e:75000,eg:['neon'],c:'#fbbf24'},
+{ic:'fa-solid fa-code',n:'Codigo Perdido',r:'secret',e:90000,eg:['neon'],c:'#22d3ee'},
+{ic:'fa-solid fa-cube',n:'Pixel',r:'epic',e:18000,eg:['virtual'],c:'#a3e635'},
+{ic:'fa-solid fa-user-astronaut',n:'Avatar',r:'god',e:28000,eg:['virtual'],c:'#34d399'},
+{ic:'fa-solid fa-virus',n:'Virus Digital',r:'legendary',e:48000,eg:['virtual'],c:'#22c55e'},
+{ic:'fa-solid fa-shield-halved',n:'Firewall',r:'mythic',e:70000,eg:['virtual'],c:'#0d9488'},
+{ic:'fa-solid fa-diagram-project',n:'Singularidad Datos',r:'secret',e:85000,eg:['virtual'],c:'#06b6d4'},
+{ic:'fa-solid fa-database',n:'Mainframe',r:'og',e:95000,eg:['virtual'],c:'#0891b2'},
+// ===== NUEVAS: DRAGONICO =====
+{ic:'fa-solid fa-dragon',n:'Dragon Bebe',r:'rare',e:22000,eg:['draconico'],c:'#4ade80'},
+{ic:'fa-solid fa-dragon',n:'Wyvern',r:'epic',e:38000,eg:['draconico'],c:'#f97316'},
+{ic:'fa-solid fa-dragon',n:'Dragon Jade',r:'god',e:60000,eg:['draconico'],c:'#16a34a'},
+{ic:'fa-solid fa-dragon',n:'Dragon Sangre',r:'legendary',e:85000,eg:['draconico'],c:'#dc2626'},
+{ic:'fa-solid fa-dragon',n:'Dragon Ancestral',r:'mythic',e:100000,eg:['draconico'],c:'#991b1b'},
+{ic:'fa-solid fa-dragon',n:'Dragon Oculto',r:'secret',e:120000,eg:['draconico'],c:'#1e293b'},
+{ic:'fa-solid fa-dragon',n:'Dracolich',r:'god',e:95000,eg:['wyrm'],c:'#334155'},
+{ic:'fa-solid fa-dragon',n:'Dragon Estelar',r:'legendary',e:130000,eg:['wyrm'],c:'#a855f7'},
+{ic:'fa-solid fa-crown',n:'Rey Dragon',r:'mythic',e:170000,eg:['wyrm'],c:'#ca8a04'},
+{ic:'fa-solid fa-meteor',n:'Rompemundos',r:'secret',e:210000,eg:['wyrm'],c:'#ea580c'},
+{ic:'fa-solid fa-dragon',n:'Alfa Dragon',r:'og',e:260000,eg:['wyrm'],c:'#facc15'},
+// ===== NUEVAS: ETERNO =====
+{ic:'fa-solid fa-chess-rook',n:'Caballero Eterno',r:'god',e:220000,eg:['eterno'],c:'#fbbf24'},
+{ic:'fa-solid fa-dove',n:'Angel Guardian',r:'legendary',e:300000,eg:['eterno'],c:'#fde68a'},
+{ic:'fa-solid fa-sun',n:'Titan de Luz',r:'mythic',e:400000,eg:['eterno'],c:'#fde047'},
+{ic:'fa-solid fa-bolt-lightning',n:'Espada Viva',r:'secret',e:520000,eg:['eterno'],c:'#fef3c7'},
+{ic:'fa-solid fa-crown',n:'Centinela Eterno',r:'og',e:650000,eg:['eterno'],c:'#f59e0b'},
+{ic:'fa-solid fa-infinity',n:'Omega',r:'mythic',e:750000,eg:['omega'],c:'#c026d3'},
+{ic:'fa-solid fa-seedling',n:'Genesis',r:'secret',e:950000,eg:['omega'],c:'#34d399'},
+{ic:'fa-solid fa-crown',n:'EL UNO',r:'og',e:1250000,eg:['omega'],c:'#fde047'}
 ];
-var WEIGHTS={basico:{common:65,rare:30,epic:4,god:1},dorado:{rare:12,epic:30,god:40,legendary:13,mythic:4,secret:.8,og:.2},campestre:{common:30,rare:28,epic:22,god:14,legendary:4.5,mythic:1,secret:.4,og:.1},arcano:{epic:25,god:35,legendary:28,mythic:9,secret:2,og:1},marino:{common:10,rare:20,epic:25,god:25,legendary:13,mythic:5,secret:1.5,og:.5},abisal:{epic:10,god:18,legendary:30,mythic:28,secret:8,og:6},cristalino:{rare:8,epic:18,god:28,legendary:25,mythic:14,secret:4,og:3},gema:{god:10,legendary:25,mythic:35,secret:18,og:12},magmatico:{rare:5,epic:14,god:22,legendary:25,mythic:18,secret:9,og:7},infernal:{epic:8,god:14,legendary:22,mythic:28,secret:14,og:14},divino:{epic:6,god:12,legendary:20,mythic:28,secret:18,og:16},ancestral:{god:8,legendary:18,mythic:30,secret:22,og:22},cosmico:{epic:4,god:8,legendary:15,mythic:28,secret:22,og:23},estelar:{legendary:8,mythic:28,secret:28,og:36},umbral:{mythic:28,secret:30,og:42},absoluto:{secret:35,og:65}};
+var WEIGHTS={
+basico:{common:65,rare:30,epic:4,god:1},dorado:{rare:12,epic:30,god:40,legendary:13,mythic:4,secret:.8,og:.2},
+campestre:{common:30,rare:28,epic:22,god:14,legendary:4.5,mythic:1,secret:.4,og:.1},
+salvaje:{common:50,rare:30,epic:14,god:5,legendary:1},
+toxico:{rare:40,epic:32,god:18,legendary:7,mythic:2.5,secret:.5},
+arcano:{epic:25,god:35,legendary:28,mythic:9,secret:2,og:1},
+marino:{common:10,rare:20,epic:25,god:25,legendary:13,mythic:5,secret:1.5,og:.5},
+abisal:{epic:10,god:18,legendary:30,mythic:28,secret:8,og:6},
+dunas:{common:45,rare:32,epic:16,god:6,legendary:1},
+faraon:{rare:30,epic:28,god:24,legendary:12,mythic:5,secret:1},
+cristalino:{rare:8,epic:18,god:28,legendary:25,mythic:14,secret:4,og:3},
+gema:{god:10,legendary:25,mythic:35,secret:18,og:12},
+glacial:{common:40,rare:30,epic:20,god:8,legendary:2},
+polar:{rare:26,epic:26,god:24,legendary:14,mythic:8,secret:2},
+magmatico:{rare:5,epic:14,god:22,legendary:25,mythic:18,secret:9,og:7},
+infernal:{epic:8,god:14,legendary:22,mythic:28,secret:14,og:14},
+tumba:{common:28,rare:28,epic:22,god:14,legendary:6,mythic:2},
+maldito:{epic:22,god:22,legendary:20,mythic:17,secret:10,og:9},
+divino:{epic:6,god:12,legendary:20,mythic:28,secret:18,og:16},
+ancestral:{god:8,legendary:18,mythic:30,secret:22,og:22},
+goloso:{common:35,rare:30,epic:20,god:12,legendary:3},
+pastel:{rare:28,epic:26,god:24,legendary:15,mythic:5.5,secret:1.5},
+neon:{rare:32,epic:26,god:20,legendary:14,mythic:7,secret:1},
+virtual:{epic:20,god:22,legendary:20,mythic:15,secret:12,og:11},
+cosmico:{epic:4,god:8,legendary:15,mythic:28,secret:22,og:23},
+estelar:{legendary:8,mythic:28,secret:28,og:36},
+draconico:{rare:18,epic:24,god:22,legendary:19,mythic:13,secret:4},
+wyrm:{god:16,legendary:20,mythic:24,secret:20,og:20},
+umbral:{mythic:28,secret:30,og:42},
+absoluto:{secret:35,og:65},
+eterno:{god:14,legendary:20,mythic:26,secret:24,og:16},
+omega:{mythic:25,secret:35,og:40}
+};
 var RCOL={common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
 var RNAME={common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
 var RORD={common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 var RKEYS=['common','rare','epic','god','legendary','mythic','secret','og'];
-var ESCLS={basico:'es-bas',dorado:'es-dor',campestre:'es-cam',arcano:'es-arc',marino:'es-mar',abisal:'es-abi',cristalino:'es-cri',gema:'es-gem',magmatico:'es-mag',infernal:'es-inf',divino:'es-div',ancestral:'es-anc',cosmico:'es-cos',estelar:'es-est',umbral:'es-umb',absoluto:'es-abs'};
-var ENAMES={basico:'Basico',dorado:'Dorado',campestre:'Campestre',arcano:'Arcano',marino:'Marino',abisal:'Abisal',cristalino:'Cristalino',gema:'Gema',magmatico:'Magmatico',infernal:'Infernal',divino:'Divino',ancestral:'Ancestral',cosmico:'Cosmico',estelar:'Estelar',umbral:'Umbral',absoluto:'Absoluto'};
-var E3DG={basico:'linear-gradient(145deg,#f8fafc,#cbd5e1,#94a3b8)',dorado:'linear-gradient(145deg,#fef3c7,#f59e0b,#d97706)',campestre:'linear-gradient(145deg,#065f46,#10b981,#84cc16)',arcano:'linear-gradient(145deg,#4c1d95,#8b5cf6,#c084fc)',marino:'linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee)',abisal:'linear-gradient(145deg,#0f172a,#1e3a5f,#0ea5e9)',cristalino:'linear-gradient(145deg,#ec4899,#f0abfc,#e879f9)',gema:'linear-gradient(145deg,#f43f5e,#a855f7,#3b82f6)',magmatico:'linear-gradient(145deg,#7c2d12,#ea580c,#facc15)',infernal:'linear-gradient(145deg,#7f1d1d,#dc2626,#f97316)',divino:'linear-gradient(145deg,#fef9c3,#fde68a,#fff)',ancestral:'linear-gradient(145deg,#92400e,#d97706,#fbbf24)',cosmico:'linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4)',estelar:'linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899)',umbral:'linear-gradient(145deg,#0f0f23,#312e81,#000)',absoluto:'conic-gradient(from 0deg,#f43f5e,#a855f7,#3b82f6,#10b981,#fbbf24,#f43f5e)'};
+var ESCLS={basico:'es-bas',dorado:'es-dor',campestre:'es-cam',arcano:'es-arc',marino:'es-mar',abisal:'es-abi',cristalino:'es-cri',gema:'es-gem',magmatico:'es-mag',infernal:'es-inf',divino:'es-div',ancestral:'es-anc',cosmico:'es-cos',estelar:'es-est',umbral:'es-umb',absoluto:'es-abs',salvaje:'es-sal',toxico:'es-tox',dunas:'es-dun',faraon:'es-far',glacial:'es-gla',polar:'es-pol',tumba:'es-tum',maldito:'es-mal',goloso:'es-gol',pastel:'es-pas',neon:'es-neo',virtual:'es-vir',draconico:'es-dra',wyrm:'es-wyr',eterno:'es-ete',omega:'es-ome'};
+var ENAMES={basico:'Basico',dorado:'Dorado',campestre:'Campestre',arcano:'Arcano',marino:'Marino',abisal:'Abisal',cristalino:'Cristalino',gema:'Gema',magmatico:'Magmatico',infernal:'Infernal',divino:'Divino',ancestral:'Ancestral',cosmico:'Cosmico',estelar:'Estelar',umbral:'Umbral',absoluto:'Absoluto',salvaje:'Salvaje',toxico:'Toxico',dunas:'Dunas',faraon:'Faraon',glacial:'Glacial',polar:'Polar',tumba:'Tumba',maldito:'Maldito',goloso:'Goloso',pastel:'Pastel',neon:'Neon',virtual:'Virtual',draconico:'Draconico',wyrm:'Wyrm',eterno:'Eterno',omega:'Omega'};
+var E3DG={basico:'linear-gradient(145deg,#f8fafc,#cbd5e1,#94a3b8)',dorado:'linear-gradient(145deg,#fef3c7,#f59e0b,#d97706)',campestre:'linear-gradient(145deg,#065f46,#10b981,#84cc16)',arcano:'linear-gradient(145deg,#4c1d95,#8b5cf6,#c084fc)',marino:'linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee)',abisal:'linear-gradient(145deg,#0f172a,#1e3a5f,#0ea5e9)',cristalino:'linear-gradient(145deg,#ec4899,#f0abfc,#e879f9)',gema:'linear-gradient(145deg,#f43f5e,#a855f7,#3b82f6)',magmatico:'linear-gradient(145deg,#7c2d12,#ea580c,#facc15)',infernal:'linear-gradient(145deg,#7f1d1d,#dc2626,#f97316)',divino:'linear-gradient(145deg,#fef9c3,#fde68a,#fff)',ancestral:'linear-gradient(145deg,#92400e,#d97706,#fbbf24)',cosmico:'linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4)',estelar:'linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899)',umbral:'linear-gradient(145deg,#0f0f23,#312e81,#000)',absoluto:'conic-gradient(from 0deg,#f43f5e,#a855f7,#3b82f6,#10b981,#fbbf24,#f43f5e)',salvaje:'linear-gradient(145deg,#14532d,#16a34a,#84cc16)',toxico:'linear-gradient(145deg,#365314,#65a30d,#a3e635)',dunas:'linear-gradient(145deg,#92400e,#fbbf24,#fde68a)',faraon:'linear-gradient(145deg,#78350f,#f59e0b,#fbbf24)',glacial:'linear-gradient(145deg,#0c4a6e,#38bdf8,#e0f2fe)',polar:'linear-gradient(145deg,#082f49,#0ea5e9,#a5f3fc)',tumba:'linear-gradient(145deg,#1c1917,#525252,#a8a29e)',maldito:'linear-gradient(145deg,#2e1065,#7c3aed,#a78bfa)',goloso:'linear-gradient(145deg,#be185d,#f472b6,#fbcfe8)',pastel:'linear-gradient(145deg,#9d174d,#ec4899,#f9a8d4)',neon:'linear-gradient(145deg,#0f172a,#e879f9,#22d3ee)',virtual:'linear-gradient(145deg,#052e16,#22c55e,#a3e635)',draconico:'linear-gradient(145deg,#450a0a,#dc2626,#f97316)',wyrm:'linear-gradient(145deg,#1c1917,#7c2d12,#facc15)',eterno:'linear-gradient(145deg,#fef9c3,#fffbeb,#fbbf24)',omega:'conic-gradient(from 0deg,#fbbf24,#f472b6,#22d3ee,#a3e635,#e879f9,#fbbf24)'};
 var CLICKS=5;
 
+// ===== PRECIOS BASE DE HUEVOS =====
+function defPr(){return{basico:10,dorado:500,campestre:2000,arcano:20000,salvaje:8000,toxico:6e4,marino:5e4,abisal:4e5,dunas:3e5,faraon:2e6,cristalino:2e6,gema:15e6,glacial:3e7,polar:1.2e8,magmatico:8e6,infernal:5e8,tumba:1e9,maldito:5e9,divino:5e9,ancestral:3e10,goloso:3e10,pastel:1.5e11,neon:1.2e11,virtual:8e11,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14,draconico:3e12,wyrm:1.6e13,eterno:4e14,omega:2e15}}
+
 // ===== ESTADO =====
-var G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:{basico:10,dorado:500,campestre:2000,arcano:20000,marino:50000,abisal:4e5,cristalino:2e6,gema:15e6,magmatico:80e6,infernal:5e8,divino:5e9,ancestral:3e10,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14},uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
+var G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
 var selE='basico',rbC=false,rbT=null,aTab='game',cfCb=null,hSt={pet:null,cl:0,rev:false,bur:false};
 var boostActive=false,boostTimeout=null;
 var eventMult=1,luckyBoost=false,eggSale=false,evtCur=null,evtEnd=0,evtT=null,multiList=null;
@@ -110,13 +266,13 @@ function mkBP(){var w=gW();return{x:Math.random()*bgW,y:Math.random()*bgH,vx:(Ma
 function drBg(){if(!bgCx)return;var w=gW();bgCx.clearRect(0,0,bgW,bgH);var g=bgCx.createRadialGradient(bgW/2,bgH/2,0,bgW/2,bgH/2,bgW*.7);g.addColorStop(0,w.color+'18');g.addColorStop(.5,'#060e1a');g.addColorStop(1,'#030810');bgCx.fillStyle=g;bgCx.fillRect(0,0,bgW,bgH);for(var i=0;i<bgP.length;i++){var p=bgP[i];p.x+=p.vx;p.y+=p.vy;p.l--;if(p.l<=0||p.x<-10||p.x>bgW+10||p.y<-10||p.y>bgH+10){bgP[i]=mkBP();bgP[i].y=bgH+5;bgP[i].l=bgP[i].ml;continue}var al=p.a*(p.l/p.ml);bgCx.globalAlpha=al;bgCx.fillStyle=p.col;bgCx.beginPath();if(p.tp==='bubbles'){bgCx.strokeStyle=p.col;bgCx.lineWidth=.5;bgCx.arc(p.x,p.y,p.sz*1.5,0,Math.PI*2);bgCx.stroke()}else if(p.tp==='embers'){bgCx.arc(p.x,p.y,p.sz,0,Math.PI*2);bgCx.fill();bgCx.globalAlpha=al*.3;bgCx.beginPath();bgCx.arc(p.x,p.y,p.sz*3,0,Math.PI*2);bgCx.fill()}else if(p.tp==='stars'){bgCx.globalAlpha=al*(Math.sin(p.l*.1)*.3+.7);bgCx.fillStyle='#fff';bgCx.beginPath();bgCx.arc(p.x,p.y,p.sz*.7,0,Math.PI*2);bgCx.fill()}else if(p.tp==='wisps'){bgCx.arc(p.x+Math.sin(p.l*.08)*8,p.y,p.sz*1.5,0,Math.PI*2);bgCx.fill()}else{bgCx.ellipse(p.x,p.y,p.sz*2,p.sz,Math.sin(p.l*.05)*.5,0,Math.PI*2);bgCx.fill()}}bgCx.globalAlpha=1;requestAnimationFrame(drBg)}
 
 // ===== HABITAT 3D =====
-var hR,hS,hC,hM=[];
+var hR,hS,hC,hM=[],hGnd=null;
 function initH3D(){
     var ct=document.getElementById('habitat');var w=ct.clientWidth,h=ct.clientHeight;
     hR=new THREE.WebGLRenderer({alpha:true,antialias:true});hR.setSize(w,h);hR.setPixelRatio(Math.min(devicePixelRatio,2));hR.setClearColor(0,0);ct.insertBefore(hR.domElement,ct.firstChild);
     hS=new THREE.Scene();hC=new THREE.PerspectiveCamera(40,w/h,.1,100);hC.position.set(0,1.8,5.5);hC.lookAt(0,0,0);
     hS.add(new THREE.AmbientLight(0xffffff,.7));var dl=new THREE.DirectionalLight(0xffffff,1.2);dl.position.set(3,5,4);hS.add(dl);hS.add(new THREE.HemisphereLight(0x88ffaa,0x224466,.3));
-    var gg=new THREE.CircleGeometry(3.5,48);var gm=new THREE.MeshStandardMaterial({color:0x1a3a20,roughness:.85});var gnd=new THREE.Mesh(gg,gm);gnd.rotation.x=-Math.PI/2;gnd.position.y=-.5;gnd.userData.isGround=true;hS.add(gnd);
+    var gg=new THREE.CircleGeometry(3.5,48);var gm=new THREE.MeshStandardMaterial({color:0x1a3a20,roughness:.85});var gnd=new THREE.Mesh(gg,gm);gnd.rotation.x=-Math.PI/2;gnd.position.y=-.5;gnd.userData.isGround=true;hS.add(gnd);hGnd=gnd;
     anH();
 }
 function refHP(){
@@ -163,18 +319,18 @@ function spHP(rar){var c=document.getElementById('hatchCanvas');var r=c.parentEl
 function anHP(w,h){if(!hCx||!hP.length)return;hCx.clearRect(0,0,w,h);var al=false;for(var i=0;i<hP.length;i++){var p=hP[i];if(p.l<=0)continue;al=true;p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.l--;p.vx*=.98;p.rot+=p.vr;var a=p.l/p.ml;hCx.globalAlpha=a;hCx.fillStyle=p.col;if(p.shape==='rect'){hCx.save();hCx.translate(p.x,p.y);hCx.rotate(p.rot);hCx.fillRect(-p.sz/2,-p.sz*.3,p.sz,p.sz*.6);hCx.restore()}else{hCx.beginPath();hCx.arc(p.x,p.y,Math.max(.5,p.sz*a),0,Math.PI*2);hCx.fill()}}hCx.globalAlpha=1;if(al)requestAnimationFrame(function(){anHP(w,h)})}
 
 // ===== TEMA =====
-function apTh(){var w=gW(),r=document.documentElement;r.style.setProperty('--wa',w.color);r.style.setProperty('--wa2',w.color2);r.style.setProperty('--wabg',w.color+'18');r.style.setProperty('--wbd',w.color+'30');r.style.setProperty('--wsh',w.color+'40');r.style.setProperty('--wg',w.color+'20');document.getElementById('worldBadge').textContent=w.name.split(' ')[0].toUpperCase();document.getElementById('habLabel').textContent='Habitat - '+w.name;document.getElementById('sWB').textContent='x'+w.bonus.toFixed(1);document.getElementById('worldBadge').style.color=w.color}
+function apTh(){var w=gW(),r=document.documentElement;r.style.setProperty('--wa',w.color);r.style.setProperty('--wa2',w.color2);r.style.setProperty('--wabg',w.color+'18');r.style.setProperty('--wbd',w.color+'30');r.style.setProperty('--wsh',w.color+'40');r.style.setProperty('--wg',w.color+'20');document.getElementById('worldBadge').textContent=w.name.split(' ')[0].toUpperCase();document.getElementById('habLabel').textContent='Habitat - '+w.name;document.getElementById('sWB').textContent='x'+w.bonus.toFixed(1);document.getElementById('worldBadge').style.color=w.color;if(hGnd){try{hGnd.material.color.set(w.color);hGnd.material.color.multiplyScalar(.35)}catch(e){}}}
 
 // ===== SAVE/LOAD =====
-var SK='PetSimUltra_v37';
-function save(){try{localStorage.setItem(SK,JSON.stringify({money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,uw:G.uw,tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pn:G.pn,ao:G.ao,aon:G.aon,world:G.world,upg:G.upg,achs:G.achs,lastDaily:G.lastDaily,dailyStreak:G.dailyStreak,lastSeen:Date.now(),boostUntil:G.boostUntil}))}catch(e){}}
+var SK='PetSimUltra_v38';
+function save(){try{localStorage.setItem(SK,JSON.stringify({money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,uw:G.uw,tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pn:G.pn,ao:G.ao,aon:G.aon,world:G.world,x3:G.x3,upg:G.upg,achs:G.achs,lastDaily:G.lastDaily,dailyStreak:G.dailyStreak,lastSeen:Date.now(),boostUntil:G.boostUntil}))}catch(e){}}
 function load(){var raw=null;try{raw=localStorage.getItem(SK)}catch(e){return}if(!raw)return;try{var d=JSON.parse(raw);if(!d)return;
-G.money=d.money||10;G.dm=G.money;G.rb=d.rb||0;G.mult=d.mult||1;G.mut=!!d.mut;G.tot=d.tot||0;G.te=d.te||0;G.nid=d.nid||1;G.pn=d.pn||'Mi Base';G.ao=!!d.ao;G.aon=!!d.aon;G.world=d.world||'bosque';G.uw=d.uw||['bosque'];if(d.pr)G.pr=d.pr;G.disc=d.disc||[];
+G.money=d.money||10;G.dm=G.money;G.rb=d.rb||0;G.mult=d.mult||1;G.mut=!!d.mut;G.tot=d.tot||0;G.te=d.te||0;G.nid=d.nid||1;G.pn=d.pn||'Mi Base';G.ao=!!d.ao;G.aon=!!d.aon;G.world=d.world||'bosque';G.x3=!!d.x3;G.uw=d.uw||['bosque'];if(d.pr)for(var pk in d.pr)G.pr[pk]=d.pr[pk];G.disc=d.disc||[];
 G.upg=d.upg||{luck:0,inc:0,disc:0,fast:0,auto:0};G.achs=d.achs||[];G.lastDaily=d.lastDaily||0;G.dailyStreak=d.dailyStreak||0;G.lastSeen=d.lastSeen||0;G.boostUntil=d.boostUntil||0;
 G.pets=[];
 if(d.pets){for(var i=0;i<d.pets.length;i++){var p=d.pets[i];if(!p)continue;G.pets.push({ic:p.ic||'fa-solid fa-paw',n:p.n,r:p.r,be:p.be||p.e||1,lv:p.lv||1,id:p.id||G.nid++,c:p.c||'#888',eg:p.eg||[],v:p.v||0})}}}catch(e){}}
 function resetG(){try{localStorage.removeItem(SK)}catch(e){}
-G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:{basico:10,dorado:500,campestre:2000,arcano:20000,marino:50000,abisal:4e5,cristalino:2e6,gema:15e6,magmatico:80e6,infernal:5e8,divino:5e9,ancestral:3e10,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14},uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
+G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
 selE='basico';rbC=false;CLICKS=5;multiList=null;eventMult=1;luckyBoost=false;eggSale=false;if(boostTimeout)clearTimeout(boostTimeout);boostActive=false;if(evtCur)endEvent();
 apTh();refHP();updateUI();toast('Reiniciado','inf')}
 
@@ -187,7 +343,7 @@ function getFR(){var all=[{name:G.pn,income:tI(),rb:G.rb,pets:G.pets.length,isMe
 function rkI(p,idx){var pos=idx+1;var pc=pos===1?'p1':pos===2?'p2':pos===3?'p3':'';return'<div class="rk-i'+(p.isMe?' me':'')+'"><div class="rk-pos '+pc+'">'+pos+'</div><div class="rk-body"><div class="rk-top"><span class="rk-n">'+esc(p.name)+(p.isMe?' <span class="rk-you">TU</span>':'')+'</span><span class="rk-rb">RB '+p.rb+'</span></div><div class="rk-bot"><span class="rk-pc">'+p.pets+' mascotas</span><span class="rk-earn">$'+fmt(p.income)+'/s</span></div></div></div>'}
 function renderRk(){var all=getFR();var mi=0;for(var i=0;i<all.length;i++){if(all[i].isMe){mi=i;break}}document.getElementById('rkPos').textContent='#'+(mi+1);document.getElementById('rkMyEarn').textContent='$'+fmt(tI())+'/s';var h='';var ss=Math.max(0,mi-2),se=Math.min(all.length-1,mi+2);if(ss>3){for(var i=0;i<3;i++)h+=rkI(all[i],i);h+='<div class="rk-sep">. . .</div>'}else ss=0;if(se<all.length-4){for(var i=ss;i<=se;i++)h+=rkI(all[i],i);h+='<div class="rk-sep">. . .</div>';for(var i=all.length-3;i<all.length;i++)h+=rkI(all[i],i)}else{for(var i=ss;i<all.length;i++)h+=rkI(all[i],i)}h+='<div class="rk-total">'+all.length+' jugadores en linea</div>';document.getElementById('rkList').innerHTML=h}
 
-// ===== MEGA UPDATE: MEJORAS / LOGROS / EVENTOS / DIARIO =====
+// ===== MEJORAS / LOGROS / EVENTOS / DIARIO =====
 var UPGS=[
 {id:'luck',n:'Suerte',d:'Mejora probabilidades de rarezas altas',ic:'fa-clover',max:10,fx:function(l){return'+'+(l*6)+'% suerte'},co:function(l){return Math.floor(5e4*Math.pow(2.6,l))}},
 {id:'inc',n:'Ingresos',d:'Aumenta todo tu ingreso global',ic:'fa-chart-line',max:10,fx:function(l){return'x'+(1+l*.1).toFixed(1)+' ingreso'},co:function(l){return Math.floor(1e5*Math.pow(3,l))}},
@@ -196,24 +352,26 @@ var UPGS=[
 {id:'auto',n:'Auto Turbo',d:'Auto abre mas huevos por segundo',ic:'fa-gauge-high',max:3,fx:function(l){return(1+l)+' huevos/s'},co:function(l){return Math.floor(1e10*Math.pow(6,l))}}
 ];
 var ACHS=[
-{id:'h1',n:'Primer Paso',d:'Abre 1 huevo',ic:'fa-egg',goal:1,st:'tot',rw:500},
-{id:'h2',n:'Aprendiz',d:'Abre 50 huevos',ic:'fa-box-open',goal:50,st:'tot',rw:2e4},
-{id:'h3',n:'Maestro',d:'Abre 500 huevos',ic:'fa-fire',goal:500,st:'tot',rw:2e6},
-{id:'h4',n:'Leyenda',d:'Abre 2500 huevos',ic:'fa-medal',goal:2500,st:'tot',rw:5e8},
-{id:'r1',n:'Renacer',d:'Haz 1 rebirth',ic:'fa-arrows-rotate',goal:1,st:'rb',rw:1e5},
-{id:'r2',n:'Ciclo Eterno',d:'5 rebirths',ic:'fa-infinity',goal:5,st:'rb',rw:1e7},
-{id:'r3',n:'Transcendencia',d:'15 rebirths',ic:'fa-yin-yang',goal:15,st:'rb',rw:1e10},
-{id:'w1',n:'Explorador',d:'Desbloquea 3 mundos',ic:'fa-map-location-dot',goal:3,st:'uw',rw:5e4},
-{id:'w2',n:'Conquistador',d:'Desbloquea todos los mundos',ic:'fa-earth-americas',goal:8,st:'uw',rw:1e12},
-{id:'m1',n:'Millonario',d:'Gana $1M en total',ic:'fa-sack-dollar',goal:1e6,st:'te',rw:1e5},
-{id:'m2',n:'Billonario',d:'Gana $1B en total',ic:'fa-money-bill-wave',goal:1e9,st:'te',rw:1e7},
-{id:'m3',n:'Trillonario',d:'Gana $1T en total',ic:'fa-gem',goal:1e12,st:'te',rw:1e9},
-{id:'p1',n:'Equipo',d:'Ten 10 mascotas',ic:'fa-paw',goal:10,st:'pets',rw:1e4},
-{id:'p2',n:'Zoologico',d:'Ten 50 mascotas',ic:'fa-hippo',goal:50,st:'pets',rw:1e6},
-{id:'c1',n:'Coleccionista',d:'Descubre 30 mascotas',ic:'fa-book',goal:30,st:'disc',rw:5e5},
-{id:'c2',n:'Enciclopedia',d:'Descubre todas las mascotas',ic:'fa-trophy',goal:PETS.length,st:'disc',rw:1e13},
-{id:'g1',n:'Toque de Midas',d:'Consigue una mascota DORADA',ic:'fa-star',goal:1,st:'v1',rw:5e5},
-{id:'g2',n:'Prisma Viviente',d:'Consigue una ARCOIRIS',ic:'fa-rainbow',goal:1,st:'v2',rw:5e7}
+{id:'e1',n:'Aprendiz',d:'Abre 25 huevos',ic:'fa-egg',goal:25,st:'tot',rw:500},
+{id:'e2',n:'Incansable',d:'Abre 500 huevos',ic:'fa-box-open',goal:500,st:'tot',rw:5e3},
+{id:'e3',n:'Obsesionado',d:'Abre 5,000 huevos',ic:'fa-fire',goal:5000,st:'tot',rw:1e5},
+{id:'e4',n:'Maestro Absoluto',d:'Abre 25,000 huevos',ic:'fa-medal',goal:25000,st:'tot',rw:2e6},
+{id:'rb1',n:'Renacer',d:'Haz 2 rebirths',ic:'fa-arrows-rotate',goal:2,st:'rb',rw:1e4},
+{id:'rb2',n:'Ciclo Eterno',d:'Haz 10 rebirths',ic:'fa-infinity',goal:10,st:'rb',rw:5e5},
+{id:'rb3',n:'Transcendencia',d:'Haz 25 rebirths',ic:'fa-yin-yang',goal:25,st:'rb',rw:5e7},
+{id:'wd1',n:'Explorador',d:'Desbloquea 6 mundos',ic:'fa-map-location-dot',goal:6,st:'uw',rw:2e4},
+{id:'wd2',n:'Conquistador',d:'Desbloquea TODOS los mundos',ic:'fa-earth-americas',goal:WORLDS.length,st:'uw',rw:5e10},
+{id:'mo1',n:'Magnate',d:'Gana $10M en total',ic:'fa-sack-dollar',goal:1e7,st:'te',rw:1e4},
+{id:'mo2',n:'Emperador',d:'Gana $100B en total',ic:'fa-money-bill-wave',goal:1e11,st:'te',rw:1e6},
+{id:'mo3',n:'Mas Alla del Dinero',d:'Gana $100T en total',ic:'fa-gem',goal:1e14,st:'te',rw:1e8},
+{id:'mo4',n:'Dueno del Universo',d:'Gana $1Qa en total',ic:'fa-crown',goal:1e18,st:'te',rw:5e9},
+{id:'pt1',n:'Equipo Completo',d:'Ten 25 mascotas',ic:'fa-paw',goal:25,st:'pets',rw:5e3},
+{id:'pt2',n:'Zoologico',d:'Ten 100 mascotas',ic:'fa-hippo',goal:100,st:'pets',rw:5e5},
+{id:'co1',n:'Coleccionista',d:'Descubre 100 mascotas',ic:'fa-book',goal:100,st:'disc',rw:2e5},
+{id:'co2',n:'Enciclopedia Viva',d:'Descubre TODAS las mascotas',ic:'fa-trophy',goal:PETS.length,st:'disc',rw:5e11},
+{id:'go1',n:'Toque de Midas',d:'Consigue 5 mascotas DORADAS',ic:'fa-star',goal:5,st:'v1',rw:1e5},
+{id:'go2',n:'Prisma Viviente',d:'Consigue 3 mascotas ARCOIRIS',ic:'fa-rainbow',goal:3,st:'v2',rw:1e7},
+{id:'up1',n:'Maximizador',d:'Compra 15 niveles de mejoras',ic:'fa-arrow-up-right-dots',goal:15,st:'upg',rw:1e8}
 ];
 var EVENTS=[
 {id:'rain',n:'LLUVIA DE DINERO x3',ic:'fa-cloud-showers-heavy',dur:60,apply:function(){eventMult=3},end:function(){eventMult=1}},
@@ -286,6 +444,7 @@ function achStat(id){
     case 'te':return G.te;case 'pets':return G.pets.length;case 'disc':return G.disc.length;
     case 'v1':return G.pets.filter(function(p){return p.v===1}).length;
     case 'v2':return G.pets.filter(function(p){return p.v===2}).length;
+    case 'upg':var s=0;for(var k in G.upg)s+=G.upg[k];return s;
     default:return 0;
   }
 }
@@ -334,6 +493,7 @@ function renderHub(){
       stCell('fa-sack-dollar','$'+fmt(G.te),'Total ganado')+
       stCell('fa-paw',G.pets.length,'Mascotas')+
       stCell('fa-book',G.disc.length+'/'+PETS.length,'Index')+
+      stCell('fa-globe',G.uw.length+'/'+WORLDS.length,'Mundos')+
       stCell('fa-arrows-rotate',G.rb,'Rebirths')+
       stCell('fa-crown',best?best.n:'--','Mejor mascota')+
       stCell('fa-star',n1,'Doradas')+
@@ -348,13 +508,15 @@ function renderHub(){
 // ===== LOGICA =====
 function openE(sil){
     var cost=eggCost(selE);if(G.money<cost){if(!sil){snd.err();toast('Sin dinero','err')}if(G.aon){G.aon=false;updateUI()}return false}
-    G.money-=cost;var sc={basico:1.15,dorado:1.2,campestre:1.12,arcano:1.22,marino:1.18,abisal:1.25,cristalino:1.2,gema:1.28,magmatico:1.22,infernal:1.3,divino:1.25,ancestral:1.32,cosmico:1.28,estelar:1.35,umbral:1.3,absoluto:1.4};
+    G.money-=cost;var sc={basico:1.15,dorado:1.2,campestre:1.12,arcano:1.22,marino:1.18,abisal:1.25,cristalino:1.2,gema:1.28,magmatico:1.22,infernal:1.3,divino:1.25,ancestral:1.32,cosmico:1.28,estelar:1.35,umbral:1.3,absoluto:1.4,salvaje:1.14,toxico:1.18,dunas:1.15,faraon:1.2,glacial:1.16,polar:1.2,tumba:1.2,maldito:1.24,goloso:1.22,pastel:1.26,neon:1.24,virtual:1.28,draconico:1.28,wyrm:1.32,eterno:1.32,omega:1.4};
     G.pr[selE]=Math.floor(G.pr[selE]*(sc[selE]||1.15));var tpl=roll(selE);
     var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
     G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)===-1)G.disc.push(tpl.n);
-    save();if(!sil){snd.hatch(tpl.r);showH(np);updateUI();refHP()}return true;
+    if(!sil){save();snd.hatch(tpl.r);showH(np);updateUI();refHP()}
+    return true;
 }
 function openMulti(n){
+  if(!G.x3){snd.err();toast('Bloqueado: desbloquealo en la tienda LU (100 monedas)','err');return}
   if(G.money<eggCost(selE)){snd.err();toast('Sin dinero','err');return}
   var before=G.pets.length,opened=0;
   for(var i=0;i<n;i++){if(G.money>=eggCost(selE)&&openE(true))opened++}
@@ -362,7 +524,7 @@ function openMulti(n){
   var news=G.pets.slice(before);
   news.sort(function(a,b){return(RORD[b.r]||0)-(RORD[a.r]||0)||(b.v||0)-(a.v||0)||pE(b)-pE(a)});
   multiList=news.slice(1);
-  updateUI();refHP();snd.hatch(news[0].r);showH(news[0],true);
+  save();updateUI();refHP();snd.hatch(news[0].r);showH(news[0],true);
 }
 function showH(pet,instant){
   hSt={pet:pet,cl:instant?CLICKS:0,rev:false,bur:!!instant};
@@ -423,7 +585,7 @@ function closeH(){
 }
 function doUp(id){var p=null;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){p=G.pets[i];break}}if(!p||p.lv>=99)return;var c=uCo(p);if(G.money<c){snd.err();toast('Sin dinero','err');return}G.money-=c;p.lv++;toast(p.n+' Nv.'+p.lv,'ok');save();updateUI()}
 function doSell(id){var idx=-1;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break}}if(idx===-1)return;var p=G.pets[idx],v=Math.floor(pE(p)*10);G.money+=v;G.pets.splice(idx,1);toast(p.n+' $'+fmt(v),'inf');save();updateUI();refHP()}
-function doRb(){var cost=rbCo();if(rbC){clearTimeout(rbT);rbC=false;G.rb++;G.mult*=1.8;G.money=10;G.dm=10;G.pets=[];G.pr={basico:10,dorado:500,campestre:2000,arcano:20000,marino:50000,abisal:4e5,cristalino:2e6,gema:15e6,magmatico:80e6,infernal:5e8,divino:5e9,ancestral:3e10,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14};multiList=null;snd.hatch('og');toast('REBIRTH '+G.rb+' x'+G.mult.toFixed(1),'rwd');save();updateUI();refHP()}else{if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return}rbC=true;var b=document.getElementById('btnRb');b.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';b.classList.add('yes');b.disabled=false;snd.click();rbT=setTimeout(function(){rbC=false;updateUI()},3000)}}
+function doRb(){var cost=rbCo();if(rbC){clearTimeout(rbT);rbC=false;G.rb++;G.mult*=1.8;G.money=10;G.dm=10;G.pets=[];G.pr=defPr();multiList=null;snd.hatch('og');toast('REBIRTH '+G.rb+' x'+G.mult.toFixed(1),'rwd');save();updateUI();refHP()}else{if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return}rbC=true;var b=document.getElementById('btnRb');b.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';b.classList.add('yes');b.disabled=false;snd.click();rbT=setTimeout(function(){rbC=false;updateUI()},3000)}}
 function hAuto(){snd.click();if(!G.ao){if(G.money<1e10){snd.err();toast('Necesitas $10B','err');return}G.money-=1e10;G.ao=true;G.aon=true;toast('Auto activado!','rwd');save();updateUI()}else{G.aon=!G.aon;toast('Auto: '+(G.aon?'ON':'OFF'),'inf');save();updateUI()}}
 function buyW(wid){var w=null;for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===wid){w=WORLDS[i];break}if(!w)return;if(isUW(wid)){setW(wid);return}if(G.money<w.cost){snd.err();toast('Necesitas $'+fmt(w.cost),'err');return}G.money-=w.cost;G.uw.push(wid);snd.world();selE=w.eggs[0];setW(wid);save();updateUI();toast('Desbloqueado: '+w.name,'rwd')}
 function setW(wid){if(wid===G.world)return;if(!isUW(wid)){snd.err();toast('Bloqueado','err');return}G.world=wid;var w=gW();if(w.eggs.indexOf(selE)===-1)selE=w.eggs[0];bgP=[];for(var i=0;i<60;i++)bgP.push(mkBP());apTh();refHP();document.getElementById('game').classList.add('world-flash');setTimeout(function(){document.getElementById('game').classList.remove('world-flash')},500);save();updateUI();toast('Mundo: '+w.name,'rwd')}
@@ -448,7 +610,11 @@ function updateUI(){
   document.getElementById('sInc').textContent='$'+fmt(tI())+'/s';
   document.getElementById('sPets').textContent=G.pets.length;
   var bb=document.getElementById('btnBuy');if(G.money>=eggCost(selE)){bb.classList.add('can');bb.classList.remove('no')}else{bb.classList.remove('can');bb.classList.add('no')}
-  var b3=document.getElementById('btnBuy3');if(b3){if(G.money>=eggCost(selE)*3){b3.classList.remove('no')}else{b3.classList.add('no')}}
+  var b3=document.getElementById('btnBuy3');
+  if(b3){
+    if(!G.x3){b3.innerHTML='<i class="fas fa-lock"></i> x3';b3.title='Desbloquealo en la tienda LU (100 monedas)';b3.classList.add('locked');b3.classList.remove('no')}
+    else{b3.innerHTML='<i class="fas fa-bolt"></i> x3';b3.title='';b3.classList.remove('locked');if(G.money>=eggCost(selE)*3)b3.classList.remove('no');else b3.classList.add('no')}
+  }
   var ba=document.getElementById('btnAuto');if(!G.ao){ba.innerHTML='<i class="fas fa-robot"></i> AUTO ($10B)';if(G.money>=1e10){ba.classList.add('can');ba.classList.remove('no','on')}else{ba.classList.add('no');ba.classList.remove('can','on')}}else{if(G.aon){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can')}else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no')}}
   if(!rbC){var rb=document.getElementById('btnRb');rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCo())+')';rb.disabled=G.money<rbCo();rb.classList.remove('yes')}
   rPets();rEggs();if(aTab==='worlds')rWorlds();if(aTab==='rank')renderRk();if(aTab==='lu')renderLuShop();if(aTab==='hub')renderHub();
@@ -472,6 +638,7 @@ let luUid = null;
 let luCoins = 0;
 
 var LU_SHOP_ITEMS = [
+  { id: 'x3', name: 'Apertura x3', desc: 'Desbloquea el boton x3 para abrir 3 huevos a la vez - PERMANENTE', icon: 'fa-bolt', cost: 100, once: true, owned: function() { return G.x3; }, action: function() { G.x3 = true; save(); updateUI(); } },
   { id: 'money1', name: '5K Dinero', desc: 'Añade $5,000 al juego', icon: 'fa-sack-dollar', cost: 10, action: function() { G.money += 5000; save(); updateUI(); } },
   { id: 'money2', name: '100K Dinero', desc: 'Añade $100,000 al juego', icon: 'fa-money-bill-trend-up', cost: 50, action: function() { G.money += 100000; save(); updateUI(); } },
   { id: 'boost', name: 'Boost x2 (3 min)', desc: 'Duplica tus ingresos por 3 minutos', icon: 'fa-bolt', cost: 30, action: function() { activateBoost(180); } },
@@ -512,18 +679,22 @@ function renderLuShop() {
   var h = '';
   for (var i=0; i<LU_SHOP_ITEMS.length; i++) {
     var item = LU_SHOP_ITEMS[i];
+    var owned = item.once && item.owned && item.owned();
     var can = luCoins >= item.cost;
-    h += '<div class="lu-item">' +
+    var btn = owned
+      ? '<button class="lu-btn" disabled><i class="fas fa-check"></i> COMPRADO</button>'
+      : '<button class="lu-btn" data-lu="' + i + '" ' + (can?'':'disabled') + '><i class="fas fa-coins"></i> ' + item.cost + '</button>';
+    h += '<div class="lu-item' + (owned?' lu-owned':'') + '">' +
       '<div class="lu-item-icon"><i class="fas ' + item.icon + '"></i></div>' +
       '<div class="lu-item-info"><div class="lu-item-name">' + item.name + '</div><div class="lu-item-desc">' + item.desc + '</div></div>' +
-      '<button class="lu-btn" data-lu="' + i + '" ' + (can?'':'disabled') + '><i class="fas fa-coins"></i> ' + item.cost + '</button>' +
-      '</div>';
+      btn + '</div>';
   }
   el.innerHTML = h;
 }
 
 async function buyWithLu(item) {
   if (!luUid) { toast('Inicia sesión en LevelUp', 'err'); return; }
+  if (item.once && item.owned && item.owned()) { toast('Ya tienes este objeto', 'inf'); return; }
   try {
     toast('Procesando compra...', 'inf');
     const result = await runTransaction(ref(fbDb, 'users/' + luUid + '/coins'), function(c) {
@@ -566,7 +737,7 @@ load();var cw=gW();if(cw.eggs.indexOf(selE)===-1)selE=cw.eggs[0];
 document.getElementById('rkName').value=G.pn;
 document.getElementById('btnMute').innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';
 initBg();drBg();initRk();
-setTimeout(function(){initH3D();initR3D();refHP()},100);
+setTimeout(function(){initH3D();initR3D();refHP();apTh()},100);
 addEventListener('resize',function(){setTimeout(rsH,200)});apTh();
 
 // Ganancias offline (max 8h al 50%)
@@ -590,12 +761,12 @@ setInterval(function(){if(!evtCur&&Math.random()<.22)startEvent()},60000);
 
 // ===== EVENT LISTENERS =====
 document.getElementById('btnMute').addEventListener('click',function(){G.mut=!G.mut;this.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';save()});
-document.getElementById('btnReset').addEventListener('click',function(){showCf('⚠️','Reiniciar','Perderas todo (mascotas, mejoras y logros).',resetG)});
+document.getElementById('btnReset').addEventListener('click',function(){showCf('⚠️','Reiniciar','Perderas todo (mascotas, mejoras, logros y x3 desbloqueado).',resetG)});
 document.getElementById('navTabs').addEventListener('click',function(e){var b=e.target.closest('.tab');if(b)setTab(b.dataset.t)});
 document.getElementById('navEggs').addEventListener('click',function(e){var b=e.target.closest('.egg');if(b){snd.click();selE=b.dataset.e;updateUI()}});
 document.getElementById('worldMap').addEventListener('click',function(e){var bb=e.target.closest('[data-bwid]');if(bb){buyW(bb.dataset.bwid);return}var cd=e.target.closest('.wcard');if(cd&&isUW(cd.dataset.wid))setW(cd.dataset.wid)});
 document.getElementById('btnBuy').addEventListener('click',function(){openE(false)});
-document.getElementById('btnBuy3').addEventListener('click',function(){openMulti(3)});
+document.getElementById('btnBuy3').addEventListener('click',function(){if(!G.x3){snd.err();toast('Desbloquea el x3 en la tienda LU (100 monedas)','err');setTab('lu');return}openMulti(3)});
 document.getElementById('btnAuto').addEventListener('click',hAuto);
 document.getElementById('btnRb').addEventListener('click',doRb);
 document.getElementById('overlay').addEventListener('click',function(e){if(e.target.id==='oclose'||e.target.closest('#oclose'))return;hClick()});
