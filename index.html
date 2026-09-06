@@ -1503,11 +1503,9 @@ async function toggleLike(gid,btn){
   if(btn)btn.dataset.likeBusy='true';
   const wasLiked=!!State.favs[gid];
   const newFav=!wasLiked;
-
   try{
-    const{ref,set,get,runTransaction}=window._fbFns;
+    const{ref,set,runTransaction}=window._fbFns;
     const favoriteRef=ref(State.db,`userFavorites/${State.uid}/${gid}`);
-    const rewardRef=ref(State.db,`userLikeRewards/${State.uid}/${gid}`);
     const countRef=ref(State.db,`gameLikes/${gid}`);
     await set(favoriteRef,newFav?true:null);
     const countResult=await runTransaction(countRef,current=>Math.max(0,Number(current||0)+(newFav?1:-1)));
@@ -1517,7 +1515,7 @@ async function toggleLike(gid,btn){
     if(!newFav)delete State.favs[gid];
     State.gameLikes[gid]=Math.max(0,Number(countResult.snapshot.val()||0));
 
-    if(newFav) spawnHeart(btn);
+    if(newFav)spawnHeart(btn);
 
     if(btn){
       btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');
@@ -1528,13 +1526,12 @@ async function toggleLike(gid,btn){
     if(activeCat==='favoritos'&&!newFav)renderGames();
     if(!newFav)toast('Eliminado de favoritos','success');
   }catch(err){
-  }
-    State.favs[gid]=wasLiked?true:undefined;
-    if(!wasLiked)delete State.favs[gid];
-    toast('Error al guardar like','error');
-    console.error('[v0] Like error:',err);
+    console.error(err);
+    if(wasLiked){State.favs[gid]=true;}else{delete State.favs[gid];}
+    if(btn)btn.classList.toggle('liked',wasLiked);
+    toast('Error al guardar tu like','error');
   }finally{
-    if(btn)window.setTimeout(()=>{btn.dataset.likeBusy='false';},450);
+    if(btn)btn.dataset.likeBusy='';
   }
 }
 
