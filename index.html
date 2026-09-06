@@ -1503,6 +1503,7 @@ async function toggleLike(gid,btn){
   if(btn)btn.dataset.likeBusy='true';
   const wasLiked=!!State.favs[gid];
   const newFav=!wasLiked;
+
   try{
     const{ref,set,get,runTransaction}=window._fbFns;
     const favoriteRef=ref(State.db,`userFavorites/${State.uid}/${gid}`);
@@ -1516,8 +1517,8 @@ async function toggleLike(gid,btn){
     if(!newFav)delete State.favs[gid];
     State.gameLikes[gid]=Math.max(0,Number(countResult.snapshot.val()||0));
 
-  if(newFav) spawnHeart(btn);
-  }
+    if(newFav) spawnHeart(btn);
+
     if(btn){
       btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');
       btn.classList.toggle('liked',newFav);
@@ -1526,6 +1527,7 @@ async function toggleLike(gid,btn){
     }
     if(activeCat==='favoritos'&&!newFav)renderGames();
     if(!newFav)toast('Eliminado de favoritos','success');
+  }catch(err){
   }catch(err){
     State.favs[gid]=wasLiked?true:undefined;
     if(!wasLiked)delete State.favs[gid];
