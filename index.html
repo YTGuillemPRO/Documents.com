@@ -1528,7 +1528,7 @@ async function toggleLike(gid,btn){
     if(activeCat==='favoritos'&&!newFav)renderGames();
     if(!newFav)toast('Eliminado de favoritos','success');
   }catch(err){
-  }catch(err){
+  }
     State.favs[gid]=wasLiked?true:undefined;
     if(!wasLiked)delete State.favs[gid];
     toast('Error al guardar like','error');
