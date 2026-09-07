@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ÚLTIMO NÚCLEO — roguelite de hordas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090c; --panel:#0d1218; --line:#22302a;
+  --ice:#e8f6ff; --lime:#c6f53f; --coral:#ff5148;
+  --amber:#ffc24b; --mag:#ff3e9e; --gray:#96a8a0;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Chakra Petch',sans-serif;color:var(--ice);user-select:none}
+#app{position:fixed;inset:0}
+canvas#game{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+
+#app::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:40;opacity:.22;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px)}
+
+#dmgvig{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;
+  box-shadow:inset 0 0 90px 30px rgba(255,81,72,.5)}
+#dmgvig.on{animation:dmg .45s ease-out}
+@keyframes dmg{0%{opacity:1}100%{opacity:0}}
+body.critical #dmgvig{animation:critp 1.1s ease-in-out infinite}
+@keyframes critp{0%,100%{opacity:0}50%{opacity:.5}}
+
+#flash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:7}
+#flash.on{animation:fl .5s ease-out}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;top:0;left:0;right:0;z-index:10;pointer-events:none}
+#hud.hidden{display:none}
+#xpbar{height:5px;background:#131a20}
+#xpfill{height:100%;width:100%;background:var(--lime);transform-origin:left;transform:scaleX(0);transition:transform .15s linear}
+.hrow{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;gap:10px}
+#lvlbox{font-weight:700;font-size:.95rem;color:var(--lime);letter-spacing:.1em;
+  border:1px solid var(--line);background:rgba(13,18,24,.75);padding:4px 10px}
+#h-clock{font-size:1.5rem;font-weight:700;letter-spacing:.12em;text-shadow:0 2px 0 #000}
+.hgrp{display:flex;gap:14px;font-weight:600;font-size:.95rem;color:var(--gray)}
+.hgrp b{color:var(--ice);display:inline-block}
+#h-kills b{color:var(--coral)} #h-coins b{color:var(--amber)}
+#h-kills.pop b{animation:kpop .18s ease-out}
+@keyframes kpop{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+#btn-pause{position:absolute;top:64px;right:12px;z-index:11;pointer-events:auto;
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  background:rgba(13,18,24,.8);border:1px solid var(--line);color:var(--gray);cursor:pointer}
+#btn-pause:hover{border-color:var(--lime);color:var(--lime)}
+
+#bossbar{position:absolute;top:70px;left:50%;transform:translateX(-50%);z-index:10;
+  width:min(420px,70vw);text-align:center;pointer-events:none}
+#bossbar.hidden{display:none}
+#bossname{font-size:.8rem;font-weight:700;letter-spacing:.3em;color:var(--coral)}
+#bossbar .bb{height:7px;background:#1a1216;border:1px solid #3a2026;margin-top:4px}
+#bossfill{height:100%;background:var(--coral);transform-origin:left}
+
+#combo{position:absolute;top:118px;left:50%;transform:translateX(-50%);z-index:10;
+  font-weight:700;font-size:1.5rem;color:var(--lime);letter-spacing:.1em;pointer-events:none;
+  text-shadow:0 2px 0 #000}
+#combo.hidden{display:none}
+#combo.pop{animation:cpop .25s ease-out}
+@keyframes cpop{0%{transform:translateX(-50%) scale(1.45)}100%{transform:translateX(-50%) scale(1)}}
+
+/* ---------- banner de oleada ---------- */
+#banner{position:absolute;top:26%;left:0;right:0;z-index:12;pointer-events:none;
+  display:flex;align-items:center;gap:18px;padding:0 8vw;opacity:0}
+#banner.show{animation:bin 2.2s ease-out forwards}
+#banner.hidden{display:none}
+.bl{flex:1;height:1px;background:var(--lime);opacity:.6}
+.bwrap{text-align:center}
+#b-title{font-family:'Archivo Black';font-size:clamp(1.4rem,4.5vw,2.6rem);color:var(--ice);letter-spacing:.18em;white-space:nowrap}
+#banner.big #b-title{color:var(--coral)}
+#b-sub{font-size:.85rem;letter-spacing:.4em;color:var(--lime);margin-top:4px;text-transform:uppercase}
+@keyframes bin{0%{opacity:0;transform:translateY(-8px)}
+  12%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+#toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);z-index:35;
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--lime);
+  padding:10px 22px;font-weight:600;font-size:.95rem;letter-spacing:.06em;white-space:nowrap}
+#toast.hidden{display:none}
+
+/* ---------- overlays ---------- */
+.overlay{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;
+  background:rgba(5,7,10,.8);backdrop-filter:blur(5px);overflow-y:auto}
+.hidden{display:none !important}
+button{font-family:'Chakra Petch',sans-serif;background:transparent;border:1px solid var(--lime);
+  color:var(--lime);padding:12px 28px;font-size:1rem;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;cursor:pointer;transition:all .15s ease}
+button:hover{background:var(--lime);color:#0a0d08;transform:translateY(-2px)}
+button:disabled{opacity:.35;cursor:default;transform:none;background:transparent;color:var(--lime)}
+button.primary{background:var(--lime);color:#0a0d08;font-weight:700;font-size:1.35rem;
+  padding:16px 70px;letter-spacing:.3em;animation:btnp 2.6s ease-out infinite}
+button.primary:hover{box-shadow:0 10px 34px rgba(198,245,63,.22);transform:translateY(-3px) scale(1.02)}
+@keyframes btnp{0%{box-shadow:0 0 0 0 rgba(198,245,63,.45)}
+  70%{box-shadow:0 0 0 16px rgba(198,245,63,0)}100%{box-shadow:0 0 0 0 rgba(198,245,63,0)}}
+button.ghost{border-color:var(--line);color:var(--gray)}
+button.ghost:hover{border-color:var(--lime);color:var(--lime);background:transparent}
+
+/* ---------- menú ---------- */
+.title{font-family:'Archivo Black';font-size:clamp(2.6rem,8.5vw,5.6rem);line-height:.92;
+  text-align:center;letter-spacing:.01em;animation:tin .8s cubic-bezier(.2,.9,.3,1) both}
+@keyframes tin{from{opacity:0;transform:translateY(-34px);filter:blur(8px)}
+  to{opacity:1;transform:none;filter:none}}
+.title span{display:block;color:transparent;-webkit-text-stroke:2.5px var(--lime)}
+.tagline{margin:14px 0 26px;color:var(--gray);letter-spacing:.34em;font-size:.78rem;
+  text-transform:uppercase;text-align:center;animation:tin .8s .15s cubic-bezier(.2,.9,.3,1) both}
+#m-cores{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:22px}
+.core{width:190px;border:1px solid var(--line);background:var(--panel);padding:14px;
+  cursor:pointer;position:relative;transition:all .15s ease;text-align:center}
+.core:hover{transform:translateY(-3px)}
+.core.sel{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
+.core.locked{opacity:.55}
+.core .shape{color:var(--lime);height:44px;display:flex;align-items:center;justify-content:center}
+.core.locked .shape{color:var(--gray)}
+.core .shape svg{width:38px;height:38px;animation:spin 14s linear infinite}
+.core:hover .shape svg{animation-duration:4s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.core h4{font-size:1.05rem;letter-spacing:.14em;margin-top:6px}
+.core p{font-size:.75rem;color:var(--gray);margin:4px 0 8px;min-height:2.4em;line-height:1.2}
+.core .cstats{font-size:.68rem;color:var(--gray);letter-spacing:.04em}
+.core .price{font-size:.8rem;color:var(--amber);font-weight:700;margin-top:6px}
+#m-stats{margin:16px 0 22px;color:var(--gray);font-size:.82rem;letter-spacing:.08em;text-align:center}
+#m-stats b{color:var(--ice)} #m-stats .coin{color:var(--amber);font-weight:700}
+.menurow{display:flex;gap:12px;margin-top:16px}
+.mhint{margin-top:22px;color:#5a6a62;font-size:.72rem;letter-spacing:.14em;text-align:center}
+
+/* ---------- taller ---------- */
+#shop h2, #death h2, #pause h2{font-family:'Archivo Black';font-size:clamp(1.6rem,5vw,2.6rem);letter-spacing:.06em}
+#s-coins{color:var(--amber);font-weight:700;font-size:1.2rem;margin:10px 0 20px;letter-spacing:.1em}
+#s-list{display:flex;flex-direction:column;gap:10px;width:min(560px,92vw);margin-bottom:22px}
+.upg{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:var(--panel);padding:14px 16px}
+.u-info{flex:1}
+.u-info h4{font-size:.95rem;letter-spacing:.14em}
+.u-info p{font-size:.78rem;color:var(--gray);margin-top:2px}
+.pips{display:flex;gap:4px;margin-top:8px}
+.pips i{width:16px;height:4px;background:#1c2622;display:block}
+.pips i.on{background:var(--lime)}
+.u-buy{min-width:110px;white-space:nowrap;font-size:.9rem;padding:10px 12px}
+
+/* ---------- subida de nivel ---------- */
+#levelup{background:rgba(5,7,10,.88)}
+.lu-head{text-align:center;margin-bottom:26px}
+.lu-head h2{font-family:'Archivo Black';font-size:clamp(1.8rem,6vw,3rem);color:var(--lime)}
+.lu-head h2 b{color:var(--ice)}
+.lu-head p{letter-spacing:.4em;color:var(--gray);text-transform:uppercase;font-size:.75rem;margin-top:6px}
+#cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+#cards.locked{pointer-events:none}
+.card{width:225px;background:var(--panel);border:1px solid var(--line);border-top:3px solid #5a6a5a;
+  padding:18px 16px 40px;cursor:pointer;position:relative;text-align:left;color:var(--ice);
+  font-family:'Chakra Petch',sans-serif;text-transform:none;letter-spacing:normal;font-weight:400;
+  opacity:0;animation:cin .4s ease-out forwards}
+.card:hover{transform:translateY(-6px);border-color:var(--lime);background:#111a15}
+.card.r{border-top-color:var(--amber)}
+.card.e{border-top-color:var(--mag)}
+.card .chip{font-size:.62rem;font-weight:700;letter-spacing:.22em;color:var(--gray);text-transform:uppercase}
+.card.r .chip{color:var(--amber)} .card.e .chip{color:var(--mag)}
+.card .cicon{height:44px;color:var(--lime);margin:10px 0 6px}
+.card .cicon svg{width:38px;height:38px}
+.card h3{font-size:1.2rem;letter-spacing:.08em}
+.card p{font-size:.8rem;color:var(--gray);margin-top:6px;line-height:1.35;min-height:3.2em}
+.card .cpips{display:flex;gap:4px;margin-top:10px}
+.card .cpips i{width:14px;height:4px;background:#1c2622}
+.card .cpips i.on{background:var(--lime)}
+.card .key{position:absolute;bottom:12px;right:14px;font-size:.7rem;color:#4a5a52;font-weight:700}
+@keyframes cin{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- muerte ---------- */
+#death h2{color:var(--coral);text-align:center}
+#d-newbest{margin:12px 0;color:var(--lime);font-weight:700;letter-spacing:.28em;
+  animation:blink 1s steps(2) infinite;font-size:.85rem}
+#d-newbest.hidden{display:none}
+@keyframes blink{50%{opacity:.25}}
+#d-stats{display:grid;grid-template-columns:auto auto;gap:8px 34px;margin:18px 0;
+  font-size:.95rem;background:var(--panel);border:1px solid var(--line);padding:20px 30px}
+#d-stats span{color:var(--gray);letter-spacing:.1em;font-size:.75rem;text-transform:uppercase;align-self:center}
+#d-stats b{font-size:1.15rem;text-align:right}
+#d-earned{color:var(--amber);font-size:1.3rem;font-weight:700;margin-bottom:24px;letter-spacing:.06em}
+.menurow.col{flex-direction:column;gap:10px;width:min(280px,80vw)}
+.menurow.col button{width:100%}
+
+/* ---------- loader ---------- */
+#loader{position:absolute;inset:0;z-index:60;background:var(--bg);flex-direction:column;
+  display:flex;align-items:center;justify-content:center;gap:22px;transition:opacity .6s}
+#loader.done{opacity:0;pointer-events:none}
+.llogo{font-family:'Archivo Black';font-size:clamp(1.6rem,6vw,2.6rem);letter-spacing:.04em}
+.llogo span{color:transparent;-webkit-text-stroke:2px var(--lime)}
+.lbar{width:min(340px,70vw);height:3px;background:#151d24;overflow:hidden}
+#ld-fill{height:100%;width:34%;background:var(--lime);animation:lslide 1.3s ease-in-out infinite alternate}
+@keyframes lslide{from{margin-left:-10%}to{margin-left:76%}}
+#ld-phase{font-size:.78rem;color:var(--lime);letter-spacing:.24em;text-transform:uppercase}
+#ld-tip{font-size:.78rem;color:#54635c;letter-spacing:.08em;height:1.2em}
+#ld-err{display:none;color:var(--coral);font-size:.85rem;text-align:center;max-width:80vw;line-height:1.5}
+#ld-err button{margin-top:12px}
+
+@media (max-width:640px){
+  #cards{flex-direction:column;align-items:center}
+  .card{width:min(300px,88vw);padding-bottom:34px}
+  #d-stats{padding:14px 18px;gap:6px 18px}
+  .menurow{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+  <div id="dmgvig"></div>
+  <div id="flash"></div>
+
+  <div id="hud" class="hidden">
+    <div id="xpbar"><div id="xpfill"></div></div>
+    <div class="hrow">
+      <div id="lvlbox">NV <b id="h-lvl">1</b></div>
+      <div id="h-clock">00:00</div>
+      <div class="hgrp">
+        <div id="h-kills">BAJAS <b>0</b></div>
+        <div id="h-coins">◈ <b>0</b></div>
+      </div>
+    </div>
+  </div>
+  <button id="btn-pause" class="hidden" aria-label="Pausa">
+    <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2h3v12H4zM9 2h3v12H9z" fill="currentColor"/></svg>
+  </button>
+  <div id="bossbar" class="hidden"><span id="bossname">CENTINELA</span><div class="bb"><div id="bossfill"></div></div></div>
+  <div id="combo" class="hidden">×0</div>
+  <div id="banner" class="hidden"><div class="bl"></div><div class="bwrap"><h3 id="b-title"></h3><p id="b-sub"></p></div><div class="bl"></div></div>
+  <div id="toast" class="hidden"></div>
+
+  <!-- MENÚ -->
+  <div id="menu" class="overlay hidden">
+    <h1 class="title">ÚLTIMO<span>NÚCLEO</span></h1>
+    <p class="tagline">La horda no duerme · Evoluciona o cae</p>
+    <div id="m-cores"></div>
+    <div id="m-stats"></div>
+    <button class="primary" id="playbtn">JUGAR</button>
+    <div class="menurow">
+      <button class="ghost" id="shopbtn">TALLER</button>
+      <button class="ghost" id="mutebtn">SONIDO: ON</button>
+    </div>
+    <p class="mhint">WASD / ARRASTRA PARA MOVER · SHIFT O 2 DEDOS = IMPULSO</p>
+  </div>
+
+  <!-- TALLER -->
+  <div id="shop" class="overlay hidden">
+    <h2>TALLER DEL NÚCLEO</h2>
+    <div id="s-coins">◈ 0</div>
+    <div id="s-list"></div>
+    <button class="ghost" id="shopback">VOLVER</button>
+  </div>
+
+  <!-- SUBIDA DE NIVEL -->
+  <div id="levelup" class="overlay hidden">
+    <div class="lu-head">
+      <h2>NIVEL <b id="lu-lvl">2</b></h2>
+      <p>Elige una mejora</p>
+    </div>
+    <div id="cards"></div>
+  </div>
+
+  <!-- PAUSA -->
+  <div id="pause" class="overlay hidden">
+    <h2>PAUSA</h2>
+    <div class="menurow col" style="margin-top:26px">
+      <button class="primary" id="resumebtn" style="font-size:1rem;padding:14px">REANUDAR</button>
+      <button class="ghost" id="abandonbtn">ABANDONAR (cobras lo ganado)</button>
+    </div>
+  </div>
+
+  <!-- MUERTE -->
+  <div id="death" class="overlay hidden">
+    <h2>NÚCLEO DESTRUIDO</h2>
+    <div id="d-newbest" class="hidden">— NUEVO RÉCORD —</div>
+    <div id="d-stats"></div>
+    <div id="d-earned"></div>
+    <div class="menurow col">
+      <button class="primary" id="d-retry" style="font-size:1.1rem">OTRA PARTIDA</button>
+      <button class="ghost" id="d-shop">TALLER</button>
+      <button class="ghost" id="d-menu">CAMBIAR NÚCLEO</button>
+    </div>
+  </div>
+
+  <!-- CARGA -->
+  <div id="loader">
+    <div class="llogo">ÚLTIMO <span>NÚCLEO</span></div>
+    <div class="lbar"><div id="ld-fill"></div></div>
+    <div id="ld-phase">CARGANDO EL NÚCLEO DE PYTHON…</div>
+    <div id="ld-tip"></div>
+    <div id="ld-err"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MOTOR DEL JUEGO — PYTHON PURO (Pyodide / WebAssembly)
+     ============================================================ -->
+<script type="text/python" id="pycode">
+import math, random, json
+import js
+from pyodide.ffi import create_proxy, to_js
+
+TAU = 6.283185307179586
+
+# Índices de la paleta (coinciden con PAL del lado JS)
+C_ICE, C_LIME, C_CORAL, C_MAG, C_AMBER = 0, 1, 2, 3, 4
+C_AQUA, C_PURE, C_GRAY, C_BLOOD, C_ORANGE = 5, 6, 7, 8, 9
+C_BG = 10
+
+STATE = "loading"
+run = None
+SAVE = None
+pending = []
+level_queue = 0
+last_ms = None
+mus_acc = 0.0
+
+AMB = None          # motas del menú
+DECO = None         # geometría flotante del menú
+STARS = None        # campo de estrellas
+amb_t = 0.0
+
+# ---------------- personajes ----------------
+CHARS = {
+ "vega":  {"name":"VEGA",  "hp":100, "spd":205, "dmg":1.0,  "mag":95,  "crit":0.05, "area":0.0, "price":0,
+           "desc":"Equilibrado y fiable. El primer núcleo.", "shape":"tri",
+           "line":"VIDA 100 · VEL 205 · DAÑO ×1.0"},
+ "lyra":  {"name":"LYRA",  "hp":72,  "spd":248, "dmg":1.0,  "mag":120, "crit":0.12, "area":0.0, "price":300,
+           "desc":"Rápida y afilada. Frágil como el cristal.", "shape":"dia",
+           "line":"VIDA 72 · VEL 248 · CRÍT +12% · IMÁN XL"},
+ "orion": {"name":"ORIÓN", "hp":92,  "spd":198, "dmg":1.28, "mag":95,  "crit":0.05, "area":0.18, "price":900,
+           "desc":"Puro poder de fuego. La última palabra.", "shape":"star",
+           "line":"VIDA 92 · DAÑO ×1.28 · ÁREA +18%"},
+}
+
+# ---------------- mejoras permanentes (taller) ----------------
+META = [
+ ("chasis",   "CHASIS REFORZADO",    "+18 de vida máxima",    5, 30, 1.7),
+ ("motor",    "ACELERADOR",          "+5% de velocidad",      5, 35, 1.7),
+ ("mira",     "MIRA LÁSER",          "+7% de daño",           5, 40, 1.7),
+ ("iman",     "IMÁN DE FRAGMENTOS",  "+18% de radio de imán", 5, 25, 1.7),
+ ("bujia",    "BUJÍA DE URANIO",     "+5% de cadencia",       5, 40, 1.7),
+ ("blindaje", "BLINDAJE",            "+1 de armadura",        3, 60, 1.8),
+]
+
+# ---------------- catálogo de cartas ----------------
+ARMAS = {
+ "pulso":  {"name":"PULSO",   "max":6, "desc":"Dispara dardos al enemigo más cercano."},
+ "orbita": {"name":"ÓRBITA",  "max":5, "desc":"Satélites que giran y golpean al contacto."},
+ "nova":   {"name":"NOVA",    "max":4, "desc":"Onda expansiva periódica a tu alrededor."},
+ "estela": {"name":"ESTELA",  "max":4, "desc":"Minas de energía en tu rastro."},
+}
+PASIVAS = [
+ ("furia",  "FURIA",        "dmg",   0.12, 5),
+ ("cadena", "CADENA",       "rate",  0.10, 5),
+ ("motor",  "MOTOR",        "spd",   0.08, 5),
+ ("vital",  "PULSO VITAL",  "maxhp", 18,   5),
+ ("iman",   "IMÁN",         "mag",   0.30, 5),
+ ("ojo",    "TERCER OJO",   "crit",  0.08, 5),
+ ("ambito", "ÁMBITO",       "area",  0.12, 5),
+ ("coraza", "CORAZA",       "armor", 1,    3),
+ ("sed",    "SED",          "xp",    0.10, 5),
+]
+PASMAP = {p[0]: p for p in PASIVAS}
+
+# ---------------- enemigos ----------------
+ETYPE = {
+ 0: {"hp":10.0,  "spd":62.0,  "r":9.0,  "ci":C_CORAL,  "dmg":8,  "xp":1},
+ 1: {"hp":6.0,   "spd":135.0, "r":7.0,  "ci":C_MAG,    "dmg":6,  "xp":1},
+ 2: {"hp":70.0,  "spd":33.0,  "r":17.0, "ci":C_BLOOD,  "dmg":18, "xp":5},
+ 4: {"hp":650.0, "spd":42.0,  "r":32.0, "ci":C_ORANGE, "dmg":30, "xp":0},
+}
+def hp_scale(t): return 1.0 + t * 0.004
+
+WAVES = ["PRIMERA SANGRE","MAREA ESCARLATA","MAREJADA","COLMILLOS DOBLES","LA GUARDIA PESADA",
+         "MAR DE DIENTES","ECLIPSE","DESPERTAR","PUNTO CIEGO","EL VACÍO DEVORA",
+         "SIN REMISIÓN","CENIZA","CERO ABSOLUTO"]
+WAVE_SUBS = ["La horda crece","Resiste","No se detienen","Siguen llegando","Agárrate"]
+WAVE_EVERY = 45.0
+BOSS_EVERY = 120.0
+
+# ---------------- formas vectoriales ----------------
+SH_SHIP = [(1.4,0),(-1.0,0.85),(-0.55,0),(-1.0,-0.85)]
+SH_DIA  = [(1.3,0),(0,0.9),(-1.3,0),(0,-0.9)]
+SH_STAR = [(1.6,0),(0.35,0.35),(0,1.1),(-0.35,0.35),(-1.6,0),(-0.35,-0.35),(0,-1.1),(0.35,-0.35)]
+SH_HEX  = [(1.0,0),(0.5,0.866),(-0.5,0.866),(-1.0,0),(-0.5,-0.866),(0.5,-0.866)]
+SH_ARROW= [(1.6,0),(-1.0,0.75),(-1.0,-0.75)]
+SH_DIAM = [(1.0,0),(0,1.0),(-1.0,0),(0,-1.0)]
+SH_DART = [(2.4,0),(-1.0,0.8),(-1.8,0),(-1.0,-0.8)]   # proyectil
+
+# ---------------- guardado ----------------
+def default_save():
+    return {"coins":0, "best_time":0.0, "best_kills":0, "best_level":0,
+            "tot_kills":0, "runs":0,
+            "chars":{"vega":True,"lyra":False,"orion":False},
+            "upg":{"chasis":0,"motor":0,"mira":0,"iman":0,"bujia":0,"blindaje":0}}
+
+def load_save():
+    global SAVE
+    base = default_save()
+    try:
+        raw = js.loadState()
+        d = json.loads(raw) if raw else {}
+    except Exception:
+        d = {}
+    for k, v in base.items():
+        if k not in d: d[k] = v
+    for k, v in base["chars"].items():
+        if k not in d["chars"]: d["chars"][k] = v
+    for k, v in base["upg"].items():
+        if k not in d["upg"]: d["upg"][k] = v
+    SAVE = d
+
+def persist():
+    js.saveState(json.dumps(SAVE))
+
+# ---------------- utilidades ----------------
+def xp_need(l): return int(5 + 4 * (l ** 1.35))
+
+def ang_lerp(a, b, t):
+    d = (b - a) % TAU
+    if d > math.pi: d -= TAU
+    return a + d * t
+
+# ---------------- spatial hash ----------------
+CELL = 96.0
+def build_hash(es):
+    g = {}
+    for e in es:
+        k = int(e[0] // CELL) * 100003 + int(e[1] // CELL)
+        b = g.get(k)
+        if b is None: g[k] = [e]
+        else: b.append(e)
+    return g
+
+def near(g, x, y, rad):
+    out = []
+    for cx in range(int((x - rad) // CELL), int((x + rad) // CELL) + 1):
+        for cy in range(int((y - rad) // CELL), int((y + rad) // CELL) + 1):
+            b = g.get(cx * 100003 + cy)
+            if b: out.extend(b)
+    return out
+
+# ---------------- efectos ----------------
+def spark(x, y, ci, n, sp=140.0):
+    P = run["parts"]
+    for _ in range(n):
+        if len(P) > 320: break
+        a = random.random() * TAU
+        v = sp * (0.4 + random.random() * 0.9)
+        lf = 0.45 + random.random() * 0.35
+        P.append([x, y, math.cos(a)*v, math.sin(a)*v, lf, lf,
+                  2.0 + random.random()*2.5, ci, random.random()*TAU,
+                  (random.random()-0.5)*12.0, 1])
+
+def ring(x, y, r0, r1, ci, life=0.35):
+    run["novas"].append([x, y, r0, r1, life, life, ci])
+
+def ftext(x, y, s, ci, size=11):
+    if len(run["texts"]) < 34:
+        run["texts"].append([x, y, s, ci, size, 0.75])
+
+def shake(v):
+    run["shake"] = min(18.0, run["shake"] + v)
+
+def knock(e, fx, fy, f):
+    dx = e[0] - fx; dy = e[1] - fy
+    d = math.hypot(dx, dy) or 1.0
+    if e[7] != 4:
+        e[9] += dx / d * f
+        e[10] += dy / d * f
+
+def sfx(name, p=0):
+    js.sfx(name, p)
+
+# ---------------- partida ----------------
+def make_stats(char):
+    b = CHARS[char]; u = SAVE["upg"]
+    return {
+        "dmg":   b["dmg"] * (1 + 0.07 * u["mira"]),
+        "rate":  1.0 * (1 + 0.05 * u["bujia"]),
+        "spd":   b["spd"] * (1 + 0.05 * u["motor"]),
+        "maxhp": float(b["hp"] + 18 * u["chasis"]),
+        "mag":   b["mag"] * (1 + 0.18 * u["iman"]),
+        "crit":  b["crit"],
+        "area":  1.0 + b["area"],
+        "armor": u["blindaje"],
+        "xp":    1.0,
+    }
+
+def new_run(char):
+    st = make_stats(char)
+    return {
+        "char":char, "t":0.0, "kills":0, "damage":0.0, "dashes":0,
+        "level":1, "xp":0.0, "xpnext":xp_need(1),
+        "combo":0, "comboT":0.0, "bestCombo":0,
+        "px":0.0,"py":0.0,"vx":0.0,"vy":0.0,"ang":-math.pi/2,
+        "hp":st["maxhp"], "stats":st,
+        "weapons":{"pulso":1}, "pas":{},
+        "cd":{"pulso":0.4,"nova":2.5,"mina":0.6,"orb":0.0},
+        "orbA":0.0,
+        # impulso
+        "dashA":0.0, "dashCd":0.0, "dashX":1.0, "dashY":0.0,
+        "dashN":0, "ghosts":[], "ghostT":0.0,
+        "enemies":[], "bullets":[], "gems":[], "coins":[], "hearts":[],
+        "mines":[], "novas":[], "parts":[], "texts":[], "trail":[],
+        "spawnT":1.4, "boostT":0.0, "waveT":WAVE_EVERY, "waveN":0,
+        "bossT":BOSS_EVERY, "bossN":0, "boss":None, "bossName":"",
+        "inv":0.0, "shake":0.0, "ts":1.0, "tst":1.0, "slowT":0.0,
+        "dead":False, "deadT":0.0,
+        "camx":0.0, "camy":0.0, "coinRun":0, "moved":False, "trailT":0.0,
+    }
+
+def spawn_enemy(t, ang=None, R=640.0):
+    d = ETYPE[t]
+    hp = d["hp"] * hp_scale(run["t"])
+    if ang is None: ang = random.random() * TAU
+    x = run["px"] + math.cos(ang) * R
+    y = run["py"] + math.sin(ang) * R
+    # 17 slots: el último registra qué impulso ya golpeó a este enemigo
+    e = [x, y, 0.0, 0.0, hp, hp, d["r"], t, 0.0, 0.0, 0.0,
+         random.random() * TAU, 4.0, 0, 0.0, 0.0, -1]
+    run["enemies"].append(e)
+    if t == 4:
+        run["boss"] = e
+        run["bossName"] = "CENTINELA MK.%d" % run["bossN"]
+
+# ---------------- daño / muerte ----------------
+def hurt_enemy(e, dmg, crit=False):
+    if e[4] <= 0: return
+    e[4] -= dmg
+    e[8] = 0.10
+    run["damage"] += dmg
+    if crit or random.random() < 0.45:
+        ftext(e[0], e[1] - e[6] - 8, "%d" % int(dmg),
+              C_AMBER if crit else C_ICE, 16 if crit else 11)
+
+def on_kill(e):
+    t = e[7]; r = run
+    r["kills"] += 1
+    r["combo"] += 1; r["comboT"] = 2.5
+    if r["combo"] > r["bestCombo"]: r["bestCombo"] = r["combo"]
+    spark(e[0], e[1], ETYPE[t]["ci"], 8 if t != 4 else 26, 150 if t != 4 else 280)
+    if t == 4:
+        for i in range(10):
+            a = random.random() * TAU
+            r["gems"].append([e[0]+math.cos(a)*26, e[1]+math.sin(a)*26,
+                              math.cos(a)*90, math.sin(a)*90, 6])
+        for i in range(18):
+            a = random.random() * TAU
+            r["coins"].append([e[0]+math.cos(a)*30, e[1]+math.sin(a)*30,
+                               math.cos(a)*130, math.sin(a)*130])
+        r["boss"] = None
+        r["tst"] = 0.35; r["slowT"] = 0.7
+        shake(14)
+        ring(e[0], e[1], 10, 130, C_AMBER, 0.55)
+        ring(e[0], e[1], 6, 90, C_PURE, 0.35)
+        js.screenFlash("white")
+        sfx("boss")
+    else:
+        # anillo de "kill flash"
+        ring(e[0], e[1], e[6]*0.8, e[6]*3.2, C_PURE, 0.16)
+        v = ETYPE[t]["xp"]
+        if v > 0:
+            r["gems"].append([e[0], e[1], 0.0, 0.0, v])
+        if random.random() < 0.08:
+            r["coins"].append([e[0], e[1], 0.0, 0.0])
+        if random.random() < 0.02:
+            r["hearts"].append([e[0], e[1], 0.0, 0.0])
+        if t == 2: shake(4)
+        sfx("kill" if t < 2 else "kill2")
+
+def reap():
+    es = run["enemies"]
+    alive = []
+    for e in es:
+        if e[4] > 0: alive.append(e)
+        else: on_kill(e)
+    run["enemies"] = alive
+
+def player_die():
+    r = run
+    r["dead"] = True; r["deadT"] = 1.6; r["tst"] = 0.15
+    spark(r["px"], r["py"], C_ICE, 30, 340)
+    spark(r["px"], r["py"], C_LIME, 20, 260)
+    spark(r["px"], r["py"], C_CORAL, 14, 200)
+    ring(r["px"], r["py"], 6, 90, C_ICE, 0.55)
+    ring(r["px"], r["py"], 10, 150, C_LIME, 0.75)
+    ring(r["px"], r["py"], 4, 60, C_CORAL, 0.9)
+    shake(18); sfx("death")
+    js.screenFlash("white"); js.flashDamage()
+
+def end_run(dest):
+    global STATE
+    r = run
+    prevbest = SAVE["best_time"]
+    earned = int(r["kills"]*0.3 + r["t"]*0.8 + r["level"]*2 + r["coinRun"])
+    SAVE["coins"] += earned
+    SAVE["runs"] += 1
+    SAVE["tot_kills"] += r["kills"]
+    newbest = r["t"] > prevbest
+    if newbest: SAVE["best_time"] = int(r["t"])
+    if r["kills"] > SAVE["best_kills"]: SAVE["best_kills"] = r["kills"]
+    if r["level"] > SAVE["best_level"]: SAVE["best_level"] = r["level"]
+    persist()
+    m, s = divmod(int(r["t"]), 60)
+    payload = {
+        "time":"%02d:%02d" % (m, s), "level":r["level"], "kills":r["kills"],
+        "damage":int(r["damage"]), "combo":r["bestCombo"], "char":CHARS[r["char"]]["name"],
+        "earned":earned, "newbest":newbest,
+        "prevbest":"%02d:%02d" % divmod(int(prevbest), 60), "coins":SAVE["coins"],
+    }
+    if dest == "death":
+        STATE = "dead"
+        js.hideAll()
+        js.showDeath(json.dumps(payload))
+        js.musicSet(0.12)
+    else:
+        js.hideAll()
+        go_menu()
+        js.showToast("+ ◈ %d núcleos recuperados" % earned)
+
+# ---------------- subida de nivel ----------------
+def roll_rarity():
+    x = random.random()
+    if x < 0.05: return 2, 2.6
+    if x < 0.28: return 1, 1.6
+    return 0, 1.0
+
+def fmt_desc(stat, v):
+    pct = lambda x: int(round(x * 100))
+    return {
+        "dmg":   "+%d%% de daño" % pct(v),
+        "rate":  "+%d%% de cadencia" % pct(v),
+        "spd":   "+%d%% de velocidad" % pct(v),
+        "maxhp": "+%d de vida máxima (repara lo añadido)" % int(v),
+        "mag":   "+%d%% de radio de imán" % pct(v),
+        "crit":  "+%d%% de probabilidad crítica" % pct(v),
+        "area":  "+%d%% de área de efecto" % pct(v),
+        "armor": "+%d de armadura (reduce cada golpe)" % int(v),
+        "xp":    "+%d%% de experiencia" % pct(v),
+    }[stat]
+
+def arma_desc(aid, lvl):
+    nl = lvl + 1
+    if aid == "pulso":
+        extra = " ¡+1 PROYECTIL!" if nl in (3, 5) else ""
+        return "Dispara dardos al enemigo más cercano. Más daño y cadencia." + extra
+    if aid == "orbita":
+        extra = " ¡+1 SATÉLITE!" if nl in (2, 3, 5) else ""
+        return "Satélites que orbitan a tu alrededor y golpean al contacto." + extra
+    if aid == "nova":
+        return "Onda expansiva periódica. Más radio y más daño."
+    return "Minas de energía en tu rastro. Más daño y más radio."
+
+def gen_cards(r):
+    pool = []
+    for aid, a in ARMAS.items():
+        lvl = r["weapons"].get(aid, 0)
+        if lvl < a["max"]:
+            ent = ("arma", aid)
+            pool.append(ent)
+            if lvl == 0: pool.append(ent)
+    for p in PASIVAS:
+        if r["pas"].get(p[0], 0) < p[4]:
+            pool.append(("pas", p[0]))
+    if not pool:
+        return [
+            {"kind":"cura","id":"cura","name":"NANOREPARACIÓN","desc":"Restaura 60 de vida al instante.","rarity":0},
+            {"kind":"bits","id":"bits","name":"RESERVA","desc":"+25 núcleos al final de la partida.","rarity":0},
+            {"kind":"cura","id":"cura","name":"SOBRECARGA VITAL","desc":"Restaura 40 de vida al instante.","rarity":0},
+        ]
+    random.shuffle(pool)
+    seen = set(); ded = []
+    for e in pool:
+        if e not in seen:
+            seen.add(e); ded.append(e)
+    cards = []
+    for kind, cid in ded[:3]:
+        if kind == "arma":
+            a = ARMAS[cid]; lvl = r["weapons"].get(cid, 0)
+            cards.append({"kind":"arma","id":cid,"name":a["name"],
+                          "desc":arma_desc(cid, lvl),
+                          "rarity":1 if lvl == 0 else 0, "lvl":lvl, "max":a["max"]})
+        else:
+            p = PASMAP[cid]; lvl = r["pas"].get(cid, 0)
+            rar, m = roll_rarity()
+            v = p[3] * m
+            if p[2] in ("maxhp", "armor"): v = int(max(1, v))
+            cards.append({"kind":"pas","id":cid,"name":p[1],"desc":fmt_desc(p[2], v),
+                          "rarity":rar,"lvl":lvl,"max":p[4],"stat":p[2],"val":round(v, 3)})
+    return cards
+
+def check_level():
+    global pending, level_queue, STATE
+    r = run
+    while r["xp"] >= r["xpnext"]:
+        r["xp"] -= r["xpnext"]
+        r["level"] += 1
+        r["xpnext"] = xp_need(r["level"])
+        if STATE == "levelup":
+            level_queue += 1
+        else:
+            pending = gen_cards(r)
+            STATE = "levelup"
+            ring(r["px"], r["py"], 10, 80, C_LIME, 0.5)
+            ring(r["px"], r["py"], 14, 110, C_AQUA, 0.35)
+            spark(r["px"], r["py"], C_LIME, 12, 180)
+            sfx("levelup")
+            js.screenFlash("lime")
+            js.showLevelUp(json.dumps({"lvl": r["level"], "cards": pending}))
+
+def choose_card(i):
+    global STATE, pending, level_queue
+    if STATE != "levelup" or i >= len(pending): return
+    card = pending[i]; r = run; st = r["stats"]
+    kind = card["kind"]
+    if kind == "arma":
+        r["weapons"][card["id"]] = r["weapons"].get(card["id"], 0) + 1
+    elif kind == "pas":
+        r["pas"][card["id"]] = r["pas"].get(card["id"], 0) + 1
+        key = card["stat"]; v = card["val"]
+        if key == "maxhp":
+            st["maxhp"] += v
+            r["hp"] = min(st["maxhp"], r["hp"] + v)
+        elif key == "armor":
+            st["armor"] += int(v)
+        else:
+            st[key] += v
+    elif kind == "cura":
+        r["hp"] = min(st["maxhp"], r["hp"] + 60)
+    elif kind == "bits":
+        r["coinRun"] += 25
+    sfx("pick")
+    if level_queue > 0:
+        level_queue -= 1
+        pending = gen_cards(r)
+        js.showLevelUp(json.dumps({"lvl": r["level"], "cards": pending}))
+    else:
+        STATE = "running"
+        js.hideLevelUp()
+
+# ---------------- actualización por frame ----------------
+def update(dt):
+    global STATE
+    r = run; st = r["stats"]
+    r["ts"] += (r["tst"] - r["ts"]) * min(1.0, dt * 10.0)
+    if r["slowT"] > 0:
+        r["slowT"] -= dt
+        if r["slowT"] <= 0: r["tst"] = 1.0
+    sdt = dt * r["ts"]
+    r["t"] += sdt
+
+    # ---- entrada ----
+    iv = js.inputVec
+    ix = iv.x; iy = iv.y
+    if (ix or iy) and not r["moved"]: r["moved"] = True
+    l = math.hypot(ix, iy)
+    if l > 1.0:
+        ix /= l; iy /= l
+
+    # ---- IMPULSO ----
+    if r["dashCd"] > 0.0: r["dashCd"] -= dt
+    req = js.dashReq
+    js.dashReq = 0
+    if r["dashA"] > 0.0:
+        # embistiendo: invulnerable y dañino
+        r["dashA"] -= sdt
+        r["vx"] = r["dashX"] * 760.0
+        r["vy"] = r["dashY"] * 760.0
+        r["px"] += r["vx"] * sdt
+        r["py"] += r["vy"] * sdt
+        r["ang"] = math.atan2(r["dashY"], r["dashX"])
+        r["ghostT"] -= sdt
+        if r["ghostT"] <= 0.0:
+            r["ghostT"] = 0.022
+            r["ghosts"].append([r["px"], r["py"], 0.3, r["ang"]])
+            if len(r["ghosts"]) > 12: r["ghosts"].pop(0)
+        r["trailT"] -= sdt
+        if r["trailT"] <= 0.0:
+            r["trailT"] = 0.028
+            r["trail"].append([r["px"], r["py"], 0.35])
+            if len(r["trail"]) > 26: r["trail"].pop(0)
+    elif req and r["dashCd"] <= 0.0 and not r["dead"]:
+        if l > 0.001:
+            dl = math.hypot(ix, iy) or 1.0
+            r["dashX"] = ix / dl; r["dashY"] = iy / dl
+        else:
+            r["dashX"] = math.cos(r["ang"]); r["dashY"] = math.sin(r["ang"])
+        r["dashA"] = 0.18; r["dashCd"] = 2.6
+        r["dashN"] += 1; r["dashes"] += 1
+        r["vx"] = r["dashX"] * 760.0; r["vy"] = r["dashY"] * 760.0
+        r["px"] += r["vx"] * sdt; r["py"] += r["vy"] * sdt
+        r["ang"] = math.atan2(r["dashY"], r["dashX"])
+        sfx("dash"); shake(3)
+        ring(r["px"], r["py"], 8.0, 44.0, C_ICE, 0.25)
+    else:
+        # ---- movimiento normal ----
+        k = min(1.0, sdt * 9.0)
+        r["vx"] += (ix * st["spd"] - r["vx"]) * k
+        r["vy"] += (iy * st["spd"] - r["vy"]) * k
+        r["px"] += r["vx"] * sdt
+        r["py"] += r["vy"] * sdt
+        if l > 0.1:
+            r["ang"] = ang_lerp(r["ang"], math.atan2(r["vy"], r["vx"]), min(1.0, sdt * 12.0))
+        if l > 0.1:
+            r["trailT"] -= sdt
+            if r["trailT"] <= 0.0:
+                r["trailT"] = 0.028
+                r["trail"].append([r["px"], r["py"], 0.35])
+                if len(r["trail"]) > 26: r["trail"].pop(0)
+
+    for tr in r["trail"]:
+        tr[2] -= sdt
+    r["trail"][:] = [tr for tr in r["trail"] if tr[2] > 0]
+    for gh in r["ghosts"]:
+        gh[2] -= dt
+    r["ghosts"][:] = [gh for gh in r["ghosts"] if gh[2] > 0]
+
+    if r["inv"] > 0: r["inv"] -= dt
+    r["shake"] = max(0.0, r["shake"] - 60.0 * dt)
+    if r["comboT"] > 0:
+        r["comboT"] -= sdt
+        if r["comboT"] <= 0: r["combo"] = 0
+    if r["boostT"] > 0: r["boostT"] -= sdt
+
+    if r["dead"]:
+        r["deadT"] -= dt
+        if r["deadT"] <= 0:
+            end_run("death")
+            return
+
+    px, py = r["px"], r["py"]
+    es = r["enemies"]
+
+    # ---- director de aparición ----
+    if not r["dead"]:
+        r["waveT"] -= sdt
+        if r["waveT"] <= 0:
+            r["waveT"] = WAVE_EVERY
+            r["waveN"] += 1
+            wi = min(len(WAVES) - 1, r["waveN"] - 1)
+            js.showBanner(WAVES[wi], WAVE_SUBS[r["waveN"] % len(WAVE_SUBS)], False)
+            sfx("wave")
+            n = 12 + int(r["t"] * 0.06)
+            base = random.random() * TAU
+            for i in range(n):
+                spawn_enemy(0, base + i / n * TAU, 620.0)
+            r["boostT"] = 6.0
+
+        r["bossT"] -= sdt
+        if r["bossT"] <= 0 and r["boss"] is None:
+            r["bossN"] += 1
+            r["bossT"] = BOSS_EVERY
+            spawn_enemy(4)
+            js.showBanner("CENTINELA MK.%d" % r["bossN"], "JEFE ENTRANTE", True)
+            sfx("boss")
+
+        r["spawnT"] -= sdt
+        if r["spawnT"] <= 0 and len(es) < 340:
+            boost = 0.55 if r["boostT"] > 0 else 1.0
+            r["spawnT"] = max(0.16, 0.95 - r["t"] * 0.0032) * boost
+            t = r["t"]
+            w = [(10, 0), (8 if t > 45 else 0, 1), (5 if t > 100 else 0, 2)]
+            tot = sum(x for x, _ in w)
+            pick = random.random() * tot
+            tipo = 0
+            for ww, tt in w:
+                if pick < ww: tipo = tt; break
+                pick -= ww
+            cnt = 1 + (1 if t > 90 else 0) + (1 if t > 240 else 0)
+            for _ in range(cnt):
+                spawn_enemy(tipo)
+
+    # ---- enemigos ----
+    for e in es:
+        t = e[7]
+        dx = px - e[0]; dy = py - e[1]
+        dist = math.hypot(dx, dy) or 1.0
+        sp = ETYPE[t]["spd"]
+        if t == 4:
+            if e[13] == 0:
+                e[12] -= sdt
+                if e[12] <= 0.7: e[8] = 0.09
+                if e[12] <= 0:
+                    e[13] = 1; e[12] = 0.5
+                    e[14] = dx / dist; e[15] = dy / dist
+                    sfx("dash")
+                else:
+                    e[0] += dx / dist * sp * sdt + e[9] * sdt
+                    e[1] += dy / dist * sp * sdt + e[10] * sdt
+            else:
+                e[12] -= sdt
+                e[0] += e[14] * 300.0 * sdt + e[9] * sdt
+                e[1] += e[15] * 300.0 * sdt + e[10] * sdt
+                if e[12] <= 0:
+                    e[13] = 0; e[12] = 3.5 + random.random() * 2.0
+        else:
+            sway = math.sin(e[11]) * 22.0 if t < 2 else 0.0
+            e[11] += sdt * 6.0
+            e[0] += (dx / dist * sp - dy / dist * sway) * sdt + e[9] * sdt
+            e[1] += (dy / dist * sp + dx / dist * sway) * sdt + e[10] * sdt
+        dec = max(0.0, 1.0 - sdt * 6.0)
+        e[9] *= dec; e[10] *= dec
+        if e[8] > 0: e[8] -= dt
+
+    g = build_hash(es)
+
+    # separación suave entre enemigos
+    for e in es:
+        if e[7] == 4: continue
+        key = int(e[0] // CELL) * 100003 + int(e[1] // CELL)
+        b = g.get(key)
+        if b and len(b) > 1:
+            c = 0
+            for o in b:
+                if o is e or o[7] == 4: continue
+                ddx = e[0] - o[0]; ddy = e[1] - o[1]
+                dd = ddx * ddx + ddy * ddy
+                rr = e[6] + o[6]
+                if 0.001 < dd < rr * rr:
+                    d_ = math.sqrt(dd)
+                    push = (rr - d_) * 9.0
+                    e[9] += ddx / d_ * push
+                    e[10] += ddy / d_ * push
+                    c += 1
+                    if c >= 2: break
+
+    # ---- IMPULSO: daño a lo que atraviesas ----
+    if not r["dead"] and r["dashA"] > 0.0:
+        for e in near(g, px, py, 70.0):
+            if e[16] != r["dashN"] and (e[0]-px)**2 + (e[1]-py)**2 < (e[6]+18.0)**2:
+                e[16] = r["dashN"]
+                hurt_enemy(e, 14.0 * st["dmg"])
+                knock(e, px, py, 430)
+                spark(e[0], e[1], C_ICE, 5, 170)
+
+    # ---- contacto con el jugador (no durante el impulso) ----
+    if not r["dead"] and r["inv"] <= 0 and r["dashA"] <= 0.0:
+        for e in near(g, px, py, 60.0):
+            dx = e[0] - px; dy = e[1] - py
+            rr = e[6] + 13.0
+            if dx * dx + dy * dy < rr * rr:
+                dmgv = max(1, ETYPE[e[7]]["dmg"] - st["armor"])
+                r["hp"] -= dmgv
+                r["inv"] = 0.8
+                shake(6 + ETYPE[e[7]]["dmg"] * 0.2)
+                sfx("hurt")
+                js.flashDamage()
+                d_ = math.hypot(dx, dy) or 1.0
+                r["vx"] -= dx / d_ * 170.0
+                r["vy"] -= dy / d_ * 170.0
+                ftext(px, py - 22, "-%d" % dmgv, C_CORAL, 14)
+                if r["hp"] <= 0:
+                    player_die()
+                break
+
+    # ---- armas ----
+    if not r["dead"]:
+        lvl = r["weapons"].get("pulso", 0)
+        if lvl:
+            r["cd"]["pulso"] -= sdt
+            if r["cd"]["pulso"] <= 0:
+                tgt = None; bd = 760.0 * 760.0
+                for e in es:
+                    dd = (e[0]-px)**2 + (e[1]-py)**2
+                    if dd < bd: bd = dd; tgt = e
+                if tgt:
+                    n = 1 + (lvl >= 3) + (lvl >= 5)
+                    base_a = math.atan2(tgt[1]-py, tgt[0]-px)
+                    dmgv = (9.0 + 4.0 * lvl) * st["dmg"]
+                    for i in range(n):
+                        a = base_a + (i - (n - 1) / 2.0) * 0.14
+                        crit = random.random() < st["crit"]
+                        r["bullets"].append([
+                            px + math.cos(a)*16, py + math.sin(a)*16,
+                            math.cos(a)*560.0, math.sin(a)*560.0,
+                            dmgv * (2.0 if crit else 1.0),
+                            5.5 * st["area"] ** 0.5, 1.1, 1 if crit else 0])
+                        spark(px + math.cos(a)*20, py + math.sin(a)*20, C_AQUA, 2, 60)
+                    r["cd"]["pulso"] = 0.55 / (st["rate"] * (1.0 + 0.05 * lvl))
+                    sfx("shoot")
+
+        lvl = r["weapons"].get("orbita", 0)
+        if lvl:
+            r["orbA"] += sdt * (2.0 + 0.12 * lvl)
+            r["cd"]["orb"] -= sdt
+            if r["cd"]["orb"] <= 0:
+                K = min(4, 1 + (lvl >= 2) + (lvl >= 3) + (lvl >= 5))
+                orbR = 80.0 * st["area"]
+                hit = False
+                dmgv = (7.0 + 3.0 * lvl) * st["dmg"]
+                for i in range(K):
+                    a = r["orbA"] + i / K * TAU
+                    ox = px + math.cos(a) * orbR
+                    oy = py + math.sin(a) * orbR
+                    for e in near(g, ox, oy, 60.0):
+                        if (e[0]-ox)**2 + (e[1]-oy)**2 < (13.0*st["area"] + e[6])**2:
+                            hurt_enemy(e, dmgv)
+                            knock(e, ox, oy, 220)
+                            hit = True
+                            break
+                if hit:
+                    r["cd"]["orb"] = 0.16
+                    sfx("orb")
+                else:
+                    r["cd"]["orb"] = 0.05
+
+        lvl = r["weapons"].get("nova", 0)
+        if lvl:
+            r["cd"]["nova"] -= sdt
+            if r["cd"]["nova"] <= 0:
+                r["cd"]["nova"] = (4.0 - 0.45 * lvl) / st["rate"]
+                rad = (140.0 + 22.0 * lvl) * st["area"]
+                dmgv = (12.0 + 7.0 * lvl) * st["dmg"]
+                ring(px, py, 20.0, rad, C_AQUA, 0.42)
+                ring(px, py, 24.0, rad * 0.92, C_LIME, 0.3)
+                shake(3); sfx("nova")
+                for e in near(g, px, py, rad + 40.0):
+                    if (e[0]-px)**2 + (e[1]-py)**2 < (rad + e[6])**2:
+                        hurt_enemy(e, dmgv)
+                        knock(e, px, py, 300)
+
+        lvl = r["weapons"].get("estela", 0)
+        if lvl and l > 0.3:
+            r["cd"]["mina"] -= sdt
+            if r["cd"]["mina"] <= 0:
+                r["cd"]["mina"] = 0.75 / st["rate"]
+                r["mines"].append([px, py, 0.5, 7.0, lvl])
+
+        minew = []
+        for m in r["mines"]:
+            if m[3] <= 0: continue
+            m[2] -= sdt; m[3] -= sdt
+            if m[2] <= 0:
+                rad = (52.0 + 10.0 * m[4]) * st["area"]
+                boomed = False
+                for e in near(g, m[0], m[1], rad + 30.0):
+                    if (e[0]-m[0])**2 + (e[1]-m[1])**2 < (rad + e[6])**2:
+                        hurt_enemy(e, (15.0 + 8.0 * m[4]) * st["dmg"])
+                        knock(e, m[0], m[1], 240)
+                        boomed = True
+                if boomed or m[3] <= 0:
+                    ring(m[0], m[1], 6.0, rad, C_LIME, 0.3)
+                    ring(m[0], m[1], 4.0, rad * 0.6, C_PURE, 0.2)
+                    spark(m[0], m[1], C_LIME, 6, 150)
+                    if boomed: sfx("mine")
+                    continue
+            minew.append(m)
+        r["mines"] = minew
+
+        nb = []
+        for b in r["bullets"]:
+            b[0] += b[2] * sdt; b[1] += b[3] * sdt; b[6] -= sdt
+            if b[6] <= 0: continue
+            hit = False
+            for e in near(g, b[0], b[1], 40.0):
+                rr = b[5] + e[6]
+                if (e[0]-b[0])**2 + (e[1]-b[1])**2 < rr * rr:
+                    hurt_enemy(e, b[4], bool(b[7]))
+                    knock(e, b[0], b[1], 140)
+                    spark(b[0], b[1], C_AQUA, 3, 90)
+                    hit = True; break
+            if not hit: nb.append(b)
+        r["bullets"] = nb
+
+        reap()
+
+        # ---- recogibles ----
+        mag = st["mag"]
+        gemw = []
+        for gm in r["gems"]:
+            dx = px - gm[0]; dy = py - gm[1]
+            d = math.hypot(dx, dy) or 1.0
+            if d < mag:
+                pull = 260.0 + (mag - d) * 6.0
+                gm[2] += dx / d * pull * sdt
+                gm[3] += dy / d * pull * sdt
+            dec = max(0.0, 1.0 - sdt * 3.0)
+            gm[2] *= dec; gm[3] *= dec
+            gm[0] += gm[2] * sdt; gm[1] += gm[3] * sdt
+            if d < 17.0:
+                mult = 1.0 + min(r["combo"], 60) * 0.03
+                r["xp"] += gm[4] * st["xp"] * mult
+                sfx("gem", r["combo"])
+                check_level()
+                continue
+            gemw.append(gm)
+        r["gems"] = gemw
+
+        coinw = []
+        for cn in r["coins"]:
+            dx = px - cn[0]; dy = py - cn[1]
+            d = math.hypot(dx, dy) or 1.0
+            if d < mag:
+                cn[2] += dx / d * 300.0 * sdt
+                cn[3] += dy / d * 300.0 * sdt
+            dec = max(0.0, 1.0 - sdt * 3.0)
+            cn[2] *= dec; cn[3] *= dec
+            cn[0] += cn[2] * sdt; cn[1] += cn[3] * sdt
+            if d < 16.0:
+                r["coinRun"] += 1
+                sfx("coin")
+                continue
+            coinw.append(cn)
+        r["coins"] = coinw
+
+        heartw = []
+        for h in r["hearts"]:
+            dx = px - h[0]; dy = py - h[1]
+            d = math.hypot(dx, dy) or 1.0
+            if d < mag:
+                h[2] += dx / d * 300.0 * sdt
+                h[3] += dy / d * 300.0 * sdt
+            h[0] += h[2] * sdt; h[1] += h[3] * sdt
+            if d < 16.0:
+                r["hp"] = min(st["maxhp"], r["hp"] + 18)
+                ftext(px, py - 24, "+18", C_AQUA, 13)
+                sfx("heart")
+                continue
+            heartw.append(h)
+        r["hearts"] = heartw
+
+    # ---- efectos ----
+    for nv in r["novas"]: nv[4] -= dt
+    r["novas"][:] = [nv for nv in r["novas"] if nv[4] > 0]
+    for p in r["parts"]:
+        p[4] -= dt
+        p[0] += p[2] * sdt; p[1] += p[3] * sdt
+        dec = max(0.0, 1.0 - sdt * 2.6)
+        p[2] *= dec; p[3] *= dec
+        p[8] += p[9] * sdt
+    r["parts"][:] = [p for p in r["parts"] if p[4] > 0]
+    for t in r["texts"]:
+        t[5] -= dt; t[1] -= 40.0 * dt
+    r["texts"][:] = [t for t in r["texts"] if t[5] > 0]
+
+    # ---- cámara ----
+    ck = min(1.0, dt * 4.5)
+    r["camx"] += (r["px"] - r["camx"]) * ck
+    r["camy"] += (r["py"] - r["camy"]) * ck
+
+# ---------------- render ----------------
+def add_circle(circ, key, x, y, rr):
+    b = circ.get(key)
+    if b is None: circ[key] = [x, y, rr]
+    else:
+        b.append(x); b.append(y); b.append(rr)
+
+def add_poly(polys, key, cx, cy, rot, shape, scale):
+    ent = polys.get(key)
+    if ent is None:
+        ent = polys[key] = [[], 0]
+    buf = ent[0]
+    ca = math.cos(rot); sa = math.sin(rot)
+    buf.append(len(shape))
+    for (vx, vy) in shape:
+        buf.append(cx + (vx * ca - vy * sa) * scale)
+        buf.append(cy + (vx * sa + vy * ca) * scale)
+    ent[1] += 1
+
+def render_run():
+    global STARS
+    r = run; st = r["stats"]
+    VW = js.VIEW.w; VH = js.VIEW.h
+    sxr = (random.random() - 0.5) * r["shake"]
+    syr = (random.random() - 0.5) * r["shake"]
+    vcamx = r["camx"] + sxr
+    vcamy = r["camy"] + syr
+    OX = -vcamx + VW / 2.0
+    OY = -vcamy + VH / 2.0
+    X = lambda wx: wx + OX
+    Y = lambda wy: wy + OY
+    px, py = r["px"], r["py"]
+    T = r["t"]
+
+    circ = {}; polys = {}; lines = {}; arcs = []; texts = []
+
+    # ---- estrellas con parallax (capa 0) ----
+    if STARS is None:
+        STARS = []
+        for i in range(84):
+            STARS.append([random.random()*3000.0, random.random()*3000.0,
+                          0.25 if i % 2 == 0 else 0.55,
+                          0.7 + random.random()*1.5,
+                          random.random()*TAU,
+                          C_LIME if i % 9 == 0 else (C_AQUA if i % 6 == 0 else C_ICE)])
+    for s in STARS:
+        sx = (s[0] - vcamx * s[2]) % (VW + 60.0) - 30.0
+        sy = (s[1] - vcamy * s[2]) % (VH + 60.0) - 30.0
+        tw = 0.5 + 0.5 * math.sin(T * 1.7 + s[4])
+        a = (0.07 + 0.18 * s[2]) * (0.45 + 0.55 * tw)
+        add_circle(circ, (0, s[5], round(a, 2)), sx, sy, s[3])
+
+    # ---- recogibles ----
+    for gm in r["gems"]:
+        x = X(gm[0]); y = Y(gm[1])
+        if x < -20 or x > VW + 20 or y < -20 or y > VH + 20: continue
+        big = gm[4] >= 5
+        pulse = 1.0 + 0.25 * math.sin(T * 5.0 + gm[0])
+        add_circle(circ, (0, C_LIME, 0.9), x, y, (7.0 if big else 4.0) * pulse)
+        add_circle(circ, (0, C_PURE, 0.9), x, y, 2.0 if big else 1.4)
+    for cn in r["coins"]:
+        x = X(cn[0]); y = Y(cn[1])
+        if x < -20 or x > VW + 20 or y < -20 or y > VH + 20: continue
+        add_circle(circ, (0, C_AMBER, 0.95), x, y, 5.0)
+        add_circle(circ, (0, C_BG, 1.0), x, y, 2.2)
+    for h in r["hearts"]:
+        x = X(h[0]); y = Y(h[1])
+        add_circle(circ, (0, C_AQUA, 0.95), x, y, 5.0)
+        add_circle(circ, (0, C_AQUA, 0.3), x, y, 9.0)
+    for m in r["mines"]:
+        x = X(m[0]); y = Y(m[1])
+        blink = 0.55 + 0.45 * math.sin(T * 10.0)
+        add_poly(polys, (0, C_LIME, round(blink, 2)), x, y, T * 2.5, SH_DIAM, 7.0)
+
+    # ---- enemigos (capa 1 base / capa 2 detalle) ----
+    for e in r["enemies"]:
+        t = e[7]
+        x = X(e[0]); y = Y(e[1])
+        if t != 4 and (x < -70 or x > VW + 70 or y < -70 or y > VH + 70):
+            continue
+        if t == 0:
+            # mota: disco + anillo segmentado girando
+            add_circle(circ, (1, C_CORAL, 1.0), x, y, e[6])
+            add_circle(circ, (2, C_BG, 1.0), x, y, e[6] * 0.45)
+            a0 = T * 2.2 + e[11]
+            arcs.append([5, x, y, e[6] + 3.5, a0, a0 + 2.4, C_CORAL, 0.6, 1.5])
+        elif t == 1:
+            a = math.atan2(py - e[1], px - e[0])
+            key = (1, C_MAG, 0.35, 2.0)
+            ent = lines.get(key)
+            tx = x - math.cos(a) * e[6] * 3.2
+            ty = y - math.sin(a) * e[6] * 3.2
+            if ent is None: lines[key] = [tx, ty, x, y]
+            else: ent.extend((tx, ty, x, y))
+            add_poly(polys, (1, C_MAG, 1.0), x, y, a, SH_ARROW, e[6] * 1.15)
+        elif t == 2:
+            # tanque: hexágono doble contrarrotante
+            add_poly(polys, (1, C_BLOOD, 1.0), x, y, T * 0.6 + e[11], SH_HEX, e[6])
+            add_poly(polys, (2, C_BG, 1.0), x, y, -T * 0.9, SH_HEX, e[6] * 0.55)
+            add_circle(circ, (2, C_CORAL, 0.9), x, y, e[6] * 0.3)
+        else:
+            # jefe: hexágono + anillos de ataque rotatorios + núcleo latiente
+            add_poly(polys, (1, C_ORANGE, 1.0), x, y, T * 0.4, SH_HEX, e[6])
+            add_poly(polys, (2, C_BG, 1.0), x, y, -T * 0.6, SH_HEX, e[6] * 0.55)
+            for k in range(3):
+                a0 = T * (1.2 + k * 0.35) + k * TAU / 3.0
+                arcs.append([5, x, y, e[6] + 8.0, a0, a0 + 1.5, C_ORANGE, 0.8, 3.0])
+            core = e[6] * 0.2 * (1.0 + 0.25 * math.sin(T * 5.0))
+            add_circle(circ, (2, C_PURE, 0.9), x, y, core)
+        if e[8] > 0:
+            add_circle(circ, (2, C_PURE, min(1.0, e[8] * 9.0)), x, y, e[6] * 1.06)
+
+    # ---- proyectiles dardo (capa 3) ----
+    for b in r["bullets"]:
+        x = X(b[0]); y = Y(b[1])
+        if x < -30 or x > VW + 30 or y < -30 or y > VH + 30: continue
+        a = math.atan2(b[3], b[2])
+        ci = C_AMBER if b[7] else C_AQUA
+        key = (3, ci, 0.5, 2.0)
+        ent = lines.get(key)
+        tx = x - b[2] * 0.05; ty = y - b[3] * 0.05
+        if ent is None: lines[key] = [tx, ty, x, y]
+        else: ent.extend((tx, ty, x, y))
+        add_poly(polys, (3, ci, 0.95), x, y, a, SH_DART, b[5])
+        add_circle(circ, (3, C_PURE, 0.9), x, y, 1.8)
+
+    # ---- orbes ----
+    lvl_o = r["weapons"].get("orbita", 0)
+    if lvl_o:
+        K = min(4, 1 + (lvl_o >= 2) + (lvl_o >= 3) + (lvl_o >= 5))
+        orbR = 80.0 * st["area"]
+        for i in range(K):
+            a = r["orbA"] + i / K * TAU
+            ox = X(px + math.cos(a) * orbR); oy = Y(py + math.sin(a) * orbR)
+            add_circle(circ, (3, C_PURE, 0.95), ox, oy, 7.0)
+            arcs.append([5, ox, oy, 11.0, 0.0, TAU, C_LIME, 0.6, 2.0])
+
+    # ---- fantasmas del impulso + estela ----
+    for gh in r["ghosts"]:
+        f = gh[2] / 0.3
+        add_poly(polys, (3, C_ICE, round(f * 0.4, 2)), X(gh[0]), Y(gh[1]), gh[3], SH_SHIP, 13.0)
+    for tr in r["trail"]:
+        f = tr[2] / 0.35
+        add_circle(circ, (3, C_LIME, round(f * 0.45, 2)), X(tr[0]), Y(tr[1]), 2.0 + 4.0 * f)
+
+    # ---- jugador (capa 4) ----
+    if not r["dead"]:
+        x = X(px); y = Y(py)
+        shape = {"tri":SH_SHIP, "dia":SH_DIA, "star":SH_STAR}[CHARS[r["char"]]["shape"]]
+        alpha = 0.9
+        if r["inv"] > 0 and (int(r["inv"] * 10) % 2 == 1): alpha = 0.25
+        if r["dashA"] > 0.0: alpha = 1.0
+        add_poly(polys, (4, C_ICE, alpha), x, y, r["ang"], shape, 13.0)
+        beat = 3.0 + math.sin(T * 6.0)
+        add_circle(circ, (4, C_LIME, 0.95), x, y, beat)
+        hpf = max(0.0, r["hp"] / st["maxhp"])
+        # anillo de vida
+        arcs.append([5, x, y, 19.0, 0.0, TAU, C_GRAY, 0.3, 3.0])
+        arcs.append([5, x, y, 19.0, -math.pi/2, -math.pi/2 + TAU * hpf,
+                     C_CORAL if hpf < 0.3 else C_LIME, 0.9, 3.0])
+        # anillo del impulso (aqua = listo, gris = recargando)
+        if r["dashA"] > 0.0:
+            arcs.append([5, x, y, 25.0, 0.0, TAU, C_AQUA, 0.85, 2.0])
+        elif r["dashCd"] <= 0.0:
+            arcs.append([5, x, y, 24.0, 0.0, TAU, C_AQUA, 0.55, 1.5])
+        else:
+            f = 1.0 - r["dashCd"] / 2.6
+            arcs.append([5, x, y, 24.0, -math.pi/2, -math.pi/2 + TAU * f, C_AQUA, 0.3, 1.5])
+
+    # ---- ondas expansivas ----
+    for nv in r["novas"]:
+        f = 1.0 - nv[4] / nv[5]
+        rr = nv[2] + (nv[3] - nv[2]) * f
+        arcs.append([5, X(nv[0]), Y(nv[1]), rr, 0.0, TAU, nv[6], nv[4] / nv[5] * 0.85, 3.0])
+
+    # ---- partículas: rombos girando (capa 5) ----
+    for p in r["parts"]:
+        f = p[4] / p[5]
+        x = X(p[0]); y = Y(p[1])
+        if x < -20 or x > VW + 20 or y < -20 or y > VH + 20: continue
+        add_poly(polys, (5, p[7], 0.85), x, y, p[8], SH_DIAM, p[6] * f)
+
+    # ---- textos flotantes ----
+    for t in r["texts"]:
+        texts.append([4, X(t[0]), Y(t[1]), t[4], t[3], 1, t[2]])
+
+    # ---- joystick táctil ----
+    joy = js.joy
+    if joy.active:
+        arcs.append([5, joy.ox, joy.oy, 46.0, 0.0, TAU, C_LIME, 0.3, 2.0])
+        add_circle(circ, (6, C_LIME, 0.5), joy.x, joy.y, 15.0)
+
+    # ---- tutorial ----
+    if SAVE["runs"] == 0 and not r["moved"]:
+        if (r["t"] * 2.0) % 2.0 < 1.2:
+            if js.IS_TOUCH:
+                texts.append([4, VW/2.0, VH*0.58, 18.0, C_GRAY, 1, "ARRASTRA PARA MOVERTE"])
+                texts.append([4, VW/2.0, VH*0.58+32.0, 14.0, C_GRAY, 1, "TOCA CON DOS DEDOS = IMPULSO"])
+            else:
+                texts.append([4, VW/2.0, VH*0.58, 18.0, C_GRAY, 1, "WASD / FLECHAS PARA MOVERTE"])
+                texts.append([4, VW/2.0, VH*0.58+32.0, 14.0, C_GRAY, 1, "SHIFT O ESPACIO = IMPULSO"])
+
+    # ---- ensamblar el lote ----
+    cmds = []
+    for key in sorted(circ.keys()):
+        b = circ[key]
+        cmds.extend((1, key[1], key[2], len(b) // 3)); cmds.extend(b)
+    for key in sorted(polys.keys()):
+        ent = polys[key]
+        cmds.extend((2, key[1], key[2], ent[1])); cmds.extend(ent[0])
+    for key in sorted(lines.keys()):
+        b = lines[key]
+        cmds.extend((3, key[1], key[2], key[3], len(b) // 4)); cmds.extend(b)
+    for a in arcs:
+        cmds.extend(a)
+    for t in texts:
+        cmds.extend(t)
+
+    # la retícula late con el bombo de la música
+    js.drawGrid(vcamx, vcamy, 0.32 + 0.4 * js.beatPulse + 0.06 * math.sin(T * 3.0))
+    js.renderBatch(to_js(cmds))
+
+    # ---- HUD ----
+    m, s = divmod(int(r["t"]), 60)
+    bossfrac = -1.0
+    if r["boss"] is not None:
+        bossfrac = max(0.0, r["boss"][4] / r["boss"][5])
+    threat = min(1.0, len(r["enemies"]) / 110.0 + r["t"] / 900.0)
+    js.hudSet(r["xp"] / r["xpnext"], r["level"], "%02d:%02d" % (m, s),
+              r["kills"], r["combo"], r["coinRun"], bossfrac, threat,
+              max(0.0, r["hp"] / st["maxhp"]))
+    return threat
+
+# ---------------- ambiente del menú ----------------
+def render_ambient(dt):
+    global AMB, DECO, amb_t
+    VW = js.VIEW.w; VH = js.VIEW.h
+    amb_t += dt
+    if AMB is None:
+        AMB = []
+        for i in range(46):
+            AMB.append([random.random() * VW, random.random() * VH,
+                        (random.random() - 0.5) * 14.0, (random.random() - 0.5) * 14.0,
+                        1.0 + random.random() * 2.2,
+                        C_LIME if i % 3 == 0 else C_GRAY])
+    if DECO is None:
+        DECO = []
+        shs = [SH_HEX, SH_STAR, SH_DIAM]
+        cis = [C_LIME, C_AQUA, C_CORAL, C_MAG]
+        for i in range(9):
+            DECO.append([random.random(), random.random(),
+                         34.0 + random.random() * 55.0,
+                         cis[i % 4], shs[i % 3],
+                         (random.random() - 0.5) * 0.4,
+                         random.random() * TAU])
+    circ = {}; polys = {}
+    for d in AMB:
+        d[0] += d[2] * dt; d[1] += d[3] * dt
+        if d[0] < 0: d[0] += VW
+        if d[0] > VW: d[0] -= VW
+        if d[1] < 0: d[1] += VH
+        if d[1] > VH: d[1] -= VH
+        add_circle(circ, (0, d[5], 0.14), d[0], d[1], d[4])
+    for dc in DECO:
+        x = dc[0] * VW + math.sin(amb_t * 0.07 + dc[6]) * 36.0
+        y = dc[1] * VH + math.cos(amb_t * 0.05 + dc[6]) * 30.0
+        add_poly(polys, (0, dc[3], 0.06), x, y, amb_t * dc[4] + dc[6], dc[4 + 1] if False else dc[5], dc[2])
+    cmds = []
+    for key in sorted(circ.keys()):
+        b = circ[key]
+        cmds.extend((1, key[1], key[2], len(b) // 3)); cmds.extend(b)
+    for key in sorted(polys.keys()):
+        ent = polys[key]
+        cmds.extend((2, key[1], key[2], ent[1])); cmds.extend(ent[0])
+    js.drawGrid(amb_t * 26.0, amb_t * 11.0, 0.28 + 0.35 * js.beatPulse)
+    js.renderBatch(to_js(cmds))
+
+# ---------------- bucle principal (SE AUTO-REAGENDA) ----------------
+def frame(ms):
+    global last_ms, mus_acc
+    try:
+        if last_ms is None:
+            last_ms = ms
+        else:
+            dt = min(0.05, (ms - last_ms) / 1000.0)
+            last_ms = ms
+            threat = 0.3
+            if STATE == "running":
+                update(dt)
+            elif STATE in ("menu", "shop"):
+                render_ambient(dt)
+            if STATE in ("running", "levelup", "paused", "dead") and run is not None:
+                threat = render_run()
+            mus_acc += dt
+            if mus_acc > 0.7:
+                mus_acc = 0.0
+                js.musicSet(threat if STATE == "running" else 0.3)
+    except Exception as ex:
+        js.console.error("frame: " + str(ex))
+    js.requestAnimationFrame(RAF)
+
+# ---------------- flujo de pantallas ----------------
+def menu_json():
+    chars = []
+    for cid, c in CHARS.items():
+        chars.append({"id":cid, "name":c["name"], "desc":c["desc"], "shape":c["shape"],
+                      "price":c["price"], "owned":bool(SAVE["chars"].get(cid)), "line":c["line"]})
+    m, s = divmod(int(SAVE["best_time"]), 60)
+    return {"coins":SAVE["coins"],
+            "best":"%02d:%02d" % (m, s) if SAVE["best_time"] > 0 else "—",
+            "best_level":SAVE["best_level"], "tot_kills":SAVE["tot_kills"], "chars":chars}
+
+def go_menu():
+    global STATE
+    STATE = "menu"
+    js.hideAll()
+    js.showMenu(json.dumps(menu_json()))
+
+def start_run(char):
+    global run, STATE, pending, level_queue, last_ms
+    run = new_run(char)
+    pending = []; level_queue = 0
+    STATE = "running"
+    last_ms = None
+    js.hideAll()
+    js.hudShow()
+    js.musicSet(0.45)
+    sfx("start")
+    js.showBanner(CHARS[char]["name"], "SOBREVIVE", False)
+
+def pause():
+    global STATE
+    if STATE == "running":
+        STATE = "paused"
+        js.showPause()
+
+def resume():
+    global STATE
+    if STATE == "paused":
+        STATE = "running"
+        js.hidePause()
+
+def abandon():
+    if STATE == "paused":
+        js.hidePause()
+        end_run("menu")
+
+def restart():
+    start_run(run["char"])
+
+def shop_json():
+    upgs = []
+    for (uid, name, desc, mx, base, mult) in META:
+        lvl = SAVE["upg"][uid]
+        cost = int(base * (mult ** lvl)) if lvl < mx else None
+        upgs.append({"id":uid, "name":name, "desc":desc, "lvl":lvl, "max":mx, "cost":cost})
+    return {"coins":SAVE["coins"], "upgs":upgs}
+
+def open_shop():
+    global STATE
+    STATE = "shop"
+    js.hideAll()
+    js.showShop(json.dumps(shop_json()))
+
+def buy_upg(uid):
+    for (id_, name, desc, mx, base, mult) in META:
+        if id_ == uid:
+            lvl = SAVE["upg"][uid]
+            cost = int(base * (mult ** lvl))
+            if lvl >= mx:
+                return
+            if SAVE["coins"] >= cost:
+                SAVE["coins"] -= cost
+                SAVE["upg"][uid] = lvl + 1
+                persist()
+                js.showToast("%s → nivel %d" % (name, lvl + 1))
+            else:
+                js.showToast("Núcleos insuficientes")
+            break
+    js.showShop(json.dumps(shop_json()))
+
+def buy_char(cid):
+    c = CHARS[cid]
+    if SAVE["chars"].get(cid):
+        return
+    if SAVE["coins"] >= c["price"]:
+        SAVE["coins"] -= c["price"]
+        SAVE["chars"][cid] = True
+        persist()
+        js.showToast("¡%s desbloqueado!" % c["name"])
+    else:
+        js.showToast("Necesitas ◈ %d — te faltan %d" % (c["price"], c["price"] - SAVE["coins"]))
+    go_menu()
+
+# ---------------- arranque ----------------
+RAF = None
+def boot():
+    global RAF
+    load_save()
+    RAF = create_proxy(frame)
+    js.py_start   = create_proxy(start_run)
+    js.py_choose  = create_proxy(choose_card)
+    js.py_restart = create_proxy(restart)
+    js.py_menu    = create_proxy(go_menu)
+    js.py_pause   = create_proxy(pause)
+    js.py_resume  = create_proxy(resume)
+    js.py_abandon = create_proxy(abandon)
+    js.py_shop    = create_proxy(open_shop)
+    js.py_buyupg  = create_proxy(buy_upg)
+    js.py_buychar = create_proxy(buy_char)
+    go_menu()
+    js.gameReady()
+    js.requestAnimationFrame(RAF)
+
+boot()
+</script>
+
+<!-- ============================================================
+     CAPA JS: render por lotes, audio sintetizado, DOM y Pyodide
+     ============================================================ -->
+<script type="module">
+const $ = id => document.getElementById(id);
+const TAU = Math.PI * 2;
+
+/* ============ variables compartidas con el Python ============ */
+window.beatPulse = 0;   // late con el bombo de la música
+window.dashReq = 0;     // petición de impulso
+
+/* ============ lienzo ============ */
+const canvas = $('game');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+window.VIEW = {w:0, h:0};
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  window.VIEW = {w:W, h:H};
+}
+window.addEventListener('resize', resize);
+resize();
+
+const PAL = [
+  [232,246,255],[198,245,63],[255,81,72],[255,62,158],[255,194,75],
+  [69,240,216],[255,255,255],[150,168,160],[171,45,44],[255,145,54],[7,9,12]
+];
+const rgba = (p,a)=>`rgba(${p[0]},${p[1]},${p[2]},${a})`;
+
+/* patrón de puntos del suelo */
+const dotTile = document.createElement('canvas');
+dotTile.width = dotTile.height = 60;
+{
+  const c = dotTile.getContext('2d');
+  c.fillStyle = '#1b2a24';
+  c.beginPath(); c.arc(30,30,1.7,0,TAU); c.fill();
+}
+const DOTPAT = ctx.createPattern(dotTile, 'repeat');
+const mod = (a,n)=>((a%n)+n)%n;
+
+window.drawGrid = function(camx, camy, ga){
+  const c = ctx;
+  c.setTransform(DPR,0,0,DPR,0,0);
+  c.fillStyle = '#07090c';
+  c.fillRect(0,0,W,H);
+  const ox = -mod(camx,60), oy = -mod(camy,60);
+  c.save();
+  c.globalAlpha = 0.25 + 0.55 * Math.min(1, Math.max(0, ga));
+  c.fillStyle = DOTPAT;
+  c.translate(ox, oy);
+  c.fillRect(-60,-60,W+120,H+120);
+  c.restore();
+};
+
+/* ============ render por lotes ============ */
+window.renderBatch = function(cmds){
+  const c = ctx; let i = 0; const L = cmds.length;
+  while(i < L){
+    const op = cmds[i];
+    if(op === 1){ // círculos
+      const ci = cmds[i+1], a = cmds[i+2], n = cmds[i+3]|0; i += 4;
+      c.fillStyle = rgba(PAL[ci], a); c.beginPath();
+      for(let k=0;k<n;k++){
+        const x = cmds[i], y = cmds[i+1], r = cmds[i+2]; i += 3;
+        c.moveTo(x+r, y); c.arc(x, y, r, 0, TAU);
+      }
+      c.fill();
+    } else if(op === 2){ // polígonos
+      const ci = cmds[i+1], a = cmds[i+2], n = cmds[i+3]|0; i += 4;
+      c.fillStyle = rgba(PAL[ci], a); c.beginPath();
+      for(let k=0;k<n;k++){
+        const nv = cmds[i]|0; i++;
+        c.moveTo(cmds[i], cmds[i+1]); i += 2;
+        for(let v=1; v<nv; v++){ c.lineTo(cmds[i], cmds[i+1]); i += 2; }
+        c.closePath();
+      }
+      c.fill();
+    } else if(op === 3){ // líneas
+      const ci = cmds[i+1], a = cmds[i+2], lw = cmds[i+3], n = cmds[i+4]|0; i += 5;
+      c.strokeStyle = rgba(PAL[ci], a); c.lineWidth = lw; c.beginPath();
+      for(let k=0;k<n;k++){
+        c.moveTo(cmds[i], cmds[i+1]); c.lineTo(cmds[i+2], cmds[i+3]); i += 4;
+      }
+      c.stroke();
+    } else if(op === 4){ // texto
+      const x=cmds[i+1], y=cmds[i+2], size=cmds[i+3], ci=cmds[i+4], al=cmds[i+5], s=cmds[i+6]; i += 7;
+      c.font = `700 ${size}px 'Chakra Petch', sans-serif`;
+      c.textAlign = al===1 ? 'center' : (al===2 ? 'right' : 'left');
+      c.textBaseline = 'middle';
+      c.fillStyle = rgba(PAL[ci], 1);
+      c.fillText(s, x, y);
+    } else if(op === 5){ // arcos
+      const x=cmds[i+1],y=cmds[i+2],r=cmds[i+3],a0=cmds[i+4],a1=cmds[i+5],ci=cmds[i+6],al=cmds[i+7],lw=cmds[i+8]; i += 9;
+      c.beginPath(); c.strokeStyle = rgba(PAL[ci], al); c.lineWidth = lw;
+      c.arc(x,y,r,a0,a1); c.stroke();
+    } else { i++; }
+  }
+};
+
+/* ============ audio sintetizado ============ */
+let AC = null, master = null, sfxBus = null, musBus = null, delayNode = null;
+let muted = localStorage.getItem('un_mute') === '1';
+let musIntensity = 0.3, mstep = 0, nextT = 0;
+const SCALE = [110, 130.81, 146.83, 164.81, 196.0, 220, 261.63, 293.66, 329.63, 392];
+
+function ensureAudio(){
+  if(!AC){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    AC = new Ctx();
+    master = AC.createGain(); master.gain.value = muted ? 0 : 0.55;
+    master.connect(AC.destination);
+    sfxBus = AC.createGain(); sfxBus.gain.value = 0.9; sfxBus.connect(master);
+    musBus = AC.createGain(); musBus.gain.value = 0.32; musBus.connect(master);
+    delayNode = AC.createDelay(1); delayNode.delayTime.value = 0.23;
+    const fb = AC.createGain(); fb.gain.value = 0.34;
+    delayNode.connect(fb); fb.connect(delayNode); delayNode.connect(musBus);
+    nextT = AC.currentTime + 0.15;
+    setInterval(musicTick, 40);
+  }
+  if(AC.state === 'suspended') AC.resume();
+}
+window.addEventListener('pointerdown', ensureAudio);
+
+function tone(f0, f1, dur, type, vol, when=0, dest=null){
+  if(!AC) return;
+  const t = AC.currentTime + Math.max(0, when);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(Math.max(1, f0), t);
+  if(f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(dest || sfxBus);
+  o.start(t); o.stop(t + dur + 0.03);
+}
+
+const sfxLast = {};
+window.sfx = function(name, p=0){
+  if(!AC || muted) return;
+  const t = AC.currentTime;
+  const thr = {shoot:0.06, orb:0.09, gem:0.04, kill:0.05, coin:0.05}[name];
+  if(thr){ if(t - (sfxLast[name]||0) < thr) return; sfxLast[name] = t; }
+  switch(name){
+    case 'shoot':  tone(660, 190, 0.09, 'square', 0.045); break;
+    case 'orb':    tone(240, 180, 0.06, 'triangle', 0.06); break;
+    case 'kill':   tone(300, 62, 0.12, 'square', 0.11); break;
+    case 'kill2':  tone(150, 38, 0.22, 'square', 0.16); tone(90, 40, 0.22, 'sawtooth', 0.1); break;
+    case 'gem': { const f = 520 * (1 + Math.min(p,60)*0.012); tone(f, f*2, 0.11, 'sine', 0.09); break; }
+    case 'coin':   tone(880, 1320, 0.1, 'sine', 0.1); break;
+    case 'heart':  tone(700, 940, 0.15, 'sine', 0.11); break;
+    case 'hurt':   tone(140, 60, 0.25, 'sawtooth', 0.26); tone(92, 40, 0.25, 'square', 0.16); break;
+    case 'nova':   tone(80, 420, 0.3, 'sine', 0.2); break;
+    case 'mine':   tone(500, 70, 0.16, 'triangle', 0.14); break;
+    case 'dash':   tone(160, 900, 0.16, 'sawtooth', 0.15); break;
+    case 'levelup':[523,659,784,1046].forEach((f,i)=>tone(f,f,0.09,'square',0.12,i*0.06)); break;
+    case 'boss':   tone(58, 58, 0.7, 'sawtooth', 0.24); tone(88, 87, 0.7, 'sawtooth', 0.14); break;
+    case 'death':  [400,300,200,120].forEach((f,i)=>tone(f,f*0.9,0.16,'sawtooth',0.16,i*0.11)); break;
+    case 'wave':   tone(220,220,0.28,'square',0.1); tone(330,330,0.28,'square',0.08,0.02); break;
+    case 'pick':   tone(880, 1180, 0.08, 'square', 0.1); break;
+    case 'start':  tone(440,440,0.07,'square',0.1); tone(660,660,0.09,'square',0.1,0.08); break;
+  }
+};
+
+window.musicSet = v => { musIntensity = Math.min(1, Math.max(0, v)); };
+
+function musicTick(){
+  window.beatPulse *= 0.90;  // el beat decae entre bombo y bombo
+  if(!AC) return;
+  if(muted){ nextT = AC.currentTime; return; }
+  const spb = 60/132/2;
+  while(nextT < AC.currentTime + 0.18){
+    playStep(mstep, nextT);
+    nextT += spb; mstep = (mstep+1) % 16;
+  }
+}
+function playStep(s, t){
+  const acc = 0.4 + 0.6 * musIntensity;
+  const when = t - AC.currentTime;
+  if(s % 4 === 0){ tone(120, 40, 0.12, 'sine', 0.22*acc, when, musBus); window.beatPulse = 1; }
+  if([0,6,8,14].includes(s)) tone(110, 110, 0.22, 'triangle', 0.15*acc, when, musBus);
+  if(musIntensity > 0.45 && s % 2 === 1) tone(6000, 6000, 0.03, 'square', 0.02*acc, when, musBus);
+  if(Math.random() < musIntensity * 0.45){
+    const f = SCALE[(Math.random()*SCALE.length)|0] * 2;
+    tone(f, f, 0.14, 'square', 0.05*acc, when, delayNode);
+    tone(f, f, 0.14, 'square', 0.05*acc, when, musBus);
+  }
+}
+
+function applyMute(){
+  if(master) master.gain.value = muted ? 0 : 0.55;
+  $('mutebtn').textContent = 'SONIDO: ' + (muted ? 'OFF' : 'ON');
+}
+ $('mutebtn').addEventListener('click', ()=>{
+  muted = !muted;
+  localStorage.setItem('un_mute', muted ? '1' : '0');
+  applyMute();
+});
+applyMute();
+
+/* ============ entrada ============ */
+window.keys = {w:0,a:0,s:0,d:0};
+window.inputVec = {x:0, y:0};
+window.joy = {active:false, ox:0, oy:0, x:0, y:0};
+window.IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+function calcInput(){
+  let x = (window.keys.d?1:0) - (window.keys.a?1:0);
+  let y = (window.keys.s?1:0) - (window.keys.w?1:0);
+  if(!x && !y && window.joy.active){ x = window.joy.x; y = window.joy.y; }
+  window.inputVec.x = x; window.inputVec.y = y;
+}
+const KEYMAP = {KeyW:'w',ArrowUp:'w',KeyS:'s',ArrowDown:'s',KeyA:'a',ArrowLeft:'a',KeyD:'d',ArrowRight:'d'};
+window.addEventListener('keydown', e=>{
+  const k = KEYMAP[e.code];
+  if(k){ window.keys[k]=1; e.preventDefault(); calcInput(); }
+  if(e.code==='Space' || e.code==='ShiftLeft' || e.code==='ShiftRight'){
+    window.dashReq = 1; e.preventDefault();
+  }
+  if(e.code==='Escape' || e.code==='KeyP'){
+    if(!$('levelup').classList.contains('hidden')) return;
+    if(window.py_pause && performance.now()-lastHud < 600) window.py_pause();
+    else if(window.py_resume && !$('pause').classList.contains('hidden')) window.py_resume();
+  }
+  if(['Digit1','Digit2','Digit3'].includes(e.code) && !$('levelup').classList.contains('hidden')){
+    const i = +e.code.slice(-1) - 1;
+    const cards = $('cards').querySelectorAll('.card');
+    if(cards[i]) cards[i].click();
+  }
+});
+window.addEventListener('keyup', e=>{
+  const k = KEYMAP[e.code];
+  if(k){ window.keys[k]=0; calcInput(); }
+});
+
+/* joystick táctil — un dedo mueve, dos dedos = impulso */
+canvas.addEventListener('touchstart', e=>{
+  if(e.touches.length > 1){ window.dashReq = 1; e.preventDefault(); return; }
+  const t = e.touches[0];
+  window.joy.active = true;
+  window.joy.ox = window.joy.x = t.clientX;
+  window.joy.oy = window.joy.y = t.clientY;
+  e.preventDefault();
+}, {passive:false});
+canvas.addEventListener('touchmove', e=>{
+  const t = e.touches[0];
+  let dx = t.clientX - window.joy.ox, dy = t.clientY - window.joy.oy;
+  const d = Math.hypot(dx,dy);
+  if(d > 46){ dx = dx/d*46; dy = dy/d*46; }
+  window.joy.x = window.joy.ox + dx; window.joy.y = window.joy.oy + dy;
+  window.inputVec.x = dx/40; window.inputVec.y = dy/40;
+  e.preventDefault();
+}, {passive:false});
+const endTouch = e=>{
+  window.joy.active = false;
+  window.inputVec.x = 0; window.inputVec.y = 0;
+  e.preventDefault();
+};
+canvas.addEventListener('touchend', endTouch, {passive:false});
+canvas.addEventListener('touchcancel', endTouch, {passive:false});
+
+/* ============ guardado / toasts / banners / flashes ============ */
+window.loadState = () => localStorage.getItem('ultimonucleo_save');
+window.saveState = s => localStorage.setItem('ultimonucleo_save', s);
+
+let toastTO = null;
+window.showToast = function(msg){
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  clearTimeout(toastTO);
+  toastTO = setTimeout(()=>el.classList.add('hidden'), 2600);
+};
+
+let bannerTO = null;
+window.showBanner = function(t, s, big){
+  $('b-title').textContent = t;
+  $('b-sub').textContent = s;
+  const b = $('banner');
+  b.classList.toggle('big', !!big);
+  b.classList.remove('hidden','show');
+  void b.offsetWidth;
+  b.classList.add('show');
+  clearTimeout(bannerTO);
+  bannerTO = setTimeout(()=>b.classList.add('hidden'), 2300);
+};
+
+window.flashDamage = function(){
+  const v = $('dmgvig');
+  v.classList.remove('on'); void v.offsetWidth; v.classList.add('on');
+};
+
+window.screenFlash = function(color){
+  const f = $('flash');
+  f.style.background = color === 'white' ? 'rgba(255,255,255,0.55)' : 'rgba(198,245,63,0.28)';
+  f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+};
+
+/* ============ HUD ============ */
+let lastHud = 0, hc = {};
+const xpfill = $('xpfill'), hLvl = $('h-lvl'), hClock = $('h-clock');
+const hKillsEl = $('h-kills'), hKillsB = hKillsEl.querySelector('b'), hCoinsB = $('h-coins').querySelector('b');
+const comboEl = $('combo'), bossbar = $('bossbar'), bossfill = $('bossfill');
+
+window.hudSet = function(xp,lvl,time,kills,combo,coins,boss,threat,hpf){
+  lastHud = performance.now();
+  if(xp!==hc.xp){ xpfill.style.transform = `scaleX(${Math.min(1,Math.max(0,xp))})`; hc.xp=xp; }
+  if(lvl!==hc.lvl){ hLvl.textContent = lvl; hc.lvl=lvl; }
+  if(time!==hc.time){ hClock.textContent = time; hc.time=time; }
+  if(kills!==hc.kills){
+    hKillsB.textContent = kills;
+    if(hc.kills !== undefined){
+      hKillsEl.classList.remove('pop'); void hKillsEl.offsetWidth; hKillsEl.classList.add('pop');
+    }
+    hc.kills=kills;
+  }
+  if(coins!==hc.coins){ hCoinsB.textContent = coins; hc.coins=coins; }
+  if(combo !== hc.combo){
+    hc.combo = combo;
+    if(combo >= 4){
+      comboEl.textContent = '×' + combo + ' COMBO';
+      comboEl.classList.remove('hidden');
+      comboEl.classList.remove('pop'); void comboEl.offsetWidth; comboEl.classList.add('pop');
+    } else comboEl.classList.add('hidden');
+  }
+  if(boss >= 0){
+    bossbar.classList.remove('hidden');
+    bossfill.style.transform = `scaleX(${Math.max(0,boss)})`;
+  } else bossbar.classList.add('hidden');
+  // vida crítica: los bordes pulsan en coral
+  document.body.classList.toggle('critical', hpf !== undefined && hpf < 0.3);
+};
+window.hudShow = function(){
+  $('hud').classList.remove('hidden');
+  $('btn-pause').classList.remove('hidden');
+};
+window.hideAll = function(){
+  ['menu','shop','levelup','pause','death'].forEach(id => $(id).classList.add('hidden'));
+  $('hud').classList.add('hidden');
+  $('btn-pause').classList.add('hidden');
+  bossbar.classList.add('hidden');
+  comboEl.classList.add('hidden');
+  document.body.classList.remove('critical');
+  hc = {};
+};
+window.showPause = function(){ $('pause').classList.remove('hidden'); };
+window.hidePause = function(){ $('pause').classList.add('hidden'); };
+
+/* ============ iconos SVG de las cartas ============ */
+const svg = inner => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const ICONS = {
+  pulso:  svg('<path d="M3 12h4l2-6 4 12 2-6h6"/>'),
+  orbita: svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="4" r="2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+  nova:   svg('<circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 5a7 7 0 017 7M12 19a7 7 0 01-7-7"/><path d="M12 1.5A10.5 10.5 0 0122.5 12M12 22.5A10.5 10.5 0 011.5 12"/>'),
+  estela: svg('<path d="M5 12l3-4 3 4-3 4zM13 12l3-4 3 4-3 4z"/>'),
+  furia:  svg('<path d="M12 3l5 7h-3v6h-4v-6H7zM9 19h6v2H9z" fill="currentColor" stroke="none"/>'),
+  cadena: svg('<path d="M5 6l5 6-5 6M12 6l5 6-5 6"/>'),
+  motor:  svg('<path d="M4 5l7 7-7 7M12 5l7 7-7 7"/>'),
+  vital:  svg('<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" fill="currentColor" stroke="none"/>'),
+  iman:   svg('<path d="M7 3v9a5 5 0 0010 0V3h-4v9a1 1 0 01-2 0V3z"/>'),
+  ojo:    svg('<path d="M12 3l7 9-7 9-7-9z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+  ambito: svg('<circle cx="12" cy="12" r="9" stroke-dasharray="4 4"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+  coraza: svg('<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/>'),
+  sed:    svg('<path d="M12 3c3 5 6 8 6 12a6 6 0 01-12 0c0-4 3-7 6-12z"/>'),
+  cura:   svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>'),
+  bits:   svg('<path d="M12 4l7 8-7 8-7-8z"/><path d="M9 12h6"/>'),
+  gen:    svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+};
+
+/* ============ subida de nivel ============ */
+window.showLevelUp = function(j){
+  const d = JSON.parse(j);
+  $('lu-lvl').textContent = d.lvl;
+  const cardsEl = $('cards');
+  cardsEl.classList.remove('locked');
+  cardsEl.innerHTML = d.cards.map((c,i)=>{
+    const rc = ['','r','e'][c.rarity||0];
+    let chip;
+    if(c.kind==='arma') chip = c.lvl===0 ? 'NUEVA ARMA' : 'ARMA · NV '+(c.lvl+1);
+    else if(c.kind==='cura') chip = 'SOPORTE';
+    else if(c.kind==='bits') chip = 'BOTÍN';
+    else chip = (c.lvl===0 ? 'NUEVA MEJORA' : 'MEJORA · NV '+(c.lvl+1)) + (c.rarity===2 ? ' · ÉPICA' : c.rarity===1 ? ' · RARA' : '');
+    const pips = c.max ? `<div class="cpips">${'<i class="on"></i>'.repeat(c.lvl)}${'<i></i>'.repeat(c.max-c.lvl)}</div>` : '';
+    return `<button class="card ${rc}" data-i="${i}" style="animation-delay:${i*0.09}s">
+      <div class="chip">${chip}</div>
+      <div class="cicon">${ICONS[c.id]||ICONS.gen}</div>
+      <h3>${c.name}</h3><p>${c.desc}</p>${pips}
+      <span class="key">[${i+1}]</span></button>`;
+  }).join('');
+  cardsEl.querySelectorAll('.card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      cardsEl.classList.add('locked');
+      if(window.py_choose) window.py_choose(+btn.dataset.i);
+    });
+  });
+  $('levelup').classList.remove('hidden');
+};
+window.hideLevelUp = function(){ $('levelup').classList.add('hidden'); };
+
+/* ============ muerte ============ */
+window.showDeath = function(j){
+  const d = JSON.parse(j);
+  $('d-newbest').classList.toggle('hidden', !d.newbest);
+  $('d-stats').innerHTML =
+    `<span>Núcleo</span><b>${d.char}</b>`+
+    `<span>Tiempo</span><b>${d.time}</b>`+
+    `<span>Nivel</span><b>${d.level}</b>`+
+    `<span>Bajas</span><b>${d.kills.toLocaleString('es')}</b>`+
+    `<span>Daño total</span><b>${d.damage.toLocaleString('es')}</b>`+
+    `<span>Mejor combo</span><b>×${d.combo}</b>`+
+    (d.newbest ? '' : `<span>Récord</span><b>${d.prevbest}</b>`);
+  $('d-earned').textContent = `+ ◈ ${d.earned}  ·  TOTAL ◈ ${d.coins.toLocaleString('es')}`;
+  $('death').classList.remove('hidden');
+};
+
+/* ============ menú ============ */
+const SHAPES = {
+  tri:  '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M20 5 33 33 20 26 7 33Z"/></svg>',
+  dia:  '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M20 4 34 20 20 36 6 20Z"/></svg>',
+  star: '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M20 2 24.5 15.5 38 20 24.5 24.5 20 38 15.5 24.5 2 20 15.5 15.5Z"/></svg>',
+};
+let menuSel = 'vega';
+window.showMenu = function(j){
+  const d = JSON.parse(j);
+  if(!d.chars.find(c=>c.id===menuSel)) menuSel = 'vega';
+  $('m-cores').innerHTML = d.chars.map(c=>{
+    const sel = c.id===menuSel ? 'sel' : '';
+    const lock = c.owned ? '' : 'locked';
+    return `<div class="core ${sel} ${lock}" data-id="${c.id}">
+      <div class="shape">${SHAPES[c.shape]}</div>
+      <h4>${c.name}</h4><p>${c.desc}</p>
+      <div class="cstats">${c.line}</div>
+      ${c.owned ? '' : `<div class="price">◈ ${c.price}</div>`}
+    </div>`;
+  }).join('');
+  $('m-cores').querySelectorAll('.core').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const c = d.chars.find(x=>x.id===el.dataset.id);
+      if(c.owned){ menuSel = c.id; window.showMenu(j); }
+      else if(window.py_buychar) window.py_buychar(c.id);
+    });
+  });
+  $('m-stats').innerHTML =
+    `RÉCORD <b>${d.best}</b> · NIVEL MÁX <b>${d.best_level||'—'}</b> · ` +
+    `BAJAS TOTALES <b>${d.tot_kills.toLocaleString('es')}</b> · ` +
+    `<span class="coin">◈ ${d.coins.toLocaleString('es')}</span>`;
+  $('menu').classList.remove('hidden');
+};
+
+/* ============ taller ============ */
+window.showShop = function(j){
+  const d = JSON.parse(j);
+  $('s-coins').textContent = '◈ ' + d.coins.toLocaleString('es');
+  $('s-list').innerHTML = d.upgs.map(u=>`
+    <div class="upg">
+      <div class="u-info"><h4>${u.name}</h4><p>${u.desc}</p>
+        <div class="pips">${'<i class="on"></i>'.repeat(u.lvl)}${'<i></i>'.repeat(u.max-u.lvl)}</div>
+      </div>
+      <button class="u-buy" data-id="${u.id}" ${u.cost===null?'disabled':''}>
+        ${u.cost===null ? 'MÁX' : '◈ '+u.cost}
+      </button>
+    </div>`).join('');
+  $('s-list').querySelectorAll('.u-buy').forEach(b=>{
+    b.addEventListener('click', ()=>{ if(window.py_buyupg) window.py_buyupg(b.dataset.id); });
+  });
+  $('shop').classList.remove('hidden');
+};
+
+/* botones */
+ $('playbtn').addEventListener('click', ()=>{ if(window.py_start) window.py_start(menuSel); });
+ $('shopbtn').addEventListener('click', ()=>{ if(window.py_shop) window.py_shop(); });
+ $('shopback').addEventListener('click', ()=>{ if(window.py_menu) window.py_menu(); });
+ $('resumebtn').addEventListener('click', ()=>{ if(window.py_resume) window.py_resume(); });
+ $('abandonbtn').addEventListener('click', ()=>{ if(window.py_abandon) window.py_abandon(); });
+ $('d-retry').addEventListener('click', ()=>{ if(window.py_restart) window.py_restart(); });
+ $('d-menu').addEventListener('click', ()=>{ if(window.py_menu) window.py_menu(); });
+ $('d-shop').addEventListener('click', ()=>{ if(window.py_shop) window.py_shop(); });
+ $('btn-pause').addEventListener('click', ()=>{ if(window.py_pause) window.py_pause(); });
+
+/* pausa automática al perder el foco */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden && window.py_pause && performance.now()-lastHud < 700) window.py_pause();
+});
+
+/* ============ arranque de Pyodide ============ */
+const PY_V = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+const TIPS = [
+  'CONSEJO: el IMPULSO atraviesa enemigos y no recibes daño. Úsalo sin miedo.',
+  'CONSEJO: el imán lo es todo. Recoge fragmentos sin desviarte.',
+  'CONSEJO: los combos multiplican tu experiencia. No dejes de matar.',
+  'CONSEJO: los jefes sueltan lluvia de botín. Vale la pena el riesgo.',
+  'CONSEJO: lo que ganes en el TALLER se conserva para siempre.',
+  'CONSEJO: moverte en círculos grandes controla a la horda.',
+];
+let tipI = 0;
+ $('ld-tip').textContent = TIPS[0];
+const tipTimer = setInterval(()=>{
+  tipI = (tipI+1) % TIPS.length;
+  $('ld-tip').textContent = TIPS[tipI];
+}, 3200);
+
+function setPhase(txt){ $('ld-phase').textContent = txt; }
+
+function loadScript(src){
+  return new Promise((res, rej)=>{
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = ()=>rej(new Error('No se pudo cargar ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+window.gameReady = function(){
+  clearInterval(tipTimer);
+  setPhase('LISTO');
+  const l = $('loader');
+  l.classList.add('done');
+  setTimeout(()=>l.style.display = 'none', 700);
+};
+
+(async ()=>{
+  try{
+    setPhase('CARGANDO EL NÚCLEO DE PYTHON…');
+    await loadScript(PY_V + 'pyodide.js');
+    setPhase('INICIALIZANDO WASM…');
+    const pyodide = await loadPyodide({indexURL: PY_V});
+    setPhase('COMPILANDO EL MOTOR DEL JUEGO…');
+    const code = $('pycode').textContent;
+    await pyodide.runPythonAsync(code);
+  }catch(err){
+    clearInterval(tipTimer);
+    setPhase('ERROR');
+    $('ld-err').style.display = 'block';
+    $('ld-err').innerHTML =
+      'No se pudo cargar el motor de Python (Pyodide).<br>Revisa tu conexión y reintenta.<br><button onclick="location.reload()">REINTENTAR</button>';
+    console.error(err);
+  }
+})();
+</script>
+</body>
+</html>
