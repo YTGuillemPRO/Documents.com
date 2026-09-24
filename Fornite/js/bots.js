@@ -17,25 +17,24 @@ function makeNameSprite(name){
 function initBots(){
   const used=new Set(['YOU']);
   for(let i=0;i<CFG.BOT_COUNT;i++){
-    let x,z,ok=false;
-    for(let t=0;t<25&&!ok;t++){
-      const a=rand(0,6.28),r=rand(50,175); x=Math.cos(a)*r; z=Math.sin(a)*r; ok=true;
+    let x=0,z=0;
+    for(let t=0;t<25;t++){
+      const a=rand(0,6.28),r=rand(50,175); x=Math.cos(a)*r; z=Math.sin(a)*r;
+      let ok=true;
       for(const b of bots)if(dist2(x,z,b.pos.x,b.pos.z)<324)ok=false;
+      if(ok)break;
     }
     const tier=weighted([[0,40],[1,35],[2,25]]);
     const c=makeCharacter({shirt:pick(BOT_SHIRTS),pants:pick(BOT_PANTS),skin:pick(BOT_SKINS),
       hair:pick(['#2b2b2b','#6b4a2a','#e8cf6a','#a33b2a']),pack:'#3b4250'});
-    const sprite=makeNameSprite(makeBotName(used)); c.group.add(sprite);
+    const nm=makeBotName(used);
+    const sprite=makeNameSprite(nm); c.group.add(sprite);
     const gun=makeWeaponMesh(pick(['ar','smg','shotgun']),tier); gun.scale.set(1.1,1.1,1.1);
     c.holder.add(gun); c.rArm.rotation.x=-1.2;
     scene.add(c.group);
     bots.push({
-      name:sprite? '':'' , isPlayer:false, tier,
-      name:undefined, // set below
-    });
-    const b=bots[i];
-    Object.assign(b,{
-      name:undefined, pos:V3(x,rand(95,125),z), vel:V3(), yaw:rand(0,6.28),
+      name:nm, isPlayer:false, tier,
+      pos:V3(x,rand(95,125),z), vel:V3(), yaw:rand(0,6.28),
       hp:100, shield:0, alive:true, kills:0, state:'drop',
       moveTarget:null, lootTarget:null, target:null, targetT:0,
       nextThink:i*0.07, strafeDir:Math.random()<0.5?1:-1, strafeT:rand(0.5,1.5),
@@ -45,19 +44,14 @@ function initBots(){
       group:c.group, limbs:{lLeg:c.lLeg,rLeg:c.rLeg,lArm:c.lArm,rArm:c.rArm}, holder:c.holder,
       sprite, dropping:true, grounded:false,
     });
-    b.name=(()=>{ // pull the name we generated into the bot
-      return used.size? [...used].find(n=>!bots.some(o=>o.name===n)&&n!=='YOU') : 'Bot';
-    })();
   }
 }
 
 function aliveCount(){ return (player.alive?1:0)+bots.reduce((n,b)=>n+(b.alive?1:0),0); }
 
 function botThink(b){
-  // storm urgency
   const dStorm=Math.hypot(b.pos.x-storm.cx,b.pos.z-storm.cz);
   const outside=dStorm>storm.r-6;
-  // target acquisition (skip while everyone is dropping)
   let best=null,bd=1e9;
   if(game.state==='PLAY'){
     const detect=40+storm.phase*4;
@@ -74,8 +68,8 @@ function botThink(b){
   }
   if(best){ b.target=best; b.targetT=0; b.state='fight'; return; }
   if(b.target){
-    if(!b.target.alive){ b.target=null; }
-    else { b.targetT+=0.45; if(b.targetT<2.5){ b.state='fight'; return; } b.target=null; }
+    if(!b.target.alive)b.target=null;
+    else{ b.targetT+=0.45; if(b.targetT<2.5){ b.state='fight'; return; } b.target=null; }
   }
   if(outside){
     b.state='flee';
@@ -175,18 +169,16 @@ function botAct(b,dt){
   } else if(b.state==='heal'){
     b.healT-=dt;
     if(b.healT<=0){ b.hp=Math.min(100,b.hp+55); b.state='wander'; }
-  } else { // wander
+  } else {
     if(b.moveTarget){
       const dx=b.moveTarget.x-b.pos.x, dz=b.moveTarget.z-b.pos.z, d=Math.hypot(dx,dz);
       if(d<2)b.moveTarget=null; else { mvx=dx/d; mvz=dz/d; b.yaw=lerpAngle(b.yaw,Math.atan2(dx,dz),dt*4); }
     }
   }
-  // stuck detection → hop + repath
   if((mvx||mvz)&&dist2(b.pos.x,b.pos.z,b.lastPos.x,b.lastPos.z)<0.02)b.stuckT+=dt; else b.stuckT=0;
   b.lastPos.copy(b.pos);
   if(b.stuckT>1.4){ b.moveTarget=null; b.stuckT=0; if(b.grounded)b.vel.y=10; }
 
-  // physics
   b.vel.y-=CFG.GRAVITY*dt;
   const ml=Math.hypot(mvx,mvz); if(ml>0){mvx/=ml;mvz/=ml;}
   b.pos.x+=mvx*speed*dt; b.pos.z+=mvz*speed*dt; b.pos.y+=b.vel.y*dt;
@@ -216,7 +208,6 @@ function updateBots(dt){
     botAct(b,dt);
     b.sprite.visible=player.alive&&dist2(b.pos.x,b.pos.z,player.pos.x,player.pos.z)<2500;
   }
-  // gentle entity-entity separation
   const ents=player.alive&&!player.dropping?[player,...bots]:bots;
   for(let i=0;i<ents.length;i++)for(let j=i+1;j<ents.length;j++){
     const a=ents[i],c=ents[j];
