@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css"/>
+<link rel="stylesheet" href="css/style.css?v=2"/>
 </head>
 <body>
 <div id="game"></div>
@@ -15,13 +15,14 @@
 <!-- ============ HUD ============ -->
 <div id="hud">
   <div id="ch"><span class="l"></span><span class="r"></span><span class="t"></span><span class="b"></span><span class="dot"></span></div>
+  <div id="hitmark"><span></span><span></span><span></span><span></span></div>
 
   <div id="interact" class="hidden"></div>
   <div id="buildHint" class="hidden"></div>
   <div id="dropHint" class="hidden">WASD — steer your drop · glider deploys automatically</div>
+  <div id="toasts"></div>
 
   <div id="announce" class="hidden"><div id="annMain"></div><div id="annSub"></div></div>
-
   <div id="killfeed"></div>
 
   <div id="topright">
@@ -61,28 +62,51 @@
   <div id="dmgLayer"></div>
 </div>
 
-<!-- ============ SCREENS ============ -->
-<div id="menu" class="screen">
-  <div class="menuInner">
-    <div class="logo"><span>BLOCK</span><span class="l2">ROYALE</span></div>
-    <p class="tag">A single-player battle royale vs 23 bots — right in your browser.</p>
-    <button id="playBtn" class="bigBtn">PLAY</button>
-    <div class="controls panel">
-      <div><b>WASD</b> Move</div><div><b>Mouse</b> Look</div><div><b>Space</b> Jump</div><div><b>Shift</b> Sprint</div>
-      <div><b>LMB</b> Fire / Place</div><div><b>RMB</b> Aim</div><div><b>R</b> Reload</div><div><b>E</b> Pick up</div>
-      <div><b>1 / 2 / 3</b> Wall / Ramp / Floor</div><div><b>Q</b> Quick build</div><div><b>4</b> Pickaxe</div><div><b>Wheel</b> Weapons</div>
-      <div><b>X</b> Shield potion</div><div><b>C</b> Med kit</div><div><b>Esc</b> Pause</div><div class="dim">Harvest trees &amp; rocks with the pickaxe for materials</div>
+<!-- ============ LOBBY ============ -->
+<div id="lobby" class="screen">
+  <div class="lobbyTop">
+    <div class="lobbyLogo">BLOCK<span>ROYALE</span></div>
+    <div class="lobbyStats panel">
+      <span class="cItem">VICTORY ROYALES <b id="statWins">0</b></span>
+      <span class="cItem">MATCHES <b id="statMatches">0</b></span>
+      <span class="cItem">BEST ELIMS <b id="statBest">0</b></span>
     </div>
-    <p class="foot">Desktop + mouse required · v1.0 · static build · 24 players</p>
+  </div>
+
+  <div id="unlockBanner" class="hidden"></div>
+
+  <div class="sideBox lobbyLeft">
+    <div class="lockerHead">LOCKER</div>
+    <div id="outfitGrid"></div>
+    <div class="lockerHint">Outfits &amp; stats are saved in your browser.</div>
+  </div>
+
+  <div class="sideBox lobbyRight">
+    <div class="lockerHead">CONTROLS</div>
+    <div class="controls">
+      <div><b>WASD</b> Move</div><div><b>Mouse</b> Look</div>
+      <div><b>Space</b> Jump</div><div><b>Shift</b> Sprint</div>
+      <div><b>LMB</b> Fire / Place</div><div><b>RMB</b> Aim</div>
+      <div><b>R</b> Reload</div><div><b>E</b> Pick up</div>
+      <div><b>1 / 2 / 3</b> Wall / Ramp / Floor</div><div><b>Q</b> Quick build</div>
+      <div><b>4</b> Pickaxe</div><div><b>X / C</b> Potion / Med kit</div>
+    </div>
+    <div class="lockerHint">Chop trees &amp; rocks for materials. Ammo &amp; mats auto-pickup on walk-over.</div>
+  </div>
+
+  <div class="lobbyBottom">
+    <button id="playBtn" class="bigBtn">PLAY</button>
+    <div class="lobbyTip">24 players · last one standing wins · Enter to play</div>
   </div>
 </div>
 
+<!-- ============ PAUSE / END SCREENS ============ -->
 <div id="pause" class="screen hidden">
   <div class="menuInner">
     <h2 class="subTitle">PAUSED</h2>
     <button id="resumeBtn" class="bigBtn">RESUME</button>
     <button id="pauseRestart" class="bigBtn ghost">RESTART</button>
-    <button id="pauseMenu" class="bigBtn ghost">MAIN MENU</button>
+    <button id="pauseMenu" class="bigBtn ghost">LOBBY</button>
   </div>
 </div>
 
@@ -93,7 +117,7 @@
     <p id="overBy" class="tag">Eliminated by Bot</p>
     <p class="tag"><b id="overKills">0</b> eliminations</p>
     <button id="overAgain" class="bigBtn">PLAY AGAIN</button>
-    <button id="overMenu" class="bigBtn ghost">MAIN MENU</button>
+    <button id="overMenu" class="bigBtn ghost">LOBBY</button>
   </div>
 </div>
 
@@ -103,22 +127,22 @@
     <h2 class="victory">VICTORY ROYALE</h2>
     <p class="tag">#1 of 24 · <b id="winKills">0</b> eliminations</p>
     <button id="winAgain" class="bigBtn">PLAY AGAIN</button>
-    <button id="winMenu" class="bigBtn ghost">MAIN MENU</button>
+    <button id="winMenu" class="bigBtn ghost">LOBBY</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/world.js"></script>
-<script src="js/building.js"></script>
-<script src="js/loot.js"></script>
-<script src="js/weapons.js"></script>
-<script src="js/player.js"></script>
-<script src="js/bots.js"></script>
-<script src="js/storm.js"></script>
-<script src="js/hud.js"></script>
-<script src="js/main.js"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/utils.js?v=2"></script>
+<script src="js/audio.js?v=2"></script>
+<script src="js/world.js?v=2"></script>
+<script src="js/building.js?v=2"></script>
+<script src="js/loot.js?v=2"></script>
+<script src="js/weapons.js?v=2"></script>
+<script src="js/player.js?v=2"></script>
+<script src="js/bots.js?v=2"></script>
+<script src="js/storm.js?v=2"></script>
+<script src="js/hud.js?v=2"></script>
+<script src="js/main.js?v=2"></script>
 </body>
 </html>
