@@ -1,6 +1,80 @@
-// ============ Game state, input, match flow, damage rules ============
+// ============ Game state, lobby/locker, input, match flow, loop ============
 const game={state:'MENU',paused:false,time:0,lmb:false,lmbClick:false,keys:{}};
+let lastWeaponSel=0;
+let stats={wins:0,matches:0,bestKills:0};
+let curOutfit=OUTFITS[0];
+const pendingUnlocks=[];
+let menuSpot={x:0,y:0,z:0};
 
+// ---------- persistence ----------
+function loadSave(){
+  try{
+    stats=Object.assign(stats,JSON.parse(localStorage.getItem('br_stats')||'{}'));
+    const id=localStorage.getItem('br_outfit');
+    const o=OUTFITS.find(o=>o.id===id); if(o)curOutfit=o;
+  }catch(e){}
+}
+function saveSave(){
+  try{ localStorage.setItem('br_stats',JSON.stringify(stats)); localStorage.setItem('br_outfit',curOutfit.id); }catch(e){}
+}
+function outfitUnlocked(o){ return !o.lock || ((o.lock.wins||0)<=stats.wins && (o.lock.elims||0)<=stats.bestKills); }
+
+// ---------- locker ----------
+const LOCK_SVG='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="11" width="16" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+
+function applyOutfit(o){
+  curOutfit=o;
+  if(player.group)scene.remove(player.group);
+  const c=makeCharacter({shirt:o.shirt,pants:o.pants,skin:o.skin,hair:o.hair,pack:o.pack});
+  player.group=c.group;
+  player.limbs={lLeg:c.lLeg,rLeg:c.rLeg,lArm:c.lArm,rArm:c.rArm};
+  player.holder=c.holder;
+  scene.add(c.group);
+  updateHeldWeapon();
+}
+
+function refreshStats(){
+  $('statWins').textContent=stats.wins;
+  $('statMatches').textContent=stats.matches;
+  $('statBest').textContent=stats.bestKills;
+}
+
+function renderLobby(){
+  refreshStats();
+  const grid=$('outfitGrid'); grid.innerHTML='';
+  for(const o of OUTFITS){
+    const un=outfitUnlocked(o);
+    const d=document.createElement('div');
+    d.className='outfit'+(o.id===curOutfit.id?' equipped':'')+(un?'':' locked');
+    d.innerHTML='<div class="swatches"><i style="background:'+o.shirt+'"></i><i style="background:'+o.pants+'"></i><i style="background:'+o.pack+'"></i><i style="background:'+o.hair+'"></i></div>'
+      +'<div class="oName">'+o.name+'</div>'
+      +(un?'':'<div class="oLock">'+LOCK_SVG+' '+o.lockText+'</div>')
+      +(o.id===curOutfit.id?'<div class="oEq">EQUIPPED</div>':'');
+    d.onclick=()=>{
+      if(!un){ SFX.empty(); d.classList.remove('deny'); void d.offsetWidth; d.classList.add('deny'); return; }
+      applyOutfit(o); saveSave(); renderLobby(); SFX.swap();
+    };
+    grid.appendChild(d);
+  }
+  if(pendingUnlocks.length){
+    const b=$('unlockBanner');
+    b.textContent='NEW OUTFIT UNLOCKED — '+pendingUnlocks.join(', ');
+    b.classList.remove('hidden');
+    pendingUnlocks.length=0;
+    clearTimeout(renderLobby._t);
+    renderLobby._t=setTimeout(()=>b.classList.add('hidden'),5000);
+  }
+}
+
+// ---------- screens ----------
+function showScreen(name){
+  for(const id of ['lobby','pause','over','win'])$(id).classList.toggle('hidden',id!==name);
+}
+function lockPointer(){
+  try{ const p=renderer.domElement.requestPointerLock(); if(p&&p.catch)p.catch(()=>{}); }catch(e){}
+}
+
+// ---------- match flow ----------
 function applyDamage(ent,dmg,source,opts={}){
   if(!ent.alive||game.state==='MENU')return;
   dmg=Math.round(dmg); if(dmg<=0)return;
@@ -22,8 +96,10 @@ function eliminate(v,killer,stormK=false){
     player.kills++; SFX.elim();
     hud.announce('ELIMINATED '+v.name,aliveCount()+' PLAYERS REMAIN',1700);
     hud.killfeedAdd('YOU',v.name,true);
-  } else if(killer&&killer.name){ if(killer.kills!==undefined)killer.kills++; hud.killfeedAdd(killer.name,v.name); }
-  else hud.killfeedAdd(null,v.name,true,stormK);
+  } else if(killer&&killer.name){
+    if(killer.kills!==undefined)killer.kills++;
+    hud.killfeedAdd(killer.name,v.name);
+  } else hud.killfeedAdd(null,v.name,true,stormK);
   checkVictory();
 }
 
@@ -32,17 +108,25 @@ function checkVictory(){
   if(bots.every(b=>!b.alive))endVictory();
 }
 
+function finishStats(win){
+  const before=OUTFITS.filter(o=>!outfitUnlocked(o)).map(o=>o.id);
+  stats.matches++; if(win)stats.wins++;
+  stats.bestKills=Math.max(stats.bestKills,player.kills);
+  saveSave();
+  for(const o of OUTFITS)if(!before.includes(o.id)&&outfitUnlocked(o))pendingUnlocks.push(o.name);
+}
+
 function endDefeat(killer,stormK){
   game.state='OVER'; document.exitPointerLock&&document.exitPointerLock();
-  SFX.lose();
+  finishStats(false); SFX.lose();
   $('overPlace').textContent='#'+(bots.filter(b=>b.alive).length+1);
   $('overBy').textContent=stormK?'Consumed by the Storm':'Eliminated by '+(killer?killer.name:'the Storm');
   $('overKills').textContent=player.kills;
-  hud.showScreen('over'); hud.setIngame(false);
+  showScreen('over'); document.body.classList.remove('ingame');
 }
 function endVictory(){
   game.state='WIN'; document.exitPointerLock&&document.exitPointerLock();
-  SFX.win();
+  finishStats(true); SFX.win();
   $('winKills').textContent=player.kills;
   const box=$('winConfetti'); box.innerHTML='';
   const cols=['#ffd23a','#35c8ff','#ff5b4d','#3fd24d','#c04dff'];
@@ -52,8 +136,7 @@ function endVictory(){
     d.style.animationDuration=rand(2.2,4.2)+'s'; d.style.animationDelay=rand(0,1.2)+'s';
     box.appendChild(d);
   }
-  hud.announce('VICTORY ROYALE','',3000);
-  hud.showScreen('win'); hud.setIngame(false);
+  showScreen('win'); document.body.classList.remove('ingame');
 }
 
 function resetMatch(){
@@ -61,44 +144,80 @@ function resetMatch(){
   for(const b of bots)scene.remove(b.group);
   bots.length=0;
   while(lootItems.length)removeLoot(lootItems[0]);
-  for(const e of effects){ if(e.obj&&e.type!=='fall')scene.remove(e.obj); }
+  for(const e of effects){ if(e.group)scene.remove(e.group); else if(e.obj)scene.remove(e.obj); }
   effects.length=0;
-  $('killfeed').innerHTML=''; $('dmgLayer').innerHTML='';
+  $('killfeed').innerHTML=''; $('dmgLayer').innerHTML=''; $('toasts').innerHTML='';
+  hideGhosts(); buildMode=null; lastWeaponSel=0;
   initBots(); spawnInitialLoot(); resetPlayer();
   hud.updateSlots(); hud.showReload(false); hud.useProgress(0,null);
+  $('scopeOv').classList.add('hidden');
 }
 
 function startMatch(){
   audioInit();
   resetMatch();
   game.state='DROP'; game.paused=false;
-  hud.showScreen(null); hud.setIngame(true);
-  renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock();
+  showScreen(null); document.body.classList.add('ingame');
+  lockPointer();
   hud.announce('DROPPING IN','Steer with WASD — glider opens automatically',2600);
 }
-function backToMenu(){
+function backToLobby(){
   game.state='MENU'; game.paused=false;
-  hud.showScreen('menu'); hud.setIngame(false);
+  document.exitPointerLock&&document.exitPointerLock();
+  showScreen('lobby'); document.body.classList.remove('ingame');
+  menuSpot.y=terrainHeight(menuSpot.x,menuSpot.z);
+  renderLobby();
 }
 
-// ---------------- input ----------------
+function findScenicSpot(){
+  const cands=[[0,0],[26,18],[-24,22],[18,-26],[-20,-24],[42,10],[-42,-12],[10,44],[-10,-44]];
+  for(const [x,z] of cands){
+    let ok=true;
+    for(const c of worldCircles)if(dist2(x,z,c.x,c.z)<40)ok=false;
+    for(const h of HOUSE_SPOTS)if(dist2(x,z,h[0],h[1])<225)ok=false;
+    if(ok)return{x,y:terrainHeight(x,z),z};
+  }
+  return{x:0,y:terrainHeight(0,0),z:0};
+}
+
+// ---------- input ----------
+function toggleBuild(type){
+  if(game.state!=='PLAY')return;
+  if(buildMode===type){ exitBuildMode(); return; }
+  if(!buildMode)lastWeaponSel=player.sel||0;
+  buildMode=type; lastBuildType=type; SFX.swap();
+}
+function exitBuildMode(){
+  buildMode=null; hideGhosts();
+  selectSlot(lastWeaponSel||0);
+}
+function cycleWeapon(dirn){
+  if(buildMode)exitBuildMode();
+  const avail=[0];
+  player.inv.forEach((s,i)=>{ if(s)avail.push(i+1); });
+  let ci=avail.indexOf(player.sel); if(ci<0)ci=0;
+  ci=(ci+dirn+avail.length)%avail.length;
+  selectSlot(avail[ci]); SFX.swap();
+}
+
 function bindInput(){
   const cv=renderer.domElement;
   document.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('keydown',e=>{
     if(e.code==='Space')e.preventDefault();
+    if(game.state==='MENU'&&e.code==='Enter'){ startMatch(); return; }
     game.keys[e.code]=true;
     if(game.state!=='PLAY'&&game.state!=='DROP')return;
     if(e.code==='Digit1')toggleBuild('wall');
     if(e.code==='Digit2')toggleBuild('ramp');
     if(e.code==='Digit3')toggleBuild('floor');
+    if(e.code==='Digit4'&&game.state==='PLAY'){ buildMode=null; hideGhosts(); selectSlot(0); }
     if(e.code==='KeyQ'){
       if(buildMode)exitBuildMode();
-      else if(game.state==='PLAY'){ lastWeaponSel=player.sel; buildMode=lastBuildType; setGhostType(buildMode); SFX.swap(); }
+      else if(game.state==='PLAY'){ lastWeaponSel=player.sel||0; buildMode=lastBuildType; SFX.swap(); }
     }
-    if(e.code==='Digit4'&&game.state==='PLAY'){ if(buildMode)exitBuildMode(); player.sel=0; updateHeldWeapon(); }
     if(e.code==='KeyR')tryReload();
-    if(e.code==='KeyE'&&game.state==='PLAY'){ const it=nearestLoot(player.pos,2.7); if(it)pickupLoot(it); }
+    if(e.code==='KeyE')pickupNearest();
     if(e.code==='KeyX')useShieldPot();
     if(e.code==='KeyC')useMedkit();
   });
@@ -107,7 +226,7 @@ function bindInput(){
 
   document.addEventListener('mousedown',e=>{
     if(document.pointerLockElement!==cv&&(game.state==='PLAY'||game.state==='DROP')&&!game.paused){
-      cv.requestPointerLock&&cv.requestPointerLock(); return;
+      lockPointer(); return;
     }
     if(e.button===0){ game.lmb=true; game.lmbClick=true; }
     if(e.button===2&&game.state==='PLAY'&&!buildMode)player.aiming=true;
@@ -128,8 +247,8 @@ function bindInput(){
   document.addEventListener('pointerlockchange',()=>{
     const locked=document.pointerLockElement===cv;
     if(!locked&&(game.state==='PLAY'||game.state==='DROP')&&player.alive){
-      game.paused=true; hud.showScreen('pause');
-    } else if(locked){ game.paused=false; if(game.state!=='MENU')hud.showScreen(null); }
+      game.paused=true; showScreen('pause');
+    } else if(locked){ game.paused=false; if(game.state!=='MENU')showScreen(null); }
   });
   window.addEventListener('resize',()=>{
     camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
@@ -137,51 +256,38 @@ function bindInput(){
   });
 
   $('playBtn').onclick=startMatch;
-  $('resumeBtn').onclick=()=>renderer.domElement.requestPointerLock();
+  $('resumeBtn').onclick=lockPointer;
   $('pauseRestart').onclick=startMatch;
-  $('pauseMenu').onclick=backToMenu;
+  $('pauseMenu').onclick=backToLobby;
   $('overAgain').onclick=startMatch;
-  $('overMenu').onclick=backToMenu;
+  $('overMenu').onclick=backToLobby;
   $('winAgain').onclick=startMatch;
-  $('winMenu').onclick=backToMenu;
+  $('winMenu').onclick=backToLobby;
 }
 
-function cycleWeapon(dirn){
-  if(buildMode)exitBuildMode();
-  const avail=[0];
-  player.inv.forEach((s,i)=>{ if(s)avail.push(i+1); });
-  let ci=avail.indexOf(player.sel); if(ci<0)ci=0;
-  ci=(ci+dirn+avail.length)%avail.length;
-  if(avail[ci]===player.sel)return;
-  player.sel=avail[ci]; updateHeldWeapon(); SFX.swap();
-}
-
-// ---------------- build-mode helpers shared with input ----------------
-function toggleBuild(type){
-  if(game.state!=='PLAY')return;
-  if(buildMode===type){ exitBuildMode(); return; }
-  if(!buildMode)lastWeaponSel=player.sel;
-  buildMode=type; lastBuildType=type; setGhostType(type); SFX.swap();
-}
-function exitBuildMode(){
-  buildMode=null; ghost.visible=false;
-  player.sel=lastWeaponSel; updateHeldWeapon();
-}
-
-// ---------------- main loop ----------------
+// ---------- main loop ----------
 let lastT=performance.now();
 function loop(t){
   requestAnimationFrame(loop);
   const dt=clamp((t-lastT)/1000,0,0.05); lastT=t;
 
   if(game.state==='MENU'){
-    const a=t*0.00005;
-    camera.position.set(Math.cos(a)*170,75,Math.sin(a)*170);
-    camera.lookAt(0,5,0);
-    camera.fov=60; camera.updateProjectionMatrix();
+    const ts=t*0.001;
+    const a=Math.sin(ts*0.22)*0.45;
+    if(player.group&&player.limbs){
+      player.group.position.set(menuSpot.x,menuSpot.y+Math.sin(ts*1.6)*0.03,menuSpot.z);
+      player.group.rotation.y=a;
+      player.limbs.lArm.rotation.x=Math.sin(ts*1.6)*0.05-0.08;
+      player.limbs.rArm.rotation.x=-Math.sin(ts*1.6)*0.05-0.08;
+      player.limbs.lLeg.rotation.x=0; player.limbs.rLeg.rotation.x=0;
+    }
+    camera.position.set(menuSpot.x+Math.sin(a*0.6)*4.4,menuSpot.y+2.05+Math.sin(ts*0.5)*0.06,menuSpot.z+Math.cos(a*0.6)*4.4);
+    camera.lookAt(menuSpot.x,menuSpot.y+1.25,menuSpot.z);
+    camera.fov=52; camera.updateProjectionMatrix();
     renderer.render(scene,camera);
     return;
   }
+
   if(!game.paused){
     game.time+=dt;
     updatePlayer(dt);
@@ -191,15 +297,16 @@ function loop(t){
     updateWeapons(dt);
     updateLoot(dt);
     updateEffects(dt);
-    // HUD bits that need world queries
-    if(game.state==='PLAY'&&player.alive){
-      const it=nearestLoot(player.pos,2.7);
+    const def=currentDef();
+    $('scopeOv').classList.toggle('hidden',
+      !(game.state==='PLAY'&&player.alive&&player.aiming&&def&&!def.melee&&def.scope));
+    if(game.state==='PLAY'&&player.alive&&!player.dropping){
+      const it=nearestLoot(player.pos,CFG.PICKUP_RANGE);
       hud.showInteract(it?lootLabel(it):null,it?lootColor(it):null);
-      hud.setBuildHint(buildMode?`${buildMode.toUpperCase()} — LMB place · ${CFG.BUILD_COST} mats · Q exit`:null);
-      $('dropHint').classList.toggle('hidden',game.state!=='DROP');
+      hud.setBuildHint(buildMode?buildMode.toUpperCase()+' — hold LMB to place ('+CFG.BUILD_COST+' mats) · Q to exit':null);
     } else { hud.showInteract(null); hud.setBuildHint(null); }
+    $('dropHint').classList.toggle('hidden',game.state!=='DROP');
     hud.update(dt);
-    // shadow camera follows the player
     sun.position.set(player.pos.x+90,140,player.pos.z+60);
     sun.target.position.set(player.pos.x,0,player.pos.z);
   }
@@ -207,7 +314,13 @@ function loop(t){
   game.lmbClick=false;
 }
 
-// ---------------- boot ----------------
+// ---------- boot ----------
 initWorld(); initBuilding(); initLoot(); initWeapons(); initPlayer(); initStorm();
-hud.init(); bindInput(); hud.showScreen('menu');
+sun.shadow.camera.updateProjectionMatrix();   // fixes shadow frustum after camera setup
+loadSave(); applyOutfit(curOutfit);
+hud.init();
+menuSpot=findScenicSpot();
+sun.position.set(menuSpot.x+90,140,menuSpot.z+60);
+sun.target.position.set(menuSpot.x,0,menuSpot.z);
+renderLobby(); bindInput(); showScreen('lobby');
 requestAnimationFrame(loop);
