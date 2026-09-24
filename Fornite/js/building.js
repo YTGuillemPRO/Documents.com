@@ -1,25 +1,30 @@
 // ============ Walls / Ramps / Floors with blue holographic ghost ============
 let buildMode=null, lastBuildType='wall', placeCd=0;
 const pieces=[];
-let ghost=null, ghostMat=null, ghostInner=null;
+const ghost={};   // one preview mesh per type
+let ghostMat, ghostEdgeMat;
+
+const woodMat=new THREE.MeshLambertMaterial({color:0xc9985f});
+const edgeMat=new THREE.LineBasicMaterial({color:0x7a5230});
 
 function initBuilding(){
-  ghostMat=new THREE.MeshBasicMaterial({color:0x35c8ff,transparent:true,opacity:0.42,depthWrite:false});
-  ghost=new THREE.Group();
-  ghostInner=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),ghostMat);
-  const eg=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),
-    new THREE.LineBasicMaterial({color:0x8fe0ff}));
-  ghostInner.add(eg); ghost.add(ghostInner); ghost.visible=false;
-  scene.add(ghost);
+  ghostMat=new THREE.MeshBasicMaterial({color:0x35c8ff,transparent:true,opacity:0.38,depthWrite:false});
+  ghostEdgeMat=new THREE.LineBasicMaterial({color:0xaee6ff});
+  for(const t of ['wall','floor','ramp']){
+    let geo;
+    if(t==='wall')geo=new THREE.BoxGeometry(4,4,0.3);
+    if(t==='floor')geo=new THREE.BoxGeometry(4,0.26,4);
+    if(t==='ramp')geo=new THREE.BoxGeometry(4,0.26,5.66);
+    const m=new THREE.Mesh(geo,ghostMat);
+    m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),ghostEdgeMat));
+    let obj=m;
+    if(t==='ramp'){ m.rotation.x=-Math.PI/4; obj=new THREE.Group(); obj.add(m); }
+    obj.visible=false; scene.add(obj); ghost[t]=obj;
+  }
 }
-function setGhostType(type){
-  ghost.scale.set(1,1,1); ghost.rotation.set(0,0,0); ghostInner.rotation.set(0,0,0);
-  if(type==='wall'){ ghostInner.scale.set(0.3,4,4); }
-  if(type==='floor'){ ghostInner.scale.set(4,0.26,4); }
-  if(type==='ramp'){ ghostInner.scale.set(4,0.26,5.66); ghostInner.rotation.x=-Math.PI/4; }
-}
+function hideGhosts(){ for(const k in ghost)ghost[k].visible=false; }
 
-// Snap a placement to the 4m grid. dir comes from yaw; baseY from the placer's feet.
+// Snap placement to the 4m grid; baseY = placer's feet height.
 function computeBuild(type,pos,yaw,baseY){
   const fx=Math.sin(yaw), fz=Math.cos(yaw);
   let dx=0,dz=1;
@@ -29,40 +34,29 @@ function computeBuild(type,pos,yaw,baseY){
   return {type,x:cx,z:cz,baseY,dx,dz};
 }
 
-const woodMat=new THREE.MeshLambertMaterial({color:0xc9985f});
-const edgeMat=new THREE.LineBasicMaterial({color:0x7a5230});
 function buildMesh(tr){
   const g=new THREE.Group();
-  const mk=(geo,px,py,pz)=>{ const m=new THREE.Mesh(geo,woodMat); m.position.set(px,py,pz);
-    m.castShadow=true; m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat)); g.add(m); return m; };
-  if(tr.type==='wall'){
-    const alongX=tr.dz!==0; // wall spanning X when facing Z
-    mk(new THREE.BoxGeometry(alongX?4:0.3,4,alongX?0.3:4),0,2,0);
-    g.position.set(tr.x,tr.baseY,tr.z);
-    if(!alongX&&tr.dx!==0){} // dims already handle orientation
-  }
-  if(tr.type==='floor'){
-    mk(new THREE.BoxGeometry(4,0.26,4),0,0.13,0);
-    g.position.set(tr.x,tr.baseY,tr.z);
-  }
-  if(tr.type==='ramp'){
-    mk(new THREE.BoxGeometry(4,0.26,5.66),0,0,0);
-    g.children[0].rotation.x=-Math.PI/4;
-    g.position.set(tr.x,tr.baseY+2,tr.z);
-    g.rotation.y=Math.atan2(tr.dx,tr.dz);
-  }
+  const mk=(geo,py,rx=0)=>{
+    const m=new THREE.Mesh(geo,woodMat); m.position.y=py; m.rotation.x=rx;
+    m.castShadow=true; m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat));
+    g.add(m); return m;
+  };
+  if(tr.type==='wall')mk(new THREE.BoxGeometry(4,4,0.3),2);
+  if(tr.type==='floor')mk(new THREE.BoxGeometry(4,0.26,4),0.13);
+  if(tr.type==='ramp')mk(new THREE.BoxGeometry(4,0.26,5.66),0,-Math.PI/4);
+  g.position.set(tr.x,tr.type==='ramp'?tr.baseY+2:tr.baseY,tr.z);
+  if(tr.type!=='floor')g.rotation.y=Math.atan2(tr.dx,tr.dz);
   return g;
 }
 
 function createPiece(tr,owner){
-  const aabb=null; let p;
   const group=buildMesh(tr); scene.add(group);
-  p={type:tr.type,x:tr.x,y:tr.baseY,z:tr.z,dx:tr.dx,dz:tr.dz,hp:CFG.BUILD_HP,dead:false,group,owner,aabb};
+  const p={type:tr.type,x:tr.x,y:tr.baseY,z:tr.z,dx:tr.dx,dz:tr.dz,hp:CFG.BUILD_HP,dead:false,group,owner,aabb:null};
   if(tr.type==='wall'){
-    const alongX=tr.dz!==0;
-    p.aabb={minX:tr.x-(alongX?2:0.15),maxX:tr.x+(alongX?2:0.15),
-            minY:tr.baseY,maxY:tr.baseY+4,
-            minZ:tr.z-(alongX?0.15:2),maxZ:tr.z+(alongX?0.15:2)};
+    const eastWest=Math.abs(tr.dx)>0.5; // facing E/W -> wall spans Z
+    p.aabb=eastWest
+      ?{minX:tr.x-0.15,maxX:tr.x+0.15,minY:tr.baseY,maxY:tr.baseY+4,minZ:tr.z-2,maxZ:tr.z+2}
+      :{minX:tr.x-2,maxX:tr.x+2,minY:tr.baseY,maxY:tr.baseY+4,minZ:tr.z-0.15,maxZ:tr.z+0.15};
   }
   pieces.push(p);
   return p;
@@ -80,18 +74,20 @@ function damagePiece(p,dmg){
 
 function updateBuilding(dt){
   placeCd-=dt;
-  if(!buildMode||game.state!=='PLAY'||!player.alive){ ghost.visible=false; return; }
+  hideGhosts();
+  if(!buildMode||game.state!=='PLAY'||!player.alive||player.dropping)return;
   const tr=computeBuild(buildMode,player.pos,player.yaw,player.pos.y);
-  setGhostType(buildMode);
-  ghost.position.set(tr.x,tr.type==='wall'?tr.baseY+2:(tr.type==='ramp'?tr.baseY+2:tr.baseY),tr.z);
-  if(buildMode==='wall'){ ghost.rotation.y=tr.dz!==0?Math.PI/2:0; }
-  if(buildMode==='ramp'){ ghost.rotation.y=Math.atan2(tr.dx,tr.dz); }
-  ghostMat.color.set(player.mats>=CFG.BUILD_COST&&pieces.length<CFG.MAX_PIECES?0x35c8ff:0xff5b4d);
-  ghost.visible=true;
+  const g=ghost[buildMode]; if(!g)return;
+  if(buildMode!=='floor')g.rotation.y=Math.atan2(tr.dx,tr.dz);
+  const y=buildMode==='wall'?tr.baseY+2:buildMode==='floor'?tr.baseY+0.13:tr.baseY+2;
+  g.position.set(tr.x,y,tr.z);
+  const can=player.mats>=CFG.BUILD_COST&&pieces.length<CFG.MAX_PIECES;
+  ghostMat.color.set(can?0x35c8ff:0xff5b4d);
+  g.visible=true;
 }
 
 function tryPlaceFromPlayer(){
-  if(!buildMode||placeCd>0||game.state!=='PLAY')return;
+  if(!buildMode||placeCd>0||game.state!=='PLAY'||!player.alive||player.dropping)return;
   if(player.mats<CFG.BUILD_COST||pieces.length>=CFG.MAX_PIECES){SFX.empty();return;}
   const tr=computeBuild(buildMode,player.pos,player.yaw,player.pos.y);
   createPiece(tr,player); player.mats-=CFG.BUILD_COST; placeCd=0.16; SFX.build();
@@ -116,7 +112,7 @@ function supportHeight(x,z,feetY){
       if(Math.abs(x-p.x)<=2.05&&Math.abs(z-p.z)<=2.05){ const top=p.y+0.26; if(top<=feetY+1.0&&top>h)h=top; }
     } else if(p.type==='ramp'){
       const dx=x-p.x,dz=z-p.z;
-      const t=dx*p.dx+dz*p.dz, s2=dx*p.dz-dz*p.dx; // along / across
+      const t=dx*p.dx+dz*p.dz, s2=dx*p.dz-dz*p.dx;
       if(Math.abs(t)<=2.05&&Math.abs(s2)<=2.05){ const top=p.y+2+t; if(top<=feetY+1.2&&top>h)h=top; }
     }
   }
@@ -125,5 +121,5 @@ function supportHeight(x,z,feetY){
 
 function resetBuilding(){
   for(const p of pieces)scene.remove(p.group);
-  pieces.length=0; buildMode=null; ghost.visible=false;
+  pieces.length=0; buildMode=null; hideGhosts();
 }
