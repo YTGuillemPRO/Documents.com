@@ -1,10 +1,45 @@
-// ============ Game state, lobby/locker, input, match flow, loop ============
+// ============ Game state, post-processing, input, match flow, loop ============
 const game={state:'MENU',paused:false,time:0,lmb:false,lmbClick:false,keys:{}};
 let lastWeaponSel=0;
 let stats={wins:0,matches:0,bestKills:0};
 let curOutfit=OUTFITS[0];
 const pendingUnlocks=[];
 let menuSpot={x:0,y:0,z:0};
+
+// ---------- post-processing ----------
+const GradeShader={
+  uniforms:{tDiffuse:{value:null},uVig:{value:0.32}},
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv;
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`
+    uniform sampler2D tDiffuse; uniform float uVig; varying vec2 vUv;
+    void main(){
+      vec3 c=texture2D(tDiffuse,vUv).rgb;
+      c*=1.18;                                        // exposure
+      c=(c*(2.51*c+0.03))/(c*(2.43*c+0.59)+0.14);     // ACES filmic
+      float l=dot(c,vec3(0.299,0.587,0.114));
+      c=mix(vec3(l),c,1.16);                          // vibrance
+      c=(c-0.5)*1.045+0.5;                            // contrast
+      vec2 q=vUv-0.5;
+      c*=1.0-smoothstep(0.42,0.85,length(q))*uVig;    // vignette
+      c=pow(max(c,0.0),vec3(1.0/2.2));                // gamma
+      gl_FragColor=vec4(c,1.0);
+    }`
+};
+let composer=null, composerOn=false;
+const perf={acc:0,n:0};
+
+function initComposer(){
+  if(!THREE.EffectComposer||!THREE.RenderPass||!THREE.ShaderPass||!THREE.UnrealBloomPass)return;
+  renderer.toneMapping=THREE.NoToneMapping;   // GradeShader handles filmic curve
+  composer=new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene,camera));
+  composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),
+    CFG.GFX.bloomStrength,CFG.GFX.bloomRadius,CFG.GFX.bloomThreshold));
+  const grade=new THREE.ShaderPass(GradeShader); grade.renderToScreen=true;
+  composer.addPass(grade);
+  composerOn=true;
+}
 
 // ---------- persistence ----------
 function loadSave(){
@@ -32,13 +67,11 @@ function applyOutfit(o){
   scene.add(c.group);
   updateHeldWeapon();
 }
-
 function refreshStats(){
   $('statWins').textContent=stats.wins;
   $('statMatches').textContent=stats.matches;
   $('statBest').textContent=stats.bestKills;
 }
-
 function renderLobby(){
   refreshStats();
   const grid=$('outfitGrid'); grid.innerHTML='';
@@ -59,8 +92,7 @@ function renderLobby(){
   if(pendingUnlocks.length){
     const b=$('unlockBanner');
     b.textContent='NEW OUTFIT UNLOCKED — '+pendingUnlocks.join(', ');
-    b.classList.remove('hidden');
-    pendingUnlocks.length=0;
+    b.classList.remove('hidden'); pendingUnlocks.length=0;
     clearTimeout(renderLobby._t);
     renderLobby._t=setTimeout(()=>b.classList.add('hidden'),5000);
   }
@@ -85,7 +117,6 @@ function applyDamage(ent,dmg,source,opts={}){
   }
   if(ent.hp<=0){ ent.hp=0; eliminate(ent,source,opts.storm); }
 }
-
 function eliminate(v,killer,stormK=false){
   if(!v.alive)return; v.alive=false;
   if(v.isPlayer){ hud.killfeedAdd(killer?killer.name:null,'YOU',true,stormK); endDefeat(killer,stormK); return; }
@@ -102,12 +133,10 @@ function eliminate(v,killer,stormK=false){
   } else hud.killfeedAdd(null,v.name,true,stormK);
   checkVictory();
 }
-
 function checkVictory(){
   if(game.state!=='PLAY'||!player.alive)return;
   if(bots.every(b=>!b.alive))endVictory();
 }
-
 function finishStats(win){
   const before=OUTFITS.filter(o=>!outfitUnlocked(o)).map(o=>o.id);
   stats.matches++; if(win)stats.wins++;
@@ -115,7 +144,6 @@ function finishStats(win){
   saveSave();
   for(const o of OUTFITS)if(!before.includes(o.id)&&outfitUnlocked(o))pendingUnlocks.push(o.name);
 }
-
 function endDefeat(killer,stormK){
   game.state='OVER'; document.exitPointerLock&&document.exitPointerLock();
   finishStats(false); SFX.lose();
@@ -138,7 +166,6 @@ function endVictory(){
   }
   showScreen('win'); document.body.classList.remove('ingame');
 }
-
 function resetMatch(){
   resetBuilding(); resetStorm();
   for(const b of bots)scene.remove(b.group);
@@ -151,11 +178,10 @@ function resetMatch(){
   initBots(); spawnInitialLoot(); resetPlayer();
   hud.updateSlots(); hud.showReload(false); hud.useProgress(0,null);
   $('scopeOv').classList.add('hidden');
+  stormMesh.visible=true;
 }
-
 function startMatch(){
-  audioInit();
-  resetMatch();
+  audioInit(); resetMatch();
   game.state='DROP'; game.paused=false;
   showScreen(null); document.body.classList.add('ingame');
   lockPointer();
@@ -164,11 +190,11 @@ function startMatch(){
 function backToLobby(){
   game.state='MENU'; game.paused=false;
   document.exitPointerLock&&document.exitPointerLock();
+  stormMesh.visible=false;
   showScreen('lobby'); document.body.classList.remove('ingame');
   menuSpot.y=terrainHeight(menuSpot.x,menuSpot.z);
   renderLobby();
 }
-
 function findScenicSpot(){
   const cands=[[0,0],[26,18],[-24,22],[18,-26],[-20,-24],[42,10],[-42,-12],[10,44],[-10,-44]];
   for(const [x,z] of cands){
@@ -187,10 +213,7 @@ function toggleBuild(type){
   if(!buildMode)lastWeaponSel=player.sel||0;
   buildMode=type; lastBuildType=type; SFX.swap();
 }
-function exitBuildMode(){
-  buildMode=null; hideGhosts();
-  selectSlot(lastWeaponSel||0);
-}
+function exitBuildMode(){ buildMode=null; hideGhosts(); selectSlot(lastWeaponSel||0); }
 function cycleWeapon(dirn){
   if(buildMode)exitBuildMode();
   const avail=[0];
@@ -199,7 +222,6 @@ function cycleWeapon(dirn){
   ci=(ci+dirn+avail.length)%avail.length;
   selectSlot(avail[ci]); SFX.swap();
 }
-
 function bindInput(){
   const cv=renderer.domElement;
   document.addEventListener('contextmenu',e=>e.preventDefault());
@@ -223,7 +245,6 @@ function bindInput(){
   });
   document.addEventListener('keyup',e=>{ delete game.keys[e.code]; });
   window.addEventListener('blur',()=>{ game.keys={}; game.lmb=false; player.aiming=false; });
-
   document.addEventListener('mousedown',e=>{
     if(document.pointerLockElement!==cv&&(game.state==='PLAY'||game.state==='DROP')&&!game.paused){
       lockPointer(); return;
@@ -253,8 +274,8 @@ function bindInput(){
   window.addEventListener('resize',()=>{
     camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
     renderer.setSize(innerWidth,innerHeight);
+    if(composer)composer.setSize(innerWidth,innerHeight);
   });
-
   $('playBtn').onclick=startMatch;
   $('resumeBtn').onclick=lockPointer;
   $('pauseRestart').onclick=startMatch;
@@ -271,6 +292,21 @@ function loop(t){
   requestAnimationFrame(loop);
   const dt=clamp((t-lastT)/1000,0,0.05); lastT=t;
 
+  // adaptive quality: drop bloom if we can't hold framerate
+  if(composerOn){
+    perf.acc+=dt; perf.n++;
+    if(perf.n>=180){
+      if(perf.acc/perf.n>0.033){
+        composerOn=false; renderer.toneMapping=THREE.ACESFilmicToneMapping;
+        toast('Graphics auto-reduced for smoother play');
+      }
+      perf.acc=0; perf.n=0;
+    }
+  }
+
+  game.time+=dt;
+  updateWorld(dt);
+
   if(game.state==='MENU'){
     const ts=t*0.001;
     const a=Math.sin(ts*0.22)*0.45;
@@ -281,15 +317,16 @@ function loop(t){
       player.limbs.rArm.rotation.x=-Math.sin(ts*1.6)*0.05-0.08;
       player.limbs.lLeg.rotation.x=0; player.limbs.rLeg.rotation.x=0;
     }
-    camera.position.set(menuSpot.x+Math.sin(a*0.6)*4.4,menuSpot.y+2.05+Math.sin(ts*0.5)*0.06,menuSpot.z+Math.cos(a*0.6)*4.4);
+    camera.position.set(menuSpot.x+Math.sin(a*0.6)*4.6,menuSpot.y+2.05+Math.sin(ts*0.5)*0.06,menuSpot.z+Math.cos(a*0.6)*4.6);
     camera.lookAt(menuSpot.x,menuSpot.y+1.25,menuSpot.z);
     camera.fov=52; camera.updateProjectionMatrix();
-    renderer.render(scene,camera);
+    sun.position.set(menuSpot.x+90,140,menuSpot.z+60);
+    sun.target.position.set(menuSpot.x,0,menuSpot.z);
+    if(composer&&composerOn)composer.render(); else renderer.render(scene,camera);
     return;
   }
 
   if(!game.paused){
-    game.time+=dt;
     updatePlayer(dt);
     updateBots(dt);
     updateStorm(dt);
@@ -310,13 +347,14 @@ function loop(t){
     sun.position.set(player.pos.x+90,140,player.pos.z+60);
     sun.target.position.set(player.pos.x,0,player.pos.z);
   }
-  renderer.render(scene,camera);
+  if(composer&&composerOn)composer.render(); else renderer.render(scene,camera);
   game.lmbClick=false;
 }
 
 // ---------- boot ----------
 initWorld(); initBuilding(); initLoot(); initWeapons(); initPlayer(); initStorm();
-sun.shadow.camera.updateProjectionMatrix();   // fixes shadow frustum after camera setup
+sun.shadow.camera.updateProjectionMatrix();
+initComposer();
 loadSave(); applyOutfit(curOutfit);
 hud.init();
 menuSpot=findScenicSpot();
