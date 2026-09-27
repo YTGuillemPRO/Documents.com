@@ -14,7 +14,7 @@ function makeLootMesh(item){
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85}));
   ring.rotation.x=Math.PI/2; ring.position.y=0.06; g.add(ring);
   const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,5,10,1,true),
-    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.14,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.16,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
   beam.position.y=2.5; g.add(beam);
   let m;
   if(item.kind==='weapon'){ m=makeWeaponMesh(item.id,item.rarity); m.scale.set(1.15,1.15,1.15); }
@@ -56,8 +56,12 @@ function spawnInitialLoot(){
     if(kind==='weapon'){ item.id=rollWeaponId(); item.rarity=rollRarity(); item.reserve=WEAPONS[item.id].mag*2; }
     if(i%4===0&&lootSpots.length){ const s=pick(lootSpots); addLootItem(item,s[0],s[1],s[2]); }
     else{
-      const a=rand(0,6.28), r=Math.sqrt(Math.random())*226+6;
-      addLootItem(item,Math.cos(a)*r,terrainHeight(Math.cos(a)*r,Math.sin(a)*r)+0.05,Math.sin(a)*r);
+      let x=0,z=0,y=-99;
+      for(let t=0;t<20&&y<1.0;t++){
+        const a=rand(0,6.28), r=Math.sqrt(Math.random())*196+8;
+        x=Math.cos(a)*r; z=Math.sin(a)*r; y=terrainHeight(x,z);
+      }
+      addLootItem(item,x,y+0.05,z);
     }
   }
 }
@@ -68,7 +72,6 @@ function updateLoot(dt){
     it.group.position.y=it.pos.y+Math.sin(t*2+it.phase)*0.12;
     it.group.children[2].rotation.y=t*1.4+it.phase;
   }
-  // walk-over auto pickup for ammo & materials
   if(game.state!=='PLAY'||!player.alive||player.dropping)return;
   for(let i=lootItems.length-1;i>=0;i--){
     const it=lootItems[i];
@@ -107,7 +110,7 @@ function pickupLoot(it){
   if(it.kind==='weapon'){
     const old=giveWeapon(it.id,it.rarity,it.reserve);
     if(old)addLootItem({kind:'weapon',id:old.id,rarity:old.rarity,reserve:old.reserve},
-      p.pos.x+rand(-0.8,0.8),terrainHeight(p.pos.x,p.pos.z)+0.05,p.pos.z+rand(-0.8,0.8));
+      p.pos.x+rand(-0.8,0.8),Math.max(terrainHeight(p.pos.x,p.pos.z),CFG.WATER_Y+0.5)+0.05,p.pos.z+rand(-0.8,0.8));
     toast('Picked up <b style="color:'+RARITIES[it.rarity].color+'">'+RARITIES[it.rarity].name+' '+WEAPONS[it.id].name+'</b>');
   }
   else if(it.kind==='shield'){
