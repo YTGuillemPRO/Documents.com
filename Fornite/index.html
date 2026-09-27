@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=2"/>
+<link rel="stylesheet" href="css/style.css?v=3"/>
 </head>
 <body>
 <div id="game"></div>
@@ -16,15 +16,12 @@
 <div id="hud">
   <div id="ch"><span class="l"></span><span class="r"></span><span class="t"></span><span class="b"></span><span class="dot"></span></div>
   <div id="hitmark"><span></span><span></span><span></span><span></span></div>
-
   <div id="interact" class="hidden"></div>
   <div id="buildHint" class="hidden"></div>
   <div id="dropHint" class="hidden">WASD — steer your drop · glider deploys automatically</div>
   <div id="toasts"></div>
-
   <div id="announce" class="hidden"><div id="annMain"></div><div id="annSub"></div></div>
   <div id="killfeed"></div>
-
   <div id="topright">
     <canvas id="minimap" width="220" height="220"></canvas>
     <div id="stormTimer" class="panel">STORM 0:22</div>
@@ -33,17 +30,12 @@
       <span class="cItem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 21l14-14M21 21L7 7M7 7l-3 3M17 7l3 3M7 7L4 4M17 7l3-3"/></svg><b id="killNum">0</b> ELIMS</span>
     </div>
   </div>
-
   <div id="bottomleft">
     <div class="barWrap shield"><div id="shFill"></div><span id="shNum">0</span></div>
     <div class="barWrap health"><div id="hpFill"></div><span id="hpNum">100</span></div>
   </div>
-
   <div id="bottomright">
-    <div id="ammoRow">
-      <span id="ammoName">PICK</span>
-      <span id="ammoMag">—</span><span id="ammoRes"></span>
-    </div>
+    <div id="ammoRow"><span id="ammoName">PICK</span><span id="ammoMag">—</span><span id="ammoRes"></span></div>
     <div id="reloadWrap" class="hidden"><div id="reloadFill"></div></div>
     <div id="useWrap" class="hidden"><span id="useLabel"></span><div id="useBar"><div id="useFill"></div></div></div>
     <div id="invRow">
@@ -55,7 +47,6 @@
       </div>
     </div>
   </div>
-
   <div id="vRed"></div>
   <div id="vStorm"></div>
   <div id="scopeOv" class="hidden"></div>
@@ -72,15 +63,12 @@
       <span class="cItem">BEST ELIMS <b id="statBest">0</b></span>
     </div>
   </div>
-
   <div id="unlockBanner" class="hidden"></div>
-
   <div class="sideBox lobbyLeft">
     <div class="lockerHead">LOCKER</div>
     <div id="outfitGrid"></div>
     <div class="lockerHint">Outfits &amp; stats are saved in your browser.</div>
   </div>
-
   <div class="sideBox lobbyRight">
     <div class="lockerHead">CONTROLS</div>
     <div class="controls">
@@ -93,7 +81,6 @@
     </div>
     <div class="lockerHint">Chop trees &amp; rocks for materials. Ammo &amp; mats auto-pickup on walk-over.</div>
   </div>
-
   <div class="lobbyBottom">
     <button id="playBtn" class="bigBtn">PLAY</button>
     <div class="lobbyTip">24 players · last one standing wins · Enter to play</div>
@@ -109,7 +96,6 @@
     <button id="pauseMenu" class="bigBtn ghost">LOBBY</button>
   </div>
 </div>
-
 <div id="over" class="screen hidden">
   <div class="menuInner">
     <h2 class="subTitle red">ELIMINATED</h2>
@@ -120,7 +106,6 @@
     <button id="overMenu" class="bigBtn ghost">LOBBY</button>
   </div>
 </div>
-
 <div id="win" class="screen hidden">
   <div id="winConfetti"></div>
   <div class="menuInner">
@@ -132,17 +117,25 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/config.js?v=2"></script>
-<script src="js/utils.js?v=2"></script>
-<script src="js/audio.js?v=2"></script>
-<script src="js/world.js?v=2"></script>
-<script src="js/building.js?v=2"></script>
-<script src="js/loot.js?v=2"></script>
-<script src="js/weapons.js?v=2"></script>
-<script src="js/player.js?v=2"></script>
-<script src="js/bots.js?v=2"></script>
-<script src="js/storm.js?v=2"></script>
-<script src="js/hud.js?v=2"></script>
-<script src="js/main.js?v=2"></script>
+<!-- post-processing (game auto-falls back to plain rendering if these fail) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<script src="js/config.js?v=3"></script>
+<script src="js/utils.js?v=3"></script>
+<script src="js/audio.js?v=3"></script>
+<script src="js/world.js?v=3"></script>
+<script src="js/building.js?v=3"></script>
+<script src="js/loot.js?v=3"></script>
+<script src="js/weapons.js?v=3"></script>
+<script src="js/player.js?v=3"></script>
+<script src="js/bots.js?v=3"></script>
+<script src="js/storm.js?v=3"></script>
+<script src="js/hud.js?v=3"></script>
+<script src="js/main.js?v=3"></script>
 </body>
 </html>
