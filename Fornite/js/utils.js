@@ -10,13 +10,19 @@ function dist2(ax,az,bx,bz){ const dx=ax-bx,dz=az-bz; return dx*dx+dz*dz; }
 function weighted(pairs){ let s=0; for(const p of pairs)s+=p[1]; let r=Math.random()*s;
   for(const p of pairs){ r-=p[1]; if(r<=0) return p[0]; } return pairs[0][0]; }
 function hash2(x,z){ const s=Math.sin(x*12.9898+z*78.233)*43758.5453; return s-Math.floor(s); }
+function smoothstep(a,b,v){ const t=clamp((v-a)/(b-a),0,1); return t*t*(3-2*t); }
 
 // The single source of truth for ground height — terrain mesh, players,
 // bots, loot and buildings all sit on this function.
+// Rolling hills in the middle, island falls off into the ocean at the edges.
 function terrainHeight(x,z){
-  return Math.sin(x*0.012)*Math.cos(z*0.014)*6.5
+  const d=Math.sqrt(x*x+z*z)/CFG.ISLAND_R;
+  const t=clamp((1.15-d)/0.30,0,1);
+  const island=t*t*(3-2*t);                 // 1 inland → 0 in the sea
+  const base=Math.sin(x*0.012)*Math.cos(z*0.014)*6.5
        + Math.sin(x*0.031+1.7)*Math.cos(z*0.023+2.3)*2.8
        + Math.sin(x*0.083+4.1)*Math.sin(z*0.077+1.2)*1.1;
+  return (base+7.5)*island - 12*(1-island);
 }
 
 const NAME_A=['Sweaty','Cracked','NoScope','Laser','Tryhard','Default','Bush','Tomato','Tilted','Loot','Zero','OneShot','Clutch','WKey','Double','Mats','Crouch','Peely','Llama','Drift','Boxed','Bush'];
