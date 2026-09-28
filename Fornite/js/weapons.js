@@ -1,3 +1,4 @@
+// ============ Weapons: models, hitscan, rockets, inventory, effects ============
 const effects=[];
 const rockets=[];
 let fireCd=0,reloading=0,reloadTotal=1,muzzleLight,flashMesh,flashT=0;
@@ -78,7 +79,7 @@ function castBullet(o,d,w,mult,shooter){
   if(hitKind!=='none')spawnImpact(point,hitKind==='bot'?'#ffd24a':hitKind==='ground'?'#cdb98d':hitKind==='tree'?'#8a5f38':'#d8cfbf');
   return{point,bot:hitBot,dmg,crit,kind:hitKind};
 }
-/* ---- RPG ---- */
+/* ---- RPG: proyectil real + explosión con daño en área ---- */
 function spawnRocket(o,dir,shooter){
   const g=new THREE.Group();
   const body=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.55,8),mmat('#39404f'));
