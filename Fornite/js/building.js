@@ -1,3 +1,4 @@
+// ============ Walls / Ramps / Floors with blue holographic ghost ============
 let buildMode=null,lastBuildType='wall',placeCd=0;
 const pieces=[];
 const ghost={};let ghostMat,ghostEdgeMat;
