@@ -2,140 +2,350 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>BLOCK ROYALE — Browser Battle Royale</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=3"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:ital,wght@0,400;0,600;0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{--panel:rgba(8,14,26,.72);--line:rgba(255,255,255,.14);--gold:#ffd23a;--sh:#2fa9ff;--hp:#4ce04f;--pur:#c04dff}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0d1424}
+body{font-family:'Barlow Semi Condensed',sans-serif;color:#fff;user-select:none}
+#game,#game canvas{position:fixed;inset:0}
+.hidden{display:none!important}
+b{font-weight:700}
+.bigBtn{font-family:Anton;font-size:26px;letter-spacing:2px;color:#0d1424;background:var(--gold);border:0;
+  padding:12px 60px;transform:skewX(-8deg);cursor:pointer;margin:8px 6px 0;box-shadow:0 4px 0 #b8912a;transition:.12s}
+.bigBtn:hover{filter:brightness(1.12);transform:skewX(-8deg) translateY(-2px)}
+.bigBtn.ghost{background:rgba(255,255,255,.14);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:40;
+  background:radial-gradient(ellipse at center,rgba(8,12,26,.45) 0%,rgba(8,12,26,.88) 100%)}
+.menuInner{text-align:center;max-width:720px;padding:20px}
+.subTitle{font-family:Anton;font-size:56px;font-style:italic;letter-spacing:3px}
+.subTitle.red{color:#ff5b4d}
+.place{font-family:Anton;font-size:96px;color:var(--gold);font-style:italic;margin:6px 0}
+.victory{font-family:Anton;font-size:min(12vw,92px);font-style:italic;
+  background:linear-gradient(#fff 20%,#ffd76a 55%,#d98b1f 90%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 5px 0 rgba(20,26,48,.9))}
+.tag{margin:14px 0;font-size:19px;color:#dfe7ff}
+#winConfetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.confetti{position:absolute;top:-24px;width:10px;height:16px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+#errbox{position:fixed;left:10px;bottom:10px;z-index:99;background:#3a0d12;border:1px solid #ff5b4d;color:#ffd9d5;
+  padding:8px 12px;font:13px monospace;max-width:70vw;display:none;white-space:pre-wrap}
+#lobby{background:radial-gradient(ellipse at 50% 42%,rgba(8,12,26,0) 30%,rgba(8,12,26,.55) 100%)}
+#topbar{position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;gap:22px;
+  padding:0 20px;background:linear-gradient(rgba(6,10,20,.85),rgba(6,10,20,0))}
+.tbLogo{font-family:Anton;font-style:italic;font-size:22px;text-shadow:0 2px 0 #1b2440}
+.tbLogo span{color:var(--gold);letter-spacing:2px;margin-left:5px}
+#tbTabs{display:flex;gap:4px;flex:1}
+.tbTab{font-family:Anton;font-size:14.5px;letter-spacing:1.5px;color:#c9d6f2;background:transparent;border:0;
+  padding:9px 14px;border-radius:8px;cursor:pointer;transition:.12s}
+.tbTab:hover{color:#fff;background:rgba(255,255,255,.08)}
+.tbTab.active{background:#fff;color:#0d1424}
+.tbRight{display:flex;align-items:center;gap:10px}
+.xpChip{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:5px 14px;font-family:Anton;font-size:14px}
+.xpChip b{color:var(--gold)}
+.tbIcon{width:32px;height:32px;border-radius:8px;background:var(--panel);border:1px solid var(--line);
+  color:#cfe0ff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#newsCard{position:absolute;left:20px;top:78px;width:210px;border-radius:12px;padding:14px;overflow:hidden;
+  background:linear-gradient(150deg,#3b1f6e 0%,#7a2aa8 45%,#c73e8f 100%);border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 8px 24px rgba(0,0,0,.45)}
+#newsCard::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.25) 45%,transparent 60%);
+  background-size:250% 100%;animation:shine 3.4s linear infinite}
+@keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
+.ncTag{font-family:Anton;font-size:11px;letter-spacing:2px;background:rgba(0,0,0,.35);display:inline-block;
+  padding:3px 8px;border-radius:5px;margin-bottom:8px}
+.ncTitle{font-family:Anton;font-size:24px;line-height:1.05;font-style:italic;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.ncSub{font-size:13px;color:#f2ddff;margin-top:6px;font-weight:700}
+.lbPanel{position:absolute;left:20px;top:270px;width:330px;background:rgba(8,12,26,.82);border:1px solid var(--line);
+  border-radius:14px;padding:16px;backdrop-filter:blur(4px)}
+.lbPanel.playPos{top:auto;bottom:96px;background:rgba(6,10,20,.86)}
+.lockerHead{font-family:Anton;font-size:17px;letter-spacing:2px;color:var(--gold);margin-bottom:10px}
+.lockerHead .soft{font-family:'Barlow Semi Condensed';font-size:11.5px;color:#9fb0d8;letter-spacing:0}
+.ppMode{font-family:Anton;font-size:26px;letter-spacing:2px;font-style:italic;margin-bottom:10px}
+.ppChips{display:flex;gap:6px;margin-bottom:12px}
+.ppChips .chip{font-size:12.5px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid var(--line);
+  border-radius:999px;padding:4px 12px;color:#dfe7ff}
+.ppChips .chip i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5b6785;margin-left:4px}
+.ppChips .chip i.on{background:var(--hp)}
+.ppQuest{display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,#8f4de0,#c04dff);
+  border-radius:10px;padding:9px 12px;margin-bottom:14px}
+.ppQuest .qIcon{width:26px;height:26px;border-radius:50%;background:#ffd23a;display:flex;align-items:center;justify-content:center;flex:none}
+.ppQuest .qT{font-weight:700;font-size:14px;line-height:1.15}
+.ppQuest .qP{font-size:12px;color:#f0e2ff}
+.ppQuest .qXP{margin-left:auto;font-family:Anton;font-size:14px;color:#ffd23a}
+.playBig{display:block;width:100%;font-family:Anton;font-size:30px;letter-spacing:2px;color:#0d1424;background:#ffd23a;
+  border:0;border-radius:12px;padding:14px 0;cursor:pointer;box-shadow:0 5px 0 #b8912a;transition:.12s}
+.playBig:hover{filter:brightness(1.1);transform:translateY(-2px)}
+#outfitGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.outfit{position:relative;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.14);border-radius:8px;
+  padding:10px 10px 8px;cursor:pointer;transition:.12s}
+.outfit:hover{border-color:rgba(255,255,255,.45)}
+.outfit.equipped{border-color:var(--gold);background:rgba(255,210,58,.08)}
+.outfit.locked{opacity:.55;filter:grayscale(.7)}
+.outfit.deny{animation:shake .3s}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.swatches{display:flex;gap:4px;margin-bottom:7px}
+.swatches i{width:15px;height:15px;border-radius:3px;border:1px solid rgba(0,0,0,.4)}
+.oName{font-weight:700;font-size:13.5px}
+.oLock{display:flex;align-items:center;gap:5px;font-size:10.5px;color:#ffc9be;margin-top:4px}
+.oEq{position:absolute;top:6px;right:8px;font-family:Anton;font-size:9.5px;color:var(--gold)}
+.lockerHint{margin-top:10px;font-size:12px;color:#9fb0d8}
+.qRow{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.qRow.done{border-color:var(--hp)}
+.qTop{display:flex;justify-content:space-between;font-weight:700;font-size:14.5px}
+.qTop .xpv{color:var(--gold);font-family:Anton;font-size:13px}
+.qBarW{height:7px;background:rgba(0,0,0,.4);border-radius:4px;margin-top:8px;overflow:hidden}
+.qBar{height:100%;background:var(--sh);border-radius:4px;transition:width .3s}
+.qRow.done .qBar{background:var(--hp)}
+.qSub{font-size:11.5px;color:#9fb0d8;margin-top:3px}
+.cRow{display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:15px}
+.cRow:last-child{border-bottom:0}
+.cRow b{font-family:Anton;color:var(--gold);font-size:16px}
+#shopGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shopCard{border-radius:10px;padding:12px;cursor:pointer;border:1px solid rgba(255,255,255,.25);transition:.12s}
+.shopCard:hover{transform:translateY(-2px)}
+.shopCard .sName{font-weight:700;font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.shopCard .sPrice{font-family:Anton;font-size:13px;margin-top:6px}
+.ovTxt{font-size:15px;color:#dfe7ff;line-height:1.5;margin-bottom:10px}
+#lvlBadge{position:absolute;right:20px;bottom:170px;width:74px;background:var(--panel);border:2px solid var(--gold);
+  border-radius:14px;text-align:center;padding:8px 0 10px}
+#lvlBadge span{font-family:Anton;font-size:10px;letter-spacing:2px;color:#c9d6f2}
+#lvlBadge b{display:block;font-family:Anton;font-size:26px;color:var(--gold);line-height:1;margin:2px 0 6px}
+.lvlBar{height:5px;background:rgba(0,0,0,.5);border-radius:3px;margin:0 10px;overflow:hidden}
+#lvlFill{height:100%;width:0;background:var(--gold)}
+#musicBtn{position:absolute;right:20px;bottom:96px;width:44px;height:44px;border-radius:50%;
+  background:var(--panel);border:1px solid var(--line);color:#cfe0ff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+#musicBtn.off{color:#5b6785}
+#hintBar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:18px;font-size:13.5px;color:#c6d2f2}
+#hintBar i{font-style:normal;font-family:Anton;font-size:11.5px;background:rgba(255,255,255,.14);border-radius:4px;
+  padding:2px 7px;margin-right:6px}
+#ratingBox{position:absolute;right:20px;bottom:16px;display:flex;gap:8px;align-items:center}
+.rbMark{width:44px;height:52px;background:#000;border:2px solid #fff;border-radius:4px;display:flex;align-items:flex-end;
+  justify-content:center;font-family:Anton;font-size:13px;padding-bottom:4px}
+.rbTxt{font-size:10px;color:#c9d6f2;line-height:1.35}
+#unlockBanner{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:var(--panel);
+  border:2px solid var(--gold);border-radius:8px;padding:10px 26px;font-family:Anton;font-size:18px;letter-spacing:2px;color:var(--gold);z-index:50}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:20;display:none}
+body.ingame #hud{display:block}
+#ch{position:absolute;left:50%;top:50%;width:0;height:0;--gap:7px}
+#ch span{position:absolute;background:#fff;box-shadow:0 0 3px rgba(0,0,0,.8)}
+#ch .l{width:9px;height:2px;left:calc(-9px - var(--gap));top:-1px}
+#ch .r{width:9px;height:2px;left:var(--gap);top:-1px}
+#ch .t{width:2px;height:9px;left:-1px;top:calc(-9px - var(--gap))}
+#ch .b{width:2px;height:9px;left:-1px;top:var(--gap)}
+#ch .dot{width:2px;height:2px;left:-1px;top:-1px}
+#hitmark{position:absolute;left:50%;top:50%;width:0;height:0;opacity:0}
+#hitmark span{position:absolute;width:2px;height:10px;background:#fff}
+#hitmark span:nth-child(1){transform:translate(-9px,-16px) rotate(-45deg)}
+#hitmark span:nth-child(2){transform:translate(7px,-16px) rotate(45deg)}
+#hitmark span:nth-child(3){transform:translate(-9px,4px) rotate(45deg)}
+#hitmark span:nth-child(4){transform:translate(7px,4px) rotate(-45deg)}
+#hitmark.show{animation:hitpop .22s ease-out}
+#hitmark.crit span{background:var(--gold)}
+@keyframes hitpop{0%{opacity:1;transform:scale(1.45)}100%{opacity:0;transform:scale(.9)}}
+#compassWrap{position:absolute;top:10px;left:50%;transform:translateX(-50%);text-align:center}
+#compass{width:460px;height:44px}
+#stormPill{display:inline-flex;align-items:center;gap:10px;background:rgba(10,16,32,.72);border:1px solid var(--line);
+  border-radius:999px;padding:6px 20px 6px 8px;margin-top:2px}
+#stormPill .ico{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e08cff,#a132e0);
+  display:flex;align-items:center;justify-content:center;flex:none}
+#stormLabel{font-style:italic;font-weight:700;font-size:16px;letter-spacing:1px}
+#stormTime{font-family:Anton;font-size:21px;font-style:italic;margin-left:6px;min-width:74px;text-align:left}
+#topright{position:absolute;right:16px;top:16px;text-align:right}
+#minimap{width:224px;height:224px;border:3px solid rgba(255,255,255,.9);border-radius:10px;background:#24402a;
+  box-shadow:0 4px 18px rgba(0,0,0,.45);display:block;margin-left:auto}
+#mapRow{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.chipStat{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;padding:4px 10px;font-family:Anton;font-size:15px}
+#bottomleft{position:absolute;left:22px;bottom:24px}
+.vitalRow{display:flex;align-items:center;gap:10px;margin-top:8px}
+.vIcon{width:30px;height:30px;border-radius:7px;background:var(--panel);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.bar{position:relative;height:20px;width:300px;background:rgba(8,12,24,.66);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.bar.shield{height:15px;width:260px}
+.bar>div{position:absolute;inset:0;transform-origin:left;background:var(--hp)}
+.bar.shield>div{background:var(--sh)}
+.vNum{font-family:Anton;font-size:20px;min-width:44px;text-shadow:0 1px 3px #000}
+#bottomright{position:absolute;right:22px;bottom:22px;text-align:right}
+#ammoLine{margin-bottom:8px;margin-right:6px}
+#ammoBig{font-family:Anton;font-size:38px;font-style:italic;text-shadow:0 2px 5px rgba(0,0,0,.7)}
+#ammoBig .res{font-size:22px;color:#c9d6f2}
+#weaponName{font-style:italic;font-weight:700;font-size:17px;letter-spacing:1.5px;text-shadow:0 2px 4px rgba(0,0,0,.7)}
+#hotbar{display:flex;gap:7px;align-items:flex-end;justify-content:flex-end}
+.slot{position:relative;width:64px;height:56px;border-radius:8px;background:rgba(10,16,32,.66);
+  border:2px solid rgba(255,255,255,.2);transition:transform .1s,border-color .1s;text-align:center}
+.slot.sel{border-color:#fff;transform:translateY(-7px);background:rgba(24,34,56,.8)}
+.slot .nm{font-family:Anton;font-size:12px;letter-spacing:1px;padding-top:8px;color:#eef4ff}
+.slot .ct{position:absolute;right:5px;bottom:3px;font-family:Anton;font-size:14px;color:#fff;text-shadow:0 1px 2px #000}
+.slot .key{position:absolute;left:0;right:0;bottom:-18px;font-size:11px;color:#b9c6e8}
+.slot.empty{opacity:.35}
+.slot.matsBox{width:58px}
+.slot .micon{width:26px;height:16px;margin:10px auto 0;border-radius:3px;
+  background:repeating-linear-gradient(0deg,#c9985f 0 4px,#a87840 4px 6px)}
+#toasts{position:absolute;right:24px;bottom:150px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.toast{background:var(--panel);border:1px solid var(--line);border-right:3px solid var(--gold);border-radius:6px;
+  padding:6px 12px;font-size:14.5px;transition:opacity .3s,transform .3s}
+.toast.out{opacity:0;transform:translateX(24px)}
+#killfeed{position:absolute;left:22px;top:34%;font-size:14.5px}
+#killfeed div{background:rgba(8,12,24,.5);border-radius:6px;padding:4px 12px;margin-top:5px;width:max-content;max-width:44vw}
+#killfeed .you{color:var(--gold);font-weight:700}
+#killfeed .vic{color:#ff9b4d;font-weight:700}
+#announce{position:absolute;left:0;right:0;top:23%;text-align:center;animation:ann 2.4s forwards}
+#annMain{font-family:Anton;font-size:44px;font-style:italic;letter-spacing:2px;text-shadow:0 3px 0 rgba(10,14,26,.9),0 6px 22px rgba(0,0,0,.6)}
+#annSub{font-size:18px;color:#dfe7ff;margin-top:4px}
+@keyframes ann{0%{opacity:0;transform:scale(.92)}10%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+#interact{position:absolute;left:50%;top:57%;transform:translateX(-50%);background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:6px 16px;font-size:16px}
+#interact b{font-family:Anton;color:var(--gold);margin-right:8px}
+#buildHint{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:var(--panel);
+  border:1px solid rgba(53,200,255,.4);border-radius:8px;padding:5px 16px;font-size:14.5px;color:#cfeaff}
+#dropHint{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);font-size:16px;
+  background:var(--panel);padding:8px 18px;border-radius:8px;border:1px solid var(--line)}
+.dmg{position:absolute;transform:translate(-50%,-50%);font-family:Anton;font-size:21px;
+  text-shadow:0 2px 3px rgba(0,0,0,.85);animation:dmgUp .8s forwards;pointer-events:none}
+.dmg.crit{color:#ffd24a;font-size:27px}
+.dmg.mat{color:#e0b174;font-size:16px}
+@keyframes dmgUp{to{transform:translate(-50%,-190%);opacity:0}}
+#vRed,#vStorm{position:absolute;inset:0;opacity:0;transition:opacity .25s}
+#vRed{background:radial-gradient(ellipse at center,transparent 42%,rgba(255,40,30,.55) 100%)}
+#vStorm{background:radial-gradient(ellipse at center,transparent 38%,rgba(150,40,220,.5) 100%)}
+#scopeOv{position:absolute;inset:0;background:radial-gradient(circle at center,transparent 24%,rgba(4,6,12,.96) 26%)}
+</style>
 </head>
 <body>
 <div id="game"></div>
+<script>
+window.onerror=function(m,s,l){var e=document.getElementById('errbox');
+ if(e){e.style.display='block';e.textContent='Error: '+m+' (line '+l+')';}};
+</script>
 
-<!-- ============ HUD ============ -->
 <div id="hud">
   <div id="ch"><span class="l"></span><span class="r"></span><span class="t"></span><span class="b"></span><span class="dot"></span></div>
   <div id="hitmark"><span></span><span></span><span></span><span></span></div>
-  <div id="interact" class="hidden"></div>
-  <div id="buildHint" class="hidden"></div>
-  <div id="dropHint" class="hidden">WASD — steer your drop · glider deploys automatically</div>
-  <div id="toasts"></div>
+  <div id="compassWrap"><canvas id="compass" width="460" height="44"></canvas>
+    <div id="stormPill"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M13 2 5 14h5l-1 8 8-12h-5l1-8z"/></svg></span>
+      <span id="stormLabel">STORM</span><span id="stormTime">0:00</span></div>
+  </div>
+  <div id="killfeed"></div><div id="toasts"></div>
   <div id="announce" class="hidden"><div id="annMain"></div><div id="annSub"></div></div>
-  <div id="killfeed"></div>
   <div id="topright">
-    <canvas id="minimap" width="220" height="220"></canvas>
-    <div id="stormTimer" class="panel">STORM 0:22</div>
-    <div id="counts" class="panel">
-      <span class="cItem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><b id="aliveNum">24</b> ALIVE</span>
-      <span class="cItem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 21l14-14M21 21L7 7M7 7l-3 3M17 7l3 3M7 7L4 4M17 7l3-3"/></svg><b id="killNum">0</b> ELIMS</span>
+    <canvas id="minimap" width="224" height="224"></canvas>
+    <div id="mapRow">
+      <span class="chipStat"><svg width="13" height="13" viewBox="0 0 24 24" fill="#c04dff"><path d="M13 2 5 14h5l-1 8 8-12h-5l1-8z"/></svg><span id="miniStorm">0:00</span></span>
+      <span class="chipStat"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7z"/></svg><span id="miniAlive">24</span></span>
+      <span class="chipStat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffd23a" stroke-width="2.4"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg><span id="miniElims">0</span></span>
     </div>
   </div>
   <div id="bottomleft">
-    <div class="barWrap shield"><div id="shFill"></div><span id="shNum">0</span></div>
-    <div class="barWrap health"><div id="hpFill"></div><span id="hpNum">100</span></div>
+    <div class="vitalRow"><span class="vIcon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2fa9ff" stroke-width="2.4"><path d="M12 2 4 6v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6z"/></svg></span>
+      <div class="bar shield"><div id="shFill"></div></div><span class="vNum" id="shNum">0</span></div>
+    <div class="vitalRow"><span class="vIcon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#4ce04f"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg></span>
+      <div class="bar"><div id="hpFill"></div></div><span class="vNum" id="hpNum">100</span></div>
   </div>
   <div id="bottomright">
-    <div id="ammoRow"><span id="ammoName">PICK</span><span id="ammoMag">—</span><span id="ammoRes"></span></div>
-    <div id="reloadWrap" class="hidden"><div id="reloadFill"></div></div>
-    <div id="useWrap" class="hidden"><span id="useLabel"></span><div id="useBar"><div id="useFill"></div></div></div>
-    <div id="invRow">
-      <div id="slots"></div>
-      <div id="chips">
-        <span class="chip" id="chipPots">X <b id="potsCount">0</b></span>
-        <span class="chip" id="chipMed">C <b id="medCount">0</b></span>
-        <span class="chip mats">MATS <b id="matsNum">50</b></span>
-      </div>
-    </div>
+    <div id="ammoLine"><div id="weaponName">PICKAXE</div><div id="ammoBig"><span id="ammoMag">—</span><span class="res" id="ammoRes"></span></div></div>
+    <div id="hotbar"></div>
   </div>
-  <div id="vRed"></div>
-  <div id="vStorm"></div>
-  <div id="scopeOv" class="hidden"></div>
-  <div id="dmgLayer"></div>
+  <div id="interact" class="hidden"></div><div id="buildHint" class="hidden"></div>
+  <div id="dropHint" class="hidden">WASD — steer your drop · glider deploys automatically</div>
+  <div id="vRed"></div><div id="vStorm"></div><div id="scopeOv" class="hidden"></div><div id="dmgLayer"></div>
 </div>
 
-<!-- ============ LOBBY ============ -->
 <div id="lobby" class="screen">
-  <div class="lobbyTop">
-    <div class="lobbyLogo">BLOCK<span>ROYALE</span></div>
-    <div class="lobbyStats panel">
-      <span class="cItem">VICTORY ROYALES <b id="statWins">0</b></span>
-      <span class="cItem">MATCHES <b id="statMatches">0</b></span>
-      <span class="cItem">BEST ELIMS <b id="statBest">0</b></span>
+  <div id="topbar">
+    <div class="tbLogo">BLOCK<span>ROYALE</span></div>
+    <nav id="tbTabs">
+      <button class="tbTab active" data-tab="play">PLAY</button>
+      <button class="tbTab" data-tab="overview">OVERVIEW</button>
+      <button class="tbTab" data-tab="shop">SHOP</button>
+      <button class="tbTab" data-tab="locker">LOCKER</button>
+      <button class="tbTab" data-tab="quests">QUESTS</button>
+      <button class="tbTab" data-tab="career">CAREER</button>
+    </nav>
+    <div class="tbRight">
+      <span class="xpChip"><svg width="14" height="14" viewBox="0 0 24 24" fill="#ffd23a"><path d="M13 2 5 14h5l-1 8 8-12h-5l1-8z"/></svg><b id="xpVal">0</b></span>
+      <button id="gearBtn" class="tbIcon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg></button>
     </div>
+  </div>
+  <div id="newsCard"><div class="ncTag">SEASON 1</div>
+    <div class="ncTitle">NEW SEASON<br>LIVE NOW</div><div class="ncSub">Supply Drops · Day/Night · RPG</div></div>
+  <div id="playPanel" class="lbPanel playPos">
+    <div class="ppMode">BATTLE ROYALE</div>
+    <div class="ppChips"><span class="chip">Solo</span><span class="chip">Build <i class="on"></i></span><span class="chip">Storm ×6</span></div>
+    <div id="questCard" class="ppQuest">
+      <div class="qIcon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0d1424" stroke-width="2.4"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+      <div><div class="qT" id="qcName">Quest</div><div class="qP" id="qcProg">0 / 0</div></div>
+      <div class="qXP" id="qcXP">+300</div>
+    </div>
+    <button id="playBtn" class="playBig">PLAY</button>
+  </div>
+  <div id="lockerPanel" class="lbPanel hidden">
+    <div class="lockerHead">LOCKER</div><div id="outfitGrid"></div>
+    <div class="lockerHint">Outfits, level &amp; quests are saved in your browser.</div>
+  </div>
+  <div id="questsPanel" class="lbPanel hidden">
+    <div class="lockerHead">QUESTS <span class="soft">— resets on reload</span></div><div id="questList"></div>
+  </div>
+  <div id="careerPanel" class="lbPanel hidden"><div class="lockerHead">CAREER</div><div id="careerList"></div></div>
+  <div id="shopPanel" class="lbPanel hidden">
+    <div class="lockerHead">ITEM SHOP</div><div id="shopGrid"></div>
+    <div class="lockerHint">Just a preview — outfits unlock through play.</div>
+  </div>
+  <div id="overviewPanel" class="lbPanel hidden">
+    <div class="lockerHead">OVERVIEW</div>
+    <div class="ovTxt">Drop with 23 bots. Open <b style="color:var(--gold)">chests</b>, catch <b style="color:#66e0ff">supply drops</b>, find the <b>RPG</b>, build, and outlast the storm — now with a full day/night cycle.</div>
   </div>
   <div id="unlockBanner" class="hidden"></div>
-  <div class="sideBox lobbyLeft">
-    <div class="lockerHead">LOCKER</div>
-    <div id="outfitGrid"></div>
-    <div class="lockerHint">Outfits &amp; stats are saved in your browser.</div>
-  </div>
-  <div class="sideBox lobbyRight">
-    <div class="lockerHead">CONTROLS</div>
-    <div class="controls">
-      <div><b>WASD</b> Move</div><div><b>Mouse</b> Look</div>
-      <div><b>Space</b> Jump</div><div><b>Shift</b> Sprint</div>
-      <div><b>LMB</b> Fire / Place</div><div><b>RMB</b> Aim</div>
-      <div><b>R</b> Reload</div><div><b>E</b> Pick up</div>
-      <div><b>1 / 2 / 3</b> Wall / Ramp / Floor</div><div><b>Q</b> Quick build</div>
-      <div><b>4</b> Pickaxe</div><div><b>X / C</b> Potion / Med kit</div>
-    </div>
-    <div class="lockerHint">Chop trees &amp; rocks for materials. Ammo &amp; mats auto-pickup on walk-over.</div>
-  </div>
-  <div class="lobbyBottom">
-    <button id="playBtn" class="bigBtn">PLAY</button>
-    <div class="lobbyTip">24 players · last one standing wins · Enter to play</div>
-  </div>
+  <div id="lvlBadge"><span>LVL</span><b id="lvlNum">1</b><div class="lvlBar"><div id="lvlFill"></div></div></div>
+  <button id="musicBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V6l10-2v11a3 3 0 1 1-2-2.8V7.4L11 8.9V18a3 3 0 1 1-2-2.8z"/></svg></button>
+  <div id="hintBar"><span><i>Enter</i> Play</span><span><i>L</i> Locker</span><span><i>Tab</i> Quests</span><span><i>M</i> Music</span><span><i>B</i> Emote (in game)</span></div>
+  <div id="ratingBox"><div class="rbMark">BRG</div><div class="rbTxt"><b>Teen</b><br>Fantasy Violence</div></div>
 </div>
 
-<!-- ============ PAUSE / END SCREENS ============ -->
-<div id="pause" class="screen hidden">
-  <div class="menuInner">
-    <h2 class="subTitle">PAUSED</h2>
-    <button id="resumeBtn" class="bigBtn">RESUME</button>
-    <button id="pauseRestart" class="bigBtn ghost">RESTART</button>
-    <button id="pauseMenu" class="bigBtn ghost">LOBBY</button>
-  </div>
-</div>
-<div id="over" class="screen hidden">
-  <div class="menuInner">
-    <h2 class="subTitle red">ELIMINATED</h2>
-    <div id="overPlace" class="place">#12</div>
-    <p id="overBy" class="tag">Eliminated by Bot</p>
-    <p class="tag"><b id="overKills">0</b> eliminations</p>
-    <button id="overAgain" class="bigBtn">PLAY AGAIN</button>
-    <button id="overMenu" class="bigBtn ghost">LOBBY</button>
-  </div>
-</div>
-<div id="win" class="screen hidden">
-  <div id="winConfetti"></div>
-  <div class="menuInner">
-    <h2 class="victory">VICTORY ROYALE</h2>
-    <p class="tag">#1 of 24 · <b id="winKills">0</b> eliminations</p>
-    <button id="winAgain" class="bigBtn">PLAY AGAIN</button>
-    <button id="winMenu" class="bigBtn ghost">LOBBY</button>
-  </div>
-</div>
+<div id="pause" class="screen hidden"><div class="menuInner"><h2 class="subTitle">PAUSED</h2>
+  <button id="resumeBtn" class="bigBtn">RESUME</button><button id="pauseRestart" class="bigBtn ghost">RESTART</button>
+  <button id="pauseMenu" class="bigBtn ghost">LOBBY</button></div></div>
+<div id="over" class="screen hidden"><div class="menuInner"><h2 class="subTitle red">ELIMINATED</h2>
+  <div id="overPlace" class="place">#12</div><p id="overBy" class="tag">Eliminated by Bot</p>
+  <p class="tag"><b id="overKills">0</b> eliminations</p><p class="tag" id="overXP" style="color:var(--gold)"></p>
+  <button id="overAgain" class="bigBtn">PLAY AGAIN</button><button id="overMenu" class="bigBtn ghost">LOBBY</button></div></div>
+<div id="win" class="screen hidden"><div id="winConfetti"></div><div class="menuInner">
+  <h2 class="victory">VICTORY ROYALE</h2><p class="tag">#1 of 24 · <b id="winKills">0</b> eliminations</p>
+  <p class="tag" id="winXP" style="color:var(--gold)"></p>
+  <button id="winAgain" class="bigBtn">PLAY AGAIN</button><button id="winMenu" class="bigBtn ghost">LOBBY</button></div></div>
+<div id="errbox"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<!-- post-processing (game auto-falls back to plain rendering if these fail) -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-
-<script src="js/config.js?v=3"></script>
-<script src="js/utils.js?v=3"></script>
-<script src="js/audio.js?v=3"></script>
-<script src="js/world.js?v=3"></script>
-<script src="js/building.js?v=3"></script>
-<script src="js/loot.js?v=3"></script>
-<script src="js/weapons.js?v=3"></script>
-<script src="js/player.js?v=3"></script>
-<script src="js/bots.js?v=3"></script>
-<script src="js/storm.js?v=3"></script>
-<script src="js/hud.js?v=3"></script>
-<script src="js/main.js?v=3"></script>
+<script>
+/* Cargador inteligente: prueba .js y si no existe usa .txt */
+(function(){
+  var FILES=['config','utils','audio','world','building','weapons','player','bots','storm','loot','hud','main'];
+  var i=0;
+  function err(m){var e=document.getElementById('errbox');if(e){e.style.display='block';e.textContent=m;}}
+  function next(){
+    if(i>=FILES.length)return;
+    var name=FILES[i];
+    function ok(){i++;next();}
+    function tryTxt(){
+      var t=document.createElement('script');
+      t.src='js/'+name+'.txt?v=6';
+      t.onload=ok;
+      t.onerror=function(){err('Missing file: js/'+name+'.js (or .txt)');};
+      document.body.appendChild(t);
+    }
+    var s=document.createElement('script');
+    s.src='js/'+name+'.js?v=6';
+    s.onload=ok;
+    s.onerror=tryTxt;
+    document.body.appendChild(s);
+  }
+  next();
+})();
+</script>
 </body>
 </html>
