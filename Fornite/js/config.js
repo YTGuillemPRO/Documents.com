@@ -1,9 +1,10 @@
-// ============ TUNING ============
+// ============ TUNING — everything you'd want to tweak lives here ============
 const CFG={WORLD_HALF:240,ISLAND_R:240,WATER_Y:-0.6,GRID:4,GRAVITY:30,JUMP:12,WALK:6.4,SPRINT:10.5,
 PLAYER_R:0.5,BOT_COUNT:23,LOOT_COUNT:110,BUILD_COST:10,BUILD_HP:150,MAX_PIECES:400,MATS_START:50,MATS_MAX:500,
 SENS:0.0023,TREES:150,ROCKS:55,PICKUP_RANGE:3.2,AUTOPICK_RANGE:2.0,LIGHTNING:true,
 CHESTS:10,SUPPLY:{first:40,every:55},DAYNIGHT:{on:true,len:300}};
 
+// ============ SEASON / PROGRESSION ============
 const SEASON={name:'SEASON 1',title:'The First Storm'};
 const XP_BASE_MATCH=140, XP_PER_KILL=45, XP_WIN_BONUS=250;
 const QUEST_POOL=[
