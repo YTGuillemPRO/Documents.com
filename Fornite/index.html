@@ -321,31 +321,17 @@ window.onerror=function(m,s,l){var e=document.getElementById('errbox');
 <div id="errbox"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-/* Cargador inteligente: prueba .js y si no existe usa .txt */
-(function(){
-  var FILES=['config','utils','audio','world','building','weapons','player','bots','storm','loot','hud','main'];
-  var i=0;
-  function err(m){var e=document.getElementById('errbox');if(e){e.style.display='block';e.textContent=m;}}
-  function next(){
-    if(i>=FILES.length)return;
-    var name=FILES[i];
-    function ok(){i++;next();}
-    function tryTxt(){
-      var t=document.createElement('script');
-      t.src='js/'+name+'.txt?v=6';
-      t.onload=ok;
-      t.onerror=function(){err('Missing file: js/'+name+'.js (or .txt)');};
-      document.body.appendChild(t);
-    }
-    var s=document.createElement('script');
-    s.src='js/'+name+'.js?v=6';
-    s.onload=ok;
-    s.onerror=tryTxt;
-    document.body.appendChild(s);
-  }
-  next();
-})();
-</script>
+<script src="js/config.js?v=6"></script>
+<script src="js/utils.js?v=6"></script>
+<script src="js/audio.js?v=6"></script>
+<script src="js/world.js?v=6"></script>
+<script src="js/building.js?v=6"></script>
+<script src="js/weapons.js?v=6"></script>
+<script src="js/player.js?v=6"></script>
+<script src="js/bots.js?v=6"></script>
+<script src="js/storm.js?v=6"></script>
+<script src="js/loot.js?v=6"></script>
+<script src="js/hud.js?v=6"></script>
+<script src="js/main.js?v=6"></script>
 </body>
 </html>
