@@ -1,3 +1,4 @@
+// ============ Renderer, sky (day/night), ocean, island, props & physics ============
 let scene,renderer,camera,sun,hemi,skyMat,sunSprite;
 const worldBoxes=[],worldCircles=[],standables=[],lootSpots=[];
 const mapHouses=[],mapTrees=[],mapRocks=[];
@@ -51,6 +52,7 @@ function buildSky(){
   env.stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2.2,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));
   env.stars.frustumCulled=false;scene.add(env.stars);
 }
+// ---- ciclo día/noche (~5 min por ciclo) ----
 const _cA=new THREE.Color(),_cB=new THREE.Color();
 function updateEnv(){
   if(!CFG.DAYNIGHT||!CFG.DAYNIGHT.on)return;
@@ -68,6 +70,7 @@ function updateEnv(){
   scene.fog.color.copy(h);
   if(waterMat)waterMat.uniforms.uFog.value.copy(h);
   if(env.stars)env.stars.material.opacity=(1-env.dl)*0.9;
+  sunSprite.material.opacity=0.25+env.dl*0.75;
   sunSprite.position.copy(env.sunDir).multiplyScalar(760);
   skyMat.uniforms.uSunDir.value.copy(env.sunDir);
   sun.position.copy(sun.target.position).addScaledVector(env.sunDir,170);
@@ -217,6 +220,7 @@ function updateWorld(dt){
   if(waterMat)waterMat.uniforms.uTime.value=game.time;
   for(const c of clouds){c.position.x+=c.userData.v*dt;if(c.position.x>380)c.position.x=-380;}
 }
+/* ---------- physics + ray helpers ---------- */
 function pushBox(p,b,r){
   if(p.y+1.7<=b.minY||p.y>=b.maxY-0.05)return;
   const ox1=(p.x+r)-b.minX,ox2=b.maxX-(p.x-r);if(ox1<=0||ox2<=0)return;
