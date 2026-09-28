@@ -1,3 +1,4 @@
+// ============ Player + shared low-poly character builder + emote ============
 const player={name:'YOU',isPlayer:true,pos:V3(),vel:V3(),yaw:0,pitch:-0.12,hp:100,shield:0,alive:true,kills:0,
 mats:CFG.MATS_START,shieldPots:1,medkits:1,sel:0,inv:[null,null,null],grounded:false,dropping:true,gliding:false,
 aiming:false,using:null,swingT:0,runT:0,tier:0,emoteT:0,group:null,limbs:null,holder:null,glider:null};
