@@ -1,3 +1,4 @@
+// Tiny procedural sound synth — zero audio files needed.
 let AC=null;
 function audioInit(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}}
 function tone(f,dur,type='square',vol=0.06,slide=0){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
@@ -28,6 +29,7 @@ const SFX={
   empty(){tone(240,0.04,'square',0.04);},
   thud(){noiseS(0.12,0.1,420);}};
 
+// ---- chill lobby music loop (procedural, toggleable) ----
 let musicOn=true,musicTimer=null,musicStep=0;
 const MUSIC_ARP=[220,261.6,329.6,392,440,392,329.6,261.6];
 function musicStart(){
