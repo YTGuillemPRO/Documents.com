@@ -2410,6 +2410,26 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
     toast('Sesión cerrada', 'info');
 });
 
+async function ensureUserProfile(user){
+  try{
+    const { ref, get, set } = window._fbFns;
+    const s = await get(ref(db, `users/${user.uid}`));
+    if(!s.exists()){
+      await set(ref(db, `users/${user.uid}`), {
+        username: (user.email||('Jugador'+Math.floor(Math.random()*9999))).split('@')[0],
+        email: user.email||'', level: 1, xp: 0, coins: 100,
+        createdAt: Date.now(), owned: {bd_early:true}, equipped: {}, nameChanges: 0
+      });
+      console.log('[LevelUp] Perfil creado/reparado');
+    } else {
+      const d = s.val()||{}; const patch = {};
+      if(!d.username) patch.username = (user.email||'Jugador').split('@')[0];
+      if(!d.email && user.email) patch.email = user.email;
+      if(Object.keys(patch).length) await set(ref(db, `users/${user.uid}`), { ...d, ...patch });
+    }
+  }catch(e){ console.error('ensureUserProfile:', e); }
+}
+
 onAuthStateChanged(auth, async user => {
   if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
     const rOverlay = document.getElementById('radical-close-overlay');
@@ -2427,6 +2447,7 @@ onAuthStateChanged(auth, async user => {
 
   if(user){
     State.uid=user.uid;State.email=user.email;
+    await ensureUserProfile(user);      /* ← REPARA perfiles a medio crear */
     await loadUserData(user.uid);
     await set(ref(db,`users/${user.uid}/online`),true);
     onDisconnect(ref(db,`users/${user.uid}/online`)).set(false);
