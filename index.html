@@ -854,6 +854,13 @@
       </div>
       <button class="admin-btn admin-btn-outline" style="margin-top:14px;width:100%;" onclick="refreshAdminStats()">🔄 Actualizar stats</button>
     </div>
+    <div class="admin-card" style="margin-bottom:20px;">
+  <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="lucide:timer" data-width="20"></span> ⏱️ Tiempo de juego
+    <button class="admin-btn admin-btn-outline" onclick="adminLoadPlaytime()" style="margin-left:auto;font-size:11px;padding:5px 12px;">🔄 Cargar tiempos</button>
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Minutos jugados por usuario: hoy · últimos 7 días · total histórico</p>
+  <div id="admin-playtime-list" style="overflow-x:auto;"><p style="font-size:13px;color:var(--muted);">Pulsa "Cargar tiempos" para ver las estadísticas.</p></div>
+</div>
     <div class="admin-grid">
       <div class="admin-card">
         <div class="admin-card-title" style="color:#93c5fd;"><span class="iconify" data-icon="lucide:user-search" data-width="20"></span> Buscar usuario</div>
@@ -2116,7 +2123,136 @@ if (typeof RADICAL_CIERRE !== 'undefined' && RADICAL_CIERRE) {
         });
     }
 }
+/* ================= BLOQUE ADMIN COMPLETO + TIEMPO DE JUEGO ================= */
+function lvDateKey(d){const x=d||new Date();return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
 
+async function addPlaytime(minutes){
+  if(!State.uid||!window._fbFns||minutes<=0)return;
+  const{ref,runTransaction}=window._fbFns;
+  try{await runTransaction(ref(State.db,`users/${State.uid}/playtime/${lvDateKey()}`),v=>(Number(v)||0)+minutes);}catch(e){console.warn('playtime:',e);}
+}
+window.addPlaytime=addPlaytime;
+
+async function adminFindUidByUsername(username){
+  const{ref,get,query,orderByChild,equalTo}=window._fbFns;
+  try{
+    const q=query(ref(State.db,'users'),orderByChild('username'),equalTo(username));
+    const snap=await get(q);
+    if(snap.exists()){let uid=null;snap.forEach(c=>{uid=c.key;});return uid;}
+  }catch(e){}
+  const snap=await get(ref(State.db,'users'));
+  let uid=null;
+  snap.forEach(c=>{const v=c.val()||{};
+    if(!uid){
+      if((v.username||'').toLowerCase()===String(username).toLowerCase())uid=c.key;
+      else if((v.email||'').toLowerCase()===String(username).toLowerCase())uid=c.key;
+      else if(c.key===username)uid=c.key;
+    }
+  });
+  return uid;
+}
+
+async function adminGiveToUID(uid,username,coins,xp){
+  if(isDistributor(State.email))return;
+  const{ref,get,set}=window._fbFns;
+  try{
+    let newCoins=null,newXp=null;
+    if(coins>0){
+      const s=await get(ref(State.db,`users/${uid}/coins`));
+      newCoins=(Number(s.val())||0)+coins;
+      await set(ref(State.db,`users/${uid}/coins`),newCoins);
+    }
+    if(xp>0){
+      const s=await get(ref(State.db,`users/${uid}/xp`));
+      newXp=(Number(s.val())||0)+xp;
+      await set(ref(State.db,`users/${uid}/xp`),newXp);
+      await set(ref(State.db,`users/${uid}/level`),window.xpToLevel(newXp).level);
+    }
+    if(newCoins===null&&newXp===null){adminShowResult('admin-give-result','⚠️ Escribe una cantidad mayor a 0','err');return;}
+    let msg=`✅ ${username} recibió:`;
+    if(newCoins!==null)msg+=` +${coins} monedas`;
+    if(newXp!==null)msg+=` +${xp} XP`;
+    adminShowResult('admin-give-result',msg,'ok');toast(msg,'success');
+    if(uid===State.uid){
+      if(newCoins!==null)State.coins=newCoins;
+      if(newXp!==null){State.xp=newXp;State.level=window.xpToLevel(newXp).level;}
+      updateNavUser();
+    }
+    if(adminFoundUser&&adminFoundUser.uid===uid&&newCoins!==null)adminFoundUser.coins=newCoins;
+  }catch(err){
+    console.error('adminGiveToUID:',err);
+    adminShowResult('admin-give-result','Error: '+((err&&err.message)||err),'err');
+  }
+}
+
+window.__adminGiveUidPrompt=async function(uid,name){
+  const coins=parseInt(prompt(`💰 Monedas para ${name||('UID '+uid.slice(0,8))}:`,'100')||'0');
+  if(isNaN(coins)||coins<=0)return;
+  const xp=parseInt(prompt('⚡ XP (0 = nada):','0')||'0');
+  await adminGiveToUID(uid,name||('UID '+uid.slice(0,8)),coins,xp>0?xp:0);
+};
+window.__adminFixName=async function(uid){
+  const n=prompt('Nombre nuevo para reparar el perfil '+uid.slice(0,10)+'…');
+  if(!n)return;
+  const{ref,set}=window._fbFns;
+  try{await set(ref(State.db,`users/${uid}/username`),n.trim());toast('✅ Nombre reparado','success');adminLoadUsers();}
+  catch(e){toast('Error: '+e.message,'error');}
+};
+
+async function loadBannedUsers(){if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const el=document.getElementById('admin-banned-list');if(!el)return;try{const snap=await get(ref(State.db,'bannedUsers'));if(!snap.exists()){el.innerHTML='<span style="color:var(--muted);font-size:12px;">Ningún usuario baneado</span>';return;}const entries=Object.entries(snap.val());el.innerHTML=entries.map(([,d])=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;flex:1;color:#fca5a5;">${d.target}</span><span style="font-size:11px;color:var(--muted);">${d.reason||''}</span><button onclick="document.getElementById('admin-ban-input').value='${d.target}';adminUnbanUser();" style="padding:3px 8px;border-radius:5px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2);color:#34d399;font-size:11px;font-weight:700;cursor:pointer;">✅</button></div>`).join('');}catch(err){el.innerHTML='<span style="color:#ef4444;font-size:12px;">Error al cargar</span>';}}
+window.loadBannedUsers=loadBannedUsers;
+
+function setMsgType(type){if(isDistributor(State.email))return;broadcastType=type;const msg=document.getElementById('admin-broadcast-msg').value;const preview=document.getElementById('broadcast-preview');if(preview&&msg){preview.style.display='flex';preview.innerHTML=`<span>${type==='success'?'✅':type==='warning'?'⚠️':'🚨'}</span><span>${msg}</span>`;}}
+window.setMsgType=setMsgType;
+
+async function adminBroadcast(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const msg=document.getElementById('admin-broadcast-msg').value.trim();if(!msg){adminShowResult('admin-broadcast-result','Escribe un mensaje','err');return;}const{ref,set}=window._fbFns;try{await set(ref(State.db,'adminBroadcast/current'),{message:msg,type:broadcastType,ts:Date.now(),author:State.email});adminShowResult('admin-broadcast-result','📢 Mensaje enviado a todos','ok');toast('📢 Broadcast enviado','success');document.getElementById('admin-broadcast-msg').value='';const p=document.getElementById('broadcast-preview');if(p)p.style.display='none';}catch(err){adminShowResult('admin-broadcast-result','Error: '+err.message,'err');}}
+window.adminBroadcast=adminBroadcast;
+
+async function adminClearBroadcast(){if(!window._fbFns||!isAdmin(State.email))return;const{ref,remove}=window._fbFns;try{await remove(ref(State.db,'adminBroadcast/current'));adminShowResult('admin-maint-result','🧹 Mensaje global borrado','ok');toast('Mensaje global borrado','success');}catch(err){adminShowResult('admin-maint-result','Error: '+err.message,'err');}}
+window.adminClearBroadcast=adminClearBroadcast;
+
+async function adminLoadUsers(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const{ref,get}=window._fbFns;const container=document.getElementById('admin-users-list');container.innerHTML='<p style="font-size:13px;color:var(--muted);">Cargando...</p>';try{const snap=await get(ref(State.db,'users'));if(!snap.exists()){container.innerHTML='<p style="font-size:13px;color:var(--muted);">No hay usuarios.</p>';return;}const users=Object.entries(snap.val()).sort(([,a],[,b])=>(b.coins||0)-(a.coins||0));container.innerHTML=`<table class="users-table"><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Nivel</th><th>XP</th><th>Monedas</th><th>Acciones</th></tr></thead><tbody>${users.map(([uid,u],i)=>{const nm=(u.username||'').replace(/'/g,"\\'");return `<tr><td style="color:var(--muted);">${i+1}</td><td style="font-weight:700;color:var(--text);">${u.username?u.username:'<span style="color:#fca5a5;">(sin nombre)</span>'}<div style="font-size:10px;color:var(--muted);font-weight:400;" title="${uid}">uid: ${uid.slice(0,10)}…</div></td><td style="color:var(--muted);font-size:12px;">${u.email||'—'}</td><td><span style="background:rgba(124,58,237,0.15);color:var(--accent2);padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;">Lv ${u.level||1}</span></td><td style="color:var(--text);">${(u.xp||0).toLocaleString()}</td><td style="color:var(--gold);font-weight:700;">${(u.coins||0).toLocaleString()}</td><td><button onclick="__adminGiveUidPrompt('${uid}','${nm}')" title="Dar monedas" style="padding:3px 8px;border-radius:5px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">💰</button><button onclick="__adminFixName('${uid}')" title="Reparar nombre" style="padding:3px 8px;border-radius:5px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);color:var(--accent2);font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">🛠</button><button onclick="document.getElementById('admin-ban-input').value='${(u.email||uid).replace(/'/g,"\\'")}';adminBanUser();" title="Banear" style="padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);color:#fca5a5;font-size:11px;font-weight:700;cursor:pointer;">🚫</button></td></tr>`;}).join('')}</tbody></table>`;}catch(err){container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`;}}
+window.adminLoadUsers=adminLoadUsers;
+
+async function adminGiveCosmetic(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const username=document.getElementById('admin-cosmetic-user').value.trim();const itemId=document.getElementById('admin-cosmetic-item').value;if(!username){adminShowResult('admin-cosmetic-result','Escribe un nombre de usuario','err');return;}const item=SHOP_ITEMS.find(i=>i.id===itemId);if(!item){adminShowResult('admin-cosmetic-result','Selecciona un cosmético','err');return;}adminShowResult('admin-cosmetic-result','🔍 Buscando...','info');try{const uid=await adminFindUidByUsername(username);if(!uid){adminShowResult('admin-cosmetic-result','❌ Usuario no encontrado','err');return;}const{ref,set}=window._fbFns;await set(ref(State.db,`users/${uid}/owned/${itemId}`),true);adminShowResult('admin-cosmetic-result',`✅ ${item.emoji} ${item.name} regalado a ${username}`,'ok');toast(`🎁 ${item.name} regalado a ${username}`,'success');}catch(err){adminShowResult('admin-cosmetic-result','Error: '+err.message,'err');}}
+window.adminGiveCosmetic=adminGiveCosmetic;
+
+async function adminSetValues(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const username=document.getElementById('admin-set-user').value.trim();const coinsRaw=document.getElementById('admin-set-coins').value;const xpRaw=document.getElementById('admin-set-xp').value;if(!username){adminShowResult('admin-set-result','Escribe un nombre de usuario','err');return;}if(coinsRaw===''&&xpRaw===''){adminShowResult('admin-set-result','Escribe al menos un valor','err');return;}adminShowResult('admin-set-result','🔍 Buscando...','info');try{const uid=await adminFindUidByUsername(username);if(!uid){adminShowResult('admin-set-result','❌ Usuario no encontrado','err');return;}const{ref,set}=window._fbFns;if(coinsRaw!=='')await set(ref(State.db,`users/${uid}/coins`),Math.max(0,parseInt(coinsRaw)||0));if(xpRaw!==''){const nx=Math.max(0,parseInt(xpRaw)||0);await set(ref(State.db,`users/${uid}/xp`),nx);await set(ref(State.db,`users/${uid}/level`),window.xpToLevel(nx).level);}let msg=`✅ ${username} actualizado:`;if(coinsRaw!=='')msg+=` ${parseInt(coinsRaw)||0} monedas`;if(xpRaw!=='')msg+=` ${parseInt(xpRaw)||0} XP`;adminShowResult('admin-set-result',msg,'ok');toast(msg,'success');}catch(err){adminShowResult('admin-set-result','Error: '+err.message,'err');}}
+window.adminSetValues=adminSetValues;
+
+async function adminStartMaintenance(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;let hours=parseInt(document.getElementById('admin-maint-hours').value);if(!hours||hours<1)hours=1;const endAt=Date.now()+(hours*3600000);const{ref,set}=window._fbFns;try{await set(ref(State.db,'maintenance/status'),{active:true,endAt:endAt});adminShowResult('admin-maint-result',`🚧 Mantenimiento activado por ${hours} horas.`,'ok');toast('Mantenimiento Activado','success');}catch(err){adminShowResult('admin-maint-result','Error: '+err.message,'err');}}
+window.adminStartMaintenance=adminStartMaintenance;
+
+async function adminStopMaintenance(){if(isDistributor(State.email)){toast('No tienes permisos','error');return;}if(!window._fbFns||!isAdmin(State.email))return;const{ref,remove}=window._fbFns;try{await remove(ref(State.db,'maintenance/status'));adminShowResult('admin-maint-result','✅ Mantenimiento desactivado.','ok');toast('Mantenimiento Desactivado','success');const ov=document.getElementById('maintenance-overlay');if(ov)ov.style.display='none';}catch(err){adminShowResult('admin-maint-result','Error: '+err.message,'err');}}
+window.adminStopMaintenance=adminStopMaintenance;
+
+/* ⏱️ PANEL DE TIEMPO DE JUEGO (hoy / 7 días / total) */
+async function adminLoadPlaytime(){
+  if(!window._fbFns||!isAdmin(State.email))return;
+  const container=document.getElementById('admin-playtime-list');
+  if(!container)return;
+  container.innerHTML='<p style="font-size:13px;color:var(--muted);">⏳ Calculando tiempos...</p>';
+  try{
+    const{ref,get}=window._fbFns;
+    const snap=await get(ref(State.db,'users'));
+    if(!snap.exists()){container.innerHTML='<p style="font-size:13px;color:var(--muted);">No hay usuarios.</p>';return;}
+    const today=lvDateKey();
+    const weekKeys=[];for(let i=0;i<7;i++)weekKeys.push(lvDateKey(new Date(Date.now()-i*86400000)));
+    const rows=[];
+    snap.forEach(c=>{
+      const u=c.val()||{};
+      const pt=u.playtime||{};
+      const todayMin=Number(pt[today])||0;
+      let weekMin=0,totalMin=0;
+      for(const k in pt){const v=Number(pt[k])||0;totalMin+=v;if(weekKeys.includes(k))weekMin+=v;}
+      rows.push({name:u.username||'(sin nombre)',todayMin,weekMin,totalMin});
+    });
+    rows.sort((a,b)=>b.weekMin-a.weekMin||b.totalMin-a.totalMin);
+    const fmt=m=>{const h=Math.floor(m/60),mm=m%60;return h>0?`${h}h ${mm}m`:`${mm}m`;};
+    container.innerHTML=`<table class="users-table"><thead><tr><th>#</th><th>Usuario</th><th>Hoy</th><th>Últimos 7 días</th><th>Total histórico</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td style="color:var(--muted);">${i+1}</td><td style="font-weight:700;color:var(--text);">${r.name}</td><td>${fmt(r.todayMin)}</td><td><span style="background:rgba(59,130,246,0.15);color:#93c5fd;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;">${fmt(r.weekMin)}</span></td><td style="color:var(--gold);font-weight:700;">${fmt(r.totalMin)}</td></tr>`).join('')}</tbody></table>`;
+  }catch(err){container.innerHTML=`<p style="color:#ef4444;font-size:13px;">Error: ${err.message}</p>`;}
+}
+window.adminLoadPlaytime=adminLoadPlaytime;
 renderGames();
 renderShop();
 
