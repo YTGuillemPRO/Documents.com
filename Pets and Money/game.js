@@ -484,6 +484,8 @@ function renderHub(){
     }
     al.innerHTML=h;
   }
+  var qh=document.getElementById('questList');
+  if(qh)renderQuests();
   var sl=document.getElementById('statList');
   if(sl){
     var best=null;for(var i=0;i<G.pets.length;i++){if(!best||pE(G.pets[i])>pE(best))best=G.pets[i]}
@@ -733,6 +735,331 @@ onAuthStateChanged(fbAuth, function(user) {
   }
 });
 
+/* ═══════════════════════════════════════════════════════════════
+   ⭐ ADD-ONS v40 — definiciones (antes del INIT, para que todo exista)
+   Pestañas: ⚗️ Fusion · 🎟️ Codigos · 🛡️ Admin
+   Admin = tus 3 emails. Global via adminBroadcast/ (tus rules)
+   ═══════════════════════════════════════════════════════════════ */
+var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
+var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
+var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={};
+var buffBarEl=null,comboBarEl=null,comboV=0,comboTm2=null;
+var XK='PetSimUltra_v38_addons';
+var fuseSelIds=[];
+
+function loadX(){
+  try{var d=JSON.parse(localStorage.getItem(XK)||'{}');
+    G.webMult=d.webMult||1;G.feverUntil=d.feverUntil||0;G.comboBest=d.comboBest||0;
+    G.quests=d.quests||[];G.redeemed=d.redeemed||{};
+  }catch(e){G.webMult=1;G.feverUntil=0;G.comboBest=0;G.quests=[];G.redeemed={}}
+  var _t0=tI;
+  tI=function(){var m=G.webMult||1;if((G.feverUntil||0)>Date.now())m*=2;if(IS_ADM)m*=1.25;return _t0()*m};
+  var _hc=hClick;hClick=function(){_hc();bumpCombo()};
+  var _cd=claimDaily;claimDaily=function(){_cd();coinBurst(14)};
+  var _uu=updateUI;updateUI=function(){_uu();renderBuffs()};
+}
+function saveX(){try{localStorage.setItem(XK,JSON.stringify({webMult:G.webMult||1,feverUntil:G.feverUntil||0,comboBest:G.comboBest||0,quests:G.quests,redeemed:G.redeemed}))}catch(e){}}
+
+function fmtT(ms){var s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?h+'h '+m+'m':m?m+'m '+(s%60)+'s':s+'s'}
+function toNum(s){s=(''+(s==null?'':s)).trim().toLowerCase();var m=s.match(/^(-?[\d.]+)\s*([kmbtq])(?![a-z])/);
+  if(m){var f={k:1e3,m:1e6,b:1e9,t:1e12,q:1e15}[m[2]];return(parseFloat(m[1])||0)*f}
+  var n=parseFloat(s);return isNaN(n)?0:n}
+function coinBurst(n){for(var i=0;i<(n||12);i++)(function(){var c=document.createElement('span');c.className='psu-coin';c.textContent=['🪙','💰','💵','🤑'][Math.floor(Math.random()*4)];
+  c.style.left=(35+Math.random()*45)+'vw';c.style.top=(40+Math.random()*35)+'vh';c.style.animationDuration=(0.9+Math.random()*0.7)+'s';
+  document.body.appendChild(c);setTimeout(function(){c.remove()},1700)})()}
+
+/* ---- COMBO ---- */
+function bumpCombo(){comboV++;if(comboV>(G.comboBest||0))G.comboBest=comboV;
+  clearTimeout(comboTm2);comboTm2=setTimeout(function(){comboV=0;drawCombo()},1300);drawCombo();
+  if(comboV===10||comboV===25||comboV===50||comboV===100||comboV===200){
+    var bonus=Math.max(tI()*2,150)*(comboV/8);G.money+=bonus;G.te+=bonus;
+    toast('🔥 COMBO x'+comboV+' +$'+fmt(bonus),'rwd');coinBurst(10);snd.burst();if(navigator.vibrate)navigator.vibrate(15);saveX();updateUI()}}
+function drawCombo(){if(!comboBarEl)return;
+  if(!comboV){comboBarEl.style.display='none';return}
+  comboBarEl.style.display='block';
+  comboBarEl.innerHTML='<div class="psu-cb-t">COMBO x'+comboV+'</div><div class="psu-cb-b"><div class="psu-cb-f" style="width:'+Math.min(100,comboV)+'%"></div></div>'}
+
+/* ---- BUFFS ---- */
+function renderBuffs(){if(!buffBarEl)return;var h='';
+  if((G.webMult||1)>1)h+='<span class="psu-buff" style="border-color:#22d3ee">🌐 x'+G.webMult+' GLOBAL</span>';
+  var f=(G.feverUntil||0)-Date.now();if(f>0)h+='<span class="psu-buff" style="border-color:#f97316">🔥 FIEBRE x2 · '+fmtT(f)+'</span>';
+  if(boostActive)h+='<span class="psu-buff" style="border-color:#fbbf24">⚡ BOOST x2</span>';
+  if(luckyBoost)h+='<span class="psu-buff" style="border-color:#84cc16">🍀 SUERTE</span>';
+  if(IS_ADM)h+='<span class="psu-buff" style="border-color:#fbbf24">👑 ADMIN +25%</span>';
+  buffBarEl.innerHTML=h}
+
+/* ---- MISIONES ---- */
+var QTMPL=[
+  {icn:'🥚',n:'Abre {n} huevos',st:'tot',base:15,mul:2.4,rwm:45,abs:false},
+  {icn:'💰',n:'Gana ${n} mas',st:'te',base:5e3,mul:3.2,rwm:.12,abs:false},
+  {icn:'🐾',n:'Ten {n} mascotas',st:'pets',base:6,mul:1.5,rwm:260,abs:true},
+  {icn:'📖',n:'Descubre {n} especies',st:'disc',base:3,mul:1.45,rwm:900,abs:true},
+  {icn:'🔥',n:'Combo x{n}',st:'comboBest',base:8,mul:1.35,rwm:180,abs:true}];
+function qVal(s){if(s==='tot')return G.tot||0;if(s==='te')return G.te||0;if(s==='pets')return G.pets.length;if(s==='disc')return G.disc.length;if(s==='comboBest')return G.comboBest||0;return 0}
+function newQuest(){var t=QTMPL[Math.floor(Math.random()*QTMPL.length)];var lv=1+Math.floor((G.tot||0)/60);
+  var n=Math.max(1,Math.floor(t.base*Math.pow(t.mul,Math.min(lv,12))*(.8+Math.random()*.5)));
+  return{name:t.n.replace('{n}',fmt(n)),icn:t.icn,st:t.st,n:n,start:qVal(t.st),rw:Math.max(150,Math.floor(n*t.rwm)),abs:t.abs}}
+function qProg(q){var c=qVal(q.st);return Math.max(0,q.abs?c:c-q.start)}
+function ensureQuests(){if(!G.quests)G.quests=[];var g=0;while(G.quests.length<3&&g++<5)G.quests.push(newQuest())}
+function checkQuests(){ensureQuests();
+  for(var i=G.quests.length-1;i>=0;i--){var q=G.quests[i];
+    if(qProg(q)>=q.n){G.money+=q.rw;G.te+=q.rw;toast('📜 Mision: '+q.name+' +$'+fmt(q.rw),'rwd');snd.hatch('god');coinBurst(8);G.quests.splice(i,1);ensureQuests();saveX()}}}
+function renderQuests(){var host=document.getElementById('questList');if(!host)return;ensureQuests();var h='';
+  for(var i=0;i<G.quests.length;i++){var q=G.quests[i],p=Math.min(qProg(q),q.n),pc=Math.floor(p/q.n*100);
+    h+='<div class="psu-q"><div class="psu-q-t"><span>'+q.icn+' '+esc(q.name)+'</span><span style="color:#fbbf24">+$'+fmt(q.rw)+'</span></div><div class="psu-q-b"><div class="psu-q-f" style="width:'+pc+'%"></div></div><div class="psu-q-s">'+fmt(p)+' / '+fmt(q.n)+'</div></div>'}
+  host.innerHTML=h}
+
+/* ---- ADMIN helpers ---- */
+function givePets(rar,q){q=Math.max(1,q|0);var pool=PETS.filter(function(p){return p.r===rar});
+  if(!pool.length){toast('Sin mascotas de esa rareza','err');return}
+  for(var i=0;i<q;i++){var b=pool[Math.floor(Math.random()*pool.length)];
+    G.pets.push({ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()});
+    if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n)}
+  snd.hatch(rar);refHP();toast('🐾 +'+q+' '+RNAME[rar],'rwd');save();updateUI()}
+function forceEvt(id){var ev=null;for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)ev=EVENTS[i];if(!ev)return;
+  if(evtCur){try{evtCur.end()}catch(e){}clearInterval(evtT);evtCur=null}
+  evtCur=ev;evtEnd=Date.now()+ev.dur*1000;
+  try{ev.apply()}catch(e){}
+  toast(ev.n+'!','rwd');snd.world();
+  var b=document.getElementById('evtBanner');
+  if(b){b.style.display='flex';b.innerHTML='<i class="fas '+ev.ic+'"></i><span>'+ev.n+'</span><span class="evt-t" id="evtT">'+ev.dur+'s</span>'}
+  evtT=setInterval(function(){var s=Math.ceil((evtEnd-Date.now())/1000);
+    if(s<=0){endEvent();return}
+    var e2=document.getElementById('evtT');if(e2)e2.textContent=s+'s'},500)}
+function webWrite(path,val,msg){try{runTransaction(ref(fbDb,path),function(){return val})
+  .then(function(){if(msg)toast(msg,'rwd')})
+  .catch(function(){toast('Sin permiso (rules)','err')})}catch(e){toast('Error Firebase','err')}}
+function setAdm(a,s){a=!!a;s=!!s&&a;if(a===IS_ADM&&s===IS_SUPER)return;IS_ADM=a;IS_SUPER=s;
+  var tb=document.getElementById('tabAdmin');if(tb)tb.style.display=a?'':'none';
+  var s1=document.getElementById('psuAdmSec'),s2=document.getElementById('psuSupSec');
+  if(s1)s1.style.display=a?'':'none';if(s2)s2.style.display=s?'':'none';
+  if(a){toast('👑 ADMIN detectado! Pestaña 🛡️ desbloqueada','rwd');snd.world()}
+  else if(aTab==='admin')setTab('game');
+  renderBuffs()}
+function psuOv(id,html,bc){var o=document.getElementById(id);
+  if(!o){o=document.createElement('div');o.id=id;o.className='psu-ov';document.body.appendChild(o)}
+  o.innerHTML='<div class="psu-ovc" style="border-color:'+(bc||'#ef4444')+'">'+html+'</div>';o.style.display='flex'}
+function psuOvX(id){var o=document.getElementById(id);if(o)o.style.display='none'}
+function showBanner(t){var b=document.getElementById('psuBanner');if(!b)return;
+  if(!t){b.style.display='none';return}
+  b.innerHTML='📢 '+esc(t)+'<button class="psu-bx">✕</button>';b.style.display='block';
+  b.querySelector('.psu-bx').onclick=function(){b.style.display='none'}}
+function updChip(){var c=document.getElementById('psuMultChip');if(!c)return;var m=G.webMult||1;
+  if(m>1){c.textContent='🌐 x'+m+' GLOBAL';c.style.display='block'}else c.style.display='none'}
+
+/* ---- CODIGOS ---- */
+function usedCodes(){try{return JSON.parse(localStorage.getItem('psuCodesUsed')||'{}')}catch(e){return{}}}
+function hintOf(c){if(!c)return'';return c.t==='money'?'💰 $'+fmt(c.v):c.t==='rb'?'♻️ +'+c.v+' RB':c.t==='boost'?'⚡ boost '+c.v+'s':c.t==='lucky'?'🍀 suerte '+c.v+'min':c.t==='lu'?'🪙 +'+c.v+' LU':'🐾 mascota DIOS'}
+function renderCodes(){var host=document.getElementById('psuCodeList');if(!host)return;
+  var ks=Object.keys(SRV_CODES),u=usedCodes(),h='';
+  if(!ks.length)h='<p style="color:#8fa3b8;font-size:12px;margin:6px 0">Aun no hay codigos publicados.</p>';
+  for(var i=0;i<ks.length;i++){var k=ks[i];
+    if(u[k])h+='<div class="psu-row" style="opacity:.5"><span style="flex:1;text-decoration:line-through">'+esc(k)+'</span>✅</div>';
+    else h+='<div class="psu-row"><span style="flex:1">🔒 <b>'+esc(k)+'</b> <span style="opacity:.7;font-size:11px">'+hintOf(SRV_CODES[k])+'</span></span><button class="psu-b psu-b-c" data-code="'+esc(k)+'">Canjear</button></div>'}
+  host.innerHTML=h}
+function redeemCode(code){code=(''+(code||'')).trim().toUpperCase();if(!code)return;
+  var c=SRV_CODES[code];if(!c){toast('❌ Codigo no valido','err');return}
+  var u=usedCodes();if(u[code]){toast('⚠️ Ya canjeado','err');return}
+  u[code]=Date.now();try{localStorage.setItem('psuCodesUsed',JSON.stringify(u))}catch(e){}
+  if(c.t==='money'){G.money+=c.v;G.te+=c.v;toast('✅ +$'+fmt(c.v),'rwd')}
+  else if(c.t==='rb'){G.rb=(G.rb||0)+c.v;G.mult=Math.pow(1.8,G.rb);toast('✅ +'+c.v+' Rebirths','rwd')}
+  else if(c.t==='boost'){activateBoost(c.v||180)}
+  else if(c.t==='lucky'){luckyBoost=true;toast('🍀 Suerte x2 por '+c.v+' min','rwd');setTimeout(function(){luckyBoost=false;toast('Suerte terminada','inf')},(c.v||5)*60000)}
+  else if(c.t==='pet'){givePets('god',1)}
+  else if(c.t==='lu'){if(!luUid){toast('Inicia sesion en LevelUp','err');return}
+    runTransaction(ref(fbDb,'users/'+luUid+'/coins'),function(cv){return (cv||0)+(c.v||0)})
+      .then(function(){toast('🪙 +'+(c.v||0)+' monedas LU','rwd')}).catch(function(){toast('Error LU','err')})}
+  snd.burst();coinBurst(10);renderCodes();save();updateUI()}
+
+/* ---- ⚗️ FUSION (eliges las 3 mascotas) ---- */
+function selRarity(){for(var i=0;i<fuseSelIds.length;i++){for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===fuseSelIds[i])return G.pets[j].r}return null}
+function toggleFuse(id){var p=null;for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===id){p=G.pets[j];break}if(!p)return;
+  var ix=fuseSelIds.indexOf(id);
+  if(ix>-1){fuseSelIds.splice(ix,1);snd.click();renderFusion();return}
+  if(fuseSelIds.length>=3){toast('Ya has elegido 3, toca una para quitarla','err');snd.err();return}
+  var r=selRarity();
+  if(r&&p.r!==r){toast('Deben ser del MISMO rango ('+RNAME[r]+')','err');snd.err();return}
+  fuseSelIds.push(id);snd.click();renderFusion()}
+function doFuse(){
+  if(fuseSelIds.length!==3)return;
+  var r=selRarity(),ri=RKEYS.indexOf(r);
+  if(ri<0||ri>=RKEYS.length-1){toast('Este rango no se puede fusionar mas','err');snd.err();return}
+  var pets=[];
+  for(var j=0;j<G.pets.length;j++)if(fuseSelIds.indexOf(G.pets[j].id)>-1)pets.push(G.pets[j]);
+  if(pets.length!==3){fuseSelIds=[];renderFusion();return}
+  var maxLv=1,maxV=0;
+  for(var i=0;i<pets.length;i++){if(pets[i].lv>maxLv)maxLv=pets[i].lv;if((pets[i].v||0)>maxV)maxV=pets[i].v}
+  for(i=0;i<pets.length;i++)G.pets.splice(G.pets.indexOf(pets[i]),1);
+  var nx=RKEYS[ri+1],np2=PETS.filter(function(p){return p.r===nx});
+  var b=np2[Math.floor(Math.random()*np2.length)];
+  var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:maxLv,id:G.nid++,c:b.c,eg:b.eg,v:maxV};
+  G.pets.push(np);fuseSelIds=[];
+  toast('⚗️ FUSION: '+b.n+' ('+RNAME[nx]+')','rwd');snd.hatch(nx);coinBurst(14);
+  save();updateUI();refHP();renderFusion();showH(np,true)}
+function renderFusion(){var host=document.getElementById('fuGrid');if(!host)return;
+  var r=selRarity(),ri=RKEYS.indexOf(r),nx=(ri>-1&&ri<RKEYS.length-1)?RNAME[RKEYS[ri+1]]:null;
+  var h='<div class="psu-fsel">';
+  for(var i=0;i<3;i++){var sp=null,id=fuseSelIds[i];
+    if(id!=null)for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===id){sp=G.pets[j];break}
+    h+='<div class="psu-fslot'+(sp?' has':'')+'">'+(sp?sphH(sp,'xs'):'<i class="fas fa-plus"></i>')+'<span>'+(sp?esc(sp.n):'elige')+'</span></div>'}
+  h+='</div>';
+  h+='<button class="psu-fgo" id="btnFuseGo"'+((fuseSelIds.length===3&&nx)?'':' disabled')+'>⚗️ FUSIONAR'+(nx?' → 1 '+nx:' → elige 3')+'</button>';
+  h+='<p class="psu-hint">El resultado hereda el nivel mas alto y la mejor variante (⭐/🌈) de las 3. Toca una elegida para quitarla.</p>';
+  var s=G.pets.slice().sort(function(a,b){return pE(b)-pE(a)});
+  var cnt={};for(i=0;i<G.pets.length;i++){var rr=G.pets[i].r;cnt[rr]=(cnt[rr]||0)+1}
+  for(var rk=RKEYS.length-1;rk>=0;rk--){var rr2=RKEYS[rk],list=[];
+    for(i=0;i<s.length;i++)if(s[i].r===rr2)list.push(s[i]);
+    if(!list.length)continue;
+    h+='<div class="psu-fg-h" style="color:'+RCOL[rr2]+'">'+RNAME[rr2]+' <span>('+cnt[rr2]+')</span></div><div class="psu-fwrap">';
+    var cap=Math.min(list.length,50);
+    for(i=0;i<cap;i++){var p=list[i],si=fuseSelIds.indexOf(p.id);
+      h+='<div class="psu-fpet'+(si>-1?' sel':'')+'" data-fid="'+p.id+'">'+sphH(p,'xs')+'<b>'+esc(p.n)+(p.v===2?' 🌈':p.v===1?' ⭐':'')+'</b><span>Nv.'+p.lv+' · $'+fmt(pE(p))+'/s</span></div>'}
+    h+='</div>';
+    if(list.length>cap)h+='<p class="psu-hint">+'+fmt(list.length-cap)+' mas de rango '+RNAME[rr2]+'...</p>'}
+  if(!G.pets.length)h+='<p class="psu-hint">No tienes mascotas todavia. Abre huevos primero 🥚</p>';
+  host.innerHTML=h}
+
+/* ---- BUILD ADDONS (pestañas + paneles + listeners) ---- */
+function buildAddons(){
+  var st=document.createElement('style');
+  st.textContent='#psuBanner{position:fixed;top:0;left:0;right:0;z-index:9996;display:none;padding:9px 40px 9px 14px;text-align:center;font-weight:700;font-size:13px;color:#04121f;background:linear-gradient(90deg,#22d3ee,#7dd3fc)}#psuBanner .psu-bx{position:absolute;right:12px;top:6px;background:none;border:0;font-size:15px;cursor:pointer;color:#04121f}#psuMultChip{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9995;display:none;background:rgba(10,16,30,.9);border:1px solid #22d3ee;color:#67e8f9;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;pointer-events:none}#buffBar{position:fixed;top:8px;left:8px;z-index:9990;display:flex;gap:6px;flex-wrap:wrap;max-width:60vw;pointer-events:none}.psu-buff{background:rgba(10,16,30,.88);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:11.5px;font-weight:800;color:#fff;backdrop-filter:blur(6px)}#psuCombo{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:9989;display:none;text-align:center;pointer-events:none}#psuCombo .psu-cb-t{font-weight:900;font-size:19px;color:#fbbf24;text-shadow:0 0 14px rgba(251,191,36,.7)}#psuCombo .psu-cb-b{width:130px;height:5px;background:rgba(255,255,255,.12);border-radius:4px;margin:3px auto 0;overflow:hidden}#psuCombo .psu-cb-f{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24)}.psu-coin{position:fixed;z-index:9994;font-size:20px;pointer-events:none;animation:psuCoin 1.3s ease-in forwards}@keyframes psuCoin{to{transform:translateY(45vh) rotate(660deg);opacity:0}}.psu-ov{position:fixed;inset:0;z-index:9997;background:rgba(2,4,10,.95);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;font-family:inherit}.psu-ovc{background:#0d1424;border:1px solid #ef4444;border-radius:18px;padding:26px;max-width:340px}.psu-pad{padding:14px;max-height:calc(100vh - 150px);overflow-y:auto}.psu-row{display:flex;gap:6px;margin-bottom:6px}.psu-row input,.psu-row select{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none;font-family:inherit}.psu-b{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit}.psu-b:hover{background:#fbbf24;color:#231a00}.psu-b-g{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;font-weight:700;border:0}.psu-b-r{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.4);color:#fca5a5}.psu-b-c{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.4);color:#a5f3fc}.psu-h{margin:12px 0 5px;color:#fbbf24;font-size:11px;letter-spacing:1.5px;text-transform:uppercase}.psu-hint{color:#8fa3b8;font-size:11px;margin:8px 0;line-height:1.5}.psu-sec-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--wa2,#7dd3fc);margin:14px 0 8px;font-weight:800}.psu-q{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 11px;margin-bottom:8px}.psu-q-t{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;gap:8px}.psu-q-b{height:6px;background:rgba(255,255,255,.1);border-radius:4px;margin:6px 0 3px;overflow:hidden}.psu-q-f{height:100%;background:linear-gradient(90deg,var(--wa,#22d3ee),var(--wa2,#7dd3fc));transition:width .4s}.psu-q-s{font-size:10.5px;color:#8fa3b8}.psu-fsel{display:flex;gap:8px;justify-content:center;margin:10px 0}.psu-fslot{width:88px;min-height:92px;border:2px dashed rgba(255,255,255,.25);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:#8fa3b8;padding:6px;text-align:center}.psu-fslot.has{border-style:solid;border-color:#fbbf24;color:#fff;background:rgba(251,191,36,.08)}.psu-fgo{width:100%;padding:12px;font-size:15px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;border:0;border-radius:12px;cursor:pointer;margin:6px 0;font-family:inherit}.psu-fgo:disabled{opacity:.4;cursor:not-allowed}.psu-fg-h{font-weight:800;font-size:12px;letter-spacing:1px;margin:14px 0 6px;text-transform:uppercase}.psu-fg-h span{opacity:.6;font-size:10px}.psu-fwrap{display:flex;flex-wrap:wrap}.psu-fpet{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 6px;margin:0 6px 8px 0;cursor:pointer;min-width:86px;font-size:10px;transition:.12s;text-align:center;font-family:inherit;color:#fff}.psu-fpet b{font-size:11px}.psu-fpet span{color:#8fa3b8;font-size:9.5px}.psu-fpet:hover{border-color:var(--wa,#22d3ee)}.psu-fpet.sel{border-color:#fbbf24;background:rgba(251,191,36,.15);box-shadow:0 0 10px rgba(251,191,36,.3)}';
+  document.head.appendChild(st);
+
+  buffBarEl=document.createElement('div');buffBarEl.id='buffBar';document.body.appendChild(buffBarEl);
+  comboBarEl=document.createElement('div');comboBarEl.id='psuCombo';document.body.appendChild(comboBarEl);
+  var ban2=document.createElement('div');ban2.id='psuBanner';document.body.appendChild(ban2);
+  var chip=document.createElement('div');chip.id='psuMultChip';document.body.appendChild(chip);
+
+  /* ---- PESTAÑAS nuevas (como LU) ---- */
+  var nt=document.getElementById('navTabs');
+  if(nt&&!document.getElementById('tabFusion')){
+    nt.insertAdjacentHTML('beforeend',
+      '<button class="tab" data-t="fusion" id="tabFusion"><i class="fas fa-flask"></i><span>Fusion</span></button>'
+     +'<button class="tab" data-t="codes" id="tabCodes"><i class="fas fa-ticket"></i><span>Codigos</span></button>'
+     +'<button class="tab" data-t="admin" id="tabAdmin" style="display:none"><i class="fas fa-shield-halved"></i><span>Admin</span></button>')}
+
+  /* ---- PANELES nuevos ---- */
+  if(!document.getElementById('pFusion')){
+    var d=document.createElement('div');d.id='pFusion';d.className='panel';
+    d.innerHTML='<div class="psu-pad"><div class="psu-sec-t">⚗️ Fusion — elige 3 mascotas del mismo rango</div><div id="fuGrid"></div></div>';
+    document.body.appendChild(d)}
+  if(!document.getElementById('pCodes')){
+    var d2=document.createElement('div');d2.id='pCodes';d2.className='panel';
+    d2.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🎟️ Codigos</div>'
+     +'<div class="psu-row"><input id="psuCodeInp" placeholder="Escribe un codigo..." maxlength="20"><button class="psu-b psu-b-c" data-a="redeem">Canjear</button></div>'
+     +'<div id="psuCodeList"></div><p class="psu-hint">El admin publica codigos. Cada uno se canjea 1 vez por jugador.</p></div>';
+    document.body.appendChild(d2)}
+  if(!document.getElementById('pAdmin')){
+    var d3=document.createElement('div');d3.id='pAdmin';d3.className='panel';
+    d3.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🛡️ Panel Admin</div>'
+     +'<div id="psuAdmSec" style="display:none">'
+     +'<div class="psu-row"><button class="psu-b" data-a="copyUid">📋 Copiar mi UID</button></div>'
+     +'<div class="psu-h">💰 Dinero</div><div class="psu-row"><input id="psuMoney" value="1e9" placeholder="1e12 · 50b · 3t"></div><div class="psu-row"><button class="psu-b psu-b-g" data-a="addM">➕ Añadir</button><button class="psu-b psu-b-g" data-a="setM">= Fijar</button></div>'
+     +'<div class="psu-h">🐾 Mascotas</div><div class="psu-row"><select id="psuRar">'+RKEYS.map(function(r){return'<option value="'+r+'">'+RNAME[r]+'</option>'}).join('')+'</select><input id="psuQty" value="1" style="max-width:50px"><button class="psu-b" data-a="pet">Dar</button></div>'
+     +'<div class="psu-row"><button class="psu-b" data-a="dex">📖 Index 100%</button><button class="psu-b psu-b-r" data-a="wipe">🗑️ Borrar pets</button></div>'
+     +'<div class="psu-h">⚡ Poder</div><div class="psu-row"><button class="psu-b" data-a="upg">⬆️ Max mejoras</button><button class="psu-b" data-a="worlds">🗺️ Mundos</button><button class="psu-b" data-a="x3">🔓 x3</button></div>'
+     +'<div class="psu-row"><input id="psuMult" value="10" placeholder="Multiplicador"><button class="psu-b" data-a="mult">✖️ Set</button></div>'
+     +'<div class="psu-row"><input id="psuRb" value="10" placeholder="Rebirths"><button class="psu-b" data-a="rb">♻️ Set</button></div>'
+     +'<div class="psu-h">🎉 Eventos</div><div class="psu-row"><select id="psuEvt">'+EVENTS.map(function(e){return'<option value="'+e.id+'">'+e.n+'</option>'}).join('')+'</select><button class="psu-b" data-a="evt">▶️ Forzar</button></div>'
+     +'<div class="psu-h">😈 Modo</div><div class="psu-row"><button class="psu-b psu-b-r" data-a="god">Dios x1M</button><button class="psu-b" data-a="ungod">Normal</button></div>'
+     +'</div>'
+     +'<div id="psuSupSec" style="display:none">'
+     +'<div class="psu-h">🌐 WEB · afecta a TODOS</div>'
+     +'<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
+     +'<div class="psu-row"><input id="psuGM" value="2" placeholder="Mult global"><button class="psu-b psu-b-g" data-a="gMult">Activar</button><button class="psu-b psu-b-r" data-a="gMultOff">Quitar</button></div>'
+     +'<div class="psu-h">🎟️ Publicar codigo</div><div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
+     +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"><button class="psu-b psu-b-g" data-a="pubCode">OK</button></div>'
+     +'<div class="psu-h">🚫 Moderacion</div><div class="psu-row"><input id="psuBan" placeholder="UID del jugador"></div>'
+     +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="ban">🚫 Ban</button><button class="psu-b" data-a="unban">✅ Unban</button></div>'
+     +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff">OFF</button></div>'
+     +'</div></div>';
+    document.body.appendChild(d3)}
+
+  /* Misiones en el Hub (antes de stats) */
+  var sl=document.getElementById('statList');
+  if(sl&&sl.parentNode&&!document.getElementById('questBox')){
+    var qb=document.createElement('div');qb.id='questBox';
+    qb.innerHTML='<div class="psu-sec-t">📜 Misiones</div><div id="questList"></div>';
+    sl.parentNode.insertBefore(qb,sl)}
+
+  /* ---- setTab extendido (muestra los paneles nuevos) ---- */
+  var _st=setTab;
+  setTab=function(t){_st(t);
+    var mp2={fusion:'pFusion',codes:'pCodes',admin:'pAdmin'};
+    var pe2=document.getElementById(mp2[t]);
+    if(pe2)pe2.classList.add('on');
+    if(t==='fusion')renderFusion();
+    else if(t==='codes')renderCodes()};
+
+  /* ---- clicks delegados ---- */
+  document.addEventListener('click',function(e){
+    var c=e.target.closest('[data-code]');if(c){redeemCode(c.dataset.code);return}
+    if(e.target.closest('#btnFuseGo')){snd.click();doFuse();return}
+    var f=e.target.closest('[data-fid]');if(f){toggleFuse(parseInt(f.dataset.fid,10));return}
+    var b=e.target.closest('[data-a]');if(!b)return;
+    if(!e.target.closest('#pAdmin'))return;
+    var a=b.dataset.a;snd.click();
+    var V=function(id){var x=document.getElementById(id);return x?x.value:''};
+    if(a==='redeem'){redeemCode(V('psuCodeInp'));return}
+    if(a==='copyUid'){var uid=luUid||(ME_U&&ME_U.uid)||'';try{navigator.clipboard.writeText(uid);toast('📋 UID copiado','inf')}catch(x){prompt('Tu UID:',uid)}return}
+    if(!IS_ADM)return;
+    if(a==='addM'){G.money+=toNum(V('psuMoney'));toast('💰 +$'+fmt(G.money),'rwd');save();updateUI()}
+    else if(a==='setM'){G.money=toNum(V('psuMoney'));G.dm=G.money;toast('💵 Fijado $'+fmt(G.money),'rwd');save();updateUI()}
+    else if(a==='pet')givePets(V('psuRar'),toNum(V('psuQty')));
+    else if(a==='dex'){G.disc=PETS.map(function(p){return p.n});toast('📖 Index 100%','rwd');save();updateUI()}
+    else if(a==='upg'){G.upg={luck:10,inc:10,disc:5,fast:4,auto:3};CLICKS=Math.max(1,5-G.upg.fast);toast('⬆️ Mejoras al maximo','rwd');save();updateUI()}
+    else if(a==='worlds'){G.uw=WORLDS.map(function(w){return w.id});apTh();toast('🗺️ Todos los mundos','rwd');save();updateUI()}
+    else if(a==='x3'){G.x3=true;toast('🔓 x3 desbloqueado','rwd');save();updateUI()}
+    else if(a==='mult'){G.mult=Math.max(1,toNum(V('psuMult'))||1);toast('✖️ Multiplicador x'+fmt(G.mult),'rwd');save();updateUI()}
+    else if(a==='rb'){G.rb=toNum(V('psuRb'))|0;G.mult=Math.pow(1.8,G.rb);toast('♻️ RB '+G.rb+' · x'+G.mult.toFixed(1),'rwd');save();updateUI()}
+    else if(a==='evt')forceEvt(V('psuEvt'));
+    else if(a==='god'){G.mult=1e6;toast('😈 MODO DIOS x1M','rwd');save();updateUI()}
+    else if(a==='ungod'){G.mult=Math.pow(1.8,G.rb);toast('😇 Modo normal','rwd');save();updateUI()}
+    else if(a==='wipe')showCf('🗑️','Borrar mascotas','Se eliminaran TODAS. ¿Seguro?',function(){G.pets=[];refHP();save();updateUI();hideCf();toast('Mascotas borradas','inf')});
+    else if(IS_SUPER){
+      if(a==='announce')webWrite('adminBroadcast/text',V('psuAnn').trim(),'📣 Anuncio publicado para TODOS');
+      else if(a==='gMult')webWrite('adminBroadcast/globalMult',Math.max(1,toNum(V('psuGM'))||1),'🌐 Mult GLOBAL activado');
+      else if(a==='gMultOff')webWrite('adminBroadcast/globalMult',1,'🌐 Mult global quitado');
+      else if(a==='pubCode'){var n=V('psuCn').trim().toUpperCase(),t2=V('psuCt'),v=Math.max(1,toNum(V('psuCv'))||1);if(!n)return;
+        var rw=t2==='money'?{t:'money',v:v}:t2==='rb'?{t:'rb',v:v}:t2==='boost'?{t:'boost',v:v}:t2==='lucky'?{t:'lucky',v:v}:t2==='lu'?{t:'lu',v:v}:{t:'pet',v:1};
+        webWrite('adminBroadcast/codes/'+n,rw,'🎟️ Codigo '+n+' publicado')}
+      else if(a==='ban')webWrite('bannedUsers/'+V('psuBan').trim(),true,'🚫 Baneado');
+      else if(a==='unban')webWrite('bannedUsers/'+V('psuBan').trim(),null,'✅ Desbaneado');
+      else if(a==='mantOn')webWrite('maintenance/psuGame',{on:true,msg:V('psuAnn')||'Volvemos en un rato 🛠️'},'🛠️ Mantenimiento ON');
+      else if(a==='mantOff')webWrite('maintenance/psuGame',null,'🛠️ Mantenimiento OFF')}});
+  document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='psuCodeInp'){redeemCode(e.target.value);e.target.value=''}});
+  addEventListener('keydown',function(e){var t=e.target;if(t&&/^(input|textarea|select)$/i.test(t.tagName))return;
+    if((e.key||'').toLowerCase()==='a'&&IS_ADM)setTab('admin')});
+
+  /* deteccion admin (email, como tus rules) + listeners globales */
+  onAuthStateChanged(fbAuth,function(u){ME_U=u||null;
+    if(!u||!u.email){setAdm(false,false);return}
+    var em=(''+u.email).toLowerCase();
+    setAdm(ADMIN_EMAILS.indexOf(em)>-1,SUPER_EMAILS.indexOf(em)>-1)});
+  onValue(ref(fbDb,'adminBroadcast'),function(s){var v=s.val()||{};
+    if(v.text)showBanner(v.text);
+    G.webMult=(+v.globalMult)||1;updChip();
+    if(v.codes)SRV_CODES=v.codes;renderCodes()},function(){});
+  onValue(ref(fbDb,'adminBroadcast/codes'),function(s){SRV_CODES=s.val()||{};renderCodes()},function(){});
+  onValue(ref(fbDb,'bannedUsers'),function(s){var v=s.val(),uid=luUid||(ME_U&&ME_U.uid);
+    if(uid&&v&&v[uid])psuOv('psuBanOv','<div style="font-size:44px">🚫</div><h2>Estas baneado</h2><p style="color:#9aa">Contacta con un administrador.</p>');
+    else psuOvX('psuBanOv')},function(){});
+  onValue(ref(fbDb,'maintenance'),function(s){var v=s.val(),on=false,msg='';
+    if(v){if(v.on===true){on=true;msg=v.msg||''}else for(var k in v){if(v[k]&&v[k].on){on=true;msg=v[k].msg||'';break}}}
+    if(on)psuOv('psuMantOv','<div style="font-size:44px">🛠️</div><h2>Mantenimiento</h2><p style="color:#9aa">'+esc(msg||'Volvemos en un rato')+'</p>','#f59e0b');
+    else psuOvX('psuMantOv')},function(){});
+
+  /* ticks */
+  setInterval(function(){checkQuests();
+    if(aTab==='hub')renderQuests();
+    if(aTab==='fusion'){var fg=document.getElementById('fuGrid');var sc=fg?fg.parentElement:null;var st2=sc?sc.scrollTop:0;renderFusion();if(sc)sc.scrollTop=st2}},1000);
+  setInterval(saveX,10000);
+  updChip();
+
+  try{if(localStorage.getItem('psu_admin_dev')==='1')setAdm(true,true)}catch(e){} // ⚠️ flag de prueba, BORRA en producción
+}
+window.__psu={G:function(){return G},setAdm:setAdm};
+
 // ===== INIT =====
 load();loadX();/* ⭐ */
 var cw=gW();if(cw.eggs.indexOf(selE)===-1)selE=cw.eggs[0];
@@ -806,284 +1133,3 @@ requestAnimationFrame(rLoop);
 // ===== AUDIO INIT ON FIRST INTERACTION =====
 document.addEventListener('click',function(){snd.go()},{once:true});
 document.addEventListener('touchstart',function(){snd.go()},{once:true});
-
-/* ═══════════════════════════════════════════════════════════════
-   ⭐ ADD-ONS v39 — ADMIN WEB · COMBOS · MISIONES · FUSION · CODIGOS
-   No modifica nada de arriba. Admin = tus 3 emails (como tus rules).
-   Global usa: adminBroadcast/ · bannedUsers/ · maintenance/ (tus rules)
-   ═══════════════════════════════════════════════════════════════ */
-var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
-var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
-var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={};
-var buffBarEl=null,comboBarEl=null,comboV=0,comboTm2=null;
-var XK='PetSimUltra_v38_addons';
-
-function loadX(){
-  try{var d=JSON.parse(localStorage.getItem(XK)||'{}');
-    G.webMult=d.webMult||1;G.feverUntil=d.feverUntil||0;G.comboBest=d.comboBest||0;
-    G.quests=d.quests||[];G.redeemed=d.redeemed||{};
-    if(G.feverUntil>Date.now())setTimeout(function(){toast('🔥 Fiebre x2 sigue activa!','rwd')},1500);
-  }catch(e){G.webMult=1;G.feverUntil=0;G.comboBest=0;G.quests=[];G.redeemed={}}
-  var _t0=tI;
-  tI=function(){var m=G.webMult||1;if((G.feverUntil||0)>Date.now())m*=2;if(IS_ADM)m*=1.25;return _t0()*m};
-  var _hc=hClick;hClick=function(){_hc();bumpCombo()};
-  var _cd=claimDaily;claimDaily=function(){_cd();coinBurst(14)};
-  var _uu=updateUI;updateUI=function(){_uu();renderBuffs()};
-}
-function saveX(){try{localStorage.setItem(XK,JSON.stringify({webMult:G.webMult||1,feverUntil:G.feverUntil||0,comboBest:G.comboBest||0,quests:G.quests,redeemed:G.redeemed}))}catch(e){}}
-
-function fmtT(ms){var s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?h+'h '+m+'m':m?m+'m '+(s%60)+'s':s+'s'}
-function toNum(s){s=(''+(s==null?'':s)).trim().toLowerCase();var m=s.match(/^(-?[\d.]+)\s*([kmbtq])(?![a-z])/);
-  if(m){var f={k:1e3,m:1e6,b:1e9,t:1e12,q:1e15}[m[2]];return(parseFloat(m[1])||0)*f}
-  var n=parseFloat(s);return isNaN(n)?0:n}
-function coinBurst(n){for(var i=0;i<(n||12);i++)(function(){var c=document.createElement('span');c.className='psu-coin';c.textContent=['🪙','💰','💵','🤑'][Math.floor(Math.random()*4)];
-  c.style.left=(35+Math.random()*45)+'vw';c.style.top=(40+Math.random()*35)+'vh';c.style.animationDuration=(0.9+Math.random()*0.7)+'s';
-  document.body.appendChild(c);setTimeout(function(){c.remove()},1700)})()}
-
-/* ---- COMBO ---- */
-function bumpCombo(){comboV++;if(comboV>(G.comboBest||0))G.comboBest=comboV;
-  clearTimeout(comboTm2);comboTm2=setTimeout(function(){comboV=0;drawCombo()},1300);drawCombo();
-  if(comboV===10||comboV===25||comboV===50||comboV===100||comboV===200){
-    var bonus=Math.max(tI()*2,150)*(comboV/8);G.money+=bonus;G.te+=bonus;
-    toast('🔥 COMBO x'+comboV+' +$'+fmt(bonus),'rwd');coinBurst(10);snd.burst();if(navigator.vibrate)navigator.vibrate(15);saveX();updateUI()}}
-function drawCombo(){if(!comboBarEl)return;
-  if(!comboV){comboBarEl.style.display='none';return}
-  comboBarEl.style.display='block';
-  comboBarEl.innerHTML='<div class="psu-cb-t">COMBO x'+comboV+'</div><div class="psu-cb-b"><div class="psu-cb-f" style="width:'+Math.min(100,comboV)+'%"></div></div>'}
-
-/* ---- BUFFS ---- */
-function renderBuffs(){if(!buffBarEl)return;var h='';
-  if((G.webMult||1)>1)h+='<span class="psu-buff" style="border-color:#22d3ee">🌐 x'+G.webMult+' GLOBAL</span>';
-  var f=(G.feverUntil||0)-Date.now();if(f>0)h+='<span class="psu-buff" style="border-color:#f97316">🔥 FIEBRE x2 · '+fmtT(f)+'</span>';
-  if(boostActive)h+='<span class="psu-buff" style="border-color:#fbbf24">⚡ BOOST x2</span>';
-  if(luckyBoost)h+='<span class="psu-buff" style="border-color:#84cc16">🍀 SUERTE</span>';
-  if(IS_ADM)h+='<span class="psu-buff" style="border-color:#fbbf24">👑 ADMIN +25%</span>';
-  buffBarEl.innerHTML=h}
-
-/* ---- MISIONES ---- */
-var QTMPL=[
-  {icn:'🥚',n:'Abre {n} huevos',st:'tot',base:15,mul:2.4,rwm:45,abs:false},
-  {icn:'💰',n:'Gana ${n} mas',st:'te',base:5e3,mul:3.2,rwm:.12,abs:false},
-  {icn:'🐾',n:'Ten {n} mascotas',st:'pets',base:6,mul:1.5,rwm:260,abs:true},
-  {icn:'📖',n:'Descubre {n} especies',st:'disc',base:3,mul:1.45,rwm:900,abs:true},
-  {icn:'🔥',n:'Combo x{n}',st:'comboBest',base:8,mul:1.35,rwm:180,abs:true}];
-function qVal(s){if(s==='tot')return G.tot||0;if(s==='te')return G.te||0;if(s==='pets')return G.pets.length;if(s==='disc')return G.disc.length;if(s==='comboBest')return G.comboBest||0;return 0}
-function newQuest(){var t=QTMPL[Math.floor(Math.random()*QTMPL.length)];var lv=1+Math.floor((G.tot||0)/60);
-  var n=Math.max(1,Math.floor(t.base*Math.pow(t.mul,Math.min(lv,12))*(.8+Math.random()*.5)));
-  return{name:t.n.replace('{n}',fmt(n)),icn:t.icn,st:t.st,n:n,start:qVal(t.st),rw:Math.max(150,Math.floor(n*t.rwm)),abs:t.abs}}
-function qProg(q){var c=qVal(q.st);return Math.max(0,q.abs?c:c-q.start)}
-function ensureQuests(){if(!G.quests)G.quests=[];var g=0;while(G.quests.length<3&&g++<5)G.quests.push(newQuest())}
-function checkQuests(){ensureQuests();
-  for(var i=G.quests.length-1;i>=0;i--){var q=G.quests[i];
-    if(qProg(q)>=q.n){G.money+=q.rw;G.te+=q.rw;toast('📜 Mision: '+q.name+' +$'+fmt(q.rw),'rwd');snd.hatch('god');coinBurst(8);G.quests.splice(i,1);ensureQuests();saveX()}}}
-function renderQuests(){var host=document.getElementById('questList');if(!host)return;ensureQuests();var h='';
-  for(var i=0;i<G.quests.length;i++){var q=G.quests[i],p=Math.min(qProg(q),q.n),pc=Math.floor(p/q.n*100);
-    h+='<div class="psu-q"><div class="psu-q-t"><span>'+q.icn+' '+esc(q.name)+'</span><span style="color:#fbbf24">+$'+fmt(q.rw)+'</span></div><div class="psu-q-b"><div class="psu-q-f" style="width:'+pc+'%"></div></div><div class="psu-q-s">'+fmt(p)+' / '+fmt(q.n)+'</div></div>'}
-  host.innerHTML=h}
-
-/* ---- FUSION ---- */
-function fuseR(r){var i=RKEYS.indexOf(r);
-  if(i<0||i>=RKEYS.length-1){toast('Esa rareza no se puede fusionar','err');return}
-  var pool=G.pets.filter(function(p){return p.r===r});
-  if(pool.length<3){toast('Necesitas 3 mascotas '+RNAME[r],'err');snd.err();return}
-  pool.sort(function(a,b){return pE(a)-pE(b)});
-  var rem=pool.slice(0,3),maxLv=1;
-  rem.forEach(function(p){if(p.lv>maxLv)maxLv=p.lv;G.pets.splice(G.pets.indexOf(p),1)});
-  var nx=RKEYS[i+1],np=PETS.filter(function(p){return p.r===nx});
-  var b=np[Math.floor(Math.random()*np.length)];
-  G.pets.push({ic:b.ic,n:b.n,r:b.r,be:b.e,lv:maxLv,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()});
-  if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n);
-  toast('⚗️ FUSION: '+b.n+' ('+RNAME[nx]+')','rwd');snd.hatch(nx);coinBurst(14);
-  save();updateUI();refHP()}
-function renderFusion(){var host=document.getElementById('fuList');if(!host)return;
-  var cnt={};for(var i=0;i<RKEYS.length;i++)cnt[RKEYS[i]]=0;
-  for(i=0;i<G.pets.length;i++){var r=G.pets[i].r;if(cnt[r]!=null)cnt[r]++}
-  var h='';
-  for(i=0;i<RKEYS.length-1;i++){var r2=RKEYS[i];
-    h+='<div class="psu-fu"><span style="color:'+RCOL[r2]+';font-weight:700">'+RNAME[r2]+' x'+cnt[r2]+'</span><button class="psu-fu-b" data-fr="'+r2+'"'+(cnt[r2]<3?' disabled':'')+'>⚗️ '+RNAME[RKEYS[i+1]]+'</button></div>'}
-  host.innerHTML=h}
-
-/* ---- ADMIN helpers ---- */
-function givePets(rar,q){q=Math.max(1,q|0);var pool=PETS.filter(function(p){return p.r===rar});
-  if(!pool.length){toast('Sin mascotas de esa rareza','err');return}
-  for(var i=0;i<q;i++){var b=pool[Math.floor(Math.random()*pool.length)];
-    G.pets.push({ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()});
-    if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n)}
-  snd.hatch(rar);refHP();toast('🐾 +'+q+' '+RNAME[rar],'rwd');save();updateUI()}
-function forceEvt(id){var ev=null;for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)ev=EVENTS[i];if(!ev)return;
-  if(evtCur){try{evtCur.end()}catch(e){}clearInterval(evtT);evtCur=null}
-  evtCur=ev;evtEnd=Date.now()+ev.dur*1000;
-  try{ev.apply()}catch(e){}
-  toast(ev.n+'!','rwd');snd.world();
-  var b=document.getElementById('evtBanner');
-  if(b){b.style.display='flex';b.innerHTML='<i class="fas '+ev.ic+'"></i><span>'+ev.n+'</span><span class="evt-t" id="evtT">'+ev.dur+'s</span>'}
-  evtT=setInterval(function(){var s=Math.ceil((evtEnd-Date.now())/1000);
-    if(s<=0){endEvent();return}
-    var e2=document.getElementById('evtT');if(e2)e2.textContent=s+'s'},500)}
-function webWrite(path,val,msg){try{runTransaction(ref(fbDb,path),function(){return val})
-  .then(function(){if(msg)toast(msg,'rwd')})
-  .catch(function(){toast('Sin permiso (rules)','err')})}catch(e){toast('Error Firebase','err')}}
-function setAdm(a,s){a=!!a;s=!!s&&a;if(a===IS_ADM&&s===IS_SUPER)return;IS_ADM=a;IS_SUPER=s;
-  var b=document.getElementById('psuAdmBtn');if(b)b.style.display=a?'block':'none';
-  var s1=document.getElementById('psuAdmSec'),s2=document.getElementById('psuSupSec');
-  if(s1)s1.style.display=a?'':'none';if(s2)s2.style.display=s?'':'none';
-  if(a){toast('👑 ADMIN detectado!','rwd');snd.world()}else{var p=document.getElementById('psuPanel');if(p)p.classList.remove('open')}
-  renderBuffs()}
-function psuOv(id,html,bc){var o=document.getElementById(id);
-  if(!o){o=document.createElement('div');o.id=id;o.className='psu-ov';document.body.appendChild(o)}
-  o.innerHTML='<div class="psu-ovc" style="border-color:'+(bc||'#ef4444')+'">'+html+'</div>';o.style.display='flex'}
-function psuOvX(id){var o=document.getElementById(id);if(o)o.style.display='none'}
-function showBanner(t){var b=document.getElementById('psuBanner');if(!b)return;
-  if(!t){b.style.display='none';return}
-  b.innerHTML='📢 '+esc(t)+'<button class="psu-bx">✕</button>';b.style.display='block';
-  b.querySelector('.psu-bx').onclick=function(){b.style.display='none'}}
-function updChip(){var c=document.getElementById('psuMultChip');if(!c)return;var m=G.webMult||1;
-  if(m>1){c.textContent='🌐 x'+m+' GLOBAL';c.style.display='block'}else c.style.display='none'}
-
-/* ---- CODIGOS ---- */
-function usedCodes(){try{return JSON.parse(localStorage.getItem('psuCodesUsed')||'{}')}catch(e){return{}}}
-function hintOf(c){if(!c)return'';return c.t==='money'?'💰 $'+fmt(c.v):c.t==='rb'?'♻️ +'+c.v+' RB':c.t==='boost'?'⚡ boost '+c.v+'s':c.t==='lucky'?'🍀 suerte '+c.v+'min':c.t==='lu'?'🪙 +'+c.v+' LU':'🐾 mascota DIOS'}
-function renderCodes(){var host=document.getElementById('psuCodeList');if(!host)return;
-  var ks=Object.keys(SRV_CODES),u=usedCodes(),h='';
-  if(!ks.length)h='<p style="color:#8fa3b8;font-size:12px;margin:6px 0">Aun no hay codigos publicados.</p>';
-  for(var i=0;i<ks.length;i++){var k=ks[i];
-    if(u[k])h+='<div class="psu-row" style="opacity:.5"><span style="flex:1;text-decoration:line-through">'+esc(k)+'</span>✅</div>';
-    else h+='<div class="psu-row"><span style="flex:1">🔒 <b>'+esc(k)+'</b> <span style="opacity:.7;font-size:11px">'+hintOf(SRV_CODES[k])+'</span></span><button class="psu-b psu-b-c" data-code="'+esc(k)+'">Canjear</button></div>'}
-  host.innerHTML=h}
-function redeemCode(code){code=(''+(code||'')).trim().toUpperCase();if(!code)return;
-  var c=SRV_CODES[code];if(!c){toast('❌ Codigo no valido','err');return}
-  var u=usedCodes();if(u[code]){toast('⚠️ Ya canjeado','err');return}
-  u[code]=Date.now();try{localStorage.setItem('psuCodesUsed',JSON.stringify(u))}catch(e){}
-  if(c.t==='money'){G.money+=c.v;G.te+=c.v;toast('✅ +$'+fmt(c.v),'rwd')}
-  else if(c.t==='rb'){G.rb=(G.rb||0)+c.v;G.mult=Math.pow(1.8,G.rb);toast('✅ +'+c.v+' Rebirths','rwd')}
-  else if(c.t==='boost'){activateBoost(c.v||180)}
-  else if(c.t==='lucky'){luckyBoost=true;toast('🍀 Suerte x2 por '+c.v+' min','rwd');setTimeout(function(){luckyBoost=false;toast('Suerte terminada','inf')},(c.v||5)*60000)}
-  else if(c.t==='pet'){givePets('god',1)}
-  else if(c.t==='lu'){if(!luUid){toast('Inicia sesion en LevelUp','err');return}
-    runTransaction(ref(fbDb,'users/'+luUid+'/coins'),function(cv){return (cv||0)+(c.v||0)})
-      .then(function(){toast('🪙 +'+(c.v||0)+' monedas LU','rwd')}).catch(function(){toast('Error LU','err')})}
-  snd.burst();coinBurst(10);renderCodes();save();updateUI()}
-
-/* ---- BUILD ADDONS ---- */
-function buildAddons(){
-  var st=document.createElement('style');
-  st.textContent='#psuAdmBtn,#psuCodeBtn{position:fixed;right:14px;z-index:9999;border-radius:50%;cursor:pointer;font-family:inherit;transition:.15s}#psuAdmBtn{display:none;bottom:14px;width:52px;height:52px;border:2px solid #fbbf24;background:rgba(20,14,2,.94);color:#fde047;font-size:24px;box-shadow:0 0 18px rgba(251,191,36,.5)}#psuCodeBtn{bottom:76px;width:44px;height:44px;border:2px solid #22d3ee;background:rgba(2,14,18,.94);color:#67e8f9;font-size:19px}#psuAdmBtn:hover,#psuCodeBtn:hover{transform:scale(1.1)}#psuPanel{position:fixed;top:0;right:-350px;width:330px;max-height:100vh;overflow-y:auto;background:rgba(10,10,18,.97);border-left:2px solid #fbbf24;z-index:9998;padding:14px;transition:right .25s;color:#eee;font-size:13px}#psuPanel.open{right:0}.psu-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.psu-row{display:flex;gap:6px;margin-bottom:6px}.psu-row input,.psu-row select{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:7px 9px;font-size:12px;outline:none}.psu-b{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit}.psu-b:hover{background:#fbbf24;color:#231a00}.psu-b-g{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;font-weight:700;border:0}.psu-b-r{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.4);color:#fca5a5}.psu-b-c{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.4);color:#a5f3fc}.psu-h{margin:12px 0 5px;color:#fbbf24;font-size:11px;letter-spacing:1.5px;text-transform:uppercase}.psu-hint{color:#8fa3b8;font-size:11px;margin-top:8px;line-height:1.5}#psuBanner{position:fixed;top:0;left:0;right:0;z-index:9996;display:none;padding:9px 40px 9px 14px;text-align:center;font-weight:700;font-size:13px;color:#04121f;background:linear-gradient(90deg,#22d3ee,#7dd3fc)}#psuBanner .psu-bx{position:absolute;right:12px;top:6px;background:none;border:0;font-size:15px;cursor:pointer;color:#04121f}#psuMultChip{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9995;display:none;background:rgba(10,16,30,.9);border:1px solid #22d3ee;color:#67e8f9;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;pointer-events:none}.psu-ov{position:fixed;inset:0;z-index:9997;background:rgba(2,4,10,.95);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;font-family:inherit}.psu-ovc{background:#0d1424;border:1px solid #ef4444;border-radius:18px;padding:26px;max-width:340px}#buffBar{position:fixed;top:8px;left:8px;z-index:9990;display:flex;gap:6px;flex-wrap:wrap;max-width:60vw;pointer-events:none}.psu-buff{background:rgba(10,16,30,.88);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:11.5px;font-weight:800;color:#fff;backdrop-filter:blur(6px)}#psuCombo{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9989;display:none;text-align:center;pointer-events:none}#psuCombo .psu-cb-t{font-weight:900;font-size:19px;color:#fbbf24;text-shadow:0 0 14px rgba(251,191,36,.7)}#psuCombo .psu-cb-b{width:130px;height:5px;background:rgba(255,255,255,.12);border-radius:4px;margin:3px auto 0;overflow:hidden}#psuCombo .psu-cb-f{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24)}.psu-coin{position:fixed;z-index:9994;font-size:20px;pointer-events:none;animation:psuCoin 1.3s ease-in forwards}@keyframes psuCoin{to{transform:translateY(45vh) rotate(660deg);opacity:0}}.psu-sec-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--wa2,#7dd3fc);margin:14px 0 8px;font-weight:800}.psu-q{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 11px;margin-bottom:8px}.psu-q-t{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;gap:8px}.psu-q-b{height:6px;background:rgba(255,255,255,.1);border-radius:4px;margin:6px 0 3px;overflow:hidden}.psu-q-f{height:100%;background:linear-gradient(90deg,var(--wa,#22d3ee),var(--wa2,#7dd3fc));transition:width .4s}.psu-q-s{font-size:10.5px;color:#8fa3b8}.psu-fu{display:flex;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px dashed rgba(255,255,255,.08);font-size:12.5px;gap:8px}.psu-fu-b{background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.4);color:#fde047;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700}.psu-fu-b:disabled{opacity:.35;cursor:not-allowed}.psu-fu-b:hover:not(:disabled){background:#fbbf24;color:#231a00}';
-  document.head.appendChild(st);
-
-  buffBarEl=document.createElement('div');buffBarEl.id='buffBar';document.body.appendChild(buffBarEl);
-  comboBarEl=document.createElement('div');comboBarEl.id='psuCombo';document.body.appendChild(comboBarEl);
-  var ban2=document.createElement('div');ban2.id='psuBanner';document.body.appendChild(ban2);
-  var chip=document.createElement('div');chip.id='psuMultChip';document.body.appendChild(chip);
-  var bA=document.createElement('button');bA.id='psuAdmBtn';bA.textContent='🛡️';bA.title='Panel Admin (A)';bA.style.display='none';document.body.appendChild(bA);
-  var bC=document.createElement('button');bC.id='psuCodeBtn';bC.textContent='🎟️';bC.title='Codigos';document.body.appendChild(bC);
-  var pan=document.createElement('div');pan.id='psuPanel';document.body.appendChild(pan);
-  pan.innerHTML='<div class="psu-hd"><b id="psuTitle">🎟️ CODIGOS</b><button class="psu-b" data-a="close">✕</button></div>'
-   +'<div id="psuCodesView"><div class="psu-row"><input id="psuCodeInp" placeholder="Escribe un codigo..." maxlength="20"><button class="psu-b psu-b-c" data-a="redeem">Canjear</button></div><div id="psuCodeList"></div><p class="psu-hint">El admin publica codigos. Cada uno se canjea 1 vez.</p></div>'
-   +'<div id="psuAdminView" style="display:none">'
-   +'<div id="psuAdmSec" style="display:none">'
-   +'<div class="psu-row"><button class="psu-b" data-a="copyUid">📋 Copiar mi UID</button></div>'
-   +'<div class="psu-h">💰 Dinero</div><div class="psu-row"><input id="psuMoney" value="1e9" placeholder="1e12 · 50b · 3t"></div><div class="psu-row"><button class="psu-b psu-b-g" data-a="addM">➕ Añadir</button><button class="psu-b psu-b-g" data-a="setM">= Fijar</button></div>'
-   +'<div class="psu-h">🐾 Mascotas</div><div class="psu-row"><select id="psuRar">'+RKEYS.map(function(r){return'<option value="'+r+'">'+RNAME[r]+'</option>'}).join('')+'</select><input id="psuQty" value="1" style="max-width:50px"><button class="psu-b" data-a="pet">Dar</button></div>'
-   +'<div class="psu-row"><button class="psu-b" data-a="dex">📖 Index 100%</button><button class="psu-b psu-b-r" data-a="wipe">🗑️ Borrar pets</button></div>'
-   +'<div class="psu-h">⚡ Poder</div><div class="psu-row"><button class="psu-b" data-a="upg">⬆️ Max mejoras</button><button class="psu-b" data-a="worlds">🗺️ Mundos</button><button class="psu-b" data-a="x3">🔓 x3</button></div>'
-   +'<div class="psu-row"><input id="psuMult" value="10" placeholder="Multiplicador"><button class="psu-b" data-a="mult">✖️ Set</button></div>'
-   +'<div class="psu-row"><input id="psuRb" value="10" placeholder="Rebirths"><button class="psu-b" data-a="rb">♻️ Set</button></div>'
-   +'<div class="psu-h">🎉 Eventos</div><div class="psu-row"><select id="psuEvt">'+EVENTS.map(function(e){return'<option value="'+e.id+'">'+e.n+'</option>'}).join('')+'</select><button class="psu-b" data-a="evt">▶️ Forzar</button></div>'
-   +'<div class="psu-h">😈 Modo</div><div class="psu-row"><button class="psu-b psu-b-r" data-a="god">Dios x1M</button><button class="psu-b" data-a="ungod">Normal</button></div>'
-   +'</div>'
-   +'<div id="psuSupSec" style="display:none">'
-   +'<div class="psu-h">🌐 WEB · afecta a TODOS</div>'
-   +'<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
-   +'<div class="psu-row"><input id="psuGM" value="2" placeholder="Mult global"><button class="psu-b psu-b-g" data-a="gMult">Activar</button><button class="psu-b psu-b-r" data-a="gMultOff">Quitar</button></div>'
-   +'<div class="psu-h">🎟️ Publicar codigo</div><div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
-   +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"><button class="psu-b psu-b-g" data-a="pubCode">OK</button></div>'
-   +'<div class="psu-h">🚫 Moderacion</div><div class="psu-row"><input id="psuBan" placeholder="UID del jugador"></div>'
-   +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="ban">🚫 Ban</button><button class="psu-b" data-a="unban">✅ Unban</button></div>'
-   +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff">OFF</button></div>'
-   +'</div></div>';
-
-  // Misiones dentro del Hub (antes de stats)
-  var sl=document.getElementById('statList');
-  if(sl&&sl.parentNode&&!document.getElementById('questBox')){
-    var qb=document.createElement('div');qb.id='questBox';
-    qb.innerHTML='<div class="psu-sec-t">📜 Misiones</div><div id="questList"></div>';
-    sl.parentNode.insertBefore(qb,sl)}
-  // Fusion sobre la lista de mascotas
-  var pl=document.getElementById('petList');
-  if(pl&&pl.parentNode&&!document.getElementById('fuBox')){
-    var fb=document.createElement('div');fb.id='fuBox';
-    fb.innerHTML='<div class="psu-sec-t">⚗️ Fusion (3 iguales → 1 superior)</div><div id="fuList"></div>';
-    pl.parentNode.insertBefore(fb,pl)}
-
-  function V(id){var e=document.getElementById(id);return e?e.value:''}
-  function showView(v){pan.classList.add('open');
-    document.getElementById('psuCodesView').style.display=v==='codes'?'':'none';
-    document.getElementById('psuAdminView').style.display=v==='adm'?'':'none';
-    document.getElementById('psuTitle').textContent=v==='codes'?'🎟️ CODIGOS':'🛡️ PANEL ADMIN';
-    if(v==='codes')renderCodes()}
-  bA.onclick=function(){snd.click();showView('adm')};
-  bC.onclick=function(){snd.click();showView('codes')};
-  addEventListener('keydown',function(e){var t=e.target;if(t&&/^(input|textarea|select)$/i.test(t.tagName))return;
-    if((e.key||'').toLowerCase()==='a'&&IS_ADM){if(pan.classList.contains('open'))pan.classList.remove('open');else showView('adm')}});
-
-  pan.addEventListener('click',function(e){
-    var c=e.target.closest('[data-code]');if(c){redeemCode(c.dataset.code);return}
-    var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;snd.click();
-    if(a==='close'){pan.classList.remove('open');return}
-    if(a==='redeem'){redeemCode(V('psuCodeInp'));return}
-    if(a==='copyUid'){var uid=luUid||(ME_U&&ME_U.uid)||'';try{navigator.clipboard.writeText(uid);toast('📋 UID copiado','inf')}catch(x){prompt('Tu UID:',uid)}return}
-    if(!IS_ADM)return;
-    if(a==='addM'){G.money+=toNum(V('psuMoney'));toast('💰 +$'+fmt(G.money),'rwd');save();updateUI()}
-    else if(a==='setM'){G.money=toNum(V('psuMoney'));G.dm=G.money;toast('💵 Fijado $'+fmt(G.money),'rwd');save();updateUI()}
-    else if(a==='pet')givePets(V('psuRar'),toNum(V('psuQty')));
-    else if(a==='dex'){G.disc=PETS.map(function(p){return p.n});toast('📖 Index 100%','rwd');save();updateUI()}
-    else if(a==='upg'){G.upg={luck:10,inc:10,disc:5,fast:4,auto:3};CLICKS=Math.max(1,5-G.upg.fast);toast('⬆️ Mejoras al maximo','rwd');save();updateUI()}
-    else if(a==='worlds'){G.uw=WORLDS.map(function(w){return w.id});apTh();toast('🗺️ Todos los mundos','rwd');save();updateUI()}
-    else if(a==='x3'){G.x3=true;toast('🔓 x3 desbloqueado','rwd');save();updateUI()}
-    else if(a==='mult'){G.mult=Math.max(1,toNum(V('psuMult'))||1);toast('✖️ Multiplicador x'+fmt(G.mult),'rwd');save();updateUI()}
-    else if(a==='rb'){G.rb=toNum(V('psuRb'))|0;G.mult=Math.pow(1.8,G.rb);toast('♻️ RB '+G.rb+' · x'+G.mult.toFixed(1),'rwd');save();updateUI()}
-    else if(a==='evt')forceEvt(V('psuEvt'));
-    else if(a==='god'){G.mult=1e6;toast('😈 MODO DIOS x1M','rwd');save();updateUI()}
-    else if(a==='ungod'){G.mult=Math.pow(1.8,G.rb);toast('😇 Modo normal','rwd');save();updateUI()}
-    else if(a==='wipe')showCf('🗑️','Borrar mascotas','Se eliminaran TODAS. ¿Seguro?',function(){G.pets=[];refHP();save();updateUI();hideCf();toast('Mascotas borradas','inf')});
-    else if(IS_SUPER){
-      if(a==='announce')webWrite('adminBroadcast/text',V('psuAnn').trim(),'📣 Anuncio publicado para TODOS');
-      else if(a==='gMult')webWrite('adminBroadcast/globalMult',Math.max(1,toNum(V('psuGM'))||1),'🌐 Mult GLOBAL activado');
-      else if(a==='gMultOff')webWrite('adminBroadcast/globalMult',1,'🌐 Mult global quitado');
-      else if(a==='pubCode'){var n=V('psuCn').trim().toUpperCase(),t2=V('psuCt'),v=Math.max(1,toNum(V('psuCv'))||1);if(!n)return;
-        var rw=t2==='money'?{t:'money',v:v}:t2==='rb'?{t:'rb',v:v}:t2==='boost'?{t:'boost',v:v}:t2==='lucky'?{t:'lucky',v:v}:t2==='lu'?{t:'lu',v:v}:{t:'pet',v:1};
-        webWrite('adminBroadcast/codes/'+n,rw,'🎟️ Codigo '+n+' publicado')}
-      else if(a==='ban')webWrite('bannedUsers/'+V('psuBan').trim(),true,'🚫 Baneado');
-      else if(a==='unban')webWrite('bannedUsers/'+V('psuBan').trim(),null,'✅ Desbaneado');
-      else if(a==='mantOn')webWrite('maintenance/psuGame',{on:true,msg:V('psuAnn')||'Volvemos en un rato 🛠️'},'🛠️ Mantenimiento ON');
-      else if(a==='mantOff')webWrite('maintenance/psuGame',null,'🛠️ Mantenimiento OFF')}});
-  pan.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='psuCodeInp'){redeemCode(e.target.value);e.target.value=''}});
-  // Fusion (delegado en el documento, por si el box se re-crea)
-  document.addEventListener('click',function(e){var b=e.target.closest('[data-fr]');if(b&&!b.disabled)fuseR(b.dataset.fr)});
-
-  /* deteccion admin (email, como tus rules) + listeners globales */
-  onAuthStateChanged(fbAuth,function(u){ME_U=u||null;
-    if(!u||!u.email){setAdm(false,false);return}
-    var em=(''+u.email).toLowerCase();
-    setAdm(ADMIN_EMAILS.indexOf(em)>-1,SUPER_EMAILS.indexOf(em)>-1)});
-  onValue(ref(fbDb,'adminBroadcast'),function(s){var v=s.val()||{};
-    if(v.text)showBanner(v.text);
-    G.webMult=(+v.globalMult)||1;updChip();
-    if(v.codes)SRV_CODES=v.codes;renderCodes()},function(){});
-  onValue(ref(fbDb,'adminBroadcast/codes'),function(s){SRV_CODES=s.val()||{};renderCodes()},function(){});
-  onValue(ref(fbDb,'bannedUsers'),function(s){var v=s.val(),uid=luUid||(ME_U&&ME_U.uid);
-    if(uid&&v&&v[uid])psuOv('psuBanOv','<div style="font-size:44px">🚫</div><h2>Estas baneado</h2><p style="color:#9aa">Contacta con un administrador.</p>');
-    else psuOvX('psuBanOv')},function(){});
-  onValue(ref(fbDb,'maintenance'),function(s){var v=s.val(),on=false,msg='';
-    if(v){if(v.on===true){on=true;msg=v.msg||''}else for(var k in v){if(v[k]&&v[k].on){on=true;msg=v[k].msg||'';break}}}
-    if(on)psuOv('psuMantOv','<div style="font-size:44px">🛠️</div><h2>Mantenimiento</h2><p style="color:#9aa">'+esc(msg||'Volvemos en un rato')+'</p>','#f59e0b');
-    else psuOvX('psuMantOv')},function(){});
-
-  /* ticks propios */
-  setInterval(function(){checkQuests();if(aTab==='hub')renderQuests();renderFusion()},1000);
-  setInterval(saveX,10000);
-  renderFusion();updChip();
-
-  try{if(localStorage.getItem('psu_admin_dev')==='1')setAdm(true,true)}catch(e){} // ⚠️ flag de prueba, BORRA en producción
-}
-window.__psu={G:function(){return G},setAdm:setAdm}; // consola (dev)
