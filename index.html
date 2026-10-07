@@ -2445,7 +2445,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
     State.favs = {}; State.owned = {}; State.equipped = {}; State.friends = {}; State.friendRequests = {};
     State.coins = 0; State.xp = 0; State.level = 1; State.nameChanges = 0;
     updateNavUser();
-    window.stopGameSession && window.stopGameSession();
+    window.stopGameSession && window.stopGameSession(true);
     showPage('home');
     toast('Sesión cerrada', 'info');
 });
