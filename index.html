@@ -1306,48 +1306,39 @@ function startGameSession(gameName){
   gameStartTime=Date.now();
   coinsSecondCount=0;
   State.currentGameName=gameName||'un juego';
-  sessionStorage.setItem('levelup_playing','true');
-  sessionStorage.setItem('levelup_game_start',gameStartTime.toString());
-  sessionStorage.setItem('levelup_uid',State.uid);
-  sessionStorage.setItem('levelup_game_name',State.currentGameName);
-  
+  /* AHORA usa localStorage: sobrevive cerrar navegador Y cerrar sesión */
+  localStorage.setItem('levelup_playing','true');
+  localStorage.setItem('levelup_game_start',gameStartTime.toString());
+  localStorage.setItem('levelup_uid',State.uid);
+  localStorage.setItem('levelup_game_name',State.currentGameName);
   const ind=document.getElementById('coins-min-indicator');
-  ind.style.display='flex';
-  ind.classList.remove('paused');
-  
+  if(ind){ind.style.display='flex';ind.classList.remove('paused');}
   if(window._fbFns){
     const{ref,set}=window._fbFns;
     set(ref(State.db,`users/${State.uid}/online`),true).catch(()=>{});
     set(ref(State.db,`users/${State.uid}/currentGame`),State.currentGameName).catch(()=>{});
   }
-  
   if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);
   coinsMinuteTimer=setInterval(()=>{
     coinsSecondCount++;
-    document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';
-    if(coinsSecondCount>=60){
-      coinsSecondCount=0;
-      if(sessionStorage.getItem('levelup_playing')==='true'){
-        awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');
-        sessionStorage.setItem('levelup_game_start',Date.now().toString());
-      } else {
-        stopGameSession();
-      }
-    }
+    const tm=document.getElementById('coins-min-timer');
+    if(tm)tm.textContent=(60-coinsSecondCount)+'s';
+    if(coinsSecondCount>=60)coinsSecondCount=0;
   },1000);
 }
 
-function stopGameSession(){
+function stopGameSession(keepSaved){
   isPlayingGame=false;
   gameStartTime=null;
-  sessionStorage.removeItem('levelup_playing');
-  sessionStorage.removeItem('levelup_game_start');
-  sessionStorage.removeItem('levelup_uid');
-  sessionStorage.removeItem('levelup_game_name');
   if(coinsMinuteTimer){clearInterval(coinsMinuteTimer);coinsMinuteTimer=null;}
   const ind=document.getElementById('coins-min-indicator');
-  ind.style.display='none';
-  ind.classList.add('paused');
+  if(ind){ind.style.display='none';ind.classList.add('paused');}
+  if(!keepSaved){
+    localStorage.removeItem('levelup_playing');
+    localStorage.removeItem('levelup_game_start');
+    localStorage.removeItem('levelup_uid');
+    localStorage.removeItem('levelup_game_name');
+  }
   if(window._fbFns&&State.uid){
     const{ref,set,remove}=window._fbFns;
     remove(ref(State.db,`users/${State.uid}/currentGame`)).catch(()=>{});
@@ -1358,43 +1349,26 @@ window.stopGameSession=stopGameSession;
 
 function checkActiveGameSession(){
   if(!State.uid)return;
-  const wasPlaying=sessionStorage.getItem('levelup_playing')==='true';
-  const savedUid=sessionStorage.getItem('levelup_uid');
-  const gameStart=parseInt(sessionStorage.getItem('levelup_game_start')||'0');
-  if(wasPlaying&&savedUid===State.uid&&gameStart>0){
-    const elapsedSeconds = Math.floor((Date.now() - gameStart) / 1000);
-    const minutesPlayed = Math.floor(elapsedSeconds / 60);
-    const secondsIntoCurrentMinute = elapsedSeconds % 60;
-    if(minutesPlayed > 0){
-      const xpToAward = minutesPlayed * XP_PER_MINUTE;
-      const coinsToAward = minutesPlayed * COINS_PER_MINUTE;
-      toast(`🎁 ¡Bienvenido! Ganaste ${coinsToAward} monedas y ${xpToAward} XP por tu tiempo de juego.`, 'success');
-      awardXPandCoins(xpToAward, coinsToAward, 'Tiempo en juego (retroactivo)');
-      const newGameStart = gameStart + (minutesPlayed * 60000);
-      sessionStorage.setItem('levelup_game_start', newGameStart.toString());
-      gameStartTime = newGameStart;
-    } else {
-      gameStartTime = gameStart;
-    }
-    isPlayingGame=true;
-    coinsSecondCount=secondsIntoCurrentMinute;
-    const ind=document.getElementById('coins-min-indicator');
-    ind.style.display='flex';
-    ind.classList.remove('paused');
-    if(coinsMinuteTimer)clearInterval(coinsMinuteTimer);
-    coinsMinuteTimer=setInterval(()=>{
-      coinsSecondCount++;
-      document.getElementById('coins-min-timer').textContent=(60-coinsSecondCount)+'s';
-      if(coinsSecondCount>=60){
-        coinsSecondCount=0;
-        if(sessionStorage.getItem('levelup_playing')==='true'){
-          awardXPandCoins(XP_PER_MINUTE,COINS_PER_MINUTE,'Tiempo en juego');
-          sessionStorage.setItem('levelup_game_start',Date.now().toString());
-        } else {
-          stopGameSession();
-        }
-      }
-    },1000);
+  if(localStorage.getItem('levelup_playing')!=='true')return;
+  const savedUid=localStorage.getItem('levelup_uid');
+  const gameStart=parseInt(localStorage.getItem('levelup_game_start')||'0');
+  const gameName=localStorage.getItem('levelup_game_name')||'un juego';
+  if(savedUid!==State.uid||!(gameStart>0))return;
+  /* Consume la sesión YA (evita pagos duplicados) */
+  localStorage.removeItem('levelup_playing');
+  localStorage.removeItem('levelup_game_start');
+  localStorage.removeItem('levelup_uid');
+  localStorage.removeItem('levelup_game_name');
+  const elapsedSeconds=Math.floor((Date.now()-gameStart)/1000);
+  const minutesPlayed=Math.min(180,Math.floor(elapsedSeconds/60)); /* tope: cambia 180 si quieres */
+  if(minutesPlayed>0){
+    const xpToAward=minutesPlayed*XP_PER_MINUTE;
+    const coinsToAward=minutesPlayed*COINS_PER_MINUTE;
+    if(window.addPlaytime)window.addPlaytime(minutesPlayed);
+    awardXPandCoins(xpToAward,coinsToAward,'Tiempo en juego').then(ok=>{
+      if(ok)toast(`🎁 ¡Bienvenido de vuelta! ${minutesPlayed} min en ${gameName}: +${coinsToAward} 🪙 y +${xpToAward} XP`,'success');
+      else toast('⚠️ No se pudieron guardar las recompensas (F12 → consola)','error');
+    });
   }
 }
 
