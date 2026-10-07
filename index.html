@@ -2505,8 +2505,6 @@ onAuthStateChanged(auth, async user => {
 
 window.addEventListener('beforeunload',()=>{
   if(myPresenceRef)set(myPresenceRef,null).catch(()=>{});
-  if(State.uid)set(ref(db,`users/${State.uid}/online`),false).catch(()=>{});
-  window.stopGameSession&&window.stopGameSession();
 });
 </script>
 </body>
