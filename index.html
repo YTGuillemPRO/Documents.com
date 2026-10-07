@@ -2373,13 +2373,22 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     if(pw.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
     setAuthBtnLoading(btn, true);
     try {
-        const q = query(ref(db, 'users'), orderByChild('username'), equalTo(username));
-        const snap = await get(q);
-        if(snap.exists()) { toast('Ese nombre de usuario ya está en uso', 'error'); return; }
+        /* Check del nombre: si falla por permisos, se continúa igualmente */
+        try {
+            const q = query(ref(db, 'users'), orderByChild('username'), equalTo(username));
+            const snap = await get(q);
+            if(snap.exists()) { toast('Ese nombre de usuario ya está en uso', 'error'); setAuthBtnLoading(btn, false); return; }
+        } catch(checkErr) { console.warn('Check de nombre falló (se continúa):', checkErr); }
         const cred = await createUserWithEmailAndPassword(auth, em, pw);
-        await set(ref(db, `users/${cred.user.uid}`), {
-            username, email: em, level: 1, xp: 0, coins: 100, createdAt: Date.now(), owned: {bd_early: true}, equipped: {}, nameChanges: 0
-        });
+        try {
+            await set(ref(db, `users/${cred.user.uid}`), {
+                username, email: em, level: 1, xp: 0, coins: 100,
+                createdAt: Date.now(), owned: { bd_early: true }, equipped: {}, nameChanges: 0
+            });
+        } catch(profErr) {
+            console.error('Error al crear perfil:', profErr);
+            toast('⚠️ Cuenta creada pero el perfil falló. Cierra sesión y vuelve a entrar: se repara solo.', 'error');
+        }
         toast('🎉 ¡Cuenta creada! +100 monedas de bienvenida', 'success');
         closeAuth();
     } catch(err) {
@@ -2387,6 +2396,7 @@ document.getElementById('btn-register').addEventListener('click', async () => {
         if(err.code === 'auth/email-already-in-use') msg = 'Este email ya está registrado';
         else if(err.code === 'auth/invalid-email') msg = 'Email no válido';
         else if(err.code === 'auth/weak-password') msg = 'Contraseña demasiado débil (mínimo 6 caracteres)';
+        else if(err.code === 'auth/operation-not-allowed') msg = 'El registro con email está desactivado en Firebase Console (Authentication → Sign-in method → Email/Password → Habilitar)';
         else msg = err.message;
         toast(msg, 'error');
     } finally {
