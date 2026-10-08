@@ -502,7 +502,6 @@ function renderHub(){
       stCell('fa-rainbow',n2,'Arcoiris')+
       stCell('fa-clover',(G.upg.luck*6)+'%','Suerte')+
       stCell('fa-bolt-lightning','x'+(1+G.upg.inc*.1).toFixed(1),'Bonus ingreso')+
-      stCell('fa-fire','x'+(G.comboBest||0),'Mejor combo')+
       '</div>';
   }
   if(scEl)scEl.scrollTop=st;
@@ -743,7 +742,6 @@ onAuthStateChanged(fbAuth, function(user) {
 var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
 var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
 var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={};
-var buffBarEl=null,comboBarEl=null,comboV=0,comboTm2=null;
 var XK='PetSimUltra_v38_addons';
 var fuseSelIds=[];
 
