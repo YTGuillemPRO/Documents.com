@@ -3,7 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ===== MUNDOS (16) =====
+/* 👑 ADMIN (tus rules) — guillevarelacors = admin + super */
+var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
+var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
+var UPD_VERSION='v45',UPD_KEY='psu_update_seen_v45';
+
+// ===== MUNDOS (31) =====
 var WORLDS=[
 {id:'bosque',name:'Bosque Encantado',icon:'🌲',desc:'El inicio de tu aventura.',color:'#10b981',color2:'#84cc16',bonus:1,cost:0,eggs:['basico','dorado'],particles:'leaves'},
 {id:'pradera',name:'Pradera Dorada',icon:'🌾',desc:'Campos magicos.',color:'#84cc16',color2:'#a3e635',bonus:1.3,cost:25000,eggs:['campestre','arcano'],particles:'leaves'},
@@ -20,10 +25,25 @@ var WORLDS=[
 {id:'cosmos',name:'Cosmos Infinito',icon:'🪐',desc:'Vacio entre estrellas.',color:'#a855f7',color2:'#ec4899',bonus:7,cost:5e12,eggs:['cosmico','estelar'],particles:'stars'},
 {id:'dragonico',name:'Nido Draconico',icon:'🐲',desc:'Donde duermen los dragones.',color:'#ef4444',color2:'#f97316',bonus:9,cost:4e13,eggs:['draconico','wyrm'],particles:'embers'},
 {id:'abismo',name:'Abismo Eterno',icon:'🌑',desc:'La dimension oscura.',color:'#6366f1',color2:'#06b6d4',bonus:12,cost:3e14,eggs:['umbral','absoluto'],particles:'wisps'},
-{id:'eterno',name:'Reino Eterno',icon:'⚔️',desc:'El trono final del universo.',color:'#fde047',color2:'#fbbf24',bonus:16,cost:5e15,eggs:['eterno','omega'],particles:'wisps'}
+{id:'eterno',name:'Reino Eterno',icon:'⚔️',desc:'El trono final del universo.',color:'#fde047',color2:'#fbbf24',bonus:16,cost:5e15,eggs:['eterno','omega'],particles:'wisps'},
+{id:'galaxia',name:'Galaxia Espiral',icon:'🌌',desc:'Estrellas en espiral infinita.',color:'#818cf8',color2:'#c084fc',bonus:20,cost:1e17,eggs:['galactico','nebuloso'],particles:'stars'},
+{id:'temporal',name:'Distorsion Temporal',icon:'⏳',desc:'El tiempo se rompe aqui.',color:'#f472b6',color2:'#fb7185',bonus:26,cost:6e17,eggs:['cronos','destino'],particles:'wisps'},
+{id:'genetico',name:'Laboratorio Genetico',icon:'🧬',desc:'Vida creada en tubos.',color:'#34d399',color2:'#a3e635',bonus:33,cost:4e18,eggs:['mutacion','adn'],particles:'leaves'},
+{id:'pesadilla',name:'Reino de Pesadillas',icon:'🎭',desc:'Tus miedos cobran vida.',color:'#7c3aed',color2:'#4c1d95',bonus:42,cost:3e19,eggs:['terror','onirico'],particles:'wisps'},
+{id:'tormenta',name:'Tormenta Eterna',icon:'⚡',desc:'Rayos sin fin.',color:'#facc15',color2:'#f97316',bonus:54,cost:2e20,eggs:['rayo','huracan'],particles:'stars'},
+{id:'arcana',name:'Dimension Arcana',icon:'🔮',desc:'Magia pura y antigua.',color:'#a78bfa',color2:'#e879f9',bonus:68,cost:1e21,eggs:['runa','hechizo'],particles:'wisps'},
+{id:'asteroide',name:'Campo de Asteroides',icon:'☄️',desc:'Rocas entre el vacio.',color:'#94a3b8',color2:'#64748b',bonus:85,cost:8e21,eggs:['rocoso','cometa'],particles:'embers'},
+{id:'horizonte',name:'Horizonte de Sucesos',icon:'🕳️',desc:'Ni la luz escapa.',color:'#1e293b',color2:'#0ea5e9',bonus:110,cost:6e22,eggs:['singu','vacio'],particles:'stars'},
+{id:'prisma',name:'Prisma Infinito',icon:'🌈',desc:'Luz fragmentada en colores.',color:'#f0abfc',color2:'#22d3ee',bonus:140,cost:5e23,eggs:['cromatico','refraccion'],particles:'stars'},
+{id:'masalla',name:'Mas Alla del Fin',icon:'♾️',desc:'Donde termina todo... y empieza.',color:'#fde047',color2:'#f43f5e',bonus:180,cost:4e24,eggs:['final','trascende'],particles:'wisps'},
+{id:'alquimia',name:'Taller Alquimico',icon:'⚗️',desc:'Transmutacion y elixires.',color:'#fbbf24',color2:'#a3e635',bonus:230,cost:3e25,eggs:['elixir','homunculo'],particles:'wisps'},
+{id:'sombras',name:'Dominio de las Sombras',icon:'🕶️',desc:'La luz no entra aqui.',color:'#475569',color2:'#7c3aed',bonus:300,cost:2e26,eggs:['penumbra','oscuridad'],particles:'wisps'},
+{id:'paraiso',name:'Jardin del Eden',icon:'🕊️',desc:'La belleza eterna.',color:'#fde68a',color2:'#34d399',bonus:400,cost:1.5e27,eggs:['celestial','eden'],particles:'stars'},
+{id:'caos',name:'Ojo del Caos',icon:'🌀',desc:'Nada tiene sentido.',color:'#f43f5e',color2:'#8b5cf6',bonus:520,cost:1e28,eggs:['caos','entropia'],particles:'embers'},
+{id:'zenit',name:'Cumbre del Zenit',icon:'🗻',desc:'El punto mas alto del universo.',color:'#7dd3fc',color2:'#fbbf24',bonus:700,cost:8e28,eggs:['zenit','cumbre'],particles:'stars'}
 ];
 
-// ===== MASCOTAS (199) =====
+// ===== MASCOTAS (309) =====
 var PETS=[
 {ic:'fa-solid fa-paw',n:'Raton',r:'common',e:2,eg:['basico'],c:'#78716c'},{ic:'fa-solid fa-dog',n:'Perro',r:'common',e:3,eg:['basico'],c:'#a0845c'},{ic:'fa-solid fa-cat',n:'Gato',r:'common',e:4,eg:['basico'],c:'#c9956b'},{ic:'fa-solid fa-paw',n:'Conejo',r:'common',e:5,eg:['basico'],c:'#d4a574'},{ic:'fa-solid fa-piggy-bank',n:'Cerdo',r:'common',e:7,eg:['basico'],c:'#e8879a'},{ic:'fa-solid fa-dove',n:'Pollito',r:'common',e:8,eg:['basico'],c:'#e8c84a'},{ic:'fa-solid fa-feather',n:'Pato',r:'rare',e:15,eg:['basico'],c:'#34d399'},{ic:'fa-solid fa-paw',n:'Zorro',r:'rare',e:20,eg:['basico'],c:'#f97316'},
 {ic:'fa-solid fa-paw',n:'Oso',r:'rare',e:25,eg:['dorado'],c:'#8b6f47'},{ic:'fa-solid fa-paw',n:'Panda',r:'rare',e:30,eg:['dorado'],c:'#d1d5db'},{ic:'fa-solid fa-paw',n:'Koala',r:'rare',e:35,eg:['dorado'],c:'#9ca3af'},{ic:'fa-solid fa-feather-pointed',n:'Aguila',r:'epic',e:55,eg:['dorado'],c:'#a855f7'},{ic:'fa-solid fa-paw',n:'Leon',r:'epic',e:65,eg:['dorado'],c:'#eab308'},{ic:'fa-solid fa-paw',n:'Tigre',r:'epic',e:75,eg:['dorado'],c:'#ea580c'},{ic:'fa-solid fa-dragon',n:'Dragon',r:'god',e:130,eg:['dorado'],c:'#dc2626'},
@@ -41,117 +61,52 @@ var PETS=[
 {ic:'fa-solid fa-explosion',n:'Supernova',r:'legendary',e:3000,eg:['estelar'],c:'#ea580c'},{ic:'fa-solid fa-circle',n:'Agujero Negro',r:'mythic',e:14000,eg:['estelar'],c:'#1e1b4b'},{ic:'fa-solid fa-meteor',n:'Cometa',r:'mythic',e:16000,eg:['estelar'],c:'#0284c7'},{ic:'fa-solid fa-satellite',n:'Pulsar',r:'secret',e:35000,eg:['estelar'],c:'#0891b2'},{ic:'fa-solid fa-explosion',n:'Big Bang',r:'og',e:90000,eg:['estelar'],c:'#db2777'},
 {ic:'fa-solid fa-ghost',n:'Entidad',r:'mythic',e:15000,eg:['umbral'],c:'#4f46e5'},{ic:'fa-solid fa-eye',n:'Vigilante',r:'mythic',e:18000,eg:['umbral'],c:'#3730a3'},{ic:'fa-solid fa-moon',n:'Sombra',r:'secret',e:40000,eg:['umbral'],c:'#312e81'},{ic:'fa-solid fa-circle-nodes',n:'Abismo',r:'og',e:110000,eg:['umbral'],c:'#4338ca'},
 {ic:'fa-solid fa-circle-xmark',n:'Nada Final',r:'secret',e:50000,eg:['absoluto'],c:'#1e1b4b'},{ic:'fa-solid fa-infinity',n:'Todo',r:'og',e:200000,eg:['absoluto'],c:'#c026d3'},
-// ===== NUEVAS: JUNGLA =====
-{ic:'fa-solid fa-paw',n:'Mono',r:'common',e:12,eg:['salvaje'],c:'#a16207'},
-{ic:'fa-solid fa-worm',n:'Serpiente',r:'common',e:16,eg:['salvaje'],c:'#4d7c0f'},
-{ic:'fa-solid fa-paw',n:'Jaguar',r:'rare',e:42,eg:['salvaje'],c:'#d97706'},
-{ic:'fa-solid fa-paw',n:'Gorila',r:'rare',e:55,eg:['salvaje'],c:'#57534e'},
-{ic:'fa-solid fa-paw',n:'Pantera',r:'epic',e:95,eg:['salvaje'],c:'#1f2937'},
-{ic:'fa-solid fa-worm',n:'Anaconda',r:'epic',e:115,eg:['salvaje'],c:'#166534'},
-{ic:'fa-solid fa-crown',n:'Rey Jungla',r:'god',e:230,eg:['salvaje'],c:'#65a30d'},
-{ic:'fa-solid fa-tree',n:'Arbol Milenario',r:'legendary',e:600,eg:['salvaje'],c:'#3f6212'},
-{ic:'fa-solid fa-frog',n:'Sapo Veneno',r:'rare',e:60,eg:['toxico'],c:'#84cc16'},
-{ic:'fa-solid fa-bug',n:'Escarabajo',r:'rare',e:78,eg:['toxico'],c:'#a3e635'},
-{ic:'fa-solid fa-spider',n:'Tarantula',r:'epic',e:150,eg:['toxico'],c:'#4c1d95'},
-{ic:'fa-solid fa-leaf',n:'Planta Carnivora',r:'god',e:320,eg:['toxico'],c:'#dc2626'},
-{ic:'fa-solid fa-radiation',n:'Esporas Vivas',r:'legendary',e:800,eg:['toxico'],c:'#22c55e'},
-{ic:'fa-solid fa-skull',n:'Guardian Toxico',r:'mythic',e:2000,eg:['toxico'],c:'#166534'},
-{ic:'fa-solid fa-vial-virus',n:'Virus Mutante',r:'secret',e:5000,eg:['toxico'],c:'#a3e635'},
-// ===== NUEVAS: DESIERTO =====
-{ic:'fa-solid fa-paw',n:'Jerbo',r:'common',e:30,eg:['dunas'],c:'#d4a574'},
-{ic:'fa-solid fa-paw',n:'Camello',r:'common',e:40,eg:['dunas'],c:'#b45309'},
-{ic:'fa-solid fa-paw',n:'Feneco',r:'rare',e:90,eg:['dunas'],c:'#fdba74'},
-{ic:'fa-solid fa-feather-pointed',n:'Halcon',r:'rare',e:110,eg:['dunas'],c:'#92400e'},
-{ic:'fa-solid fa-paw',n:'Chacal',r:'epic',e:200,eg:['dunas'],c:'#78716c'},
-{ic:'fa-solid fa-worm',n:'Cobra',r:'epic',e:260,eg:['dunas'],c:'#166534'},
-{ic:'fa-solid fa-wand-magic',n:'Djinn',r:'god',e:550,eg:['dunas'],c:'#0ea5e9'},
-{ic:'fa-solid fa-fire-flame-curved',n:'Fenix Menor',r:'legendary',e:1100,eg:['dunas'],c:'#f97316'},
-{ic:'fa-solid fa-cat',n:'Gato Egipcio',r:'rare',e:180,eg:['faraon'],c:'#eab308'},
-{ic:'fa-solid fa-bug',n:'Escarabajo Dorado',r:'epic',e:380,eg:['faraon'],c:'#fbbf24'},
-{ic:'fa-solid fa-worm',n:'Uraeus',r:'epic',e:450,eg:['faraon'],c:'#16a34a'},
-{ic:'fa-solid fa-dog',n:'Anubis',r:'god',e:950,eg:['faraon'],c:'#78716c'},
-{ic:'fa-solid fa-crown',n:'Esfinge Real',r:'legendary',e:2400,eg:['faraon'],c:'#d97706'},
-{ic:'fa-solid fa-ankh',n:'Faraon',r:'mythic',e:6500,eg:['faraon'],c:'#eab308'},
-{ic:'fa-solid fa-sun',n:'Ra',r:'secret',e:16000,eg:['faraon'],c:'#f59e0b'},
-// ===== NUEVAS: TUNDRA =====
-{ic:'fa-solid fa-paw',n:'Pinguino',r:'common',e:150,eg:['glacial'],c:'#334155'},
-{ic:'fa-solid fa-paw',n:'Foca',r:'common',e:190,eg:['glacial'],c:'#94a3b8'},
-{ic:'fa-solid fa-paw',n:'Zorro Nevada',r:'rare',e:420,eg:['glacial'],c:'#e2e8f0'},
-{ic:'fa-solid fa-paw',n:'Lobo Nieve',r:'rare',e:520,eg:['glacial'],c:'#cbd5e1'},
-{ic:'fa-solid fa-paw',n:'Oso Polar',r:'epic',e:1000,eg:['glacial'],c:'#f8fafc'},
-{ic:'fa-solid fa-snowflake',n:'Yeti',r:'god',e:2400,eg:['glacial'],c:'#bae6fd'},
-{ic:'fa-solid fa-wind',n:'Wendigo',r:'legendary',e:6000,eg:['glacial'],c:'#7dd3fc'},
-{ic:'fa-solid fa-water',n:'Morsa',r:'rare',e:900,eg:['polar'],c:'#94a3b8'},
-{ic:'fa-solid fa-fish-fins',n:'Narval',r:'epic',e:1800,eg:['polar'],c:'#38bdf8'},
-{ic:'fa-solid fa-water',n:'Leviatan Glacial',r:'god',e:3800,eg:['polar'],c:'#0284c7'},
-{ic:'fa-solid fa-snowflake',n:'Reina de Hielo',r:'legendary',e:9500,eg:['polar'],c:'#a5f3fc'},
-{ic:'fa-solid fa-dragon',n:'Dragon Glacial',r:'mythic',e:24000,eg:['polar'],c:'#60a5fa'},
-{ic:'fa-solid fa-temperature-low',n:'Cero Absoluto',r:'secret',e:60000,eg:['polar'],c:'#e0f2fe'},
-// ===== NUEVAS: CEMENTERIO =====
-{ic:'fa-solid fa-crow',n:'Murcielago',r:'common',e:400,eg:['tumba'],c:'#334155'},
-{ic:'fa-solid fa-crow',n:'Cuervo',r:'common',e:480,eg:['tumba'],c:'#1f2937'},
-{ic:'fa-solid fa-cat',n:'Gato Negro',r:'rare',e:900,eg:['tumba'],c:'#0f172a'},
-{ic:'fa-solid fa-ghost',n:'Zombie',r:'rare',e:1200,eg:['tumba'],c:'#4d7c0f'},
-{ic:'fa-solid fa-skull',n:'Esqueleto',r:'epic',e:2400,eg:['tumba'],c:'#e5e7eb'},
-{ic:'fa-solid fa-ghost',n:'Vampiro',r:'god',e:5200,eg:['tumba'],c:'#7f1d1d'},
-{ic:'fa-solid fa-book-skull',n:'Liche',r:'legendary',e:13000,eg:['tumba'],c:'#a78bfa'},
-{ic:'fa-solid fa-crown',n:'Conde Nocturno',r:'mythic',e:28000,eg:['tumba'],c:'#4c1d95'},
-{ic:'fa-solid fa-bandage',n:'Momia',r:'epic',e:3800,eg:['maldito'],c:'#d6d3d1'},
-{ic:'fa-solid fa-bone',n:'Golem de Hueso',r:'god',e:8000,eg:['maldito'],c:'#a8a29e'},
-{ic:'fa-solid fa-chess-knight',n:'Caballero Caido',r:'legendary',e:19000,eg:['maldito'],c:'#64748b'},
-{ic:'fa-solid fa-skull',n:'Segador',r:'mythic',e:32000,eg:['maldito'],c:'#475569'},
-{ic:'fa-solid fa-eye',n:'Sombra Antigua',r:'secret',e:45000,eg:['maldito'],c:'#312e81'},
-{ic:'fa-solid fa-hourglass',n:'Parca',r:'og',e:90000,eg:['maldito'],c:'#a78bfa'},
-// ===== NUEVAS: DULCES =====
-{ic:'fa-solid fa-paw',n:'Oso Gominola',r:'common',e:900,eg:['goloso'],c:'#f472b6'},
-{ic:'fa-solid fa-cat',n:'Gato Caramelo',r:'common',e:1100,eg:['goloso'],c:'#fb7185'},
-{ic:'fa-solid fa-dog',n:'Perro Chicle',r:'rare',e:2400,eg:['goloso'],c:'#f9a8d4'},
-{ic:'fa-solid fa-paw',n:'Conejo Masmallow',r:'rare',e:3000,eg:['goloso'],c:'#fbcfe8'},
-{ic:'fa-solid fa-paw',n:'Foca Gelatina',r:'epic',e:5500,eg:['goloso'],c:'#fda4af'},
-{ic:'fa-solid fa-star',n:'Arcoiris Dulce',r:'god',e:12000,eg:['goloso'],c:'#a5f3fc'},
-{ic:'fa-solid fa-cake-candles',n:'Pastel Vivo',r:'legendary',e:30000,eg:['goloso'],c:'#f472b6'},
-{ic:'fa-solid fa-bread-slice',n:'Croissant',r:'rare',e:5000,eg:['pastel'],c:'#d9a05b'},
-{ic:'fa-solid fa-ice-cream',n:'Helado Vivo',r:'epic',e:9000,eg:['pastel'],c:'#fbcfe8'},
-{ic:'fa-solid fa-cookie-bite',n:'Rey Donut',r:'god',e:18000,eg:['pastel'],c:'#b45309'},
-{ic:'fa-solid fa-crown',n:'Emperador Pastel',r:'legendary',e:38000,eg:['pastel'],c:'#ec4899'},
-{ic:'fa-solid fa-cookie',n:'Dulce Final',r:'mythic',e:55000,eg:['pastel'],c:'#f472b6'},
-{ic:'fa-solid fa-star',n:'Azucar Pura',r:'secret',e:68000,eg:['pastel'],c:'#fde68a'},
-// ===== NUEVAS: NEON =====
-{ic:'fa-solid fa-robot',n:'Robot',r:'rare',e:6000,eg:['neon'],c:'#94a3b8'},
-{ic:'fa-solid fa-satellite',n:'Drone',r:'rare',e:7500,eg:['neon'],c:'#22d3ee'},
-{ic:'fa-solid fa-gear',n:'Cyborg',r:'epic',e:12000,eg:['neon'],c:'#7dd3fc'},
-{ic:'fa-solid fa-user-secret',n:'Hacker',r:'epic',e:15000,eg:['neon'],c:'#a78bfa'},
-{ic:'fa-solid fa-motorcycle',n:'Moto Neón',r:'god',e:26000,eg:['neon'],c:'#e879f9'},
-{ic:'fa-solid fa-brain',n:'IA Viva',r:'legendary',e:48000,eg:['neon'],c:'#f0abfc'},
-{ic:'fa-solid fa-bolt',n:'Overclock',r:'mythic',e:75000,eg:['neon'],c:'#fbbf24'},
-{ic:'fa-solid fa-code',n:'Codigo Perdido',r:'secret',e:90000,eg:['neon'],c:'#22d3ee'},
-{ic:'fa-solid fa-cube',n:'Pixel',r:'epic',e:18000,eg:['virtual'],c:'#a3e635'},
-{ic:'fa-solid fa-user-astronaut',n:'Avatar',r:'god',e:28000,eg:['virtual'],c:'#34d399'},
-{ic:'fa-solid fa-virus',n:'Virus Digital',r:'legendary',e:48000,eg:['virtual'],c:'#22c55e'},
-{ic:'fa-solid fa-shield-halved',n:'Firewall',r:'mythic',e:70000,eg:['virtual'],c:'#0d9488'},
-{ic:'fa-solid fa-diagram-project',n:'Singularidad Datos',r:'secret',e:85000,eg:['virtual'],c:'#06b6d4'},
-{ic:'fa-solid fa-database',n:'Mainframe',r:'og',e:95000,eg:['virtual'],c:'#0891b2'},
-// ===== NUEVAS: DRAGONICO =====
-{ic:'fa-solid fa-dragon',n:'Dragon Bebe',r:'rare',e:22000,eg:['draconico'],c:'#4ade80'},
-{ic:'fa-solid fa-dragon',n:'Wyvern',r:'epic',e:38000,eg:['draconico'],c:'#f97316'},
-{ic:'fa-solid fa-dragon',n:'Dragon Jade',r:'god',e:60000,eg:['draconico'],c:'#16a34a'},
-{ic:'fa-solid fa-dragon',n:'Dragon Sangre',r:'legendary',e:85000,eg:['draconico'],c:'#dc2626'},
-{ic:'fa-solid fa-dragon',n:'Dragon Ancestral',r:'mythic',e:100000,eg:['draconico'],c:'#991b1b'},
-{ic:'fa-solid fa-dragon',n:'Dragon Oculto',r:'secret',e:120000,eg:['draconico'],c:'#1e293b'},
-{ic:'fa-solid fa-dragon',n:'Dracolich',r:'god',e:95000,eg:['wyrm'],c:'#334155'},
-{ic:'fa-solid fa-dragon',n:'Dragon Estelar',r:'legendary',e:130000,eg:['wyrm'],c:'#a855f7'},
-{ic:'fa-solid fa-crown',n:'Rey Dragon',r:'mythic',e:170000,eg:['wyrm'],c:'#ca8a04'},
-{ic:'fa-solid fa-meteor',n:'Rompemundos',r:'secret',e:210000,eg:['wyrm'],c:'#ea580c'},
-{ic:'fa-solid fa-dragon',n:'Alfa Dragon',r:'og',e:260000,eg:['wyrm'],c:'#facc15'},
-// ===== NUEVAS: ETERNO =====
-{ic:'fa-solid fa-chess-rook',n:'Caballero Eterno',r:'god',e:220000,eg:['eterno'],c:'#fbbf24'},
-{ic:'fa-solid fa-dove',n:'Angel Guardian',r:'legendary',e:300000,eg:['eterno'],c:'#fde68a'},
-{ic:'fa-solid fa-sun',n:'Titan de Luz',r:'mythic',e:400000,eg:['eterno'],c:'#fde047'},
-{ic:'fa-solid fa-bolt-lightning',n:'Espada Viva',r:'secret',e:520000,eg:['eterno'],c:'#fef3c7'},
-{ic:'fa-solid fa-crown',n:'Centinela Eterno',r:'og',e:650000,eg:['eterno'],c:'#f59e0b'},
-{ic:'fa-solid fa-infinity',n:'Omega',r:'mythic',e:750000,eg:['omega'],c:'#c026d3'},
-{ic:'fa-solid fa-seedling',n:'Genesis',r:'secret',e:950000,eg:['omega'],c:'#34d399'},
-{ic:'fa-solid fa-crown',n:'EL UNO',r:'og',e:1250000,eg:['omega'],c:'#fde047'}
+{ic:'fa-solid fa-paw',n:'Mono',r:'common',e:12,eg:['salvaje'],c:'#a16207'},{ic:'fa-solid fa-worm',n:'Serpiente',r:'common',e:16,eg:['salvaje'],c:'#4d7c0f'},{ic:'fa-solid fa-paw',n:'Jaguar',r:'rare',e:42,eg:['salvaje'],c:'#d97706'},{ic:'fa-solid fa-paw',n:'Gorila',r:'rare',e:55,eg:['salvaje'],c:'#57534e'},{ic:'fa-solid fa-paw',n:'Pantera',r:'epic',e:95,eg:['salvaje'],c:'#1f2937'},{ic:'fa-solid fa-worm',n:'Anaconda',r:'epic',e:115,eg:['salvaje'],c:'#166534'},{ic:'fa-solid fa-crown',n:'Rey Jungla',r:'god',e:230,eg:['salvaje'],c:'#65a30d'},{ic:'fa-solid fa-tree',n:'Arbol Milenario',r:'legendary',e:600,eg:['salvaje'],c:'#3f6212'},
+{ic:'fa-solid fa-frog',n:'Sapo Veneno',r:'rare',e:60,eg:['toxico'],c:'#84cc16'},{ic:'fa-solid fa-bug',n:'Escarabajo',r:'rare',e:78,eg:['toxico'],c:'#a3e635'},{ic:'fa-solid fa-spider',n:'Tarantula',r:'epic',e:150,eg:['toxico'],c:'#4c1d95'},{ic:'fa-solid fa-leaf',n:'Planta Carnivora',r:'god',e:320,eg:['toxico'],c:'#dc2626'},{ic:'fa-solid fa-radiation',n:'Esporas Vivas',r:'legendary',e:800,eg:['toxico'],c:'#22c55e'},{ic:'fa-solid fa-skull',n:'Guardian Toxico',r:'mythic',e:2000,eg:['toxico'],c:'#166534'},{ic:'fa-solid fa-vial-virus',n:'Virus Mutante',r:'secret',e:5000,eg:['toxico'],c:'#a3e635'},
+{ic:'fa-solid fa-paw',n:'Jerbo',r:'common',e:30,eg:['dunas'],c:'#d4a574'},{ic:'fa-solid fa-paw',n:'Camello',r:'common',e:40,eg:['dunas'],c:'#b45309'},{ic:'fa-solid fa-paw',n:'Feneco',r:'rare',e:90,eg:['dunas'],c:'#fdba74'},{ic:'fa-solid fa-feather-pointed',n:'Halcon',r:'rare',e:110,eg:['dunas'],c:'#92400e'},{ic:'fa-solid fa-paw',n:'Chacal',r:'epic',e:200,eg:['dunas'],c:'#78716c'},{ic:'fa-solid fa-worm',n:'Cobra',r:'epic',e:260,eg:['dunas'],c:'#166534'},{ic:'fa-solid fa-wand-magic',n:'Djinn',r:'god',e:550,eg:['dunas'],c:'#0ea5e9'},{ic:'fa-solid fa-fire-flame-curved',n:'Fenix Menor',r:'legendary',e:1100,eg:['dunas'],c:'#f97316'},
+{ic:'fa-solid fa-cat',n:'Gato Egipcio',r:'rare',e:180,eg:['faraon'],c:'#eab308'},{ic:'fa-solid fa-bug',n:'Escarabajo Dorado',r:'epic',e:380,eg:['faraon'],c:'#fbbf24'},{ic:'fa-solid fa-worm',n:'Uraeus',r:'epic',e:450,eg:['faraon'],c:'#16a34a'},{ic:'fa-solid fa-dog',n:'Anubis',r:'god',e:950,eg:['faraon'],c:'#78716c'},{ic:'fa-solid fa-crown',n:'Esfinge Real',r:'legendary',e:2400,eg:['faraon'],c:'#d97706'},{ic:'fa-solid fa-ankh',n:'Faraon',r:'mythic',e:6500,eg:['faraon'],c:'#eab308'},{ic:'fa-solid fa-sun',n:'Ra',r:'secret',e:16000,eg:['faraon'],c:'#f59e0b'},
+{ic:'fa-solid fa-paw',n:'Pinguino',r:'common',e:150,eg:['glacial'],c:'#334155'},{ic:'fa-solid fa-paw',n:'Foca',r:'common',e:190,eg:['glacial'],c:'#94a3b8'},{ic:'fa-solid fa-paw',n:'Zorro Nevada',r:'rare',e:420,eg:['glacial'],c:'#e2e8f0'},{ic:'fa-solid fa-paw',n:'Lobo Nieve',r:'rare',e:520,eg:['glacial'],c:'#cbd5e1'},{ic:'fa-solid fa-paw',n:'Oso Polar',r:'epic',e:1000,eg:['glacial'],c:'#f8fafc'},{ic:'fa-solid fa-snowflake',n:'Yeti',r:'god',e:2400,eg:['glacial'],c:'#bae6fd'},{ic:'fa-solid fa-wind',n:'Wendigo',r:'legendary',e:6000,eg:['glacial'],c:'#7dd3fc'},
+{ic:'fa-solid fa-water',n:'Morsa',r:'rare',e:900,eg:['polar'],c:'#94a3b8'},{ic:'fa-solid fa-fish-fins',n:'Narval',r:'epic',e:1800,eg:['polar'],c:'#38bdf8'},{ic:'fa-solid fa-water',n:'Leviatan Glacial',r:'god',e:3800,eg:['polar'],c:'#0284c7'},{ic:'fa-solid fa-snowflake',n:'Reina de Hielo',r:'legendary',e:9500,eg:['polar'],c:'#a5f3fc'},{ic:'fa-solid fa-dragon',n:'Dragon Glacial',r:'mythic',e:24000,eg:['polar'],c:'#60a5fa'},{ic:'fa-solid fa-temperature-low',n:'Cero Absoluto',r:'secret',e:60000,eg:['polar'],c:'#e0f2fe'},
+{ic:'fa-solid fa-crow',n:'Murcielago',r:'common',e:400,eg:['tumba'],c:'#334155'},{ic:'fa-solid fa-crow',n:'Cuervo',r:'common',e:480,eg:['tumba'],c:'#1f2937'},{ic:'fa-solid fa-cat',n:'Gato Negro',r:'rare',e:900,eg:['tumba'],c:'#0f172a'},{ic:'fa-solid fa-ghost',n:'Zombie',r:'rare',e:1200,eg:['tumba'],c:'#4d7c0f'},{ic:'fa-solid fa-skull',n:'Esqueleto',r:'epic',e:2400,eg:['tumba'],c:'#e5e7eb'},{ic:'fa-solid fa-ghost',n:'Vampiro',r:'god',e:5200,eg:['tumba'],c:'#7f1d1d'},{ic:'fa-solid fa-book-skull',n:'Liche',r:'legendary',e:13000,eg:['tumba'],c:'#a78bfa'},{ic:'fa-solid fa-crown',n:'Conde Nocturno',r:'mythic',e:28000,eg:['tumba'],c:'#4c1d95'},
+{ic:'fa-solid fa-bandage',n:'Momia',r:'epic',e:3800,eg:['maldito'],c:'#d6d3d1'},{ic:'fa-solid fa-bone',n:'Golem de Hueso',r:'god',e:8000,eg:['maldito'],c:'#a8a29e'},{ic:'fa-solid fa-chess-knight',n:'Caballero Caido',r:'legendary',e:19000,eg:['maldito'],c:'#64748b'},{ic:'fa-solid fa-skull',n:'Segador',r:'mythic',e:32000,eg:['maldito'],c:'#475569'},{ic:'fa-solid fa-eye',n:'Sombra Antigua',r:'secret',e:45000,eg:['maldito'],c:'#312e81'},{ic:'fa-solid fa-hourglass',n:'Parca',r:'og',e:90000,eg:['maldito'],c:'#a78bfa'},
+{ic:'fa-solid fa-paw',n:'Oso Gominola',r:'common',e:900,eg:['goloso'],c:'#f472b6'},{ic:'fa-solid fa-cat',n:'Gato Caramelo',r:'common',e:1100,eg:['goloso'],c:'#fb7185'},{ic:'fa-solid fa-dog',n:'Perro Chicle',r:'rare',e:2400,eg:['goloso'],c:'#f9a8d4'},{ic:'fa-solid fa-paw',n:'Conejo Masmallow',r:'rare',e:3000,eg:['goloso'],c:'#fbcfe8'},{ic:'fa-solid fa-paw',n:'Foca Gelatina',r:'epic',e:5500,eg:['goloso'],c:'#fda4af'},{ic:'fa-solid fa-star',n:'Arcoiris Dulce',r:'god',e:12000,eg:['goloso'],c:'#a5f3fc'},{ic:'fa-solid fa-cake-candles',n:'Pastel Vivo',r:'legendary',e:30000,eg:['goloso'],c:'#f472b6'},
+{ic:'fa-solid fa-bread-slice',n:'Croissant',r:'rare',e:5000,eg:['pastel'],c:'#d9a05b'},{ic:'fa-solid fa-ice-cream',n:'Helado Vivo',r:'epic',e:9000,eg:['pastel'],c:'#fbcfe8'},{ic:'fa-solid fa-cookie-bite',n:'Rey Donut',r:'god',e:18000,eg:['pastel'],c:'#b45309'},{ic:'fa-solid fa-crown',n:'Emperador Pastel',r:'legendary',e:38000,eg:['pastel'],c:'#ec4899'},{ic:'fa-solid fa-cookie',n:'Dulce Final',r:'mythic',e:55000,eg:['pastel'],c:'#f472b6'},{ic:'fa-solid fa-star',n:'Azucar Pura',r:'secret',e:68000,eg:['pastel'],c:'#fde68a'},
+{ic:'fa-solid fa-robot',n:'Robot',r:'rare',e:6000,eg:['neon'],c:'#94a3b8'},{ic:'fa-solid fa-satellite',n:'Drone',r:'rare',e:7500,eg:['neon'],c:'#22d3ee'},{ic:'fa-solid fa-gear',n:'Cyborg',r:'epic',e:12000,eg:['neon'],c:'#7dd3fc'},{ic:'fa-solid fa-user-secret',n:'Hacker',r:'epic',e:15000,eg:['neon'],c:'#a78bfa'},{ic:'fa-solid fa-motorcycle',n:'Moto Neón',r:'god',e:26000,eg:['neon'],c:'#e879f9'},{ic:'fa-solid fa-brain',n:'IA Viva',r:'legendary',e:48000,eg:['neon'],c:'#f0abfc'},{ic:'fa-solid fa-bolt',n:'Overclock',r:'mythic',e:75000,eg:['neon'],c:'#fbbf24'},{ic:'fa-solid fa-code',n:'Codigo Perdido',r:'secret',e:90000,eg:['neon'],c:'#22d3ee'},
+{ic:'fa-solid fa-cube',n:'Pixel',r:'epic',e:18000,eg:['virtual'],c:'#a3e635'},{ic:'fa-solid fa-user-astronaut',n:'Avatar',r:'god',e:28000,eg:['virtual'],c:'#34d399'},{ic:'fa-solid fa-virus',n:'Virus Digital',r:'legendary',e:48000,eg:['virtual'],c:'#22c55e'},{ic:'fa-solid fa-shield-halved',n:'Firewall',r:'mythic',e:70000,eg:['virtual'],c:'#0d9488'},{ic:'fa-solid fa-diagram-project',n:'Singularidad Datos',r:'secret',e:85000,eg:['virtual'],c:'#06b6d4'},{ic:'fa-solid fa-database',n:'Mainframe',r:'og',e:95000,eg:['virtual'],c:'#0891b2'},
+{ic:'fa-solid fa-dragon',n:'Dragon Bebe',r:'rare',e:22000,eg:['draconico'],c:'#4ade80'},{ic:'fa-solid fa-dragon',n:'Wyvern',r:'epic',e:38000,eg:['draconico'],c:'#f97316'},{ic:'fa-solid fa-dragon',n:'Dragon Jade',r:'god',e:60000,eg:['draconico'],c:'#16a34a'},{ic:'fa-solid fa-dragon',n:'Dragon Sangre',r:'legendary',e:85000,eg:['draconico'],c:'#dc2626'},{ic:'fa-solid fa-dragon',n:'Dragon Ancestral',r:'mythic',e:100000,eg:['draconico'],c:'#991b1b'},{ic:'fa-solid fa-dragon',n:'Dragon Oculto',r:'secret',e:120000,eg:['draconico'],c:'#1e293b'},
+{ic:'fa-solid fa-dragon',n:'Dracolich',r:'god',e:95000,eg:['wyrm'],c:'#334155'},{ic:'fa-solid fa-dragon',n:'Dragon Estelar',r:'legendary',e:130000,eg:['wyrm'],c:'#a855f7'},{ic:'fa-solid fa-crown',n:'Rey Dragon',r:'mythic',e:170000,eg:['wyrm'],c:'#ca8a04'},{ic:'fa-solid fa-meteor',n:'Rompemundos',r:'secret',e:210000,eg:['wyrm'],c:'#ea580c'},{ic:'fa-solid fa-dragon',n:'Alfa Dragon',r:'og',e:260000,eg:['wyrm'],c:'#facc15'},
+{ic:'fa-solid fa-chess-rook',n:'Caballero Eterno',r:'god',e:220000,eg:['eterno'],c:'#fbbf24'},{ic:'fa-solid fa-dove',n:'Angel Guardian',r:'legendary',e:300000,eg:['eterno'],c:'#fde68a'},{ic:'fa-solid fa-sun',n:'Titan de Luz',r:'mythic',e:400000,eg:['eterno'],c:'#fde047'},{ic:'fa-solid fa-bolt-lightning',n:'Espada Viva',r:'secret',e:520000,eg:['eterno'],c:'#fef3c7'},{ic:'fa-solid fa-crown',n:'Centinela Eterno',r:'og',e:650000,eg:['eterno'],c:'#f59e0b'},
+{ic:'fa-solid fa-infinity',n:'Omega',r:'mythic',e:750000,eg:['omega'],c:'#c026d3'},{ic:'fa-solid fa-seedling',n:'Genesis',r:'secret',e:950000,eg:['omega'],c:'#34d399'},{ic:'fa-solid fa-crown',n:'EL UNO',r:'og',e:1250000,eg:['omega'],c:'#fde047'},
+{ic:'fa-solid fa-meteor',n:'Cometa Menor',r:'legendary',e:250000,eg:['galactico'],c:'#7dd3fc'},{ic:'fa-solid fa-star',n:'Guardian Estelar',r:'god',e:500000,eg:['galactico'],c:'#fbbf24'},{ic:'fa-solid fa-bolt',n:'Quasar',r:'mythic',e:1200000,eg:['galactico'],c:'#22d3ee'},{ic:'fa-solid fa-circle-nodes',n:'Agujero Gusano',r:'secret',e:3000000,eg:['galactico'],c:'#818cf8'},{ic:'fa-solid fa-star',n:'Andromeda',r:'og',e:8000000,eg:['galactico'],c:'#c084fc'},
+{ic:'fa-solid fa-cloud',n:'Bruma Sagrada',r:'legendary',e:320000,eg:['nebuloso'],c:'#a5b4fc'},{ic:'fa-solid fa-heart',n:'Corazon Nebular',r:'god',e:640000,eg:['nebuloso'],c:'#f0abfc'},{ic:'fa-solid fa-satellite',n:'Pulsar Gemelo',r:'mythic',e:1600000,eg:['nebuloso'],c:'#22d3ee'},{ic:'fa-solid fa-ghost',n:'Estrella Muerta',r:'secret',e:4000000,eg:['nebuloso'],c:'#64748b'},{ic:'fa-solid fa-globe',n:'Giga Estructura',r:'og',e:10000000,eg:['nebuloso'],c:'#818cf8'},
+{ic:'fa-solid fa-hourglass-half',n:'Arena del Tiempo',r:'legendary',e:420000,eg:['cronos'],c:'#fde68a'},{ic:'fa-solid fa-clock',n:'Reloj Vivo',r:'mythic',e:2100000,eg:['cronos'],c:'#f472b6'},{ic:'fa-solid fa-circle-question',n:'Paradoja',r:'secret',e:5000000,eg:['cronos'],c:'#fb7185'},{ic:'fa-solid fa-hourglass',n:'CRONOS',r:'og',e:13000000,eg:['cronos'],c:'#fbbf24'},
+{ic:'fa-solid fa-scroll',n:'Hilo del Destino',r:'mythic',e:2600000,eg:['destino'],c:'#f472b6'},{ic:'fa-solid fa-eye',n:'Ojo del Oraculo',r:'secret',e:6000000,eg:['destino'],c:'#22d3ee'},{ic:'fa-solid fa-book-skull',n:'El Escrito',r:'og',e:16000000,eg:['destino'],c:'#c026d3'},
+{ic:'fa-solid fa-dna',n:'Cepa Alfa',r:'legendary',e:550000,eg:['mutacion'],c:'#34d399'},{ic:'fa-solid fa-flask',n:'Mutante Prime',r:'god',e:1100000,eg:['mutacion'],c:'#a3e635'},{ic:'fa-solid fa-bug',n:'Aberracion',r:'mythic',e:2700000,eg:['mutacion'],c:'#84cc16'},{ic:'fa-solid fa-vial-virus',n:'Organismo X',r:'secret',e:6500000,eg:['mutacion'],c:'#4ade80'},{ic:'fa-solid fa-dna',n:'Alfa ADN',r:'og',e:17000000,eg:['mutacion'],c:'#22c55e'},
+{ic:'fa-solid fa-link',n:'Helice',r:'legendary',e:700000,eg:['adn'],c:'#38bdf8'},{ic:'fa-solid fa-user-astronaut',n:'Clon Maestro',r:'mythic',e:3200000,eg:['adn'],c:'#22d3ee'},{ic:'fa-solid fa-dna',n:'Genoma',r:'secret',e:7500000,eg:['adn'],c:'#0ea5e9'},{ic:'fa-solid fa-seedling',n:'ADN Primordial',r:'og',e:19000000,eg:['adn'],c:'#34d399'},
+{ic:'fa-solid fa-ghost',n:'Susurro',r:'legendary',e:850000,eg:['terror'],c:'#a78bfa'},{ic:'fa-solid fa-masks-theater',n:'Pesadilla Andante',r:'god',e:1700000,eg:['terror'],c:'#7c3aed'},{ic:'fa-solid fa-skull',n:'Demonio Interior',r:'mythic',e:4000000,eg:['terror'],c:'#6d28d9'},{ic:'fa-solid fa-moon',n:'Terror Nocturno',r:'secret',e:9000000,eg:['terror'],c:'#4c1d95'},{ic:'fa-solid fa-face-dizzy',n:'El Miedo',r:'og',e:23000000,eg:['terror'],c:'#c084fc'},
+{ic:'fa-solid fa-cloud-moon',n:'Sueno Roto',r:'mythic',e:4800000,eg:['onirico'],c:'#8b5cf6'},{ic:'fa-solid fa-bed',n:'Somnambulo',r:'secret',e:11000000,eg:['onirico'],c:'#a78bfa'},{ic:'fa-solid fa-crown',n:'Rey de Pesadillas',r:'og',e:29000000,eg:['onirico'],c:'#7c3aed'},
+{ic:'fa-solid fa-bolt-lightning',n:'Chispa Viviente',r:'legendary',e:1100000,eg:['rayo'],c:'#fde047'},{ic:'fa-solid fa-cloud-bolt',n:'Tormenta Viva',r:'god',e:2200000,eg:['rayo'],c:'#facc15'},{ic:'fa-solid fa-bolt',n:'Fulgor',r:'mythic',e:5200000,eg:['rayo'],c:'#fbbf24'},{ic:'fa-solid fa-bolt-lightning',n:'Descarga Total',r:'secret',e:12000000,eg:['rayo'],c:'#f59e0b'},{ic:'fa-solid fa-bolt',n:'Zeus Eterno',r:'og',e:31000000,eg:['rayo'],c:'#fde047'},
+{ic:'fa-solid fa-wind',n:'Ojo del Ciclon',r:'mythic',e:6200000,eg:['huracan'],c:'#7dd3fc'},{ic:'fa-solid fa-tornado',n:'Viento Cortante',r:'secret',e:14000000,eg:['huracan'],c:'#38bdf8'},{ic:'fa-solid fa-wind',n:'Huracan Primigenio',r:'og',e:37000000,eg:['huracan'],c:'#0ea5e9'},
+{ic:'fa-solid fa-wand-sparkles',n:'Runa Gravada',r:'legendary',e:1500000,eg:['runa'],c:'#c4b5fd'},{ic:'fa-solid fa-hat-wizard',n:'Golem Arcano',r:'mythic',e:7000000,eg:['runa'],c:'#a78bfa'},{ic:'fa-solid fa-scroll',n:'Sello Antiguo',r:'secret',e:16000000,eg:['runa'],c:'#8b5cf6'},{ic:'fa-solid fa-wand-magic-sparkles',n:'Brujo Supremo',r:'og',e:42000000,eg:['runa'],c:'#e879f9'},
+{ic:'fa-solid fa-wand-magic',n:'Conjuro',r:'mythic',e:8500000,eg:['hechizo'],c:'#e879f9'},{ic:'fa-solid fa-book',n:'Grimorio',r:'secret',e:19000000,eg:['hechizo'],c:'#c084fc'},{ic:'fa-solid fa-hat-wizard',n:'Hechicero Eterno',r:'og',e:50000000,eg:['hechizo'],c:'#f0abfc'},
+{ic:'fa-solid fa-mountain',n:'Rocita',r:'legendary',e:1900000,eg:['rocoso'],c:'#cbd5e1'},{ic:'fa-solid fa-meteor',n:'Golem Asteriode',r:'god',e:3800000,eg:['rocoso'],c:'#94a3b8'},{ic:'fa-solid fa-mountain',n:'Meteoroide',r:'mythic',e:9000000,eg:['rocoso'],c:'#94a3b8'},{ic:'fa-solid fa-gem',n:'Nucleo Rocoso',r:'secret',e:21000000,eg:['rocoso'],c:'#a8a29e'},{ic:'fa-solid fa-globe',n:'Planetoide',r:'og',e:55000000,eg:['rocoso'],c:'#e2e8f0'},
+{ic:'fa-solid fa-fire',n:'Bola de Fuego',r:'mythic',e:11000000,eg:['cometa'],c:'#f97316'},{ic:'fa-solid fa-meteor',n:'Cometa Veloz',r:'secret',e:25000000,eg:['cometa'],c:'#fb923c'},{ic:'fa-solid fa-explosion',n:'Cometa Madre',r:'og',e:66000000,eg:['cometa'],c:'#facc15'},
+{ic:'fa-solid fa-water',n:'Distorsion',r:'legendary',e:2400000,eg:['singu'],c:'#38bdf8'},{ic:'fa-solid fa-circle',n:'Singularidad',r:'mythic',e:11000000,eg:['singu'],c:'#0284c7'},{ic:'fa-solid fa-circle-nodes',n:'Horizonte',r:'secret',e:26000000,eg:['singu'],c:'#0ea5e9'},{ic:'fa-solid fa-circle-xmark',n:'Devorador',r:'og',e:68000000,eg:['singu'],c:'#1d4ed8'},
+{ic:'fa-solid fa-ghost',n:'Eco del Vacio',r:'mythic',e:14000000,eg:['vacio'],c:'#475569'},{ic:'fa-solid fa-moon',n:'Nada Viva',r:'secret',e:32000000,eg:['vacio'],c:'#1e293b'},{ic:'fa-solid fa-circle-xmark',n:'Vacio Absoluto',r:'og',e:82000000,eg:['vacio'],c:'#0f172a'},
+{ic:'fa-solid fa-diamond',n:'Fraccion',r:'mythic',e:18000000,eg:['cromatico'],c:'#f0abfc'},{ic:'fa-solid fa-rainbow',n:'Espectro Cromatico',r:'secret',e:40000000,eg:['cromatico'],c:'#22d3ee'},{ic:'fa-solid fa-gem',n:'Prisma Vivo',r:'og',e:100000000,eg:['cromatico'],c:'#e879f9'},
+{ic:'fa-solid fa-star',n:'Reflejo',r:'mythic',e:22000000,eg:['refraccion'],c:'#f0abfc'},{ic:'fa-solid fa-rainbow',n:'Arco Eterno',r:'secret',e:50000000,eg:['refraccion'],c:'#a5f3fc'},{ic:'fa-solid fa-sun',n:'Luz Absoluta',r:'og',e:125000000,eg:['refraccion'],c:'#fde047'},
+{ic:'fa-solid fa-hourglass-end',n:'Ultimo Aliento',r:'mythic',e:26000000,eg:['final'],c:'#f43f5e'},{ic:'fa-solid fa-ban',n:'Punto Final',r:'secret',e:60000000,eg:['final'],c:'#be123c'},{ic:'fa-solid fa-flag-checkered',n:'EL FIN',r:'og',e:150000000,eg:['final'],c:'#fb7185'},
+{ic:'fa-solid fa-infinity',n:'Trascendido',r:'mythic',e:32000000,eg:['trascende'],c:'#fde047'},{ic:'fa-solid fa-feather-pointed',n:'Mas Alla',r:'secret',e:75000000,eg:['trascende'],c:'#fef08a'},{ic:'fa-solid fa-infinity',n:'INFINITO',r:'og',e:190000000,eg:['trascende'],c:'#fde047'},
+{ic:'fa-solid fa-flask',n:'Elixir Vital',r:'legendary',e:3000000,eg:['elixir'],c:'#fbbf24'},{ic:'fa-solid fa-hat-wizard',n:'Alquimista Real',r:'god',e:6000000,eg:['elixir'],c:'#a3e635'},{ic:'fa-solid fa-fire-flame-curved',n:'Caldero Viviente',r:'mythic',e:14000000,eg:['elixir'],c:'#f59e0b'},{ic:'fa-solid fa-gem',n:'Piedra Filosofal',r:'secret',e:32000000,eg:['elixir'],c:'#fde047'},{ic:'fa-solid fa-flask-vial',n:'Mercurio Rojo',r:'og',e:80000000,eg:['elixir'],c:'#fbbf24'},
+{ic:'fa-solid fa-user',n:'Homunculo',r:'mythic',e:16000000,eg:['homunculo'],c:'#34d399'},{ic:'fa-solid fa-dna',n:'Criatura Perfecta',r:'secret',e:36000000,eg:['homunculo'],c:'#a3e635'},{ic:'fa-solid fa-crown',n:'Dios Alquimico',r:'og',e:90000000,eg:['homunculo'],c:'#22c55e'},
+{ic:'fa-solid fa-ghost',n:'Sombra Timida',r:'legendary',e:4000000,eg:['penumbra'],c:'#64748b'},{ic:'fa-solid fa-eye',n:'Acechador',r:'god',e:8000000,eg:['penumbra'],c:'#475569'},{ic:'fa-solid fa-moon',n:'Golem de Sombra',r:'mythic',e:18000000,eg:['penumbra'],c:'#334155'},{ic:'fa-solid fa-ghost',n:'Sombra sin Dueno',r:'secret',e:40000000,eg:['penumbra'],c:'#1e293b'},{ic:'fa-solid fa-circle-half-stroke',n:'Penumbra Eterna',r:'og',e:100000000,eg:['penumbra'],c:'#4c1d95'},
+{ic:'fa-solid fa-ghost',n:'Devora Luz',r:'mythic',e:20000000,eg:['oscuridad'],c:'#0f172a'},{ic:'fa-solid fa-heart-crack',n:'Corazon Negro',r:'secret',e:45000000,eg:['oscuridad'],c:'#1e1b4b'},{ic:'fa-solid fa-circle-xmark',n:'La Oscuridad',r:'og',e:115000000,eg:['oscuridad'],c:'#0f0f1a'},
+{ic:'fa-solid fa-dove',n:'Querubin',r:'legendary',e:5000000,eg:['celestial'],c:'#fde68a'},{ic:'fa-solid fa-feather-pointed',n:'Serafin Dorado',r:'god',e:10000000,eg:['celestial'],c:'#fbbf24'},{ic:'fa-solid fa-sun',n:'Arcangel de Luz',r:'mythic',e:22000000,eg:['celestial'],c:'#fef3c7'},{ic:'fa-solid fa-bolt',n:'Voz del Cielo',r:'secret',e:50000000,eg:['celestial'],c:'#fde047'},{ic:'fa-solid fa-cloud',n:'Paraiso',r:'og',e:130000000,eg:['celestial'],c:'#fef9c3'},
+{ic:'fa-solid fa-tree',n:'Arbol del Eden',r:'mythic',e:26000000,eg:['eden'],c:'#34d399'},{ic:'fa-solid fa-apple-whole',n:'Fruta Prohibida',r:'secret',e:58000000,eg:['eden'],c:'#f43f5e'},{ic:'fa-solid fa-shield-halved',n:'Guardian del Eden',r:'og',e:150000000,eg:['eden'],c:'#fbbf24'},
+{ic:'fa-solid fa-burst',n:'Chispa del Caos',r:'mythic',e:30000000,eg:['caos'],c:'#f43f5e'},{ic:'fa-solid fa-tornado',n:'Torbellino Caotico',r:'secret',e:66000000,eg:['caos'],c:'#8b5cf6'},{ic:'fa-solid fa-circle-nodes',n:'CAOS',r:'og',e:170000000,eg:['caos'],c:'#f472b6'},
+{ic:'fa-solid fa-arrow-down-a-z',n:'Entropia',r:'mythic',e:36000000,eg:['entropia'],c:'#64748b'},{ic:'fa-solid fa-shuffle',n:'Desorden Perfecto',r:'secret',e:80000000,eg:['entropia'],c:'#a78bfa'},{ic:'fa-solid fa-ban',n:'Fin del Orden',r:'og',e:210000000,eg:['entropia'],c:'#4c1d95'},
+{ic:'fa-solid fa-mountain',n:'Cima',r:'mythic',e:42000000,eg:['zenit'],c:'#7dd3fc'},{ic:'fa-solid fa-mountain-sun',n:'Cumbre Eterna',r:'secret',e:95000000,eg:['zenit'],c:'#38bdf8'},{ic:'fa-solid fa-flag',n:'EL ZENIT',r:'og',e:260000000,eg:['zenit'],c:'#fbbf24'},
+{ic:'fa-solid fa-mountain-city',n:'Cumbre Dorada',r:'mythic',e:50000000,eg:['cumbre'],c:'#fde047'},{ic:'fa-solid fa-feather-pointed',n:'Mas Alto que el Cielo',r:'secret',e:110000000,eg:['cumbre'],c:'#fef08a'},{ic:'fa-solid fa-crown',n:'Zenit Absoluto',r:'og',e:300000000,eg:['cumbre'],c:'#fde047'}
 ];
 var WEIGHTS={
 basico:{common:65,rare:30,epic:4,god:1},dorado:{rare:12,epic:30,god:40,legendary:13,mythic:4,secret:.8,og:.2},
@@ -184,72 +139,104 @@ wyrm:{god:16,legendary:20,mythic:24,secret:20,og:20},
 umbral:{mythic:28,secret:30,og:42},
 absoluto:{secret:35,og:65},
 eterno:{god:14,legendary:20,mythic:26,secret:24,og:16},
-omega:{mythic:25,secret:35,og:40}
+omega:{mythic:25,secret:35,og:40},
+galactico:{god:20,legendary:30,mythic:30,secret:12,og:8},
+nebuloso:{god:12,legendary:25,mythic:33,secret:18,og:12},
+cronos:{legendary:18,mythic:34,secret:26,og:22},
+destino:{mythic:30,secret:34,og:36},
+mutacion:{god:14,legendary:26,mythic:32,secret:16,og:12},
+adn:{legendary:15,mythic:30,secret:28,og:27},
+terror:{god:10,legendary:22,mythic:30,secret:20,og:18},
+onirico:{mythic:28,secret:32,og:40},
+rayo:{god:8,legendary:20,mythic:32,secret:22,og:18},
+huracan:{mythic:25,secret:33,og:42},
+runa:{legendary:14,mythic:28,secret:28,og:30},
+hechizo:{mythic:24,secret:32,og:44},
+rocoso:{god:6,legendary:16,mythic:30,secret:24,og:24},
+cometa:{mythic:22,secret:34,og:44},
+singu:{legendary:10,mythic:24,secret:30,og:36},
+vacio:{mythic:20,secret:34,og:46},
+cromatico:{mythic:18,secret:32,og:50},
+refraccion:{mythic:24,secret:30,og:46},
+final:{mythic:16,secret:32,og:52},
+trascende:{mythic:14,secret:30,og:56},
+elixir:{god:18,legendary:28,mythic:30,secret:14,og:10},
+homunculo:{legendary:12,mythic:30,secret:28,og:30},
+penumbra:{god:14,legendary:24,mythic:30,secret:18,og:14},
+oscuridad:{mythic:26,secret:32,og:42},
+celestial:{god:16,legendary:26,mythic:30,secret:16,og:12},
+eden:{mythic:26,secret:32,og:42},
+caos:{mythic:24,secret:32,og:44},
+entropia:{mythic:22,secret:32,og:46},
+zenit:{mythic:20,secret:32,og:48},
+cumbre:{mythic:18,secret:30,og:52}
 };
 var RCOL={common:'#9ca3af',rare:'#38bdf8',epic:'#c084fc',god:'#fbbf24',legendary:'#f87171',mythic:'#f472b6',secret:'#22d3ee',og:'#fbbf24'};
 var RNAME={common:'Comun',rare:'Raro',epic:'Epico',god:'Dios',legendary:'Legendario',mythic:'Mitico',secret:'Secreto',og:'OG'};
 var RORD={common:1,rare:2,epic:3,god:4,legendary:5,mythic:6,secret:7,og:8};
 var RKEYS=['common','rare','epic','god','legendary','mythic','secret','og'];
-var ESCLS={basico:'es-bas',dorado:'es-dor',campestre:'es-cam',arcano:'es-arc',marino:'es-mar',abisal:'es-abi',cristalino:'es-cri',gema:'es-gem',magmatico:'es-mag',infernal:'es-inf',divino:'es-div',ancestral:'es-anc',cosmico:'es-cos',estelar:'es-est',umbral:'es-umb',absoluto:'es-abs',salvaje:'es-sal',toxico:'es-tox',dunas:'es-dun',faraon:'es-far',glacial:'es-gla',polar:'es-pol',tumba:'es-tum',maldito:'es-mal',goloso:'es-gol',pastel:'es-pas',neon:'es-neo',virtual:'es-vir',draconico:'es-dra',wyrm:'es-wyr',eterno:'es-ete',omega:'es-ome'};
-var ENAMES={basico:'Basico',dorado:'Dorado',campestre:'Campestre',arcano:'Arcano',marino:'Marino',abisal:'Abisal',cristalino:'Cristalino',gema:'Gema',magmatico:'Magmatico',infernal:'Infernal',divino:'Divino',ancestral:'Ancestral',cosmico:'Cosmico',estelar:'Estelar',umbral:'Umbral',absoluto:'Absoluto',salvaje:'Salvaje',toxico:'Toxico',dunas:'Dunas',faraon:'Faraon',glacial:'Glacial',polar:'Polar',tumba:'Tumba',maldito:'Maldito',goloso:'Goloso',pastel:'Pastel',neon:'Neon',virtual:'Virtual',draconico:'Draconico',wyrm:'Wyrm',eterno:'Eterno',omega:'Omega'};
-var E3DG={basico:'linear-gradient(145deg,#f8fafc,#cbd5e1,#94a3b8)',dorado:'linear-gradient(145deg,#fef3c7,#f59e0b,#d97706)',campestre:'linear-gradient(145deg,#065f46,#10b981,#84cc16)',arcano:'linear-gradient(145deg,#4c1d95,#8b5cf6,#c084fc)',marino:'linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee)',abisal:'linear-gradient(145deg,#0f172a,#1e3a5f,#0ea5e9)',cristalino:'linear-gradient(145deg,#ec4899,#f0abfc,#e879f9)',gema:'linear-gradient(145deg,#f43f5e,#a855f7,#3b82f6)',magmatico:'linear-gradient(145deg,#7c2d12,#ea580c,#facc15)',infernal:'linear-gradient(145deg,#7f1d1d,#dc2626,#f97316)',divino:'linear-gradient(145deg,#fef9c3,#fde68a,#fff)',ancestral:'linear-gradient(145deg,#92400e,#d97706,#fbbf24)',cosmico:'linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4)',estelar:'linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899)',umbral:'linear-gradient(145deg,#0f0f23,#312e81,#000)',absoluto:'conic-gradient(from 0deg,#f43f5e,#a855f7,#3b82f6,#10b981,#fbbf24,#f43f5e)',salvaje:'linear-gradient(145deg,#14532d,#16a34a,#84cc16)',toxico:'linear-gradient(145deg,#365314,#65a30d,#a3e635)',dunas:'linear-gradient(145deg,#92400e,#fbbf24,#fde68a)',faraon:'linear-gradient(145deg,#78350f,#f59e0b,#fbbf24)',glacial:'linear-gradient(145deg,#0c4a6e,#38bdf8,#e0f2fe)',polar:'linear-gradient(145deg,#082f49,#0ea5e9,#a5f3fc)',tumba:'linear-gradient(145deg,#1c1917,#525252,#a8a29e)',maldito:'linear-gradient(145deg,#2e1065,#7c3aed,#a78bfa)',goloso:'linear-gradient(145deg,#be185d,#f472b6,#fbcfe8)',pastel:'linear-gradient(145deg,#9d174d,#ec4899,#f9a8d4)',neon:'linear-gradient(145deg,#0f172a,#e879f9,#22d3ee)',virtual:'linear-gradient(145deg,#052e16,#22c55e,#a3e635)',draconico:'linear-gradient(145deg,#450a0a,#dc2626,#f97316)',wyrm:'linear-gradient(145deg,#1c1917,#7c2d12,#facc15)',eterno:'linear-gradient(145deg,#fef9c3,#fffbeb,#fbbf24)',omega:'conic-gradient(from 0deg,#fbbf24,#f472b6,#22d3ee,#a3e635,#e879f9,#fbbf24)'};
+var ESCLS={basico:'es-bas',dorado:'es-dor',campestre:'es-cam',arcano:'es-arc',marino:'es-mar',abisal:'es-abi',cristalino:'es-cri',gema:'es-gem',magmatico:'es-mag',infernal:'es-inf',divino:'es-div',ancestral:'es-anc',cosmico:'es-cos',estelar:'es-est',umbral:'es-umb',absoluto:'es-abs',salvaje:'es-sal',toxico:'es-tox',dunas:'es-dun',faraon:'es-far',glacial:'es-gla',polar:'es-pol',tumba:'es-tum',maldito:'es-mal',goloso:'es-gol',pastel:'es-pas',neon:'es-neo',virtual:'es-vir',draconico:'es-dra',wyrm:'es-wyr',eterno:'es-ete',omega:'es-ome',galactico:'es-cos',nebuloso:'es-est',cronos:'es-ome',destino:'es-abs',mutacion:'es-vir',adn:'es-tox',terror:'es-mal',onirico:'es-umb',rayo:'es-arc',huracan:'es-inf',runa:'es-anc',hechizo:'es-div',rocoso:'es-tum',cometa:'es-mag',singu:'es-umb',vacio:'es-abs',cromatico:'es-gem',refraccion:'es-cri',final:'es-abs',trascende:'es-ome',elixir:'es-anc',homunculo:'es-vir',penumbra:'es-umb',oscuridad:'es-abs',celestial:'es-div',eden:'es-ete',caos:'es-mag',entropia:'es-mal',zenit:'es-gla',cumbre:'es-ome'};
+var ENAMES={basico:'Basico',dorado:'Dorado',campestre:'Campestre',arcano:'Arcano',marino:'Marino',abisal:'Abisal',cristalino:'Cristalino',gema:'Gema',magmatico:'Magmatico',infernal:'Infernal',divino:'Divino',ancestral:'Ancestral',cosmico:'Cosmico',estelar:'Estelar',umbral:'Umbral',absoluto:'Absoluto',salvaje:'Salvaje',toxico:'Toxico',dunas:'Dunas',faraon:'Faraon',glacial:'Glacial',polar:'Polar',tumba:'Tumba',maldito:'Maldito',goloso:'Goloso',pastel:'Pastel',neon:'Neon',virtual:'Virtual',draconico:'Draconico',wyrm:'Wyrm',eterno:'Eterno',omega:'Omega',galactico:'Galactico',nebuloso:'Nebuloso',cronos:'Cronos',destino:'Destino',mutacion:'Mutacion',adn:'ADN',terror:'Terror',onirico:'Onirico',rayo:'Rayo',huracan:'Huracan',runa:'Runa',hechizo:'Hechizo',rocoso:'Rocoso',cometa:'Cometa',singu:'Singularidad',vacio:'Vacio',cromatico:'Cromatico',refraccion:'Refraccion',final:'Final',trascende:'Trascendente',elixir:'Elixir',homunculo:'Homunculo',penumbra:'Penumbra',oscuridad:'Oscuridad',celestial:'Celestial',eden:'Eden',caos:'Caos',entropia:'Entropia',zenit:'Zenit',cumbre:'Cumbre'};
+var E3DG={basico:'linear-gradient(145deg,#f8fafc,#cbd5e1,#94a3b8)',dorado:'linear-gradient(145deg,#fef3c7,#f59e0b,#d97706)',campestre:'linear-gradient(145deg,#065f46,#10b981,#84cc16)',arcano:'linear-gradient(145deg,#4c1d95,#8b5cf6,#c084fc)',marino:'linear-gradient(145deg,#0c4a6e,#0ea5e9,#22d3ee)',abisal:'linear-gradient(145deg,#0f172a,#1e3a5f,#0ea5e9)',cristalino:'linear-gradient(145deg,#ec4899,#f0abfc,#e879f9)',gema:'linear-gradient(145deg,#f43f5e,#a855f7,#3b82f6)',magmatico:'linear-gradient(145deg,#7c2d12,#ea580c,#facc15)',infernal:'linear-gradient(145deg,#7f1d1d,#dc2626,#f97316)',divino:'linear-gradient(145deg,#fef9c3,#fde68a,#fff)',ancestral:'linear-gradient(145deg,#92400e,#d97706,#fbbf24)',cosmico:'linear-gradient(145deg,#1e1b4b,#7c3aed,#06b6d4)',estelar:'linear-gradient(145deg,#1e1b4b,#7c3aed,#ec4899)',umbral:'linear-gradient(145deg,#0f0f23,#312e81,#000)',absoluto:'conic-gradient(from 0deg,#f43f5e,#a855f7,#3b82f6,#10b981,#fbbf24,#f43f5e)',salvaje:'linear-gradient(145deg,#14532d,#16a34a,#84cc16)',toxico:'linear-gradient(145deg,#365314,#65a30d,#a3e635)',dunas:'linear-gradient(145deg,#92400e,#fbbf24,#fde68a)',faraon:'linear-gradient(145deg,#78350f,#f59e0b,#fbbf24)',glacial:'linear-gradient(145deg,#0c4a6e,#38bdf8,#e0f2fe)',polar:'linear-gradient(145deg,#082f49,#0ea5e9,#a5f3fc)',tumba:'linear-gradient(145deg,#1c1917,#525252,#a8a29e)',maldito:'linear-gradient(145deg,#2e1065,#7c3aed,#a78bfa)',goloso:'linear-gradient(145deg,#be185d,#f472b6,#fbcfe8)',pastel:'linear-gradient(145deg,#9d174d,#ec4899,#f9a8d4)',neon:'linear-gradient(145deg,#0f172a,#e879f9,#22d3ee)',virtual:'linear-gradient(145deg,#052e16,#22c55e,#a3e635)',draconico:'linear-gradient(145deg,#450a0a,#dc2626,#f97316)',wyrm:'linear-gradient(145deg,#1c1917,#7c2d12,#facc15)',eterno:'linear-gradient(145deg,#fef9c3,#fffbeb,#fbbf24)',omega:'conic-gradient(from 0deg,#fbbf24,#f472b6,#22d3ee,#a3e635,#e879f9,#fbbf24)',galactico:'linear-gradient(145deg,#1e1b4b,#818cf8,#c084fc)',nebuloso:'linear-gradient(145deg,#312e81,#a5b4fc,#f0abfc)',cronos:'linear-gradient(145deg,#4c0519,#f472b6,#fde68a)',destino:'linear-gradient(145deg,#0f0f23,#f472b6,#22d3ee)',mutacion:'linear-gradient(145deg,#052e16,#34d399,#a3e635)',adn:'linear-gradient(145deg,#0c4a6e,#22d3ee,#4ade80)',terror:'linear-gradient(145deg,#1e1b4b,#7c3aed,#4c1d95)',onirico:'linear-gradient(145deg,#2e1065,#8b5cf6,#000)',rayo:'linear-gradient(145deg,#713f12,#facc15,#fffbeb)',huracan:'linear-gradient(145deg,#0c4a6e,#7dd3fc,#e0f2fe)',runa:'linear-gradient(145deg,#4c1d95,#a78bfa,#fbbf24)',hechizo:'linear-gradient(145deg,#581c87,#e879f9,#c084fc)',rocoso:'linear-gradient(145deg,#1c1917,#94a3b8,#e2e8f0)',cometa:'linear-gradient(145deg,#7c2d12,#f97316,#facc15)',singu:'linear-gradient(145deg,#0f172a,#0ea5e9,#000)',vacio:'linear-gradient(145deg,#000,#1e293b,#0f172a)',cromatico:'conic-gradient(from 0deg,#f0abfc,#22d3ee,#a3e635,#fbbf24,#f0abfc)',refraccion:'conic-gradient(from 90deg,#22d3ee,#f0abfc,#fde047,#22d3ee)',final:'linear-gradient(145deg,#450a0a,#f43f5e,#fb7185)',trascende:'conic-gradient(from 0deg,#fde047,#f43f5e,#22d3ee,#fde047)',elixir:'linear-gradient(145deg,#713f12,#fbbf24,#a3e635)',homunculo:'linear-gradient(145deg,#052e16,#22c55e,#fde047)',penumbra:'linear-gradient(145deg,#0f172a,#475569,#7c3aed)',oscuridad:'linear-gradient(145deg,#000,#1e1b4b,#312e81)',celestial:'linear-gradient(145deg,#fef9c3,#fbbf24,#fff)',eden:'linear-gradient(145deg,#064e3b,#34d399,#fde68a)',caos:'conic-gradient(from 0deg,#f43f5e,#8b5cf6,#22d3ee,#f43f5e)',entropia:'linear-gradient(145deg,#111827,#64748b,#a78bfa)',zenit:'linear-gradient(145deg,#0c4a6e,#7dd3fc,#fbbf24)',cumbre:'conic-gradient(from 0deg,#fbbf24,#7dd3fc,#fde047,#fbbf24)'};
 var CLICKS=5;
 
-// ===== PRECIOS BASE DE HUEVOS =====
-function defPr(){return{basico:10,dorado:500,campestre:2000,arcano:20000,salvaje:8000,toxico:6e4,marino:5e4,abisal:4e5,dunas:3e5,faraon:2e6,cristalino:2e6,gema:15e6,glacial:3e7,polar:1.2e8,magmatico:8e6,infernal:5e8,tumba:1e9,maldito:5e9,divino:5e9,ancestral:3e10,goloso:3e10,pastel:1.5e11,neon:1.2e11,virtual:8e11,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14,draconico:3e12,wyrm:1.6e13,eterno:4e14,omega:2e15}}
+function defPr(){return{basico:10,dorado:500,campestre:2000,arcano:20000,salvaje:8000,toxico:6e4,marino:5e4,abisal:4e5,dunas:3e5,faraon:2e6,cristalino:2e6,gema:15e6,glacial:3e7,polar:1.2e8,magmatico:8e6,infernal:5e8,tumba:1e9,maldito:5e9,divino:5e9,ancestral:3e10,goloso:3e10,pastel:1.5e11,neon:1.2e11,virtual:8e11,cosmico:3e11,estelar:2e12,umbral:2e13,absoluto:2e14,draconico:3e12,wyrm:1.6e13,eterno:4e14,omega:2e15,galactico:3e15,nebuloso:8e15,cronos:2e16,destino:6e16,mutacion:1.5e17,adn:4e17,terror:1e18,onirico:3e18,rayo:8e18,huracan:2.5e19,runa:6e19,hechizo:2e20,rocoso:5e20,cometa:1.5e21,singu:4e21,vacio:1.2e22,cromatico:1e22,refraccion:3e22,final:8e22,trascende:2.5e23,elixir:8e23,homunculo:3e24,penumbra:1.2e24,oscuridad:4e24,celestial:5e24,eden:1.6e25,caos:6e25,entropia:2e26,zenit:7e26,cumbre:2.2e27}}
 
 // ===== ESTADO =====
-var G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
+var G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0,webMult:1,feverUntil:0,quests:[],redeemed:{}};
 var selE='basico',rbC=false,rbT=null,aTab='game',cfCb=null,hSt={pet:null,cl:0,rev:false,bur:false};
 var boostActive=false,boostTimeout=null;
 var eventMult=1,luckyBoost=false,eggSale=false,evtCur=null,evtEnd=0,evtT=null,multiList=null;
+var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={},PSU_USES={};
+var buffBarEl=null,fuseSelIds=[],admRarSel='god',admPetQ='';
+var evtRainbow=false,evtMagnet=false,turboIv=null;
 
 // ===== UTILIDADES =====
-function fmt(n){
-    if(isNaN(n)||!isFinite(n))return'0';
-    n=Number(n);
-    if(n<0)return'-'+fmt(-n);
-    var sx=['','K','M','B','T','Qd','Qn','Sx','Sp','Oc','No','Dc','UDd','DDd','TDd','QaD','QiD'];
-    var tier=Math.floor(Math.log10(Math.max(1,n))/3);
-    if(tier<=0)return Math.floor(n).toLocaleString();
-    if(tier>=sx.length)tier=sx.length-1;
-    var suf=sx[tier];
-    var scale=Math.pow(10,tier*3);
-    var scaled=n/scale;
-    if(scaled>=1000&&tier<sx.length-1){tier++;suf=sx[tier];scale=Math.pow(10,tier*3);scaled=n/scale}
-    return scaled.toFixed(scaled<10?2:scaled<100?1:0)+suf;
-}
+function fmt(n){if(isNaN(n)||!isFinite(n))return'0';n=Number(n);if(n<0)return'-'+fmt(-n);
+ var sx=['','K','M','B','T','Qd','Qn','Sx','Sp','Oc','No','Dc','UDd','DDd','TDd','QaD','QiD'];
+ var tier=Math.floor(Math.log10(Math.max(1,n))/3);if(tier<=0)return Math.floor(n).toLocaleString();
+ if(tier>=sx.length)tier=sx.length-1;var suf=sx[tier],scale=Math.pow(10,tier*3),scaled=n/scale;
+ if(scaled>=1000&&tier<sx.length-1){tier++;suf=sx[tier];scale=Math.pow(10,tier*3);scaled=n/scale}
+ return scaled.toFixed(scaled<10?2:scaled<100?1:0)+suf}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function toast(m,t){var c=document.getElementById('toasts'),e=document.createElement('div');e.className='toast t-'+(t||'inf');e.textContent=m;c.appendChild(e);setTimeout(function(){e.remove()},3000)}
 function floatM(a){var e=document.createElement('div');e.className='fm';e.textContent='+$'+fmt(a);e.style.left=(Math.random()*130+90)+'px';e.style.top='170px';document.getElementById('game').appendChild(e);setTimeout(function(){e.remove()},1200)}
 function showCf(i,t,m,cb){document.getElementById('confirmIcon').textContent=i;document.getElementById('confirmTitle').textContent=t;document.getElementById('confirmMsg').textContent=m;cfCb=cb;document.getElementById('confirmBox').classList.add('show')}
 function hideCf(){document.getElementById('confirmBox').classList.remove('show');cfCb=null}
 function gW(){for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===G.world)return WORLDS[i];return WORLDS[0]}
+function gW2(id){for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===id)return WORLDS[i];return WORLDS[0]}
 function isUW(w){return G.uw.indexOf(w)!==-1}
 function eggCost(e){return Math.floor(G.pr[e]*(1-(G.upg?G.upg.disc:0)*.04-(eggSale?.5:0)))}
-function rollVariant(){var r=Math.random();if(r<.002)return 2;if(r<.012)return 1;return 0}
-function pE(p){return(p.be||1)*(1+.2*((p.lv||1)-1))*(p.v===2?3:p.v===1?1.6:1)*(G.mult||1)*(gW().bonus||1)*(boostActive?2:1)*(1+(G.upg?G.upg.inc:0)*.1)}
-function tI(){var s=0;for(var i=0;i<G.pets.length;i++)s+=pE(G.pets[i]);return s*eventMult}
-function rbCo(){return Math.floor(5e5*Math.pow(2,G.rb))}
+function rollVariant(){var mb=evtRainbow?12:(evtMagnet?3:1);var r=Math.random();
+ if(r<.0008*mb)return 2;if(r<.008*mb)return 1;return 0}
+function pE(p){return(p.be||1)*(1+.15*((p.lv||1)-1))*(p.v===2?3:p.v===1?1.6:1)*(G.mult||1)*(gW().bonus||1)*(boostActive?2:1)*(1+(G.upg?G.upg.inc:0)*.1)}
+function tI(){var s=0;for(var i=0;i<G.pets.length;i++)s+=pE(G.pets[i]);var m=G.webMult||1;if((G.feverUntil||0)>Date.now())m*=2;if(IS_ADM)m*=1.25;return s*eventMult*m}
+function rbCo(){return Math.floor(8e5*Math.pow(2.5,G.rb))}
 function uCo(p){return Math.floor((p.be||1)*25*(p.lv||1))}
 function sphH(p,sz){var c=sz==='xs'?'sph-xs':'sph-sm',v=p.v===2?' rbw':p.v===1?' gld':'';return'<div class="sph '+p.r+' '+c+v+'"><div class="sph-base" style="background-color:'+p.c+'"></div><div class="sph-light"></div><div class="sph-icon"><i class="'+p.ic+'"></i></div><div class="sph-shadow"></div></div>'}
+function fmtT(ms){var s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?h+'h '+m+'m':m?m+'m '+(s%60)+'s':s+'s'}
+function toNum(s){s=(''+(s==null?'':s)).trim().toLowerCase();var m=s.match(/^(-?[\d.]+)\s*([kmbtq])(?![a-z])/);
+ if(m){var f={k:1e3,m:1e6,b:1e9,t:1e12,q:1e15}[m[2]];return(parseFloat(m[1])||0)*f}
+ var n=parseFloat(s);return isNaN(n)?0:n}
+function coinBurst(n){for(var i=0;i<(n||12);i++)(function(){var c=document.createElement('span');c.className='psu-coin';c.textContent=['🪙','💰','💵','🤑'][Math.floor(Math.random()*4)];
+ c.style.left=(35+Math.random()*45)+'vw';c.style.top=(40+Math.random()*35)+'vh';c.style.animationDuration=(0.9+Math.random()*0.7)+'s';
+ document.body.appendChild(c);setTimeout(function(){c.remove()},1700)})()}
+function usesOf(k){var u=PSU_USES[k];return(u&&typeof u==='object')?(u.n||0):(u||0)}
 
 // ===== SONIDO =====
 var snd={cx:null,go:function(){try{if(!this.cx)this.cx=new(window.AudioContext||window.webkitAudioContext)();if(this.cx.state==='suspended')this.cx.resume()}catch(e){}},t:function(f,d,tp,v){if(!this.cx||G.mut)return;try{var o=this.cx.createOscillator(),g=this.cx.createGain();o.type=tp||'sine';o.frequency.setValueAtTime(f,this.cx.currentTime);g.gain.setValueAtTime(v||.08,this.cx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.cx.currentTime+d);o.connect(g);g.connect(this.cx.destination);o.start();o.stop(this.cx.currentTime+d)}catch(e){}},hatch:function(r){this.go();var x=RKEYS.indexOf(r),s=this;if(x<=1){this.t(523,.12);setTimeout(function(){s.t(659,.15)},80)}else if(x<=3){this.t(659,.1);setTimeout(function(){s.t(784,.1)},70);setTimeout(function(){s.t(988,.15)},140)}else{[523,659,784,988,1047,1175,1319].forEach(function(f,i){setTimeout(function(){s.t(f,.2,'triangle',.06)},i*50)})}},crack:function(n,mx){this.go();this.t(300+(n/mx)*800,.06,'square',.05)},burst:function(){this.go();var s=this;[800,1000,1200].forEach(function(f,i){setTimeout(function(){s.t(f,.15,'triangle',.07)},i*40)})},click:function(){this.go();this.t(800,.04,'square',.03)},err:function(){this.go();this.t(200,.15,'sawtooth',.04)},world:function(){this.go();var s=this;[440,554,659,880].forEach(function(f,i){setTimeout(function(){s.t(f,.15,'triangle',.06)},i*80)})}};
 
-// ===== ROLL (CON SUERTE) =====
-function roll(egg){
-  var luck=1+(G.upg?G.upg.luck:0)*.06+(luckyBoost?1:0);
-  var w=WEIGHTS[egg];if(!w)return PETS[0];
-  var ks=Object.keys(w),aw={},t=0;
-  for(var i=0;i<ks.length;i++){aw[ks[i]]=w[ks[i]]*Math.pow(luck,(RORD[ks[i]]-1)/7);t+=aw[ks[i]]}
-  var r=Math.random()*t,ch=ks[0];
-  for(var i=0;i<ks.length;i++){r-=aw[ks[i]];if(r<=0){ch=ks[i];break}}
-  var pool=[];
-  for(var i=0;i<PETS.length;i++){if(PETS[i].r===ch&&PETS[i].eg.indexOf(egg)!==-1)pool.push(PETS[i])}
-  if(!pool.length)return PETS[0];
-  return pool[Math.floor(Math.random()*pool.length)]
-}
+// ===== ROLL =====
+function roll(egg){var luck=1+(G.upg?G.upg.luck:0)*.06+(luckyBoost?1:0);
+ var w=WEIGHTS[egg];if(!w)return PETS[0];
+ var ks=Object.keys(w),aw={},t=0;
+ for(var i=0;i<ks.length;i++){aw[ks[i]]=w[ks[i]]*Math.pow(luck,(RORD[ks[i]]-1)/7);t+=aw[ks[i]]}
+ var r=Math.random()*t,ch=ks[0];
+ for(i=0;i<ks.length;i++){r-=aw[ks[i]];if(r<=0){ch=ks[i];break}}
+ var pool=[];
+ for(i=0;i<PETS.length;i++){if(PETS[i].r===ch&&PETS[i].eg.indexOf(egg)!==-1)pool.push(PETS[i])}
+ if(!pool.length)return PETS[0];
+ return pool[Math.floor(Math.random()*pool.length)]}
 
 // ===== GRIETAS =====
 var crCx=null,crD=[],CW=220,CH=280;
@@ -313,7 +300,7 @@ function anR(){if(!vA)return;requestAnimationFrame(anR);var t=performance.now()*
   else if(vM.userData.v===1){vM.material.emissiveIntensity=.25+Math.sin(t*4)*.15}}
  vR.render(vS,vC)}
 
-// ===== PARTICULAS / CONFETTI =====
+// ===== PARTICULAS =====
 var hCx,hP=[];
 function spHP(rar){var c=document.getElementById('hatchCanvas');var r=c.parentElement.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;hCx=c.getContext('2d');hCx.scale(2,2);var w=r.width,h=r.height,col=RCOL[rar]||'#fff';var hi=RORD[rar]>=5;var ct=hi?140:40;var cols=hi?['#fbbf24','#f472b6','#22d3ee','#a78bfa','#34d399',col]:[col];hP=[];for(var i=0;i<ct;i++){var an=Math.random()*Math.PI*2,sp=Math.random()*9+2;hP.push({x:w/2,y:h/2,vx:Math.cos(an)*sp,vy:Math.sin(an)*sp-2,sz:Math.random()*(hi?7:5)+1,col:cols[Math.floor(Math.random()*cols.length)],l:Math.random()*50+30,ml:80,g:.08,rot:Math.random()*6,vr:(Math.random()-.5)*.3,shape:hi&&Math.random()<.5?'rect':'dot'})}anHP(w,h)}
 function anHP(w,h){if(!hCx||!hP.length)return;hCx.clearRect(0,0,w,h);var al=false;for(var i=0;i<hP.length;i++){var p=hP[i];if(p.l<=0)continue;al=true;p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.l--;p.vx*=.98;p.rot+=p.vr;var a=p.l/p.ml;hCx.globalAlpha=a;hCx.fillStyle=p.col;if(p.shape==='rect'){hCx.save();hCx.translate(p.x,p.y);hCx.rotate(p.rot);hCx.fillRect(-p.sz/2,-p.sz*.3,p.sz,p.sz*.6);hCx.restore()}else{hCx.beginPath();hCx.arc(p.x,p.y,Math.max(.5,p.sz*a),0,Math.PI*2);hCx.fill()}}hCx.globalAlpha=1;if(al)requestAnimationFrame(function(){anHP(w,h)})}
@@ -321,16 +308,22 @@ function anHP(w,h){if(!hCx||!hP.length)return;hCx.clearRect(0,0,w,h);var al=fals
 // ===== TEMA =====
 function apTh(){var w=gW(),r=document.documentElement;r.style.setProperty('--wa',w.color);r.style.setProperty('--wa2',w.color2);r.style.setProperty('--wabg',w.color+'18');r.style.setProperty('--wbd',w.color+'30');r.style.setProperty('--wsh',w.color+'40');r.style.setProperty('--wg',w.color+'20');document.getElementById('worldBadge').textContent=w.name.split(' ')[0].toUpperCase();document.getElementById('habLabel').textContent='Habitat - '+w.name;document.getElementById('sWB').textContent='x'+w.bonus.toFixed(1);document.getElementById('worldBadge').style.color=w.color;if(hGnd){try{hGnd.material.color.set(w.color);hGnd.material.color.multiplyScalar(.35)}catch(e){}}}
 
-// ===== SAVE/LOAD =====
+// ===== SAVE/LOAD (compatible, no resetea) =====
 var SK='PetSimUltra_v38';
-function save(){try{localStorage.setItem(SK,JSON.stringify({money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,uw:G.uw,tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pn:G.pn,ao:G.ao,aon:G.aon,world:G.world,x3:G.x3,upg:G.upg,achs:G.achs,lastDaily:G.lastDaily,dailyStreak:G.dailyStreak,lastSeen:Date.now(),boostUntil:G.boostUntil}))}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({money:G.money,rb:G.rb,mult:G.mult,pets:G.pets,disc:G.disc,pr:G.pr,uw:G.uw,tot:G.tot,te:G.te,mut:G.mut,nid:G.nid,pn:G.pn,ao:G.ao,aon:G.aon,world:G.world,x3:G.x3,upg:G.upg,achs:G.achs,lastDaily:G.lastDaily,dailyStreak:G.dailyStreak,lastSeen:Date.now(),boostUntil:G.boostUntil,webMult:G.webMult,feverUntil:G.feverUntil,quests:G.quests,redeemed:G.redeemed}))}catch(e){}}
 function load(){var raw=null;try{raw=localStorage.getItem(SK)}catch(e){return}if(!raw)return;try{var d=JSON.parse(raw);if(!d)return;
 G.money=d.money||10;G.dm=G.money;G.rb=d.rb||0;G.mult=d.mult||1;G.mut=!!d.mut;G.tot=d.tot||0;G.te=d.te||0;G.nid=d.nid||1;G.pn=d.pn||'Mi Base';G.ao=!!d.ao;G.aon=!!d.aon;G.world=d.world||'bosque';G.x3=!!d.x3;G.uw=d.uw||['bosque'];if(d.pr)for(var pk in d.pr)G.pr[pk]=d.pr[pk];G.disc=d.disc||[];
 G.upg=d.upg||{luck:0,inc:0,disc:0,fast:0,auto:0};G.achs=d.achs||[];G.lastDaily=d.lastDaily||0;G.dailyStreak=d.dailyStreak||0;G.lastSeen=d.lastSeen||0;G.boostUntil=d.boostUntil||0;
+G.webMult=d.webMult||1;G.feverUntil=d.feverUntil||0;G.quests=d.quests||[];G.redeemed=d.redeemed||{};
+G.quests=G.quests.filter(function(q){return q.st!=='comboBest'});
+try{var xo=JSON.parse(localStorage.getItem('PetSimUltra_v38_addons')||'null');
+ if(xo){if(!d.webMult&&xo.webMult)G.webMult=xo.webMult;if(!d.feverUntil&&xo.feverUntil)G.feverUntil=xo.feverUntil;
+ if((!d.quests||!d.quests.length)&&xo.quests)G.quests=xo.quests.filter(function(q){return q.st!=='comboBest'});
+ if((!d.redeemed||!Object.keys(d.redeemed).length)&&xo.redeemed)G.redeemed=xo.redeemed}}catch(e2){}
 G.pets=[];
 if(d.pets){for(var i=0;i<d.pets.length;i++){var p=d.pets[i];if(!p)continue;G.pets.push({ic:p.ic||'fa-solid fa-paw',n:p.n,r:p.r,be:p.be||p.e||1,lv:p.lv||1,id:p.id||G.nid++,c:p.c||'#888',eg:p.eg||[],v:p.v||0})}}}catch(e){}}
 function resetG(){try{localStorage.removeItem(SK)}catch(e){}
-G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0};
+G={money:10,dm:10,rb:0,mult:1,pets:[],disc:[],pr:defPr(),uw:['bosque'],tot:0,te:0,mut:false,nid:1,pn:'Mi Base',ao:false,aon:false,world:'bosque',x3:false,upg:{luck:0,inc:0,disc:0,fast:0,auto:0},achs:[],lastDaily:0,dailyStreak:0,lastSeen:0,boostUntil:0,webMult:1,feverUntil:0,quests:[],redeemed:{}};
 selE='basico';rbC=false;CLICKS=5;multiList=null;eventMult=1;luckyBoost=false;eggSale=false;if(boostTimeout)clearTimeout(boostTimeout);boostActive=false;if(evtCur)endEvent();
 apTh();refHP();updateUI();toast('Reiniciado','inf')}
 
@@ -343,41 +336,89 @@ function getFR(){var all=[{name:G.pn,income:tI(),rb:G.rb,pets:G.pets.length,isMe
 function rkI(p,idx){var pos=idx+1;var pc=pos===1?'p1':pos===2?'p2':pos===3?'p3':'';return'<div class="rk-i'+(p.isMe?' me':'')+'"><div class="rk-pos '+pc+'">'+pos+'</div><div class="rk-body"><div class="rk-top"><span class="rk-n">'+esc(p.name)+(p.isMe?' <span class="rk-you">TU</span>':'')+'</span><span class="rk-rb">RB '+p.rb+'</span></div><div class="rk-bot"><span class="rk-pc">'+p.pets+' mascotas</span><span class="rk-earn">$'+fmt(p.income)+'/s</span></div></div></div>'}
 function renderRk(){var all=getFR();var mi=0;for(var i=0;i<all.length;i++){if(all[i].isMe){mi=i;break}}document.getElementById('rkPos').textContent='#'+(mi+1);document.getElementById('rkMyEarn').textContent='$'+fmt(tI())+'/s';var h='';var ss=Math.max(0,mi-2),se=Math.min(all.length-1,mi+2);if(ss>3){for(var i=0;i<3;i++)h+=rkI(all[i],i);h+='<div class="rk-sep">. . .</div>'}else ss=0;if(se<all.length-4){for(var i=ss;i<=se;i++)h+=rkI(all[i],i);h+='<div class="rk-sep">. . .</div>';for(var i=all.length-3;i<all.length;i++)h+=rkI(all[i],i)}else{for(var i=ss;i<all.length;i++)h+=rkI(all[i],i)}h+='<div class="rk-total">'+all.length+' jugadores en linea</div>';document.getElementById('rkList').innerHTML=h}
 
-// ===== MEJORAS / LOGROS / EVENTOS / DIARIO =====
+// ===== MEJORAS / LOGROS =====
 var UPGS=[
-{id:'luck',n:'Suerte',d:'Mejora probabilidades de rarezas altas',ic:'fa-clover',max:10,fx:function(l){return'+'+(l*6)+'% suerte'},co:function(l){return Math.floor(5e4*Math.pow(2.6,l))}},
-{id:'inc',n:'Ingresos',d:'Aumenta todo tu ingreso global',ic:'fa-chart-line',max:10,fx:function(l){return'x'+(1+l*.1).toFixed(1)+' ingreso'},co:function(l){return Math.floor(1e5*Math.pow(3,l))}},
-{id:'disc',n:'Descuento',d:'Reduce el precio de todos los huevos',ic:'fa-tags',max:5,fx:function(l){return'-'+(l*4)+'% precio'},co:function(l){return Math.floor(2.5e5*Math.pow(4,l))}},
-{id:'fast',n:'Rotura Rapida',d:'Menos toques para romper huevos',ic:'fa-hand-sparkles',max:4,fx:function(l){return(5-l)+' toques'},co:function(l){return Math.floor(5e5*Math.pow(4,l))}},
-{id:'auto',n:'Auto Turbo',d:'Auto abre mas huevos por segundo',ic:'fa-gauge-high',max:3,fx:function(l){return(1+l)+' huevos/s'},co:function(l){return Math.floor(1e10*Math.pow(6,l))}}
+{id:'luck',n:'Suerte',d:'Mejora probabilidades de rarezas altas',ic:'fa-clover',max:10,fx:function(l){return'+'+(l*6)+'% suerte'},co:function(l){return Math.floor(8e4*Math.pow(2.6,l))}},
+{id:'inc',n:'Ingresos',d:'Aumenta todo tu ingreso global',ic:'fa-chart-line',max:10,fx:function(l){return'x'+(1+l*.1).toFixed(1)+' ingreso'},co:function(l){return Math.floor(1.6e5*Math.pow(3,l))}},
+{id:'disc',n:'Descuento',d:'Reduce el precio de todos los huevos',ic:'fa-tags',max:5,fx:function(l){return'-'+(l*4)+'% precio'},co:function(l){return Math.floor(4e5*Math.pow(4,l))}},
+{id:'fast',n:'Rotura Rapida',d:'Menos toques para romper huevos',ic:'fa-hand-sparkles',max:4,fx:function(l){return(5-l)+' toques'},co:function(l){return Math.floor(8e5*Math.pow(4,l))}},
+{id:'auto',n:'Auto Turbo',d:'Auto abre mas huevos por segundo',ic:'fa-gauge-high',max:3,fx:function(l){return(1+l)+' huevos/s'},co:function(l){return Math.floor(1.6e10*Math.pow(6,l))}}
 ];
 var ACHS=[
-{id:'e1',n:'Aprendiz',d:'Abre 25 huevos',ic:'fa-egg',goal:25,st:'tot',rw:500},
-{id:'e2',n:'Incansable',d:'Abre 500 huevos',ic:'fa-box-open',goal:500,st:'tot',rw:5e3},
-{id:'e3',n:'Obsesionado',d:'Abre 5,000 huevos',ic:'fa-fire',goal:5000,st:'tot',rw:1e5},
-{id:'e4',n:'Maestro Absoluto',d:'Abre 25,000 huevos',ic:'fa-medal',goal:25000,st:'tot',rw:2e6},
-{id:'rb1',n:'Renacer',d:'Haz 2 rebirths',ic:'fa-arrows-rotate',goal:2,st:'rb',rw:1e4},
-{id:'rb2',n:'Ciclo Eterno',d:'Haz 10 rebirths',ic:'fa-infinity',goal:10,st:'rb',rw:5e5},
-{id:'rb3',n:'Transcendencia',d:'Haz 25 rebirths',ic:'fa-yin-yang',goal:25,st:'rb',rw:5e7},
-{id:'wd1',n:'Explorador',d:'Desbloquea 6 mundos',ic:'fa-map-location-dot',goal:6,st:'uw',rw:2e4},
-{id:'wd2',n:'Conquistador',d:'Desbloquea TODOS los mundos',ic:'fa-earth-americas',goal:WORLDS.length,st:'uw',rw:5e10},
-{id:'mo1',n:'Magnate',d:'Gana $10M en total',ic:'fa-sack-dollar',goal:1e7,st:'te',rw:1e4},
-{id:'mo2',n:'Emperador',d:'Gana $100B en total',ic:'fa-money-bill-wave',goal:1e11,st:'te',rw:1e6},
-{id:'mo3',n:'Mas Alla del Dinero',d:'Gana $100T en total',ic:'fa-gem',goal:1e14,st:'te',rw:1e8},
-{id:'mo4',n:'Dueno del Universo',d:'Gana $1Qa en total',ic:'fa-crown',goal:1e18,st:'te',rw:5e9},
-{id:'pt1',n:'Equipo Completo',d:'Ten 25 mascotas',ic:'fa-paw',goal:25,st:'pets',rw:5e3},
-{id:'pt2',n:'Zoologico',d:'Ten 100 mascotas',ic:'fa-hippo',goal:100,st:'pets',rw:5e5},
-{id:'co1',n:'Coleccionista',d:'Descubre 100 mascotas',ic:'fa-book',goal:100,st:'disc',rw:2e5},
-{id:'co2',n:'Enciclopedia Viva',d:'Descubre TODAS las mascotas',ic:'fa-trophy',goal:PETS.length,st:'disc',rw:5e11},
-{id:'go1',n:'Toque de Midas',d:'Consigue 5 mascotas DORADAS',ic:'fa-star',goal:5,st:'v1',rw:1e5},
-{id:'go2',n:'Prisma Viviente',d:'Consigue 3 mascotas ARCOIRIS',ic:'fa-rainbow',goal:3,st:'v2',rw:1e7},
-{id:'up1',n:'Maximizador',d:'Compra 15 niveles de mejoras',ic:'fa-arrow-up-right-dots',goal:15,st:'upg',rw:1e8}
+{id:'e1',n:'Aprendiz',d:'Abre 25 huevos',ic:'fa-egg',goal:25,st:'tot',rw:250},
+{id:'e2',n:'Incansable',d:'Abre 500 huevos',ic:'fa-box-open',goal:500,st:'tot',rw:2500},
+{id:'e3',n:'Obsesionado',d:'Abre 5,000 huevos',ic:'fa-fire',goal:5000,st:'tot',rw:5e4},
+{id:'e4',n:'Maestro Absoluto',d:'Abre 25,000 huevos',ic:'fa-medal',goal:25000,st:'tot',rw:1e6},
+{id:'rb1',n:'Renacer',d:'Haz 2 rebirths',ic:'fa-arrows-rotate',goal:2,st:'rb',rw:5e3},
+{id:'rb2',n:'Ciclo Eterno',d:'Haz 10 rebirths',ic:'fa-infinity',goal:10,st:'rb',rw:25e4},
+{id:'rb3',n:'Transcendencia',d:'Haz 25 rebirths',ic:'fa-yin-yang',goal:25,st:'rb',rw:25e6},
+{id:'wd1',n:'Explorador',d:'Desbloquea 6 mundos',ic:'fa-map-location-dot',goal:6,st:'uw',rw:1e4},
+{id:'wd2',n:'Conquistador',d:'Desbloquea TODOS los mundos',ic:'fa-earth-americas',goal:WORLDS.length,st:'uw',rw:25e9},
+{id:'mo1',n:'Magnate',d:'Gana $10M en total',ic:'fa-sack-dollar',goal:1e7,st:'te',rw:5e3},
+{id:'mo2',n:'Emperador',d:'Gana $100B en total',ic:'fa-money-bill-wave',goal:1e11,st:'te',rw:5e5},
+{id:'mo3',n:'Mas Alla del Dinero',d:'Gana $100T en total',ic:'fa-gem',goal:1e14,st:'te',rw:5e7},
+{id:'mo4',n:'Dueno del Universo',d:'Gana $1Qa en total',ic:'fa-crown',goal:1e18,st:'te',rw:25e8},
+{id:'pt1',n:'Equipo Completo',d:'Ten 25 mascotas',ic:'fa-paw',goal:25,st:'pets',rw:2500},
+{id:'pt2',n:'Zoologico',d:'Ten 100 mascotas',ic:'fa-hippo',goal:100,st:'pets',rw:25e4},
+{id:'co1',n:'Coleccionista',d:'Descubre 100 mascotas',ic:'fa-book',goal:100,st:'disc',rw:1e5},
+{id:'co2',n:'Enciclopedia Viva',d:'Descubre TODAS las mascotas',ic:'fa-trophy',goal:PETS.length,st:'disc',rw:25e10},
+{id:'go1',n:'Toque de Midas',d:'Consigue 5 mascotas DORADAS',ic:'fa-star',goal:5,st:'v1',rw:5e4},
+{id:'go2',n:'Prisma Viviente',d:'Consigue 3 mascotas ARCOIRIS',ic:'fa-rainbow',goal:3,st:'v2',rw:5e6},
+{id:'up1',n:'Maximizador',d:'Compra 15 niveles de mejoras',ic:'fa-arrow-up-right-dots',goal:15,st:'upg',rw:5e7}
 ];
+
+// ===== EVENTOS (10) =====
+function spawnGoldEgg(){
+  var e=document.createElement('div');e.id='goldEgg';e.innerHTML='<i class="fas fa-egg"></i>';
+  e.style.left=(Math.random()*260+40)+'px';e.style.top=(Math.random()*380+120)+'px';
+  document.getElementById('game').appendChild(e);
+  var claimed=false;
+  e.addEventListener('click',function(ev){
+    ev.stopPropagation();if(claimed)return;claimed=true;e.remove();
+    var r=Math.random();
+    if(r<.45){var amt=Math.max(5000,Math.floor(G.money*.15+10000));G.money+=amt;toast('JACKPOT +$'+fmt(amt),'rwd');snd.hatch('god')}
+    else if(r<.85){
+      var tpl=roll(selE);var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
+      G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)===-1)G.disc.push(tpl.n);
+      toast('Huevo gratis!','rwd');save();updateUI();refHP();snd.hatch(np.r);showH(np);return;
+    }
+    else{activateBoost(120);toast('Boost x2 gratis!','rwd')}
+    save();updateUI();
+  });
+  setTimeout(function(){if(e.parentNode)e.remove()},14000);
+}
+function spawnMysteryBox(){
+ var e=document.createElement('div');e.id='psuGift';e.innerHTML='<i class="fas fa-gift"></i>';
+ e.style.cssText='position:absolute;z-index:60;font-size:46px;cursor:pointer;color:#f472b6;filter:drop-shadow(0 0 14px #f472b6);animation:psuFloat 1.5s ease-in-out infinite';
+ e.style.left=(Math.random()*260+40)+'px';e.style.top=(Math.random()*380+120)+'px';
+ document.getElementById('game').appendChild(e);
+ var done=false;
+ e.addEventListener('click',function(ev){ev.stopPropagation();if(done)return;done=true;e.remove();
+  var r=Math.random();
+  if(r<.4){var amt=Math.max(10000,Math.floor(tI()*120));G.money+=amt;G.te+=amt;toast('🎁 CAJA: +$'+fmt(amt),'rwd');coinBurst(16);snd.hatch('god')}
+  else if(r<.72){var pool=PETS.filter(function(p){return RORD[p.r]>=5});var b=pool[Math.floor(Math.random()*pool.length)];
+   var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()};
+   G.pets.push(np);G.tot++;if(G.disc.indexOf(b.n)<0)G.disc.push(b.n);
+   toast('🎁 CAJA: '+b.n+' ('+RNAME[b.r]+')!','rwd');snd.hatch(b.r);refHP();showH(np,true)}
+  else{activateBoost(300);toast('🎁 CAJA: Boost x2 · 5 min!','rwd')}
+  save();updateUI()});
+ setTimeout(function(){if(e.parentNode)e.remove()},11000)}
+function startFreeEggs(){stopFreeEggs();turboIv=setInterval(function(){
+ var tpl=roll(selE);var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
+ G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)<0)G.disc.push(tpl.n);refHP();updateUI();
+ if(Math.random()<.2)toast('⚡ TURBO: '+tpl.n+' gratis!','inf')},1000)}
+function stopFreeEggs(){if(turboIv){clearInterval(turboIv);turboIv=null}}
 var EVENTS=[
 {id:'rain',n:'LLUVIA DE DINERO x3',ic:'fa-cloud-showers-heavy',dur:60,apply:function(){eventMult=3},end:function(){eventMult=1}},
 {id:'lucky',n:'SUERTE DIVINA',ic:'fa-clover',dur:45,apply:function(){luckyBoost=true},end:function(){luckyBoost=false}},
 {id:'sale',n:'REBAJA 50%!',ic:'fa-tags',dur:30,apply:function(){eggSale=true},end:function(){eggSale=false}},
-{id:'gold',n:'HUEVO DORADO!',ic:'fa-egg',dur:15,apply:spawnGoldEgg,end:function(){}}
+{id:'gold',n:'HUEVO DORADO!',ic:'fa-egg',dur:15,apply:spawnGoldEgg,end:function(){}},
+{id:'fiesta',n:'FIESTA DE DINERO x5',ic:'fa-party-horn',dur:30,apply:function(){eventMult=5},end:function(){eventMult=1}},
+{id:'iman',n:'IMAN DE RAREZAS',ic:'fa-magnet',dur:45,apply:function(){evtMagnet=true},end:function(){evtMagnet=false}},
+{id:'rainbow',n:'HORA ARCOIRIS',ic:'fa-rainbow',dur:60,apply:function(){evtRainbow=true},end:function(){evtRainbow=false}},
+{id:'caja',n:'CAJA SORPRESA',ic:'fa-gift',dur:12,apply:function(){spawnMysteryBox()},end:function(){}},
+{id:'turbo',n:'TURBO DE HUEVOS',ic:'fa-gauge-high',dur:20,apply:function(){startFreeEggs()},end:function(){stopFreeEggs()}},
+{id:'jackpot',n:'SUPER JACKPOT',ic:'fa-money-bill-wave',dur:5,apply:function(){var amt=Math.max(50000,Math.floor(tI()*300));G.money+=amt;G.te+=amt;toast('💸 SUPER JACKPOT +$'+fmt(amt),'rwd');coinBurst(25);snd.hatch('og');save();updateUI()},end:function(){}}
 ];
 function startEvent(){
   if(evtCur)return;
@@ -398,32 +439,24 @@ function endEvent(){
   var b=document.getElementById('evtBanner');if(b)b.style.display='none';
   updateUI();
 }
-function spawnGoldEgg(){
-  var e=document.createElement('div');e.id='goldEgg';e.innerHTML='<i class="fas fa-egg"></i>';
-  e.style.left=(Math.random()*260+40)+'px';e.style.top=(Math.random()*380+120)+'px';
-  document.getElementById('game').appendChild(e);
-  var claimed=false;
-  e.addEventListener('click',function(ev){
-    ev.stopPropagation();if(claimed)return;claimed=true;e.remove();
-    var r=Math.random();
-    if(r<.45){var amt=Math.max(5000,Math.floor(G.money*.15+10000));G.money+=amt;toast('JACKPOT +$'+fmt(amt),'rwd');snd.hatch('god')}
-    else if(r<.85){
-      var tpl=roll(selE);var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
-      G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)===-1)G.disc.push(tpl.n);
-      toast('Huevo gratis!','rwd');save();updateUI();refHP();snd.hatch(np.r);showH(np);return;
-    }
-    else{activateBoost(120);toast('Boost x2 gratis!','rwd')}
-    save();updateUI();
-  });
-  setTimeout(function(){if(e.parentNode)e.remove()},14000);
-}
-function dailyReward(){return Math.floor(2000*Math.pow(1.6,Math.min((G.dailyStreak||0)+1,12))*(1+G.rb*.5))}
+function forceEvt(id){var ev=null;for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)ev=EVENTS[i];if(!ev)return;
+ if(evtCur){try{evtCur.end()}catch(e){}clearInterval(evtT);evtCur=null}
+ evtCur=ev;evtEnd=Date.now()+ev.dur*1000;
+ try{ev.apply()}catch(e){}
+ toast(ev.n+'!','rwd');snd.world();
+ var b=document.getElementById('evtBanner');
+ if(b){b.style.display='flex';b.innerHTML='<i class="fas '+ev.ic+'"></i><span>'+ev.n+'</span><span class="evt-t" id="evtT">'+ev.dur+'s</span>'}
+ evtT=setInterval(function(){var s=Math.ceil((evtEnd-Date.now())/1000);
+  if(s<=0){endEvent();return}
+  var e2=document.getElementById('evtT');if(e2)e2.textContent=s+'s'},500)}
+
+function dailyReward(){return Math.floor(1400*Math.pow(1.6,Math.min((G.dailyStreak||0)+1,12))*(1+G.rb*.5))}
 function claimDaily(){
   if(Date.now()-G.lastDaily<82800000){snd.err();toast('Vuelve manana','err');return}
   var gap=Date.now()-G.lastDaily;
   G.dailyStreak=(G.lastDaily&&gap<172800000)?(G.dailyStreak||0)+1:1;
   G.lastDaily=Date.now();
-  var r=dailyReward();G.money+=r;
+  var r=dailyReward();G.money+=r;coinBurst(14);
   snd.hatch('god');toast('DIA '+G.dailyStreak+': +$'+fmt(r),'rwd');
   save();updateUI();
 }
@@ -507,11 +540,11 @@ function renderHub(){
   if(scEl)scEl.scrollTop=st;
 }
 
-// ===== LOGICA =====
+// ===== LOGICA (modo dificil) =====
 function openE(sil){
     var cost=eggCost(selE);if(G.money<cost){if(!sil){snd.err();toast('Sin dinero','err')}if(G.aon){G.aon=false;updateUI()}return false}
-    G.money-=cost;var sc={basico:1.15,dorado:1.2,campestre:1.12,arcano:1.22,marino:1.18,abisal:1.25,cristalino:1.2,gema:1.28,magmatico:1.22,infernal:1.3,divino:1.25,ancestral:1.32,cosmico:1.28,estelar:1.35,umbral:1.3,absoluto:1.4,salvaje:1.14,toxico:1.18,dunas:1.15,faraon:1.2,glacial:1.16,polar:1.2,tumba:1.2,maldito:1.24,goloso:1.22,pastel:1.26,neon:1.24,virtual:1.28,draconico:1.28,wyrm:1.32,eterno:1.32,omega:1.4};
-    G.pr[selE]=Math.floor(G.pr[selE]*(sc[selE]||1.15));var tpl=roll(selE);
+    G.money-=cost;var sc={basico:1.18,dorado:1.25,campestre:1.2,arcano:1.28,salvaje:1.22,toxico:1.28,marino:1.26,abisal:1.32,dunas:1.24,faraon:1.28,cristalino:1.28,gema:1.34,glacial:1.24,polar:1.28,magmatico:1.3,infernal:1.36,tumba:1.28,maldito:1.3,divino:1.32,ancestral:1.38,goloso:1.3,pastel:1.32,neon:1.32,virtual:1.34,cosmico:1.36,estelar:1.4,umbral:1.36,absoluto:1.46,draconico:1.36,wyrm:1.38,eterno:1.38,omega:1.5,galactico:1.32,nebuloso:1.36,cronos:1.36,destino:1.4,mutacion:1.36,adn:1.4,terror:1.38,onirico:1.42,rayo:1.38,huracan:1.42,runa:1.4,hechizo:1.44,rocoso:1.4,cometa:1.44,singu:1.42,vacio:1.46,cromatico:1.44,refraccion:1.48,final:1.46,trascende:1.55,elixir:1.4,homunculo:1.5,penumbra:1.42,oscuridad:1.48,celestial:1.44,eden:1.5,caos:1.5,entropia:1.52,zenit:1.54,cumbre:1.6};
+    G.pr[selE]=Math.floor(G.pr[selE]*(sc[selE]||1.25));var tpl=roll(selE);
     var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
     G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)===-1)G.disc.push(tpl.n);
     if(!sil){save();snd.hatch(tpl.r);showH(np);updateUI();refHP()}
@@ -586,7 +619,7 @@ function closeH(){
   multiList=null;hP=[];hSt.rev=false;stopR();
 }
 function doUp(id){var p=null;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){p=G.pets[i];break}}if(!p||p.lv>=99)return;var c=uCo(p);if(G.money<c){snd.err();toast('Sin dinero','err');return}G.money-=c;p.lv++;toast(p.n+' Nv.'+p.lv,'ok');save();updateUI()}
-function doSell(id){var idx=-1;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break}}if(idx===-1)return;var p=G.pets[idx],v=Math.floor(pE(p)*10);G.money+=v;G.pets.splice(idx,1);toast(p.n+' $'+fmt(v),'inf');save();updateUI();refHP()}
+function doSell(id){var idx=-1;for(var i=0;i<G.pets.length;i++){if(G.pets[i].id===id){idx=i;break}}if(idx===-1)return;var p=G.pets[idx],v=Math.floor(pE(p)*4);G.money+=v;G.pets.splice(idx,1);toast(p.n+' $'+fmt(v),'inf');save();updateUI();refHP()}
 function doRb(){var cost=rbCo();if(rbC){clearTimeout(rbT);rbC=false;G.rb++;G.mult*=1.8;G.money=10;G.dm=10;G.pets=[];G.pr=defPr();multiList=null;snd.hatch('og');toast('REBIRTH '+G.rb+' x'+G.mult.toFixed(1),'rwd');save();updateUI();refHP()}else{if(G.money<cost){snd.err();toast('Necesitas $'+fmt(cost),'err');return}rbC=true;var b=document.getElementById('btnRb');b.innerHTML='<i class="fas fa-exclamation-triangle"></i> CONFIRMAR?';b.classList.add('yes');b.disabled=false;snd.click();rbT=setTimeout(function(){rbC=false;updateUI()},3000)}}
 function hAuto(){snd.click();if(!G.ao){if(G.money<1e10){snd.err();toast('Necesitas $10B','err');return}G.money-=1e10;G.ao=true;G.aon=true;toast('Auto activado!','rwd');save();updateUI()}else{G.aon=!G.aon;toast('Auto: '+(G.aon?'ON':'OFF'),'inf');save();updateUI()}}
 function buyW(wid){var w=null;for(var i=0;i<WORLDS.length;i++)if(WORLDS[i].id===wid){w=WORLDS[i];break}if(!w)return;if(isUW(wid)){setW(wid);return}if(G.money<w.cost){snd.err();toast('Necesitas $'+fmt(w.cost),'err');return}G.money-=w.cost;G.uw.push(wid);snd.world();selE=w.eggs[0];setW(wid);save();updateUI();toast('Desbloqueado: '+w.name,'rwd')}
@@ -620,8 +653,9 @@ function updateUI(){
   var ba=document.getElementById('btnAuto');if(!G.ao){ba.innerHTML='<i class="fas fa-robot"></i> AUTO ($10B)';if(G.money>=1e10){ba.classList.add('can');ba.classList.remove('no','on')}else{ba.classList.add('no');ba.classList.remove('can','on')}}else{if(G.aon){ba.innerHTML='<i class="fas fa-robot"></i> AUTO: ON';ba.classList.add('on');ba.classList.remove('no','can')}else{ba.innerHTML='<i class="fas fa-robot"></i> AUTO: OFF';ba.classList.add('can');ba.classList.remove('on','no')}}
   if(!rbC){var rb=document.getElementById('btnRb');rb.innerHTML='<i class="fas fa-bolt"></i> REBIRTH ($'+fmt(rbCo())+')';rb.disabled=G.money<rbCo();rb.classList.remove('yes')}
   rPets();rEggs();if(aTab==='worlds')rWorlds();if(aTab==='rank')renderRk();if(aTab==='lu')renderLuShop();if(aTab==='hub')renderHub();
+  renderBuffs();
 }
-function setTab(t){snd.click();aTab=t;var ps=document.querySelectorAll('.panel'),bs=document.querySelectorAll('.tab');for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');var mp={game:'pGame',worlds:'pWorlds',index:'pIndex',hub:'pHub',rank:'pRank',lu:'pLu'};var pe=document.getElementById(mp[t]);if(pe)pe.classList.add('on');var be=document.querySelector('.tab[data-t="'+t+'"]');if(be)be.classList.add('on');if(t==='index')rIdx();if(t==='rank')renderRk();if(t==='worlds')rWorlds();if(t==='lu')renderLuShop();if(t==='hub')renderHub()}
+function setTab(t){snd.click();aTab=t;var ps=document.querySelectorAll('.panel'),bs=document.querySelectorAll('.tab');for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');var mp={game:'pGame',worlds:'pWorlds',index:'pIndex',hub:'pHub',rank:'pRank',lu:'pLu',fusion:'pFusion',codes:'pCodes',admin:'pAdmin'};var pe=document.getElementById(mp[t]);if(pe)pe.classList.add('on');var be=document.querySelector('.tab[data-t="'+t+'"]');if(be)be.classList.add('on');if(t==='index')rIdx();if(t==='rank')renderRk();if(t==='worlds')rWorlds();if(t==='lu')renderLuShop();if(t==='hub')renderHub();if(t==='fusion')renderFusion();if(t==='codes')renderCodes();if(t==='admin')renderAdmin()}
 
 // ===== INTEGRACIÓN LEVELUP =====
 const firebaseConfig = {
@@ -644,7 +678,7 @@ var LU_SHOP_ITEMS = [
   { id: 'money1', name: '5K Dinero', desc: 'Añade $5,000 al juego', icon: 'fa-sack-dollar', cost: 10, action: function() { G.money += 5000; save(); updateUI(); } },
   { id: 'money2', name: '100K Dinero', desc: 'Añade $100,000 al juego', icon: 'fa-money-bill-trend-up', cost: 50, action: function() { G.money += 100000; save(); updateUI(); } },
   { id: 'boost', name: 'Boost x2 (3 min)', desc: 'Duplica tus ingresos por 3 minutos', icon: 'fa-bolt', cost: 30, action: function() { activateBoost(180); } },
-  { id: 'lucky', name: 'Suerte x2 (5 min)', desc: 'Duplica tu suerte temporalmente', icon: 'fa-clover', cost: 40, action: function() { luckyBoost=true; toast('Suerte x2 activada!','rwd'); setTimeout(function(){luckyBoost=false;toast('Suerte terminada','inf')},300000); } },
+  { id: 'lucky', name: 'Suerte x2 (5 min)', desc: 'Duplica tu suerte temporalmente', icon: 'fa-clover', cost: 40, action: function() { luckyBoost=true; toast('Suerte x2 activada!','rwd'); setTimeout(function(){luckyBoost=false;renderBuffs()},300000); } },
   { id: 'egg', name: 'Huevo LevelUp', desc: 'Mascota exclusiva Gh0st (Nivel Medio)', icon: 'fa-egg', cost: 150, action: function() { openLuEgg(); } }
 ];
 
@@ -734,333 +768,418 @@ onAuthStateChanged(fbAuth, function(user) {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════════
-   ⭐ ADD-ONS v40 — definiciones (antes del INIT, para que todo exista)
-   Pestañas: ⚗️ Fusion · 🎟️ Codigos · 🛡️ Admin
-   Admin = tus 3 emails. Global via adminBroadcast/ (tus rules)
-   ═══════════════════════════════════════════════════════════════ */
-var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
-var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
-var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={};
-var XK='PetSimUltra_v38_addons';
-var fuseSelIds=[];
-
-function loadX(){
-  try{var d=JSON.parse(localStorage.getItem(XK)||'{}');
-    G.webMult=d.webMult||1;G.feverUntil=d.feverUntil||0;G.comboBest=d.comboBest||0;
-    G.quests=d.quests||[];G.redeemed=d.redeemed||{};
-  }catch(e){G.webMult=1;G.feverUntil=0;G.comboBest=0;G.quests=[];G.redeemed={}}
-  var _t0=tI;
-  tI=function(){var m=G.webMult||1;if((G.feverUntil||0)>Date.now())m*=2;if(IS_ADM)m*=1.25;return _t0()*m};
-  var _hc=hClick;hClick=function(){_hc();bumpCombo()};
-  var _cd=claimDaily;claimDaily=function(){_cd();coinBurst(14)};
-  var _uu=updateUI;updateUI=function(){_uu();renderBuffs()};
-}
-function saveX(){try{localStorage.setItem(XK,JSON.stringify({webMult:G.webMult||1,feverUntil:G.feverUntil||0,comboBest:G.comboBest||0,quests:G.quests,redeemed:G.redeemed}))}catch(e){}}
-
-function fmtT(ms){var s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?h+'h '+m+'m':m?m+'m '+(s%60)+'s':s+'s'}
-function toNum(s){s=(''+(s==null?'':s)).trim().toLowerCase();var m=s.match(/^(-?[\d.]+)\s*([kmbtq])(?![a-z])/);
-  if(m){var f={k:1e3,m:1e6,b:1e9,t:1e12,q:1e15}[m[2]];return(parseFloat(m[1])||0)*f}
-  var n=parseFloat(s);return isNaN(n)?0:n}
-function coinBurst(n){for(var i=0;i<(n||12);i++)(function(){var c=document.createElement('span');c.className='psu-coin';c.textContent=['🪙','💰','💵','🤑'][Math.floor(Math.random()*4)];
-  c.style.left=(35+Math.random()*45)+'vw';c.style.top=(40+Math.random()*35)+'vh';c.style.animationDuration=(0.9+Math.random()*0.7)+'s';
-  document.body.appendChild(c);setTimeout(function(){c.remove()},1700)})()}
-
-/* ---- COMBO ---- */
-function bumpCombo(){comboV++;if(comboV>(G.comboBest||0))G.comboBest=comboV;
-  clearTimeout(comboTm2);comboTm2=setTimeout(function(){comboV=0;drawCombo()},1300);drawCombo();
-  if(comboV===10||comboV===25||comboV===50||comboV===100||comboV===200){
-    var bonus=Math.max(tI()*2,150)*(comboV/8);G.money+=bonus;G.te+=bonus;
-    toast('🔥 COMBO x'+comboV+' +$'+fmt(bonus),'rwd');coinBurst(10);snd.burst();if(navigator.vibrate)navigator.vibrate(15);saveX();updateUI()}}
-function drawCombo(){if(!comboBarEl)return;
-  if(!comboV){comboBarEl.style.display='none';return}
-  comboBarEl.style.display='block';
-  comboBarEl.innerHTML='<div class="psu-cb-t">COMBO x'+comboV+'</div><div class="psu-cb-b"><div class="psu-cb-f" style="width:'+Math.min(100,comboV)+'%"></div></div>'}
-
-/* ---- BUFFS ---- */
+/* ═══════════════════════════════════════════════════════════
+   ⭐ ADD-ONS v45: BUFFS · MISIONES · CODIGOS (usos+caducidad) · FUSION · ADMIN
+   ═══════════════════════════════════════════════════════════ */
 function renderBuffs(){if(!buffBarEl)return;var h='';
-  if((G.webMult||1)>1)h+='<span class="psu-buff" style="border-color:#22d3ee">🌐 x'+G.webMult+' GLOBAL</span>';
-  var f=(G.feverUntil||0)-Date.now();if(f>0)h+='<span class="psu-buff" style="border-color:#f97316">🔥 FIEBRE x2 · '+fmtT(f)+'</span>';
-  if(boostActive)h+='<span class="psu-buff" style="border-color:#fbbf24">⚡ BOOST x2</span>';
-  if(luckyBoost)h+='<span class="psu-buff" style="border-color:#84cc16">🍀 SUERTE</span>';
-  if(IS_ADM)h+='<span class="psu-buff" style="border-color:#fbbf24">👑 ADMIN +25%</span>';
-  buffBarEl.innerHTML=h}
+ if((G.webMult||1)>1)h+='<span class="psu-buff" style="border-color:#22d3ee">🌐 x'+G.webMult+' GLOBAL</span>';
+ var f=(G.feverUntil||0)-Date.now();if(f>0)h+='<span class="psu-buff" style="border-color:#f97316">🔥 FIEBRE x2 · '+fmtT(f)+'</span>';
+ if(boostActive)h+='<span class="psu-buff" style="border-color:#fbbf24">⚡ BOOST x2</span>';
+ if(eggSale)h+='<span class="psu-buff" style="border-color:#84cc16">🏷️ REBAJA 50%</span>';
+ if(luckyBoost)h+='<span class="psu-buff" style="border-color:#84cc16">🍀 SUERTE</span>';
+ if(evtRainbow)h+='<span class="psu-buff" style="border-color:#f0abfc">🌈 ARCOIRIS x12</span>';
+ if(evtMagnet)h+='<span class="psu-buff" style="border-color:#38bdf8">🧲 IMÁN x3</span>';
+ if(eventMult>1)h+='<span class="psu-buff" style="border-color:#fbbf24">💰 x'+eventMult+'</span>';
+ if(IS_ADM)h+='<span class="psu-buff" style="border-color:#fbbf24">👑 ADMIN +25%</span>';
+ buffBarEl.innerHTML=h}
 
 /* ---- MISIONES ---- */
 var QTMPL=[
-  {icn:'🥚',n:'Abre {n} huevos',st:'tot',base:15,mul:2.4,rwm:45,abs:false},
-  {icn:'💰',n:'Gana ${n} mas',st:'te',base:5e3,mul:3.2,rwm:.12,abs:false},
-  {icn:'🐾',n:'Ten {n} mascotas',st:'pets',base:6,mul:1.5,rwm:260,abs:true},
-  {icn:'📖',n:'Descubre {n} especies',st:'disc',base:3,mul:1.45,rwm:900,abs:true},
-  {icn:'🔥',n:'Combo x{n}',st:'comboBest',base:8,mul:1.35,rwm:180,abs:true}];
-function qVal(s){if(s==='tot')return G.tot||0;if(s==='te')return G.te||0;if(s==='pets')return G.pets.length;if(s==='disc')return G.disc.length;if(s==='comboBest')return G.comboBest||0;return 0}
+ {icn:'🥚',n:'Abre {n} huevos',st:'tot',base:15,mul:2.4,rwm:45,abs:false},
+ {icn:'💰',n:'Gana ${n} mas',st:'te',base:5e3,mul:3.2,rwm:.12,abs:false},
+ {icn:'🐾',n:'Ten {n} mascotas',st:'pets',base:6,mul:1.5,rwm:260,abs:true},
+ {icn:'📖',n:'Descubre {n} especies',st:'disc',base:3,mul:1.45,rwm:900,abs:true}];
+function qVal(s){if(s==='tot')return G.tot||0;if(s==='te')return G.te||0;if(s==='pets')return G.pets.length;if(s==='disc')return G.disc.length;return 0}
 function newQuest(){var t=QTMPL[Math.floor(Math.random()*QTMPL.length)];var lv=1+Math.floor((G.tot||0)/60);
-  var n=Math.max(1,Math.floor(t.base*Math.pow(t.mul,Math.min(lv,12))*(.8+Math.random()*.5)));
-  return{name:t.n.replace('{n}',fmt(n)),icn:t.icn,st:t.st,n:n,start:qVal(t.st),rw:Math.max(150,Math.floor(n*t.rwm)),abs:t.abs}}
+ var n=Math.max(1,Math.floor(t.base*Math.pow(t.mul,Math.min(lv,12))*(.8+Math.random()*.5)));
+ return{name:t.n.replace('{n}',fmt(n)),icn:t.icn,st:t.st,n:n,start:qVal(t.st),rw:Math.max(150,Math.floor(n*t.rwm)),abs:t.abs}}
 function qProg(q){var c=qVal(q.st);return Math.max(0,q.abs?c:c-q.start)}
 function ensureQuests(){if(!G.quests)G.quests=[];var g=0;while(G.quests.length<3&&g++<5)G.quests.push(newQuest())}
 function checkQuests(){ensureQuests();
-  for(var i=G.quests.length-1;i>=0;i--){var q=G.quests[i];
-    if(qProg(q)>=q.n){G.money+=q.rw;G.te+=q.rw;toast('📜 Mision: '+q.name+' +$'+fmt(q.rw),'rwd');snd.hatch('god');coinBurst(8);G.quests.splice(i,1);ensureQuests();saveX()}}}
+ for(var i=G.quests.length-1;i>=0;i--){var q=G.quests[i];
+  if(qProg(q)>=q.n){G.money+=q.rw;G.te+=q.rw;toast('📜 Mision: '+q.name+' +$'+fmt(q.rw),'rwd');snd.hatch('god');coinBurst(8);G.quests.splice(i,1);ensureQuests();save()}}}
 function renderQuests(){var host=document.getElementById('questList');if(!host)return;ensureQuests();var h='';
-  for(var i=0;i<G.quests.length;i++){var q=G.quests[i],p=Math.min(qProg(q),q.n),pc=Math.floor(p/q.n*100);
-    h+='<div class="psu-q"><div class="psu-q-t"><span>'+q.icn+' '+esc(q.name)+'</span><span style="color:#fbbf24">+$'+fmt(q.rw)+'</span></div><div class="psu-q-b"><div class="psu-q-f" style="width:'+pc+'%"></div></div><div class="psu-q-s">'+fmt(p)+' / '+fmt(q.n)+'</div></div>'}
-  host.innerHTML=h}
+ for(var i=0;i<G.quests.length;i++){var q=G.quests[i],p=Math.min(qProg(q),q.n),pc=Math.floor(p/q.n*100);
+  h+='<div class="psu-q"><div class="psu-q-t"><span>'+q.icn+' '+esc(q.name)+'</span><span style="color:#fbbf24">+$'+fmt(q.rw)+'</span></div><div class="psu-q-b"><div class="psu-q-f" style="width:'+pc+'%"></div></div><div class="psu-q-s">'+fmt(p)+' / '+fmt(q.n)+'</div></div>'}
+ host.innerHTML=h}
 
 /* ---- ADMIN helpers ---- */
 function givePets(rar,q){q=Math.max(1,q|0);var pool=PETS.filter(function(p){return p.r===rar});
-  if(!pool.length){toast('Sin mascotas de esa rareza','err');return}
-  for(var i=0;i<q;i++){var b=pool[Math.floor(Math.random()*pool.length)];
-    G.pets.push({ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()});
-    if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n)}
-  snd.hatch(rar);refHP();toast('🐾 +'+q+' '+RNAME[rar],'rwd');save();updateUI()}
-function forceEvt(id){var ev=null;for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)ev=EVENTS[i];if(!ev)return;
-  if(evtCur){try{evtCur.end()}catch(e){}clearInterval(evtT);evtCur=null}
-  evtCur=ev;evtEnd=Date.now()+ev.dur*1000;
-  try{ev.apply()}catch(e){}
-  toast(ev.n+'!','rwd');snd.world();
-  var b=document.getElementById('evtBanner');
-  if(b){b.style.display='flex';b.innerHTML='<i class="fas '+ev.ic+'"></i><span>'+ev.n+'</span><span class="evt-t" id="evtT">'+ev.dur+'s</span>'}
-  evtT=setInterval(function(){var s=Math.ceil((evtEnd-Date.now())/1000);
-    if(s<=0){endEvent();return}
-    var e2=document.getElementById('evtT');if(e2)e2.textContent=s+'s'},500)}
+ if(!pool.length){toast('Sin mascotas de esa rareza','err');return}
+ for(var i=0;i<q;i++){var b=pool[Math.floor(Math.random()*pool.length)];
+  G.pets.push({ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()});
+  if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n)}
+ snd.hatch(rar);refHP();toast('🐾 +'+q+' '+RNAME[rar],'rwd');save();updateUI()}
+function givePetExact(i){var b=PETS[i];if(!b)return;
+ var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()};
+ G.pets.push(np);if(G.disc.indexOf(b.n)===-1)G.disc.push(b.n);
+ snd.hatch(b.r);refHP();toast('🐾 '+b.n+' ('+RNAME[b.r]+')','rwd');save();updateUI();showH(np,true)}
+function admBoost(){activateBoost(1800);coinBurst(12)}
+function admFever(){G.feverUntil=Date.now()+36e5;save();renderBuffs();coinBurst(12);toast('🔥 Fiebre x2 · 60 min','rwd')}
+function admLucky(){luckyBoost=true;renderBuffs();toast('🍀 Suerte x2 · 60 min','rwd');setTimeout(function(){luckyBoost=false;renderBuffs()},36e5)}
+function admSale(on){eggSale=on;renderBuffs();toast(on?'🏷️ Rebaja 50% ON':'🏷️ Rebaja OFF','rwd')}
+function admUnlockW(wid){if(isUW(wid))return;G.uw.push(wid);apTh();snd.world();toast('🗺️ '+gW2(wid).name+' desbloqueado','rwd');save();updateUI()}
 function webWrite(path,val,msg){try{runTransaction(ref(fbDb,path),function(){return val})
-  .then(function(){if(msg)toast(msg,'rwd')})
-  .catch(function(){toast('Sin permiso (rules)','err')})}catch(e){toast('Error Firebase','err')}}
+ .then(function(){if(msg)toast(msg,'rwd')})
+ .catch(function(){toast('Sin permiso (rules)','err')})}catch(e){toast('Error Firebase','err')}}
 function setAdm(a,s){a=!!a;s=!!s&&a;if(a===IS_ADM&&s===IS_SUPER)return;IS_ADM=a;IS_SUPER=s;
-  var tb=document.getElementById('tabAdmin');if(tb)tb.style.display=a?'':'none';
-  var s1=document.getElementById('psuAdmSec'),s2=document.getElementById('psuSupSec');
-  if(s1)s1.style.display=a?'':'none';if(s2)s2.style.display=s?'':'none';
-  if(a){toast('👑 ADMIN detectado! Pestaña 🛡️ desbloqueada','rwd');snd.world()}
-  else if(aTab==='admin')setTab('game');
-  renderBuffs()}
+ var tb=document.getElementById('tabAdmin');if(tb)tb.style.display=a?'':'none';
+ if(a){toast('👑 ADMIN detectado! Pestaña 🛡️ desbloqueada','rwd');snd.world()}
+ else if(aTab==='admin')setTab('game');
+ renderBuffs()}
 function psuOv(id,html,bc){var o=document.getElementById(id);
-  if(!o){o=document.createElement('div');o.id=id;o.className='psu-ov';document.body.appendChild(o)}
-  o.innerHTML='<div class="psu-ovc" style="border-color:'+(bc||'#ef4444')+'">'+html+'</div>';o.style.display='flex'}
+ if(!o){o=document.createElement('div');o.id=id;o.className='psu-ov';document.body.appendChild(o)}
+ o.innerHTML='<div class="psu-ovc" style="border-color:'+(bc||'#ef4444')+'">'+html+'</div>';o.style.display='flex'}
 function psuOvX(id){var o=document.getElementById(id);if(o)o.style.display='none'}
 function showBanner(t){var b=document.getElementById('psuBanner');if(!b)return;
-  if(!t){b.style.display='none';return}
-  b.innerHTML='📢 '+esc(t)+'<button class="psu-bx">✕</button>';b.style.display='block';
-  b.querySelector('.psu-bx').onclick=function(){b.style.display='none'}}
+ if(!t){b.style.display='none';return}
+ b.innerHTML='📢 '+esc(t)+'<button class="psu-bx">✕</button>';b.style.display='block';
+ b.querySelector('.psu-bx').onclick=function(){b.style.display='none'}}
 function updChip(){var c=document.getElementById('psuMultChip');if(!c)return;var m=G.webMult||1;
-  if(m>1){c.textContent='🌐 x'+m+' GLOBAL';c.style.display='block'}else c.style.display='none'}
+ if(m>1){c.textContent='🌐 x'+m+' GLOBAL';c.style.display='block'}else c.style.display='none'}
 
-/* ---- CODIGOS ---- */
+/* ---- CODIGOS (usos limitados + caducidad) ---- */
 function usedCodes(){try{return JSON.parse(localStorage.getItem('psuCodesUsed')||'{}')}catch(e){return{}}}
 function hintOf(c){if(!c)return'';return c.t==='money'?'💰 $'+fmt(c.v):c.t==='rb'?'♻️ +'+c.v+' RB':c.t==='boost'?'⚡ boost '+c.v+'s':c.t==='lucky'?'🍀 suerte '+c.v+'min':c.t==='lu'?'🪙 +'+c.v+' LU':'🐾 mascota DIOS'}
-function renderCodes(){var host=document.getElementById('psuCodeList');if(!host)return;
-  var ks=Object.keys(SRV_CODES),u=usedCodes(),h='';
-  if(!ks.length)h='<p style="color:#8fa3b8;font-size:12px;margin:6px 0">Aun no hay codigos publicados.</p>';
-  for(var i=0;i<ks.length;i++){var k=ks[i];
-    if(u[k])h+='<div class="psu-row" style="opacity:.5"><span style="flex:1;text-decoration:line-through">'+esc(k)+'</span>✅</div>';
-    else h+='<div class="psu-row"><span style="flex:1">🔒 <b>'+esc(k)+'</b> <span style="opacity:.7;font-size:11px">'+hintOf(SRV_CODES[k])+'</span></span><button class="psu-b psu-b-c" data-code="'+esc(k)+'">Canjear</button></div>'}
-  host.innerHTML=h}
+function codeExpired(c){return !!(c&&c.dur&&c.at&&Date.now()-c.at>c.dur*60000)}
+function grantCode(c,code){
+ var u=usedCodes();u[code]=Date.now();try{localStorage.setItem('psuCodesUsed',JSON.stringify(u))}catch(e){}
+ if(c.t==='money'){G.money+=c.v;G.te+=c.v;toast('✅ +$'+fmt(c.v),'rwd')}
+ else if(c.t==='rb'){G.rb=(G.rb||0)+c.v;G.mult=Math.pow(1.8,G.rb);toast('✅ +'+c.v+' Rebirths','rwd')}
+ else if(c.t==='boost'){activateBoost(c.v||180)}
+ else if(c.t==='lucky'){luckyBoost=true;renderBuffs();toast('🍀 Suerte x2!','rwd');setTimeout(function(){luckyBoost=false;renderBuffs()},(c.v||5)*60000)}
+ else if(c.t==='pet'){givePets('god',1)}
+ else if(c.t==='lu'){if(!luUid){toast('Inicia sesion en LevelUp','err');return}
+  runTransaction(ref(fbDb,'users/'+luUid+'/coins'),function(cv){return (cv||0)+(c.v||0)})
+   .then(function(){toast('🪙 +'+(c.v||0)+' monedas LU','rwd')}).catch(function(){toast('Error LU','err')})}
+ snd.burst();coinBurst(10);renderCodes();save();updateUI()}
 function redeemCode(code){code=(''+(code||'')).trim().toUpperCase();if(!code)return;
-  var c=SRV_CODES[code];if(!c){toast('❌ Codigo no valido','err');return}
-  var u=usedCodes();if(u[code]){toast('⚠️ Ya canjeado','err');return}
-  u[code]=Date.now();try{localStorage.setItem('psuCodesUsed',JSON.stringify(u))}catch(e){}
-  if(c.t==='money'){G.money+=c.v;G.te+=c.v;toast('✅ +$'+fmt(c.v),'rwd')}
-  else if(c.t==='rb'){G.rb=(G.rb||0)+c.v;G.mult=Math.pow(1.8,G.rb);toast('✅ +'+c.v+' Rebirths','rwd')}
-  else if(c.t==='boost'){activateBoost(c.v||180)}
-  else if(c.t==='lucky'){luckyBoost=true;toast('🍀 Suerte x2 por '+c.v+' min','rwd');setTimeout(function(){luckyBoost=false;toast('Suerte terminada','inf')},(c.v||5)*60000)}
-  else if(c.t==='pet'){givePets('god',1)}
-  else if(c.t==='lu'){if(!luUid){toast('Inicia sesion en LevelUp','err');return}
-    runTransaction(ref(fbDb,'users/'+luUid+'/coins'),function(cv){return (cv||0)+(c.v||0)})
-      .then(function(){toast('🪙 +'+(c.v||0)+' monedas LU','rwd')}).catch(function(){toast('Error LU','err')})}
-  snd.burst();coinBurst(10);renderCodes();save();updateUI()}
+ var c=SRV_CODES[code];if(!c){toast('❌ Codigo no valido','err');return}
+ if(codeExpired(c)){toast('⏰ Codigo expirado','err');return}
+ var u=usedCodes();if(u[code]){toast('⚠️ Ya canjeado','err');return}
+ if(c.t==='lu'&&!luUid){toast('Inicia sesion en LevelUp','err');return}
+ if(c.max&&c.max>0){
+  runTransaction(ref(fbDb,'stats/psuCodes/'+code),function(cur){
+   var n=(cur&&typeof cur==='object')?(cur.n||0):(cur||0);
+   if(n>=c.max)return;
+   return{n:n+1,t:Date.now()}
+  }).then(function(r){if(r&&r.committed)grantCode(c,code);else toast('🎟️ Usos agotados','err')})
+   .catch(function(){toast('Error comprobando codigo','err')});
+  return}
+ grantCode(c,code)}
+function renderCodes(){var host=document.getElementById('psuCodeList');if(!host)return;
+ var ks=Object.keys(SRV_CODES),u=usedCodes(),h='';
+ if(!ks.length)h='<p style="color:#8fa3b8;font-size:12px;margin:6px 0">Aun no hay codigos publicados.</p>';
+ for(var i=0;i<ks.length;i++){var k=ks[i],c=SRV_CODES[k]||{};
+  var exp=codeExpired(c);
+  var n=usesOf(k);
+  var left=(c.max&&c.max>0)?Math.max(0,c.max-n):null;
+  var tleft=(!exp&&c.dur)?Math.max(0,Math.ceil((c.at+c.dur*60000-Date.now())/60000)):null;
+  var badge='';
+  if(c.max&&c.max>0)badge+='<span style="color:'+(left>0?'#7ee2a8':'#f87171')+';font-weight:800">🎟️ '+left+'/'+c.max+' usos</span> ';
+  if(c.dur)badge+='<span style="color:'+(exp?'#f87171':'#fbbf24')+';font-weight:800">'+(exp?'⏰ EXPIRADO':'⏳ '+tleft+'m restantes')+'</span>';
+  if(!c.max&&!c.dur)badge='<span style="color:#8fa3b8;font-size:11px">∞ usos · sin caducidad</span>';
+  if(u[k])h+='<div class="psu-row" style="opacity:.5"><span style="flex:1;text-decoration:line-through">'+esc(k)+'</span>✅</div>';
+  else if(exp||left===0)h+='<div class="psu-row" style="opacity:.45"><span style="flex:1"><b>'+esc(k)+'</b> '+badge+'</span>'
+   +(IS_SUPER?'<button class="psu-b psu-b-r" data-delcode="'+esc(k)+'">✕</button>':'')+'</div>';
+  else h+='<div class="psu-row" style="flex-wrap:wrap"><span style="flex:1;min-width:120px">🔒 <b>'+esc(k)+'</b> <span style="opacity:.7;font-size:11px">'+hintOf(c)+'</span><br>'+badge+'</span>'
+   +'<button class="psu-b psu-b-c" data-code="'+esc(k)+'">Canjear</button>'
+   +(IS_SUPER?'<button class="psu-b psu-b-r" data-delcode="'+esc(k)+'" title="Eliminar codigo">✕</button>':'')+'</div>'}
+ host.innerHTML=h}
 
-/* ---- ⚗️ FUSION (eliges las 3 mascotas) ---- */
+/* ---- FUSION ---- */
 function selRarity(){for(var i=0;i<fuseSelIds.length;i++){for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===fuseSelIds[i])return G.pets[j].r}return null}
 function toggleFuse(id){var p=null;for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===id){p=G.pets[j];break}if(!p)return;
-  var ix=fuseSelIds.indexOf(id);
-  if(ix>-1){fuseSelIds.splice(ix,1);snd.click();renderFusion();return}
-  if(fuseSelIds.length>=3){toast('Ya has elegido 3, toca una para quitarla','err');snd.err();return}
-  var r=selRarity();
-  if(r&&p.r!==r){toast('Deben ser del MISMO rango ('+RNAME[r]+')','err');snd.err();return}
-  fuseSelIds.push(id);snd.click();renderFusion()}
+ var ix=fuseSelIds.indexOf(id);
+ if(ix>-1){fuseSelIds.splice(ix,1);snd.click();renderFusion();return}
+ if(fuseSelIds.length>=3){toast('Ya has elegido 3, toca una para quitarla','err');snd.err();return}
+ var r=selRarity();
+ if(r&&p.r!==r){toast('Deben ser del MISMO rango ('+RNAME[r]+')','err');snd.err();return}
+ fuseSelIds.push(id);snd.click();renderFusion()}
+function autoPick3(){var cnt={};G.pets.forEach(function(p){cnt[p.r]=(cnt[p.r]||0)+1});
+ var pickR=null;for(var i=0;i<RKEYS.length-1;i++){if((cnt[RKEYS[i]]||0)>=3){pickR=RKEYS[i];break}}
+ if(!pickR){toast('No tienes 3 mascotas del mismo rango','err');snd.err();return}
+ var list=G.pets.filter(function(p){return p.r===pickR}).sort(function(a,b){return pE(a)-pE(b)});
+ fuseSelIds=[list[0].id,list[1].id,list[2].id];snd.click();
+ toast('⚡ 3 '+RNAME[pickR]+' más baratas listas','inf');renderFusion()}
 function doFuse(){
-  if(fuseSelIds.length!==3)return;
-  var r=selRarity(),ri=RKEYS.indexOf(r);
-  if(ri<0||ri>=RKEYS.length-1){toast('Este rango no se puede fusionar mas','err');snd.err();return}
-  var pets=[];
-  for(var j=0;j<G.pets.length;j++)if(fuseSelIds.indexOf(G.pets[j].id)>-1)pets.push(G.pets[j]);
-  if(pets.length!==3){fuseSelIds=[];renderFusion();return}
-  var maxLv=1,maxV=0;
-  for(var i=0;i<pets.length;i++){if(pets[i].lv>maxLv)maxLv=pets[i].lv;if((pets[i].v||0)>maxV)maxV=pets[i].v}
-  for(i=0;i<pets.length;i++)G.pets.splice(G.pets.indexOf(pets[i]),1);
-  var nx=RKEYS[ri+1],np2=PETS.filter(function(p){return p.r===nx});
-  var b=np2[Math.floor(Math.random()*np2.length)];
-  var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:maxLv,id:G.nid++,c:b.c,eg:b.eg,v:maxV};
-  G.pets.push(np);fuseSelIds=[];
-  toast('⚗️ FUSION: '+b.n+' ('+RNAME[nx]+')','rwd');snd.hatch(nx);coinBurst(14);
-  save();updateUI();refHP();renderFusion();showH(np,true)}
+ if(fuseSelIds.length!==3)return;
+ var r=selRarity(),ri=RKEYS.indexOf(r);
+ if(ri<0||ri>=RKEYS.length-1){toast('Este rango no se puede fusionar mas','err');snd.err();return}
+ var pets=[];
+ for(var j=0;j<G.pets.length;j++)if(fuseSelIds.indexOf(G.pets[j].id)>-1)pets.push(G.pets[j]);
+ if(pets.length!==3){fuseSelIds=[];renderFusion();return}
+ var maxLv=1,maxV=0;
+ for(var i=0;i<pets.length;i++){if(pets[i].lv>maxLv)maxLv=pets[i].lv;if((pets[i].v||0)>maxV)maxV=pets[i].v}
+ for(i=0;i<pets.length;i++)G.pets.splice(G.pets.indexOf(pets[i]),1);
+ var nx=RKEYS[ri+1],np2=PETS.filter(function(p){return p.r===nx});
+ var b=np2[Math.floor(Math.random()*np2.length)];
+ var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:maxLv,id:G.nid++,c:b.c,eg:b.eg,v:maxV};
+ G.pets.push(np);fuseSelIds=[];
+ toast('⚗️ FUSION: '+b.n+' ('+RNAME[nx]+')'+(maxV===2?' 🌈!':maxV===1?' ⭐!':''),'rwd');
+ snd.hatch(nx);coinBurst(14);
+ save();updateUI();refHP();renderFusion();showH(np,true)}
 function renderFusion(){var host=document.getElementById('fuGrid');if(!host)return;
-  var r=selRarity(),ri=RKEYS.indexOf(r),nx=(ri>-1&&ri<RKEYS.length-1)?RNAME[RKEYS[ri+1]]:null;
-  var h='<div class="psu-fsel">';
-  for(var i=0;i<3;i++){var sp=null,id=fuseSelIds[i];
-    if(id!=null)for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===id){sp=G.pets[j];break}
-    h+='<div class="psu-fslot'+(sp?' has':'')+'">'+(sp?sphH(sp,'xs'):'<i class="fas fa-plus"></i>')+'<span>'+(sp?esc(sp.n):'elige')+'</span></div>'}
-  h+='</div>';
-  h+='<button class="psu-fgo" id="btnFuseGo"'+((fuseSelIds.length===3&&nx)?'':' disabled')+'>⚗️ FUSIONAR'+(nx?' → 1 '+nx:' → elige 3')+'</button>';
-  h+='<p class="psu-hint">El resultado hereda el nivel mas alto y la mejor variante (⭐/🌈) de las 3. Toca una elegida para quitarla.</p>';
-  var s=G.pets.slice().sort(function(a,b){return pE(b)-pE(a)});
-  var cnt={};for(i=0;i<G.pets.length;i++){var rr=G.pets[i].r;cnt[rr]=(cnt[rr]||0)+1}
-  for(var rk=RKEYS.length-1;rk>=0;rk--){var rr2=RKEYS[rk],list=[];
-    for(i=0;i<s.length;i++)if(s[i].r===rr2)list.push(s[i]);
-    if(!list.length)continue;
-    h+='<div class="psu-fg-h" style="color:'+RCOL[rr2]+'">'+RNAME[rr2]+' <span>('+cnt[rr2]+')</span></div><div class="psu-fwrap">';
-    var cap=Math.min(list.length,50);
-    for(i=0;i<cap;i++){var p=list[i],si=fuseSelIds.indexOf(p.id);
-      h+='<div class="psu-fpet'+(si>-1?' sel':'')+'" data-fid="'+p.id+'">'+sphH(p,'xs')+'<b>'+esc(p.n)+(p.v===2?' 🌈':p.v===1?' ⭐':'')+'</b><span>Nv.'+p.lv+' · $'+fmt(pE(p))+'/s</span></div>'}
-    h+='</div>';
-    if(list.length>cap)h+='<p class="psu-hint">+'+fmt(list.length-cap)+' mas de rango '+RNAME[rr2]+'...</p>'}
-  if(!G.pets.length)h+='<p class="psu-hint">No tienes mascotas todavia. Abre huevos primero 🥚</p>';
-  host.innerHTML=h}
+ var r=selRarity(),ri=RKEYS.indexOf(r),nx=(ri>-1&&ri<RKEYS.length-1)?RKEYS[ri+1]:null;
+ var h='<div class="psu-card"><div class="psu-frow">';
+ for(var i=0;i<3;i++){var sp=null,id=fuseSelIds[i];
+  if(id!=null)for(var j=0;j<G.pets.length;j++)if(G.pets[j].id===id){sp=G.pets[j];break}
+  h+='<div class="psu-fslot'+(sp?' has':'')+'">'+(sp?sphH(sp,'sm'):'<i class="fas fa-plus"></i>')+'<span>'+(sp?esc(sp.n):'vacio')+'</span></div>'}
+ h+='<div class="psu-farrow"><i class="fas fa-angle-double-right"></i></div>';
+ h+='<div class="psu-fslot res" style="border-color:'+(nx?RCOL[nx]:'#666')+';box-shadow:0 0 18px '+(nx?RCOL[nx]+'66':'transparent')+'"><div class="psu-fq" style="color:'+(nx?RCOL[nx]:'#888')+'"><i class="fas fa-question"></i></div><span>'+(nx?RNAME[nx]:'???')+'</span></div>';
+ h+='</div>';
+ h+='<div class="psu-row" style="margin-top:10px"><button class="psu-b psu-b-g" id="btnFuseAuto" style="flex:1">⚡ Auto: 3 mas baratas</button><button class="psu-b" id="btnFuseClr" style="flex:0">🗑️</button></div>';
+ h+='<button class="psu-fgo" id="btnFuseGo"'+((fuseSelIds.length===3&&nx)?'':' disabled')+'>⚗️ FUSIONAR → 1 '+(nx?RNAME[nx]:'???')+'</button>';
+ h+='<p class="psu-hint">Hereda el nivel mas alto y la mejor variante ⭐/🌈 de las 3. Toca una elegida para quitarla.</p>';
+ if(nx){var pool=PETS.filter(function(p){return p.r===nx});
+  h+='<div class="psu-fg-h" style="color:'+RCOL[nx]+'">Posibles resultados ('+pool.length+')</div><div class="psu-fposs">';
+  for(i=0;i<pool.length;i++){var dsc=G.disc.indexOf(pool[i].n)!==-1;
+   h+='<div class="psu-fp">'+(dsc?sphH(pool[i],'xs'):'<div class="psu-fq-s"><i class="fas fa-question"></i></div>')+'<span>'+(dsc?esc(pool[i].n):'???')+'</span></div>'}
+  h+='</div>'}
+ h+='</div>';
+ var s=G.pets.slice().sort(function(a,b){return pE(b)-pE(a)});
+ if(!s.length){h+='<div class="empty"><i class="fas fa-egg"></i><p>Abre tu primer huevo</p></div>';host.innerHTML=h;return}
+ for(var rk=RKEYS.length-1;rk>=0;rk--){var rr=RKEYS[rk],list=[];
+  for(i=0;i<s.length;i++)if(s[i].r===rr)list.push(s[i]);
+  if(!list.length)continue;
+  h+='<div class="psu-fg-h" style="color:'+RCOL[rr]+'">'+RNAME[rr]+' <span>('+list.length+')</span></div>';
+  var cap=Math.min(list.length,40);
+  for(i=0;i<cap;i++){var p=list[i],si=fuseSelIds.indexOf(p.id);
+   h+='<div class="pc '+p.r+' psu-fpick" data-fid="'+p.id+'" style="'+(si>-1?'border-color:#fbbf24;box-shadow:0 0 10px rgba(251,191,36,.35)':'')+'">'
+    +'<div class="pc-l">'+sphH(p,'sm')+'<div class="pc-t"><span class="pc-n">'+esc(p.n)+(p.v?' <i class="fas fa-star pc-star v'+p.v+'"></i>':'')+'</span><span class="pc-m">Nv.'+p.lv+' · $'+fmt(pE(p))+'/s</span></div></div>'
+    +'<div class="pc-r"><span class="pc-e" style="color:'+(si>-1?'#fbbf24':'#8fa3b8')+';font-size:11px;font-weight:800">'+(si>-1?'ELEGIDA ✓':'elegir')+'</span></div></div>'}
+  if(list.length>cap)h+='<p class="psu-hint">+'+fmt(list.length-cap)+' mas...</p>'}
+ host.innerHTML=h}
 
-/* ---- BUILD ADDONS (pestañas + paneles + listeners) ---- */
+/* ---- ADMIN render (ultra claro) ---- */
+function aCard(icon,color,title,body){return'<div class="psu-card"><div class="psu-card-h" style="background:linear-gradient(90deg,'+color+','+color+'cc)">'+icon+' '+title+'</div>'+body+'</div>'}
+function renderAdmin(){var host=document.getElementById('admGrid');if(!host)return;
+ var h='<div class="psu-admin-hd">🛡️ MODO ADMIN ACTIVO<div>'+(ME_U?esc(ME_U.email):'')+'</div></div>';
+ var f=(G.feverUntil||0)-Date.now();
+ var st='<div class="psu-strow"><span>💰 Dinero</span><b style="color:#fde047">$'+fmt(G.money)+'</b></div>'
+  +'<div class="psu-strow"><span>📈 Ingreso</span><b style="color:#7ee2a8">$'+fmt(tI())+'/s</b></div>'
+  +'<div class="psu-strow"><span>✖️ Multiplicador</span><b>x'+fmt(G.mult)+'</b></div>'
+  +'<div class="psu-strow"><span>♻️ Rebirths</span><b>'+G.rb+'</b></div>'
+  +(f>0?'<div class="psu-strow"><span>🔥 Fiebre</span><b style="color:#f97316">'+fmtT(f)+'</b></div>':'')
+  +(boostActive?'<div class="psu-strow"><span>⚡ Boost</span><b style="color:#fbbf24">ACTIVO</b></div>':'');
+ h+=aCard('📊','#22d3ee','ESTADO EN VIVO',st);
+ var mon='<div class="psu-row"><input id="psuMoney" value="1e9" placeholder="1e12 · 50b · 3t"></div>'
+  +'<div class="psu-row"><button class="psu-b psu-b-g" data-a="addM" style="flex:1">➕ AÑADIR</button><button class="psu-b psu-b-g" data-a="setM" style="flex:1">= FIJAR</button></div>'
+  +'<div class="psu-grid"><button class="psu-chip" data-am="1e5">+100K</button><button class="psu-chip" data-am="1e6">+1M</button><button class="psu-chip" data-am="1e9">+1B</button><button class="psu-chip" data-am="1e12">+1T</button><button class="psu-chip" data-am="1e15">+1Qa</button><button class="psu-chip" data-am="1e18">+1Sx</button><button class="psu-chip" data-am="1e21">+1Sp</button><button class="psu-chip" data-am="1e24">+1Oc</button></div>';
+ h+=aCard('💰','#fbbf24','DAR DINERO',mon);
+ var pets='<div class="psu-grid" style="margin-bottom:8px">';
+ for(var i=0;i<RKEYS.length;i++){var r=RKEYS[i];
+  pets+='<button class="psu-chip'+(admRarSel===r?' psu-chip-on':'')+'" data-rar="'+r+'" style="'+(admRarSel===r?'background:'+RCOL[r]+';color:#04121f;':'color:'+RCOL[r]+';border-color:'+RCOL[r]+'99')+'">'+RNAME[r]+'</button>'}
+ pets+='</div><div class="psu-row"><input id="psuQty" value="1" type="number" min="1" max="100" style="max-width:70px"><button class="psu-b psu-b-g" data-a="pet" style="flex:1">🐾 DAR '+RNAME[admRarSel].toUpperCase()+'</button></div>'
+  +'<div class="psu-row"><button class="psu-b" data-a="dex" style="flex:1">📖 INDEX 100%</button></div>'
+  +'<div class="psu-h">🔎 Mascota concreta</div><div class="psu-row"><input id="admPetQ" placeholder="Ej: dragon, zeus..." value="'+esc(admPetQ)+'"></div><div class="psu-grid">';
+ if(admPetQ.length>=2){var q=admPetQ.toLowerCase(),found=0;
+  for(i=0;i<PETS.length&&found<12;i++){if(PETS[i].n.toLowerCase().indexOf(q)>-1){
+   h+='<div class="psu-fp psu-gp" data-gp="'+i+'">'+sphH(PETS[i],'xs')+'<span style="color:'+RCOL[PETS[i].r]+'">'+esc(PETS[i].n)+'</span></div>';found++}}
+  if(!found)h+='<span class="psu-hint">Sin resultados</span>'}
+ h+='</div>';
+ h+=aCard('🐾','#c084fc','DAR MASCOTAS',pets);
+ var bo='<div class="psu-brow"><span>⚡ Boost x2 · 30 min</span><button class="psu-b psu-b-g" data-a="boost">ACTIVAR</button></div>'
+  +'<div class="psu-brow"><span>🔥 Fiebre x2 · 60 min</span><button class="psu-b" data-a="fever" style="border-color:#f9731688;color:#fdba74">ACTIVAR</button></div>'
+  +'<div class="psu-brow"><span>🍀 Suerte x2 · 60 min</span><button class="psu-b" data-a="lucky" style="border-color:#84cc1688;color:#bef264">ACTIVAR</button></div>'
+  +'<div class="psu-brow"><span>🏷️ Rebaja 50% en huevos</span><button class="psu-b'+(eggSale?' psu-b-r':'')+'" data-a="sale">'+(eggSale?'DESACTIVAR':'ACTIVAR')+'</button></div>';
+ h+=aCard('⚡','#fbbf24','BOOSTS X2',bo);
+ var ev='<div class="psu-hint" style="margin-top:0">Tambien salen aleatorios para todos los jugadores</div>';
+ for(i=0;i<EVENTS.length;i++){var e=EVENTS[i],act=evtCur&&evtCur.id===e.id;
+  var rem=act?Math.max(0,Math.ceil((evtEnd-Date.now())/1000)):0;
+  ev+='<div class="psu-brow'+(act?' psu-brow-act':'')+'"><span><i class="fas '+e.ic+'" style="color:var(--wa,#22d3ee);margin-right:6px"></i>'+e.n+' <small style="opacity:.6">'+e.dur+'s</small></span>'
+   +(act?'<button class="psu-b psu-b-r" data-a="stopEvt">⏹ '+rem+'s</button>':'<button class="psu-b psu-b-g" data-a="evt" data-ev="'+e.id+'">▶ ACTIVAR</button>')+'</div>'}
+ ev+='<div class="psu-brow"><span>🥚 Soltar huevo dorado YA</span><button class="psu-b" data-a="goldEgg">SOLTAR</button></div>'
+  +'<div class="psu-brow"><span>🎁 Soltar caja sorpresa YA</span><button class="psu-b" data-a="giftNow">SOLTAR</button></div>';
+ h+=aCard('🎉','#a78bfa','EVENTOS ('+EVENTS.length+')',ev);
+ var wd='<div class="psu-row" style="margin-bottom:8px"><button class="psu-b psu-b-g" data-a="worlds" style="flex:1">🔓 DESBLOQUEAR TODOS GRATIS</button></div><div class="psu-grid">';
+ for(i=0;i<WORLDS.length;i++){var w=WORLDS[i],u2=isUW(w.id);
+  wd+='<div class="psu-w'+(u2?' on':'')+'" data-wid="'+w.id+'" title="'+esc(w.name)+' · x'+w.bonus.toFixed(1)+(u2?'':' · clic para desbloquear')+'">'+w.icon+'</div>'}
+ wd+='</div>';
+ h+=aCard('🗺️','#38bdf8','MUNDOS ('+WORLDS.length+')',wd);
+ var pw='<div class="psu-brow"><span>🔓 Boton x3</span><button class="psu-b'+(G.x3?' psu-b-g':'')+'" data-a="x3">'+(G.x3?'ON':'OFF')+'</button></div>'
+  +'<div class="psu-brow"><span>⬆️ Todas las mejoras al maximo</span><button class="psu-b" data-a="upg">HACER</button></div>'
+  +'<div class="psu-row"><input id="psuMult" value="'+(G.mult>1e5?'':G.mult)+'" placeholder="Multiplicador (ej: 50)"><button class="psu-b" data-a="mult">SET</button></div>'
+  +'<div class="psu-row"><input id="psuRb" value="'+G.rb+'" placeholder="Rebirths"><button class="psu-b" data-a="rb">SET</button></div>'
+  +'<div class="psu-row"><button class="psu-b'+(G.mult>=1e6?' psu-b-g':' psu-b-r')+'" data-a="'+(G.mult>=1e6?'ungod':'god')+'" style="flex:1">'+(G.mult>=1e6?'😇 QUITAR MODO DIOS':'😈 MODO DIOS x1M')+'</button>'
+  +'<button class="psu-b psu-b-r" data-a="wipe">🗑️</button></div>';
+ h+=aCard('👑','#fde047','PODER',pw);
+ if(IS_SUPER){
+  var wb='<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global para todos..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
+   +'<div class="psu-brow"><span>🌐 Multiplicador global</span></div>'
+   +'<div class="psu-row"><input id="psuGM" value="'+(G.webMult||2)+'" placeholder="x2, x3..."><button class="psu-b psu-b-g" data-a="gMult" style="flex:1">ACTIVAR</button><button class="psu-b psu-b-r" data-a="gMultOff">OFF</button></div>'
+   +'<div class="psu-h">🎟️ Publicar codigo (pestaña 🎟️)</div>'
+   +'<div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
+   +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"></div>'
+   +'<div class="psu-row"><input id="psuCMax" value="0" placeholder="Usos totales (0 = infinitos)"><input id="psuCDur" value="0" placeholder="Minutos activo (0 = siempre)"></div>'
+   +'<div class="psu-row"><button class="psu-b psu-b-g" data-a="pubCode" style="flex:1">🎟️ PUBLICAR CODIGO</button></div>'
+   +'<div class="psu-h">🚫 Moderacion</div>'
+   +'<div class="psu-row"><input id="psuBan" placeholder="UID del jugador"><button class="psu-b psu-b-r" data-a="ban">BAN</button><button class="psu-b" data-a="unban">UNBAN</button></div>'
+   +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn" style="flex:1">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff" style="flex:1">OFF</button></div>'
+   +'<div class="psu-row"><button class="psu-b" data-a="copyUid" style="flex:1">📋 Copiar mi UID</button></div>';
+  h+=aCard('🌐','#22d3ee','WEB · AFECTA A TODOS',wb)}
+ host.innerHTML=h}
+
+/* ---- BUILD ADDONS ---- */
 function buildAddons(){
-  var st=document.createElement('style');
-  st.textContent='#psuBanner{position:fixed;top:0;left:0;right:0;z-index:9996;display:none;padding:9px 40px 9px 14px;text-align:center;font-weight:700;font-size:13px;color:#04121f;background:linear-gradient(90deg,#22d3ee,#7dd3fc)}#psuBanner .psu-bx{position:absolute;right:12px;top:6px;background:none;border:0;font-size:15px;cursor:pointer;color:#04121f}#psuMultChip{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9995;display:none;background:rgba(10,16,30,.9);border:1px solid #22d3ee;color:#67e8f9;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;pointer-events:none}#buffBar{position:fixed;top:8px;left:8px;z-index:9990;display:flex;gap:6px;flex-wrap:wrap;max-width:60vw;pointer-events:none}.psu-buff{background:rgba(10,16,30,.88);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:11.5px;font-weight:800;color:#fff;backdrop-filter:blur(6px)}#psuCombo{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:9989;display:none;text-align:center;pointer-events:none}#psuCombo .psu-cb-t{font-weight:900;font-size:19px;color:#fbbf24;text-shadow:0 0 14px rgba(251,191,36,.7)}#psuCombo .psu-cb-b{width:130px;height:5px;background:rgba(255,255,255,.12);border-radius:4px;margin:3px auto 0;overflow:hidden}#psuCombo .psu-cb-f{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24)}.psu-coin{position:fixed;z-index:9994;font-size:20px;pointer-events:none;animation:psuCoin 1.3s ease-in forwards}@keyframes psuCoin{to{transform:translateY(45vh) rotate(660deg);opacity:0}}.psu-ov{position:fixed;inset:0;z-index:9997;background:rgba(2,4,10,.95);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;font-family:inherit}.psu-ovc{background:#0d1424;border:1px solid #ef4444;border-radius:18px;padding:26px;max-width:340px}.psu-pad{padding:14px;max-height:calc(100vh - 150px);overflow-y:auto}.psu-row{display:flex;gap:6px;margin-bottom:6px}.psu-row input,.psu-row select{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none;font-family:inherit}.psu-b{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit}.psu-b:hover{background:#fbbf24;color:#231a00}.psu-b-g{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;font-weight:700;border:0}.psu-b-r{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.4);color:#fca5a5}.psu-b-c{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.4);color:#a5f3fc}.psu-h{margin:12px 0 5px;color:#fbbf24;font-size:11px;letter-spacing:1.5px;text-transform:uppercase}.psu-hint{color:#8fa3b8;font-size:11px;margin:8px 0;line-height:1.5}.psu-sec-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--wa2,#7dd3fc);margin:14px 0 8px;font-weight:800}.psu-q{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 11px;margin-bottom:8px}.psu-q-t{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;gap:8px}.psu-q-b{height:6px;background:rgba(255,255,255,.1);border-radius:4px;margin:6px 0 3px;overflow:hidden}.psu-q-f{height:100%;background:linear-gradient(90deg,var(--wa,#22d3ee),var(--wa2,#7dd3fc));transition:width .4s}.psu-q-s{font-size:10.5px;color:#8fa3b8}.psu-fsel{display:flex;gap:8px;justify-content:center;margin:10px 0}.psu-fslot{width:88px;min-height:92px;border:2px dashed rgba(255,255,255,.25);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:#8fa3b8;padding:6px;text-align:center}.psu-fslot.has{border-style:solid;border-color:#fbbf24;color:#fff;background:rgba(251,191,36,.08)}.psu-fgo{width:100%;padding:12px;font-size:15px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;border:0;border-radius:12px;cursor:pointer;margin:6px 0;font-family:inherit}.psu-fgo:disabled{opacity:.4;cursor:not-allowed}.psu-fg-h{font-weight:800;font-size:12px;letter-spacing:1px;margin:14px 0 6px;text-transform:uppercase}.psu-fg-h span{opacity:.6;font-size:10px}.psu-fwrap{display:flex;flex-wrap:wrap}.psu-fpet{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 6px;margin:0 6px 8px 0;cursor:pointer;min-width:86px;font-size:10px;transition:.12s;text-align:center;font-family:inherit;color:#fff}.psu-fpet b{font-size:11px}.psu-fpet span{color:#8fa3b8;font-size:9.5px}.psu-fpet:hover{border-color:var(--wa,#22d3ee)}.psu-fpet.sel{border-color:#fbbf24;background:rgba(251,191,36,.15);box-shadow:0 0 10px rgba(251,191,36,.3)}';
-  document.head.appendChild(st);
+ var st=document.createElement('style');
+ st.textContent='#psuBanner{position:fixed;top:0;left:0;right:0;z-index:9996;display:none;padding:9px 40px 9px 14px;text-align:center;font-weight:700;font-size:13px;color:#04121f;background:linear-gradient(90deg,#22d3ee,#7dd3fc)}#psuBanner .psu-bx{position:absolute;right:12px;top:6px;background:none;border:0;font-size:15px;cursor:pointer;color:#04121f}#psuMultChip{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9995;display:none;background:rgba(10,16,30,.9);border:1px solid #22d3ee;color:#67e8f9;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;pointer-events:none}#buffBar{position:fixed;top:8px;left:8px;z-index:9990;display:flex;gap:6px;flex-wrap:wrap;max-width:60vw;pointer-events:none}.psu-buff{background:rgba(10,16,30,.88);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 10px;font-size:11.5px;font-weight:800;color:#fff;backdrop-filter:blur(6px)}.psu-coin{position:fixed;z-index:9994;font-size:20px;pointer-events:none;animation:psuCoin 1.3s ease-in forwards}@keyframes psuCoin{to{transform:translateY(45vh) rotate(660deg);opacity:0}}@keyframes psuFloat{50%{transform:translateY(-12px) rotate(8deg)}}.psu-ov{position:fixed;inset:0;z-index:9997;background:rgba(2,4,10,.95);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;font-family:inherit}.psu-ovc{background:#0d1424;border:1px solid #ef4444;border-radius:18px;padding:26px;max-width:340px}.psu-pad{padding:14px;max-height:calc(100vh - 150px);overflow-y:auto}.psu-card{background:#101a2e;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:0;margin-bottom:14px;overflow:hidden}.psu-card-h{display:flex;align-items:center;gap:8px;font-weight:900;font-size:13.5px;padding:10px 13px;color:#04121f;letter-spacing:.5px}.psu-card>*:not(.psu-card-h){padding:0 13px 12px}.psu-admin-hd{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;font-weight:900;font-size:15px;border-radius:14px;padding:14px;margin-bottom:14px;text-align:center}.psu-admin-hd div{font-size:11.5px;font-weight:700;opacity:.8;margin-top:3px}.psu-strow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.09);font-size:13.5px;color:#e8f1ff}.psu-strow:last-child{border-bottom:0}.psu-strow b{font-size:14px}.psu-row{display:flex;gap:6px;margin:8px 0 0;align-items:center}.psu-row input,.psu-row select{flex:1;min-width:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit;font-weight:600}.psu-row input:focus{border-color:#fbbf24;background:rgba(255,255,255,.14)}.psu-b{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:10px;padding:10px 13px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit;transition:.15s}.psu-b:hover{background:#fbbf24;color:#231a00}.psu-b-g{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;border:0}.psu-b-r{background:rgba(239,68,68,.22);border-color:rgba(239,68,68,.55);color:#fca5a5}.psu-b-c{background:rgba(34,211,238,.18);border-color:rgba(34,211,238,.5);color:#a5f3fc}.psu-h{margin:12px 0 4px;color:#fbbf24;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;font-weight:900}.psu-hint{color:#9db2c9;font-size:11.5px;margin:8px 0;line-height:1.5}.psu-sec-t{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--wa2,#7dd3fc);margin:0 0 12px;font-weight:900}.psu-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.psu-chip{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:18px;padding:7px 13px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit;transition:.12s}.psu-chip:hover{transform:scale(1.07)}.psu-chip-on{box-shadow:0 0 12px rgba(251,191,36,.5)}.psu-brow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13.5px;font-weight:700;color:#fff}.psu-brow-act{border-color:#fbbf24;background:rgba(251,191,36,.1)}.psu-brow small{font-weight:600}.psu-w{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);cursor:pointer;filter:grayscale(1);opacity:.4;transition:.15s}.psu-w.on{filter:none;opacity:1;border-color:var(--wbd,#22d3ee44)}.psu-w:hover{transform:scale(1.15)}.psu-frow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}.psu-fslot{width:88px;min-height:104px;border:2px dashed rgba(255,255,255,.3);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10.5px;color:#9db2c9;padding:6px;text-align:center;background:rgba(255,255,255,.03)}.psu-fslot.has{border-style:solid;border-color:#fbbf24;background:rgba(251,191,36,.08);color:#fff}.psu-fslot.res{border-style:solid;background:rgba(255,255,255,.05)}.psu-farrow{font-size:22px;color:#22d3ee}.psu-fq{font-size:32px}.psu-fq-s{width:24px;height:24px;border-radius:50%;background:#2a3550;display:flex;align-items:center;justify-content:center;font-size:11px;color:#9db2c9;margin:0 auto}.psu-fgo{width:100%;padding:14px;font-size:16px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#231a00;border:0;border-radius:13px;cursor:pointer;margin:12px 0 0;font-family:inherit;letter-spacing:1px;box-shadow:0 4px 18px rgba(251,191,36,.3)}.psu-fgo:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}.psu-fposs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.psu-fp{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;color:#dbe7f4;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:7px 9px;min-width:66px;text-align:center}.psu-gp{cursor:pointer}.psu-gp:hover{border-color:#fbbf24;background:rgba(251,191,36,.1)}.psu-fg-h{font-weight:900;font-size:12.5px;letter-spacing:1px;margin:16px 0 6px;text-transform:uppercase}.psu-fg-h span{opacity:.6;font-size:10.5px}.psu-fpick{cursor:pointer;transition:.12s}.psu-fpick:hover{transform:translateY(-2px)}.psu-q{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 11px;margin-bottom:8px}.psu-q-t{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;gap:8px}.psu-q-b{height:6px;background:rgba(255,255,255,.1);border-radius:4px;margin:6px 0 3px;overflow:hidden}.psu-q-f{height:100%;background:linear-gradient(90deg,var(--wa,#22d3ee),var(--wa2,#7dd3fc));transition:width .4s}.psu-q-s{font-size:10.5px;color:#8fa3b8}';
+ document.head.appendChild(st);
 
-  buffBarEl=document.createElement('div');buffBarEl.id='buffBar';document.body.appendChild(buffBarEl);
-  comboBarEl=document.createElement('div');comboBarEl.id='psuCombo';document.body.appendChild(comboBarEl);
-  var ban2=document.createElement('div');ban2.id='psuBanner';document.body.appendChild(ban2);
-  var chip=document.createElement('div');chip.id='psuMultChip';document.body.appendChild(chip);
+ buffBarEl=document.createElement('div');buffBarEl.id='buffBar';document.body.appendChild(buffBarEl);
+ var ban2=document.createElement('div');ban2.id='psuBanner';document.body.appendChild(ban2);
+ var chip=document.createElement('div');chip.id='psuMultChip';document.body.appendChild(chip);
 
-  /* ---- PESTAÑAS nuevas (como LU) ---- */
-  var nt=document.getElementById('navTabs');
-  if(nt&&!document.getElementById('tabFusion')){
-    nt.insertAdjacentHTML('beforeend',
-      '<button class="tab" data-t="fusion" id="tabFusion"><i class="fas fa-flask"></i><span>Fusion</span></button>'
-     +'<button class="tab" data-t="codes" id="tabCodes"><i class="fas fa-ticket"></i><span>Codigos</span></button>'
-     +'<button class="tab" data-t="admin" id="tabAdmin" style="display:none"><i class="fas fa-shield-halved"></i><span>Admin</span></button>')}
+ var nt=document.getElementById('navTabs');
+ if(nt&&!document.getElementById('tabFusion')){
+  nt.insertAdjacentHTML('beforeend',
+   '<button class="tab" data-t="fusion" id="tabFusion"><i class="fas fa-flask"></i><span>Fusion</span></button>'
+  +'<button class="tab" data-t="codes" id="tabCodes"><i class="fas fa-ticket"></i><span>Codigos</span></button>'
+  +'<button class="tab" data-t="admin" id="tabAdmin" style="display:none"><i class="fas fa-shield-halved"></i><span>Admin</span></button>')}
 
-  /* ---- PANELES nuevos ---- */
-  if(!document.getElementById('pFusion')){
-    var d=document.createElement('div');d.id='pFusion';d.className='panel';
-    d.innerHTML='<div class="psu-pad"><div class="psu-sec-t">⚗️ Fusion — elige 3 mascotas del mismo rango</div><div id="fuGrid"></div></div>';
-    document.body.appendChild(d)}
-  if(!document.getElementById('pCodes')){
-    var d2=document.createElement('div');d2.id='pCodes';d2.className='panel';
-    d2.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🎟️ Codigos</div>'
-     +'<div class="psu-row"><input id="psuCodeInp" placeholder="Escribe un codigo..." maxlength="20"><button class="psu-b psu-b-c" data-a="redeem">Canjear</button></div>'
-     +'<div id="psuCodeList"></div><p class="psu-hint">El admin publica codigos. Cada uno se canjea 1 vez por jugador.</p></div>';
-    document.body.appendChild(d2)}
-  if(!document.getElementById('pAdmin')){
-    var d3=document.createElement('div');d3.id='pAdmin';d3.className='panel';
-    d3.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🛡️ Panel Admin</div>'
-     +'<div id="psuAdmSec" style="display:none">'
-     +'<div class="psu-row"><button class="psu-b" data-a="copyUid">📋 Copiar mi UID</button></div>'
-     +'<div class="psu-h">💰 Dinero</div><div class="psu-row"><input id="psuMoney" value="1e9" placeholder="1e12 · 50b · 3t"></div><div class="psu-row"><button class="psu-b psu-b-g" data-a="addM">➕ Añadir</button><button class="psu-b psu-b-g" data-a="setM">= Fijar</button></div>'
-     +'<div class="psu-h">🐾 Mascotas</div><div class="psu-row"><select id="psuRar">'+RKEYS.map(function(r){return'<option value="'+r+'">'+RNAME[r]+'</option>'}).join('')+'</select><input id="psuQty" value="1" style="max-width:50px"><button class="psu-b" data-a="pet">Dar</button></div>'
-     +'<div class="psu-row"><button class="psu-b" data-a="dex">📖 Index 100%</button><button class="psu-b psu-b-r" data-a="wipe">🗑️ Borrar pets</button></div>'
-     +'<div class="psu-h">⚡ Poder</div><div class="psu-row"><button class="psu-b" data-a="upg">⬆️ Max mejoras</button><button class="psu-b" data-a="worlds">🗺️ Mundos</button><button class="psu-b" data-a="x3">🔓 x3</button></div>'
-     +'<div class="psu-row"><input id="psuMult" value="10" placeholder="Multiplicador"><button class="psu-b" data-a="mult">✖️ Set</button></div>'
-     +'<div class="psu-row"><input id="psuRb" value="10" placeholder="Rebirths"><button class="psu-b" data-a="rb">♻️ Set</button></div>'
-     +'<div class="psu-h">🎉 Eventos</div><div class="psu-row"><select id="psuEvt">'+EVENTS.map(function(e){return'<option value="'+e.id+'">'+e.n+'</option>'}).join('')+'</select><button class="psu-b" data-a="evt">▶️ Forzar</button></div>'
-     +'<div class="psu-h">😈 Modo</div><div class="psu-row"><button class="psu-b psu-b-r" data-a="god">Dios x1M</button><button class="psu-b" data-a="ungod">Normal</button></div>'
-     +'</div>'
-     +'<div id="psuSupSec" style="display:none">'
-     +'<div class="psu-h">🌐 WEB · afecta a TODOS</div>'
-     +'<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
-     +'<div class="psu-row"><input id="psuGM" value="2" placeholder="Mult global"><button class="psu-b psu-b-g" data-a="gMult">Activar</button><button class="psu-b psu-b-r" data-a="gMultOff">Quitar</button></div>'
-     +'<div class="psu-h">🎟️ Publicar codigo</div><div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
-     +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"><button class="psu-b psu-b-g" data-a="pubCode">OK</button></div>'
-     +'<div class="psu-h">🚫 Moderacion</div><div class="psu-row"><input id="psuBan" placeholder="UID del jugador"></div>'
-     +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="ban">🚫 Ban</button><button class="psu-b" data-a="unban">✅ Unban</button></div>'
-     +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff">OFF</button></div>'
-     +'</div></div>';
-    document.body.appendChild(d3)}
+ if(!document.getElementById('pFusion')){
+  var d=document.createElement('div');d.id='pFusion';d.className='panel';
+  d.innerHTML='<div class="psu-pad"><div class="psu-sec-t">⚗️ Fusion — elige 3 mascotas del mismo rango</div><div id="fuGrid"></div></div>';
+  document.body.appendChild(d)}
+ if(!document.getElementById('pCodes')){
+  var d2=document.createElement('div');d2.id='pCodes';d2.className='panel';
+  d2.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🎟️ Codigos</div>'
+   +'<div class="psu-row"><input id="psuCodeInp" placeholder="Escribe un codigo..." maxlength="20"><button class="psu-b psu-b-c" data-code="__inp">Canjear</button></div>'
+   +'<div id="psuCodeList"></div><p class="psu-hint">El admin publica codigos. Algunos tienen usos limitados o caducidad — ¡corre a canjearlos!</p></div>';
+  document.body.appendChild(d2)}
+ if(!document.getElementById('pAdmin')){
+  var d3=document.createElement('div');d3.id='pAdmin';d3.className='panel';
+  d3.innerHTML='<div class="psu-pad"><div id="admGrid"></div></div>';
+  document.body.appendChild(d3)}
 
-  /* Misiones en el Hub (antes de stats) */
-  var sl=document.getElementById('statList');
-  if(sl&&sl.parentNode&&!document.getElementById('questBox')){
-    var qb=document.createElement('div');qb.id='questBox';
-    qb.innerHTML='<div class="psu-sec-t">📜 Misiones</div><div id="questList"></div>';
-    sl.parentNode.insertBefore(qb,sl)}
+ var sl=document.getElementById('statList');
+ if(sl&&sl.parentNode&&!document.getElementById('questBox')){
+  var qb=document.createElement('div');qb.id='questBox';
+  qb.innerHTML='<div class="psu-sec-t">📜 Misiones</div><div id="questList"></div>';
+  sl.parentNode.insertBefore(qb,sl)}
 
-  /* ---- setTab extendido (muestra los paneles nuevos) ---- */
-  var _st=setTab;
-  setTab=function(t){_st(t);
-    var mp2={fusion:'pFusion',codes:'pCodes',admin:'pAdmin'};
-    var pe2=document.getElementById(mp2[t]);
-    if(pe2)pe2.classList.add('on');
-    if(t==='fusion')renderFusion();
-    else if(t==='codes')renderCodes()};
+ /* clicks delegados */
+ document.addEventListener('click',function(e){
+  var c=e.target.closest('[data-code]');
+  if(c){var cv=c.dataset.code;
+   if(cv==='__inp'){var inp=document.getElementById('psuCodeInp');redeemCode(inp?inp.value:'')}
+   else redeemCode(cv);
+   return}
+  var dc=e.target.closest('[data-delcode]');
+  if(dc&&IS_SUPER){var kk=dc.dataset.delcode;
+   webWrite('adminBroadcast/codes/'+kk,null,'🗑️ Codigo '+kk+' eliminado');
+   webWrite('stats/psuCodes/'+kk,null);
+   setTimeout(renderCodes,600);return}
+  if(e.target.closest('#btnFuseGo')){snd.click();doFuse();return}
+  if(e.target.closest('#btnFuseAuto')){snd.click();autoPick3();return}
+  if(e.target.closest('#btnFuseClr')){snd.click();fuseSelIds=[];renderFusion();return}
+  var f=e.target.closest('[data-fid]');if(f){toggleFuse(parseInt(f.dataset.fid,10));return}
+  var gp=e.target.closest('[data-gp]');if(gp){givePetExact(parseInt(gp.dataset.gp,10));return}
+  var wsel=e.target.closest('.psu-w[data-wid]');if(wsel){admUnlockW(wsel.dataset.wid);return}
+  var ra=e.target.closest('[data-rar]');if(ra){admRarSel=ra.dataset.rar;snd.click();renderAdmin();return}
+  var am=e.target.closest('[data-am]');if(am){G.money+=toNum(am.dataset.am);toast('💰 +$'+fmt(G.money),'rwd');coinBurst(8);save();updateUI();renderAdmin();return}
+  var b=e.target.closest('[data-a]');if(!b)return;
+  if(!e.target.closest('#pAdmin'))return;
+  var a=b.dataset.a;snd.click();
+  var V=function(id){var x=document.getElementById(id);return x?x.value:''};
+  if(a==='addM'){G.money+=toNum(V('psuMoney'));toast('💰 +$'+fmt(G.money),'rwd');coinBurst(8);save();updateUI();renderAdmin()}
+  else if(a==='setM'){G.money=toNum(V('psuMoney'));G.dm=G.money;toast('💵 Fijado $'+fmt(G.money),'rwd');save();updateUI();renderAdmin()}
+  else if(a==='pet')givePets(admRarSel,toNum(V('psuQty'))||1);
+  else if(a==='dex'){G.disc=PETS.map(function(p){return p.n});toast('📖 Index 100%','rwd');save();updateUI();renderAdmin()}
+  else if(a==='boost'){admBoost();renderAdmin()}
+  else if(a==='fever'){admFever();renderAdmin()}
+  else if(a==='lucky'){admLucky();renderAdmin()}
+  else if(a==='sale'){admSale(!eggSale);renderAdmin()}
+  else if(a==='evt')forceEvt(b.dataset.ev||'rain');
+  else if(a==='stopEvt'){if(evtCur)endEvent();renderAdmin()}
+  else if(a==='goldEgg'){spawnGoldEgg();toast('🥚 Huevo dorado suelto!','rwd')}
+  else if(a==='giftNow'){spawnMysteryBox();toast('🎁 Caja suelta!','rwd')}
+  else if(a==='worlds'){G.uw=WORLDS.map(function(w){return w.id});apTh();toast('🗺️ Todos los mundos','rwd');snd.world();save();updateUI();renderAdmin()}
+  else if(a==='x3'){G.x3=!G.x3;toast(G.x3?'🔓 x3 ON':'x3 OFF','rwd');save();updateUI();renderAdmin()}
+  else if(a==='upg'){G.upg={luck:10,inc:10,disc:5,fast:4,auto:3};CLICKS=Math.max(1,5-G.upg.fast);toast('⬆️ Mejoras al maximo','rwd');save();updateUI();renderAdmin()}
+  else if(a==='mult'){G.mult=Math.max(1,toNum(V('psuMult'))||1);toast('✖️ Multiplicador x'+fmt(G.mult),'rwd');save();updateUI();renderAdmin()}
+  else if(a==='rb'){G.rb=toNum(V('psuRb'))|0;G.mult=Math.pow(1.8,G.rb);toast('♻️ RB '+G.rb+' · x'+G.mult.toFixed(1),'rwd');save();updateUI();renderAdmin()}
+  else if(a==='god'){G.mult=1e6;toast('😈 MODO DIOS x1M','rwd');save();updateUI();renderAdmin()}
+  else if(a==='ungod'){G.mult=Math.pow(1.8,G.rb);toast('😇 Modo normal','rwd');save();updateUI();renderAdmin()}
+  else if(a==='wipe')showCf('🗑️','Borrar mascotas','Se eliminaran TODAS. ¿Seguro?',function(){G.pets=[];refHP();save();updateUI();hideCf();renderAdmin()});
+  else if(IS_SUPER){
+   if(a==='announce')webWrite('adminBroadcast/text',V('psuAnn').trim(),'📣 Anuncio publicado para TODOS');
+   else if(a==='gMult')webWrite('adminBroadcast/globalMult',Math.max(1,toNum(V('psuGM'))||1),'🌐 Mult GLOBAL activado');
+   else if(a==='gMultOff')webWrite('adminBroadcast/globalMult',1,'🌐 Mult global quitado');
+   else if(a==='pubCode'){var n=V('psuCn').trim().toUpperCase(),t2=V('psuCt'),v=Math.max(1,toNum(V('psuCv'))||1);
+    var mx=Math.max(0,toNum(V('psuCMax'))||0),du=Math.max(0,toNum(V('psuCDur'))||0);
+    if(!n)return;
+    var rw=t2==='money'?{t:'money',v:v}:t2==='rb'?{t:'rb',v:v}:t2==='boost'?{t:'boost',v:v}:t2==='lucky'?{t:'lucky',v:v}:t2==='lu'?{t:'lu',v:v}:{t:'pet',v:1};
+    if(mx>0)rw.max=mx;if(du>0){rw.dur=du;rw.at=Date.now()}
+    webWrite('adminBroadcast/codes/'+n,rw,'🎟️ Codigo '+n+' publicado'+(mx>0?' · '+mx+' usos':'')+(du>0?' · '+du+' min':''))}
+   else if(a==='ban')webWrite('bannedUsers/'+V('psuBan').trim(),true,'🚫 Baneado');
+   else if(a==='unban')webWrite('bannedUsers/'+V('psuBan').trim(),null,'✅ Desbaneado');
+   else if(a==='mantOn')webWrite('maintenance/psuGame',{on:true,msg:V('psuAnn')||'Volvemos en un rato 🛠️'},'🛠️ Mantenimiento ON');
+   else if(a==='mantOff')webWrite('maintenance/psuGame',null,'🛠️ Mantenimiento OFF')}});
+ document.addEventListener('input',function(e){
+  if(e.target.id==='admPetQ'){admPetQ=e.target.value;renderAdmin();
+   var nq=document.getElementById('admPetQ');if(nq){nq.focus();nq.setSelectionRange(nq.value.length,nq.value.length)}}});
+ document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='psuCodeInp'){redeemCode(e.target.value);e.target.value=''}});
+ addEventListener('keydown',function(e){var t=e.target;if(t&&/^(input|textarea|select)$/i.test(t.tagName))return;
+  if((e.key||'').toLowerCase()==='a'&&IS_ADM)setTab('admin')});
 
-  /* ---- clicks delegados ---- */
-  document.addEventListener('click',function(e){
-    var c=e.target.closest('[data-code]');if(c){redeemCode(c.dataset.code);return}
-    if(e.target.closest('#btnFuseGo')){snd.click();doFuse();return}
-    var f=e.target.closest('[data-fid]');if(f){toggleFuse(parseInt(f.dataset.fid,10));return}
-    var b=e.target.closest('[data-a]');if(!b)return;
-    if(!e.target.closest('#pAdmin'))return;
-    var a=b.dataset.a;snd.click();
-    var V=function(id){var x=document.getElementById(id);return x?x.value:''};
-    if(a==='redeem'){redeemCode(V('psuCodeInp'));return}
-    if(a==='copyUid'){var uid=luUid||(ME_U&&ME_U.uid)||'';try{navigator.clipboard.writeText(uid);toast('📋 UID copiado','inf')}catch(x){prompt('Tu UID:',uid)}return}
-    if(!IS_ADM)return;
-    if(a==='addM'){G.money+=toNum(V('psuMoney'));toast('💰 +$'+fmt(G.money),'rwd');save();updateUI()}
-    else if(a==='setM'){G.money=toNum(V('psuMoney'));G.dm=G.money;toast('💵 Fijado $'+fmt(G.money),'rwd');save();updateUI()}
-    else if(a==='pet')givePets(V('psuRar'),toNum(V('psuQty')));
-    else if(a==='dex'){G.disc=PETS.map(function(p){return p.n});toast('📖 Index 100%','rwd');save();updateUI()}
-    else if(a==='upg'){G.upg={luck:10,inc:10,disc:5,fast:4,auto:3};CLICKS=Math.max(1,5-G.upg.fast);toast('⬆️ Mejoras al maximo','rwd');save();updateUI()}
-    else if(a==='worlds'){G.uw=WORLDS.map(function(w){return w.id});apTh();toast('🗺️ Todos los mundos','rwd');save();updateUI()}
-    else if(a==='x3'){G.x3=true;toast('🔓 x3 desbloqueado','rwd');save();updateUI()}
-    else if(a==='mult'){G.mult=Math.max(1,toNum(V('psuMult'))||1);toast('✖️ Multiplicador x'+fmt(G.mult),'rwd');save();updateUI()}
-    else if(a==='rb'){G.rb=toNum(V('psuRb'))|0;G.mult=Math.pow(1.8,G.rb);toast('♻️ RB '+G.rb+' · x'+G.mult.toFixed(1),'rwd');save();updateUI()}
-    else if(a==='evt')forceEvt(V('psuEvt'));
-    else if(a==='god'){G.mult=1e6;toast('😈 MODO DIOS x1M','rwd');save();updateUI()}
-    else if(a==='ungod'){G.mult=Math.pow(1.8,G.rb);toast('😇 Modo normal','rwd');save();updateUI()}
-    else if(a==='wipe')showCf('🗑️','Borrar mascotas','Se eliminaran TODAS. ¿Seguro?',function(){G.pets=[];refHP();save();updateUI();hideCf();toast('Mascotas borradas','inf')});
-    else if(IS_SUPER){
-      if(a==='announce')webWrite('adminBroadcast/text',V('psuAnn').trim(),'📣 Anuncio publicado para TODOS');
-      else if(a==='gMult')webWrite('adminBroadcast/globalMult',Math.max(1,toNum(V('psuGM'))||1),'🌐 Mult GLOBAL activado');
-      else if(a==='gMultOff')webWrite('adminBroadcast/globalMult',1,'🌐 Mult global quitado');
-      else if(a==='pubCode'){var n=V('psuCn').trim().toUpperCase(),t2=V('psuCt'),v=Math.max(1,toNum(V('psuCv'))||1);if(!n)return;
-        var rw=t2==='money'?{t:'money',v:v}:t2==='rb'?{t:'rb',v:v}:t2==='boost'?{t:'boost',v:v}:t2==='lucky'?{t:'lucky',v:v}:t2==='lu'?{t:'lu',v:v}:{t:'pet',v:1};
-        webWrite('adminBroadcast/codes/'+n,rw,'🎟️ Codigo '+n+' publicado')}
-      else if(a==='ban')webWrite('bannedUsers/'+V('psuBan').trim(),true,'🚫 Baneado');
-      else if(a==='unban')webWrite('bannedUsers/'+V('psuBan').trim(),null,'✅ Desbaneado');
-      else if(a==='mantOn')webWrite('maintenance/psuGame',{on:true,msg:V('psuAnn')||'Volvemos en un rato 🛠️'},'🛠️ Mantenimiento ON');
-      else if(a==='mantOff')webWrite('maintenance/psuGame',null,'🛠️ Mantenimiento OFF')}});
-  document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='psuCodeInp'){redeemCode(e.target.value);e.target.value=''}});
-  addEventListener('keydown',function(e){var t=e.target;if(t&&/^(input|textarea|select)$/i.test(t.tagName))return;
-    if((e.key||'').toLowerCase()==='a'&&IS_ADM)setTab('admin')});
+ /* deteccion admin + listeners globales */
+ onAuthStateChanged(fbAuth,function(u){ME_U=u||null;
+  if(!u||!u.email){setAdm(false,false);return}
+  var em=(''+u.email).toLowerCase();
+  setAdm(ADMIN_EMAILS.indexOf(em)>-1,SUPER_EMAILS.indexOf(em)>-1)});
+ onValue(ref(fbDb,'adminBroadcast'),function(s){var v=s.val()||{};
+  if(v.text)showBanner(v.text);
+  G.webMult=(+v.globalMult)||1;updChip();
+  if(v.codes)SRV_CODES=v.codes;renderCodes()},function(){});
+ onValue(ref(fbDb,'adminBroadcast/codes'),function(s){SRV_CODES=s.val()||{};renderCodes()},function(){});
+ onValue(ref(fbDb,'stats/psuCodes'),function(s){PSU_USES=s.val()||{};renderCodes()},function(){});
+ onValue(ref(fbDb,'bannedUsers'),function(s){var v=s.val(),uid=luUid||(ME_U&&ME_U.uid);
+  if(uid&&v&&v[uid])psuOv('psuBanOv','<div style="font-size:44px">🚫</div><h2>Estas baneado</h2><p style="color:#9aa">Contacta con un administrador.</p>');
+  else psuOvX('psuBanOv')},function(){});
+ /* mantenimiento: admin INMUNE + Reintentar para jugadores */
+ onValue(ref(fbDb,'maintenance'),function(s){
+  if(IS_ADM){psuOvX('psuMantOv');return}
+  var v=s.val(),on=false,msg='';
+  if(v){if(v.on===true){on=true;msg=v.msg||''}else for(var k in v){if(v[k]&&v[k].on){on=true;msg=v[k].msg||'';break}}}
+  if(on){psuOv('psuMantOv','<div style="font-size:44px">🛠️</div><h2>Mantenimiento</h2><p style="color:#9aa">'+esc(msg||'Volvemos en un rato')+'</p><button class="psu-b" id="psuMantX" style="margin-top:12px">🔄 Reintentar</button>','#f59e0b');
+   var xb=document.getElementById('psuMantX');if(xb)xb.onclick=function(){location.reload()}}
+  else psuOvX('psuMantOv')},function(){});
 
-  /* deteccion admin (email, como tus rules) + listeners globales */
-  onAuthStateChanged(fbAuth,function(u){ME_U=u||null;
-    if(!u||!u.email){setAdm(false,false);return}
-    var em=(''+u.email).toLowerCase();
-    setAdm(ADMIN_EMAILS.indexOf(em)>-1,SUPER_EMAILS.indexOf(em)>-1)});
-  onValue(ref(fbDb,'adminBroadcast'),function(s){var v=s.val()||{};
-    if(v.text)showBanner(v.text);
-    G.webMult=(+v.globalMult)||1;updChip();
-    if(v.codes)SRV_CODES=v.codes;renderCodes()},function(){});
-  onValue(ref(fbDb,'adminBroadcast/codes'),function(s){SRV_CODES=s.val()||{};renderCodes()},function(){});
-  onValue(ref(fbDb,'bannedUsers'),function(s){var v=s.val(),uid=luUid||(ME_U&&ME_U.uid);
-    if(uid&&v&&v[uid])psuOv('psuBanOv','<div style="font-size:44px">🚫</div><h2>Estas baneado</h2><p style="color:#9aa">Contacta con un administrador.</p>');
-    else psuOvX('psuBanOv')},function(){});
-  onValue(ref(fbDb,'maintenance'),function(s){var v=s.val(),on=false,msg='';
-    if(v){if(v.on===true){on=true;msg=v.msg||''}else for(var k in v){if(v[k]&&v[k].on){on=true;msg=v[k].msg||'';break}}}
-    if(on)psuOv('psuMantOv','<div style="font-size:44px">🛠️</div><h2>Mantenimiento</h2><p style="color:#9aa">'+esc(msg||'Volvemos en un rato')+'</p>','#f59e0b');
-    else psuOvX('psuMantOv')},function(){});
+ /* ticks */
+ setInterval(function(){checkQuests();
+  if(aTab==='hub')renderQuests();
+  if(aTab==='fusion'){var sc=document.querySelector('#pFusion .psu-pad'),st2=sc?sc.scrollTop:0;renderFusion();if(sc)sc.scrollTop=st2}
+  if(aTab==='admin'){var sc3=document.querySelector('#pAdmin .psu-pad'),st3=sc3?sc3.scrollTop:0;var ae=document.activeElement;
+   if(!(ae&&/^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName))){renderAdmin();if(sc3)sc3.scrollTop=st3}}},1000);
+ updChip();
 
-  /* ticks */
-  setInterval(function(){checkQuests();
-    if(aTab==='hub')renderQuests();
-    if(aTab==='fusion'){var fg=document.getElementById('fuGrid');var sc=fg?fg.parentElement:null;var st2=sc?sc.scrollTop:0;renderFusion();if(sc)sc.scrollTop=st2}},1000);
-  setInterval(saveX,10000);
-  updChip();
-
-  try{if(localStorage.getItem('psu_admin_dev')==='1')setAdm(true,true)}catch(e){} // ⚠️ flag de prueba, BORRA en producción
+ /* 🎉 aviso de actualización (una vez por versión) */
+ try{
+ if(!localStorage.getItem(UPD_KEY)){
+  var m=document.createElement('div');m.className='psu-ov';m.id='psuUpd';
+  m.innerHTML='<div class="psu-ovc" style="border-color:#fbbf24;max-width:430px;text-align:left">'
+   +'<div style="font-size:42px;text-align:center">🎟️</div><h2 style="text-align:center;margin:6px 0 12px">ACTUALIZACIÓN '+UPD_VERSION.toUpperCase()+'</h2>'
+   +'<div style="font-size:13px;line-height:2;color:#cdd9e8">'
+   +'🎟️ <b>Códigos con usos limitados</b> — ej: solo 1 jugador en todo el mundo<br>'
+   +'⏳ <b>Códigos con caducidad</b> — activos X minutos<br>'
+   +'👑 El admin puede borrar códigos con ✕<br>'
+   +'🛡️ Admin renovado + 10 eventos + fusión mejorada<br>'
+   +'💾 <b style="color:#7ee2a8">Tu progreso NO se ha borrado</b></div>'
+   +'<button class="psu-b psu-b-g" id="psuUpdOk" style="width:100%;margin-top:14px;padding:12px;font-size:15px;justify-content:center;display:flex;align-items:center;gap:8px">¡A JUGAR! 🚀</button></div>';
+  document.body.appendChild(m);m.style.display='flex';
+  document.getElementById('psuUpdOk').onclick=function(){
+   try{localStorage.setItem(UPD_KEY,'1')}catch(e){}
+   m.remove();snd.hatch('og');coinBurst(20)};
+  snd.world()}
+ }catch(e){}
 }
-window.__psu={G:function(){return G},setAdm:setAdm};
+window.__psu={G:function(){return G},setAdm:setAdm,who:function(){
+ if(ME_U&&ME_U.email){console.log('📧 Logueado como:',ME_U.email,'· Admin:',IS_ADM,'· Super:',IS_SUPER);return ME_U.email}
+ console.log('❌ Sin sesion iniciada');return null}};
 
 // ===== INIT =====
-load();loadX();/* ⭐ */
-var cw=gW();if(cw.eggs.indexOf(selE)===-1)selE=cw.eggs[0];
+load();var cw=gW();if(cw.eggs.indexOf(selE)===-1)selE=cw.eggs[0];
 document.getElementById('rkName').value=G.pn;
 document.getElementById('btnMute').innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';
 initBg();drBg();initRk();
@@ -1075,16 +1194,15 @@ if(G.lastSeen){
     setTimeout(function(){toast('Ganaste $'+fmt(offEarn)+' mientras estabas fuera!','rwd')},1200);
   }
 }
-// Restaurar boost activo si quedaba tiempo
+// Restaurar boost
 if(G.boostUntil&&G.boostUntil>Date.now()){
   boostActive=true;
   var rem=G.boostUntil-Date.now();
   boostTimeout=setTimeout(function(){boostActive=false;G.boostUntil=0;toast('Boost terminado','inf');updateUI()},rem);
 }else{G.boostUntil=0}
-// Clicks segun mejora de rotura rapida
 CLICKS=Math.max(1,5-(G.upg?G.upg.fast:0));
-// Eventos aleatorios (cada 60s, 22% de probabilidad)
-setInterval(function(){if(!evtCur&&Math.random()<.22)startEvent()},60000);
+// Eventos aleatorios (~11% por minuto)
+setInterval(function(){if(!evtCur&&Math.random()<.11)startEvent()},60000);
 
 // ===== EVENT LISTENERS =====
 document.getElementById('btnMute').addEventListener('click',function(){G.mut=!G.mut;this.innerHTML=G.mut?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';save()});
@@ -1106,7 +1224,7 @@ document.getElementById('confirmYes').addEventListener('click',function(){hideCf
 document.getElementById('confirmNo').addEventListener('click',hideCf);
 
 updateUI();
-buildAddons();/* ⭐ */
+buildAddons();
 
 // ===== GAME LOOP =====
 var lastPetCount=G.pets.length;
@@ -1119,15 +1237,11 @@ setInterval(function(){
   updateUI();
 },1000);
 
-// ===== RANKING UPDATE =====
 setInterval(function(){updRk();if(aTab==='rank')renderRk()},5000);
-
 setInterval(save,8000);
 
-// ===== SMOOTH MONEY DISPLAY =====
 function rLoop(){var diff=G.money-G.dm;if(Math.abs(diff)>.5){G.dm+=diff*.15;document.getElementById('sMoney').textContent='$'+fmt(Math.round(G.dm))}requestAnimationFrame(rLoop)}
 requestAnimationFrame(rLoop);
 
-// ===== AUDIO INIT ON FIRST INTERACTION =====
 document.addEventListener('click',function(){snd.go()},{once:true});
 document.addEventListener('touchstart',function(){snd.go()},{once:true});
