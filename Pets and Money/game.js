@@ -3,10 +3,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 👑 ADMIN (tus rules) — guillevarelacors = admin + super */
+/* 👑 ADMIN — guillevarelacors = admin + super (poderes web) */
 var ADMIN_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com','ovarela@ietemple.cat'];
 var SUPER_EMAILS=['guillevarelacors@gmail.com','guillempro07@gmail.com'];
-var UPD_VERSION='v45',UPD_KEY='psu_update_seen_v45';
+var UPD_VERSION='v46',UPD_KEY='psu_update_seen_v46';
 
 // ===== MUNDOS (31) =====
 var WORLDS=[
@@ -189,7 +189,7 @@ var boostActive=false,boostTimeout=null;
 var eventMult=1,luckyBoost=false,eggSale=false,evtCur=null,evtEnd=0,evtT=null,multiList=null;
 var IS_ADM=false,IS_SUPER=false,ME_U=null,SRV_CODES={},PSU_USES={};
 var buffBarEl=null,fuseSelIds=[],admRarSel='god',admPetQ='';
-var evtRainbow=false,evtMagnet=false,turboIv=null;
+var evtRainbow=false,evtMagnet=false,turboIv=null,petRainIv=null,frenesiIv=null,moneyIv=null;
 
 // ===== UTILIDADES =====
 function fmt(n){if(isNaN(n)||!isFinite(n))return'0';n=Number(n);if(n<0)return'-'+fmt(-n);
@@ -367,7 +367,7 @@ var ACHS=[
 {id:'up1',n:'Maximizador',d:'Compra 15 niveles de mejoras',ic:'fa-arrow-up-right-dots',goal:15,st:'upg',rw:5e7}
 ];
 
-// ===== EVENTOS (10) =====
+// ===== EVENTOS: helpers =====
 function spawnGoldEgg(){
   var e=document.createElement('div');e.id='goldEgg';e.innerHTML='<i class="fas fa-egg"></i>';
   e.style.left=(Math.random()*260+40)+'px';e.style.top=(Math.random()*380+120)+'px';
@@ -403,11 +403,36 @@ function spawnMysteryBox(){
   else{activateBoost(300);toast('🎁 CAJA: Boost x2 · 5 min!','rwd')}
   save();updateUI()});
  setTimeout(function(){if(e.parentNode)e.remove()},11000)}
+function spawnLegendChest(){
+ var old=document.getElementById('psuChest');if(old)old.remove();
+ var e=document.createElement('div');e.id='psuChest';e.innerHTML='<i class="fas fa-box-open"></i>';
+ e.style.cssText='position:absolute;z-index:60;font-size:48px;cursor:pointer;color:#fbbf24;filter:drop-shadow(0 0 16px #fbbf24);animation:psuFloat 1.2s ease-in-out infinite';
+ e.style.left=(Math.random()*260+40)+'px';e.style.top=(Math.random()*380+120)+'px';
+ document.getElementById('game').appendChild(e);
+ var done=false;
+ e.addEventListener('click',function(ev){ev.stopPropagation();if(done)return;done=true;e.remove();
+  var pool=PETS.filter(function(p){return RORD[p.r]>=5});
+  var b=pool[Math.floor(Math.random()*pool.length)];
+  var np={ic:b.ic,n:b.n,r:b.r,be:b.e,lv:1,id:G.nid++,c:b.c,eg:b.eg,v:rollVariant()};
+  G.pets.push(np);G.tot++;if(G.disc.indexOf(b.n)<0)G.disc.push(b.n);
+  toast('🏆 COFRE LEGENDARIO: '+b.n+' ('+RNAME[b.r]+')!','rwd');snd.hatch(b.r);coinBurst(20);refHP();
+  save();updateUI();showH(np,true)});
+ setTimeout(function(){if(e.parentNode)e.remove()},10000)}
+function petRainTick(){var tpl=roll(selE);var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
+ G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)<0)G.disc.push(tpl.n);refHP();updateUI()}
 function startFreeEggs(){stopFreeEggs();turboIv=setInterval(function(){
- var tpl=roll(selE);var np={ic:tpl.ic,n:tpl.n,r:tpl.r,be:tpl.e,lv:1,id:G.nid++,c:tpl.c,eg:tpl.eg,v:rollVariant()};
- G.pets.push(np);G.tot++;if(G.disc.indexOf(tpl.n)<0)G.disc.push(tpl.n);refHP();updateUI();
- if(Math.random()<.2)toast('⚡ TURBO: '+tpl.n+' gratis!','inf')},1000)}
+ petRainTick();if(Math.random()<.2)toast('⚡ TURBO: mascota gratis!','inf')},1000)}
 function stopFreeEggs(){if(turboIv){clearInterval(turboIv);turboIv=null}}
+function startPetRain(){stopPetRain();petRainIv=setInterval(petRainTick,800)}
+function stopPetRain(){if(petRainIv){clearInterval(petRainIv);petRainIv=null}}
+function startFrenesi(){stopFrenesi();frenesiIv=setInterval(petRainTick,220)}
+function stopFrenesi(){if(frenesiIv){clearInterval(frenesiIv);frenesiIv=null}}
+function startMoneyRain(){stopMoneyRain();moneyIv=setInterval(function(){
+ var amt=Math.max(1000,Math.floor(tI()*25));G.money+=amt;G.te+=amt;
+ if(Math.random()<.4)toast('💵 +$'+fmt(amt),'inf');updateUI()},1500)}
+function stopMoneyRain(){if(moneyIv){clearInterval(moneyIv);moneyIv=null}}
+
+// ===== EVENTOS (15) =====
 var EVENTS=[
 {id:'rain',n:'LLUVIA DE DINERO x3',ic:'fa-cloud-showers-heavy',dur:60,apply:function(){eventMult=3},end:function(){eventMult=1}},
 {id:'lucky',n:'SUERTE DIVINA',ic:'fa-clover',dur:45,apply:function(){luckyBoost=true},end:function(){luckyBoost=false}},
@@ -418,7 +443,12 @@ var EVENTS=[
 {id:'rainbow',n:'HORA ARCOIRIS',ic:'fa-rainbow',dur:60,apply:function(){evtRainbow=true},end:function(){evtRainbow=false}},
 {id:'caja',n:'CAJA SORPRESA',ic:'fa-gift',dur:12,apply:function(){spawnMysteryBox()},end:function(){}},
 {id:'turbo',n:'TURBO DE HUEVOS',ic:'fa-gauge-high',dur:20,apply:function(){startFreeEggs()},end:function(){stopFreeEggs()}},
-{id:'jackpot',n:'SUPER JACKPOT',ic:'fa-money-bill-wave',dur:5,apply:function(){var amt=Math.max(50000,Math.floor(tI()*300));G.money+=amt;G.te+=amt;toast('💸 SUPER JACKPOT +$'+fmt(amt),'rwd');coinBurst(25);snd.hatch('og');save();updateUI()},end:function(){}}
+{id:'jackpot',n:'SUPER JACKPOT',ic:'fa-money-bill-wave',dur:5,apply:function(){var amt=Math.max(50000,Math.floor(tI()*300));G.money+=amt;G.te+=amt;toast('💸 SUPER JACKPOT +$'+fmt(amt),'rwd');coinBurst(25);snd.hatch('og');save();updateUI()},end:function(){}},
+{id:'mega',n:'MEGA FIESTA x10',ic:'fa-star',dur:30,apply:function(){eventMult=10},end:function(){eventMult=1}},
+{id:'petrain',n:'LLUVIA DE MASCOTAS',ic:'fa-cloud-rain',dur:15,apply:function(){startPetRain()},end:function(){stopPetRain()}},
+{id:'frenesi',n:'FRENESI DE HUEVOS',ic:'fa-fire',dur:12,apply:function(){startFrenesi()},end:function(){stopFrenesi()}},
+{id:'cofre',n:'COFRE LEGENDARIO',ic:'fa-box-open',dur:10,apply:function(){spawnLegendChest()},end:function(){}},
+{id:'dinero',n:'DINERO LOCO',ic:'fa-money-bill-trend-up',dur:20,apply:function(){startMoneyRain()},end:function(){stopMoneyRain()}}
 ];
 function startEvent(){
   if(evtCur)return;
@@ -769,7 +799,7 @@ onAuthStateChanged(fbAuth, function(user) {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   ⭐ ADD-ONS v45: BUFFS · MISIONES · CODIGOS (usos+caducidad) · FUSION · ADMIN
+   ⭐ ADD-ONS v46: BUFFS · MISIONES · CODIGOS · FUSION · ADMIN
    ═══════════════════════════════════════════════════════════ */
 function renderBuffs(){if(!buffBarEl)return;var h='';
  if((G.webMult||1)>1)h+='<span class="psu-buff" style="border-color:#22d3ee">🌐 x'+G.webMult+' GLOBAL</span>';
@@ -780,6 +810,9 @@ function renderBuffs(){if(!buffBarEl)return;var h='';
  if(evtRainbow)h+='<span class="psu-buff" style="border-color:#f0abfc">🌈 ARCOIRIS x12</span>';
  if(evtMagnet)h+='<span class="psu-buff" style="border-color:#38bdf8">🧲 IMÁN x3</span>';
  if(eventMult>1)h+='<span class="psu-buff" style="border-color:#fbbf24">💰 x'+eventMult+'</span>';
+ if(petRainIv)h+='<span class="psu-buff" style="border-color:#f472b6">🌧️ LLUVIA DE PETS</span>';
+ if(frenesiIv)h+='<span class="psu-buff" style="border-color:#f97316">🔥 FRENESÍ</span>';
+ if(moneyIv)h+='<span class="psu-buff" style="border-color:#fbbf24">💵 DINERO LOCO</span>';
  if(IS_ADM)h+='<span class="psu-buff" style="border-color:#fbbf24">👑 ADMIN +25%</span>';
  buffBarEl.innerHTML=h}
 
@@ -951,10 +984,25 @@ function renderFusion(){var host=document.getElementById('fuGrid');if(!host)retu
   if(list.length>cap)h+='<p class="psu-hint">+'+fmt(list.length-cap)+' mas...</p>'}
  host.innerHTML=h}
 
-/* ---- ADMIN render (ultra claro) ---- */
+/* ---- ADMIN render (ultra claro · WEB arriba) ---- */
 function aCard(icon,color,title,body){return'<div class="psu-card"><div class="psu-card-h" style="background:linear-gradient(90deg,'+color+','+color+'cc)">'+icon+' '+title+'</div>'+body+'</div>'}
+function webCard(){
+ var wb='<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global para todos..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
+  +'<div class="psu-brow"><span>🌐 Multiplicador global</span></div>'
+  +'<div class="psu-row"><input id="psuGM" value="'+(G.webMult||2)+'" placeholder="x2, x3..."><button class="psu-b psu-b-g" data-a="gMult" style="flex:1">ACTIVAR</button><button class="psu-b psu-b-r" data-a="gMultOff">OFF</button></div>'
+  +'<div class="psu-h">🎟️ Publicar codigo</div>'
+  +'<div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
+  +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"></div>'
+  +'<div class="psu-row"><input id="psuCMax" value="0" placeholder="Usos totales (0 = infinitos)"><input id="psuCDur" value="0" placeholder="Minutos activo (0 = siempre)"></div>'
+  +'<div class="psu-row"><button class="psu-b psu-b-g" data-a="pubCode" style="flex:1">🎟️ PUBLICAR CODIGO</button></div>'
+  +'<div class="psu-h">🚫 Moderacion</div>'
+  +'<div class="psu-row"><input id="psuBan" placeholder="UID del jugador"><button class="psu-b psu-b-r" data-a="ban">BAN</button><button class="psu-b" data-a="unban">UNBAN</button></div>'
+  +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn" style="flex:1">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff" style="flex:1">OFF</button></div>'
+  +'<div class="psu-row"><button class="psu-b" data-a="copyUid" style="flex:1">📋 Copiar mi UID</button></div>';
+ return aCard('🌐','#22d3ee','WEB · AFECTA A TODOS',wb)}
 function renderAdmin(){var host=document.getElementById('admGrid');if(!host)return;
  var h='<div class="psu-admin-hd">🛡️ MODO ADMIN ACTIVO<div>'+(ME_U?esc(ME_U.email):'')+'</div></div>';
+ if(IS_SUPER)h+=webCard();
  var f=(G.feverUntil||0)-Date.now();
  var st='<div class="psu-strow"><span>💰 Dinero</span><b style="color:#fde047">$'+fmt(G.money)+'</b></div>'
   +'<div class="psu-strow"><span>📈 Ingreso</span><b style="color:#7ee2a8">$'+fmt(tI())+'/s</b></div>'
@@ -990,7 +1038,8 @@ function renderAdmin(){var host=document.getElementById('admGrid');if(!host)retu
   ev+='<div class="psu-brow'+(act?' psu-brow-act':'')+'"><span><i class="fas '+e.ic+'" style="color:var(--wa,#22d3ee);margin-right:6px"></i>'+e.n+' <small style="opacity:.6">'+e.dur+'s</small></span>'
    +(act?'<button class="psu-b psu-b-r" data-a="stopEvt">⏹ '+rem+'s</button>':'<button class="psu-b psu-b-g" data-a="evt" data-ev="'+e.id+'">▶ ACTIVAR</button>')+'</div>'}
  ev+='<div class="psu-brow"><span>🥚 Soltar huevo dorado YA</span><button class="psu-b" data-a="goldEgg">SOLTAR</button></div>'
-  +'<div class="psu-brow"><span>🎁 Soltar caja sorpresa YA</span><button class="psu-b" data-a="giftNow">SOLTAR</button></div>';
+  +'<div class="psu-brow"><span>🎁 Soltar caja sorpresa YA</span><button class="psu-b" data-a="giftNow">SOLTAR</button></div>'
+  +'<div class="psu-brow"><span>🏆 Soltar cofre legendario YA</span><button class="psu-b" data-a="chestNow">SOLTAR</button></div>';
  h+=aCard('🎉','#a78bfa','EVENTOS ('+EVENTS.length+')',ev);
  var wd='<div class="psu-row" style="margin-bottom:8px"><button class="psu-b psu-b-g" data-a="worlds" style="flex:1">🔓 DESBLOQUEAR TODOS GRATIS</button></div><div class="psu-grid">';
  for(i=0;i<WORLDS.length;i++){var w=WORLDS[i],u2=isUW(w.id);
@@ -1004,20 +1053,6 @@ function renderAdmin(){var host=document.getElementById('admGrid');if(!host)retu
   +'<div class="psu-row"><button class="psu-b'+(G.mult>=1e6?' psu-b-g':' psu-b-r')+'" data-a="'+(G.mult>=1e6?'ungod':'god')+'" style="flex:1">'+(G.mult>=1e6?'😇 QUITAR MODO DIOS':'😈 MODO DIOS x1M')+'</button>'
   +'<button class="psu-b psu-b-r" data-a="wipe">🗑️</button></div>';
  h+=aCard('👑','#fde047','PODER',pw);
- if(IS_SUPER){
-  var wb='<div class="psu-row"><input id="psuAnn" placeholder="Anuncio global para todos..."><button class="psu-b psu-b-g" data-a="announce">📣</button></div>'
-   +'<div class="psu-brow"><span>🌐 Multiplicador global</span></div>'
-   +'<div class="psu-row"><input id="psuGM" value="'+(G.webMult||2)+'" placeholder="x2, x3..."><button class="psu-b psu-b-g" data-a="gMult" style="flex:1">ACTIVAR</button><button class="psu-b psu-b-r" data-a="gMultOff">OFF</button></div>'
-   +'<div class="psu-h">🎟️ Publicar codigo (pestaña 🎟️)</div>'
-   +'<div class="psu-row"><input id="psuCn" placeholder="NOMBRE" maxlength="12"></div>'
-   +'<div class="psu-row"><select id="psuCt"><option value="money">💰 Dinero $</option><option value="rb">♻️ Rebirths</option><option value="boost">⚡ Boost x2 (seg)</option><option value="lucky">🍀 Suerte (min)</option><option value="lu">🪙 Monedas LU</option><option value="pet">🐾 Mascota Dios</option></select><input id="psuCv" value="100000"></div>'
-   +'<div class="psu-row"><input id="psuCMax" value="0" placeholder="Usos totales (0 = infinitos)"><input id="psuCDur" value="0" placeholder="Minutos activo (0 = siempre)"></div>'
-   +'<div class="psu-row"><button class="psu-b psu-b-g" data-a="pubCode" style="flex:1">🎟️ PUBLICAR CODIGO</button></div>'
-   +'<div class="psu-h">🚫 Moderacion</div>'
-   +'<div class="psu-row"><input id="psuBan" placeholder="UID del jugador"><button class="psu-b psu-b-r" data-a="ban">BAN</button><button class="psu-b" data-a="unban">UNBAN</button></div>'
-   +'<div class="psu-row"><button class="psu-b psu-b-r" data-a="mantOn" style="flex:1">🛠️ Mantenimiento ON</button><button class="psu-b" data-a="mantOff" style="flex:1">OFF</button></div>'
-   +'<div class="psu-row"><button class="psu-b" data-a="copyUid" style="flex:1">📋 Copiar mi UID</button></div>';
-  h+=aCard('🌐','#22d3ee','WEB · AFECTA A TODOS',wb)}
  host.innerHTML=h}
 
 /* ---- BUILD ADDONS ---- */
@@ -1045,7 +1080,7 @@ function buildAddons(){
   var d2=document.createElement('div');d2.id='pCodes';d2.className='panel';
   d2.innerHTML='<div class="psu-pad"><div class="psu-sec-t">🎟️ Codigos</div>'
    +'<div class="psu-row"><input id="psuCodeInp" placeholder="Escribe un codigo..." maxlength="20"><button class="psu-b psu-b-c" data-code="__inp">Canjear</button></div>'
-   +'<div id="psuCodeList"></div><p class="psu-hint">El admin publica codigos. Algunos tienen usos limitados o caducidad — ¡corre a canjearlos!</p></div>';
+   +'<div id="psuCodeList"></div><p class="psu-hint">Algunos codigos tienen usos limitados o caducidad — ¡corre a canjearlos!</p></div>';
   document.body.appendChild(d2)}
  if(!document.getElementById('pAdmin')){
   var d3=document.createElement('div');d3.id='pAdmin';d3.className='panel';
@@ -1094,6 +1129,7 @@ function buildAddons(){
   else if(a==='stopEvt'){if(evtCur)endEvent();renderAdmin()}
   else if(a==='goldEgg'){spawnGoldEgg();toast('🥚 Huevo dorado suelto!','rwd')}
   else if(a==='giftNow'){spawnMysteryBox();toast('🎁 Caja suelta!','rwd')}
+  else if(a==='chestNow'){spawnLegendChest();toast('🏆 Cofre suelto!','rwd')}
   else if(a==='worlds'){G.uw=WORLDS.map(function(w){return w.id});apTh();toast('🗺️ Todos los mundos','rwd');snd.world();save();updateUI();renderAdmin()}
   else if(a==='x3'){G.x3=!G.x3;toast(G.x3?'🔓 x3 ON':'x3 OFF','rwd');save();updateUI();renderAdmin()}
   else if(a==='upg'){G.upg={luck:10,inc:10,disc:5,fast:4,auto:3};CLICKS=Math.max(1,5-G.upg.fast);toast('⬆️ Mejoras al maximo','rwd');save();updateUI();renderAdmin()}
@@ -1159,12 +1195,12 @@ function buildAddons(){
  if(!localStorage.getItem(UPD_KEY)){
   var m=document.createElement('div');m.className='psu-ov';m.id='psuUpd';
   m.innerHTML='<div class="psu-ovc" style="border-color:#fbbf24;max-width:430px;text-align:left">'
-   +'<div style="font-size:42px;text-align:center">🎟️</div><h2 style="text-align:center;margin:6px 0 12px">ACTUALIZACIÓN '+UPD_VERSION.toUpperCase()+'</h2>'
+   +'<div style="font-size:42px;text-align:center">🎉</div><h2 style="text-align:center;margin:6px 0 12px">ACTUALIZACIÓN '+UPD_VERSION.toUpperCase()+'</h2>'
    +'<div style="font-size:13px;line-height:2;color:#cdd9e8">'
-   +'🎟️ <b>Códigos con usos limitados</b> — ej: solo 1 jugador en todo el mundo<br>'
-   +'⏳ <b>Códigos con caducidad</b> — activos X minutos<br>'
-   +'👑 El admin puede borrar códigos con ✕<br>'
-   +'🛡️ Admin renovado + 10 eventos + fusión mejorada<br>'
+   +'🎉 <b>15 eventos</b> — 5 nuevos: Mega Fiesta x10, Lluvia de Mascotas, Frenesí, Cofre Legendario y Dinero Loco<br>'
+   +'🎟️ <b>Códigos con usos limitados y caducidad</b><br>'
+   +'🌐 <b>Panel web arriba del admin</b> — códigos a la vista<br>'
+   +'🏆 Cofre Legendario siempre da mascota Legendary+<br>'
    +'💾 <b style="color:#7ee2a8">Tu progreso NO se ha borrado</b></div>'
    +'<button class="psu-b psu-b-g" id="psuUpdOk" style="width:100%;margin-top:14px;padding:12px;font-size:15px;justify-content:center;display:flex;align-items:center;gap:8px">¡A JUGAR! 🚀</button></div>';
   document.body.appendChild(m);m.style.display='flex';
