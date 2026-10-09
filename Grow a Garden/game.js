@@ -1207,4 +1207,195 @@ const PANELS={
    b+=`<div class="shophead"><span class="dimtx">Inventory value: <b class="goldtx">${fmt(tot)}</b></span>
     <button class="btn buy sm" data-a="sellAll">${ic('i-cart')}Sell everything</button></div>`;
    b+=entries.length?entries.map(([key,q])=>{const[k,m]=key.split('|'),P=PLANTS[k],val=cropValue(k,m||null);
-    return
+    return`<div class="row"><img src="${iconURL(k,m)}">
+     <div class="cbody"><b>${P.name}${m?` <span class="mtag" style="background:${MUTS[m].col}">${MUTS[m].name} x${MUTS[m].mult}</span>`:''}</b>
+      <span class="dimtx">x${q} · sells for ${fmt(val)} each</span></div>
+     <div class="rowend"><button class="btn dim sm" data-a="sell1:${key}">Sell 1</button>
+      <button class="btn go sm" data-a="sellRow:${key}">Sell all · ${fmt(val*q)}</button></div></div>`;}).join('')
+    :`<p class="dimtx">No crops yet — harvest some plants first!</p>`;}
+  if(tab==='pets'){const ids=Object.keys(S.pets);
+   b+=`<div class="shophead"><span class="dimtx">Equipped: <b>${S.equipped.length}/3</b> — equipped pets follow you and grant passive bonuses</span></div>`;
+   b+=ids.length?ids.map(id=>{const p=PETS.find(x=>x.id===id),o=S.pets[id],eq=S.equipped.includes(id);
+    return`<div class="row ${eq?'selrow':''}"><img src="${petIconURL(id)}">
+     <div class="cbody"><b>${p.name} <span class="dimtx">Lv ${o.lv}</span></b>
+      <span class="dimtx">${petAbilityText(p,o.lv)}</span>
+      <div class="pbar"><i style="width:${clamp(o.xp/(20*o.lv),0,1)*100}%"></i></div></div>
+     <div class="rowend"><button class="btn ${eq?'go':'dim'} sm" data-a="equip:${id}">${eq?'Unequip':'Equip'}</button></div></div>`;}).join('')
+    :`<p class="dimtx">No pets yet — visit the Pet Shop!</p>`;}
+  return{t:'Inventory',b};},
+ quests(){
+  const b=`<p class="dimtx">Quests track your progress automatically — a new quest appears whenever you complete one.</p>`+
+   S.quests.map((q,i)=>{const pr=questProg(q),pc=q.n?Math.round(clamp(pr/q.n,0,1)*100):0;
+    return`<div class="qcard ${q.done?'done':''}">
+     <div class="qrow">${ic('i-quest')}<div class="cbody"><b>${q.txt}</b>
+      <span class="dimtx">${q.done?'Complete!':`${fmt(pr)} / ${fmt(q.n)} (${pc}%)`}</span>
+      <div class="pbar"><i id="qbar${i}" style="width:${pc}%"></i></div></div></div>
+     <div class="rew">${q.rew.c?coinI(q.rew.c):''}${q.rew.g?gemI(q.rew.g):''}
+      <span class="price">${ic('i-star')}${q.rew.xp} XP</span>
+      <div class="rowend">${q.done?`<button class="btn go sm" data-a="claim:${i}">Claim</button>`:''}</div></div></div>`;}).join('');
+  return{t:'Quests',b};},
+ daily(){const claimed=S.daily.last===new Date().toDateString();
+  const doneCount=claimed?((S.daily.streak-1)%7)+1:(S.daily.streak>0&&S.daily.streak%7===0?7:S.daily.streak%7);
+  const cur=claimed?-1:doneCount%7;
+  const tiles=DAILY.map((d,i)=>`<div class="dtile${i<doneCount?' done':''}${i===cur?' cur':''}">
+   ${d.c?`<span class="price">${ic('i-coin')}${fmt(d.c)}</span>`:''}
+   ${d.g?`<span class="price">${ic('i-gem')}${fmt(d.g)}</span>`:''}
+   ${d.seed?`<span>${PLANTS[d.seed].name} seed</span>`:''}
+   <span>${i===cur?'TODAY':i<doneCount?'Claimed':'Day '+(i+1)}</span></div>`).join('');
+  return{t:'Daily Rewards',b:`<p class="dimtx">Current streak: <b>${S.daily.streak} day${S.daily.streak===1?'':'s'}</b> — claim every day for a week of growing rewards!</p>
+   <div class="dgrid">${tiles}</div>
+   <div class="rowend"><button class="btn go" data-a="claimDaily"${claimed?' disabled':''}>${claimed?'Come back tomorrow':"Claim today's reward"}</button></div>`};},
+ journal(){const st=S.stats,rare=MUT_RANK[st.rarest];
+  const sg=`<div class="statgrid">
+   <div>Level<b>${S.level}</b></div><div>Rebirths<b>${S.rebirth}</b></div>
+   <div>Play time<b>${fmtT(st.playT)}</b></div><div>Seeds planted<b>${fmt(st.planted)}</b></div>
+   <div>Crops harvested<b>${fmt(st.harvests)}</b></div><div>Coins earned<b>${fmt(st.earned)}</b></div>
+   <div>Mutations found<b>${fmt(st.muts)}</b></div><div>Rarest mutation<b>${rare?MUTS[rare].name:'None yet'}</b></div>
+   <div>Crop types grown<b>${Object.keys(st.types).length}/15</b></div><div>Pets owned<b>${Object.keys(S.pets).length}/12</b></div>
+   <div>Plots unlocked<b>${S.plots.filter(p=>p.u).length}/30</b></div><div>Achievements<b>${Object.keys(S.ach).length}/${ACH.length}</b></div></div>`;
+  const acs=ACH.map(a=>`<div class="card ${S.ach[a.id]?'owned':'locked'}" data-tip="${a.txt}">
+   <div class="cbody"><b>${a.name}</b></div>
+   ${S.ach[a.id]?ic('i-check','bigck'):`<span class="price">${ic('i-gem')}${a.g} gems</span>`}</div>`).join('');
+  const rb=`<div class="qcard"><div class="qrow">${ic('i-book')}<div class="cbody"><b>Rebirth</b>
+   <span class="dimtx">Resets coins, crops, seeds, plots, upgrades and your level — you keep pets, achievements, daily streak and stats. Each rebirth permanently grants +30% growth speed, +15% sell value and +8% mutation luck. Current bonuses: growth x${(1+S.rebirth*.3).toFixed(2)}, sell x${(1+S.rebirth*.15).toFixed(2)}, luck x${(1+S.rebirth*.08).toFixed(2)}.</span></div></div>
+   <div class="rowend"><button class="btn bad sm" data-a="rebirth"${S.level<12?' disabled':''}>${S.level<12?'Unlocks at level 12':'Rebirth now'}</button></div></div>`;
+  return{t:'Journal',b:sg+`<h4>Achievements</h4><div class="cards">${acs}</div><h4>Rebirth</h4>${rb}`};},
+ settings(){return{t:'Settings',b:`
+  <div class="setrow"><span>Sound effects</span><button class="btn dim sm" data-a="snd">${S.snd?'ON':'OFF'}</button></div>
+  <div class="setrow"><span>Save game now</span><button class="btn dim sm" data-a="saveNow">Save</button></div>
+  <div class="setrow"><span>Restart tutorial</span><button class="btn dim sm" data-a="tutRestart">Restart</button></div>
+  <div class="setrow"><span>Reset all progress</span><button class="btn bad sm" data-a="resetSave">Reset</button></div>
+  <h4>About saving</h4>
+  <div class="note">Progress autosaves every 15 seconds to this browser's LocalStorage (a "Saved" pill appears bottom-right). Plants keep growing while the game is closed — up to 12 hours of offline growth is applied when you return. Saves live only in this browser on this device: switching browsers, devices, or clearing site data starts a fresh garden. There is no account system or cross-device sync.</div>
+  <h4>How to play</h4>
+  <div class="note">Move with WASD / arrow keys, by clicking the ground, or with the touch joystick. Buy seeds at the red SEEDS stall, plant them in soil plots, harvest when the "!" bubble appears, then sell at the golden SELL stall or from your Bag. Equip up to 3 pets for passive bonuses, finish quests, and watch the sky — weather events boost growth and mutation odds!</div>`};}
+};
+
+/* ---------- seed shop card ---------- */
+function seedCard(k){const P=PLANTS[k];if(!P)return'';
+ const lock=RAR_LV[P.rar]>S.level,q=S.shop.qty[k],sold=q!==undefined&&q<=0;
+ return`<div class="card${lock?' locked':''}${sold?' sold':''}" data-tip="${P.desc}">
+  <img class="cicon" src="${iconURL(k)}">
+  <div class="cbody"><b>${P.name}</b>${rarTag(P.rar)}
+   <div class="stats"><span>Grows in ${fmtT(P.grow)}</span><span>Sells for ${fmt(P.value)}</span>${q!==undefined?`<span>Stock: ${q}</span>`:''}</div></div>
+  ${lock?`<button class="btn dim sm" disabled>${ic('i-lock')} Lv ${RAR_LV[P.rar]}</button>`
+   :sold?`<button class="btn dim sm" disabled>Sold out</button>`
+   :`<button class="btn buy sm" data-a="buySeed:${k}">${ic('i-coin')} ${fmt(P.seed)}</button>`}</div>`;}
+
+/* ---------- menu buttons ---------- */
+const MENU=[['#m-seeds','seeds'],['#m-pets','pets'],['#m-garden','garden'],['#m-inv','inv'],
+ ['#m-quest','quests'],['#m-daily','daily'],['#m-journal','journal'],['#m-set','settings']];
+for(const[id,pn]of MENU)$(id).addEventListener('click',()=>{Snd.init();sfx('click');openPanel(pn);});
+
+/* ---------- panel actions ---------- */
+ $('#panelBody').addEventListener('click',e=>{
+ const el=e.target.closest('[data-a]');if(!el||el.disabled)return;
+ const p=el.dataset.a.split(':'),act=p[0],arg=p.slice(1).join(':');
+ switch(act){
+  case'buySeed':buySeed(arg);break;
+  case'buyPet':buyPet(arg);break;
+  case'buyPlot':buyPlot(+arg);break;
+  case'buySec':buySection(+arg);break;
+  case'buyUp':buyUpgrade(arg);break;
+  case'refresh':if(S.gems<10){sfx('deny');toast('Restocking the Seed Shop costs 10 gems','i-gem');}
+   else{S.gems-=10;refreshShop(true);updateHUD();save();}break;
+  case'refreshP':if(S.gems<15){sfx('deny');toast('Shuffling the Pet Shop costs 15 gems','i-gem');}
+   else{S.gems-=15;refreshPShop(true);updateHUD();save();}break;
+  case'tab':lastInv=arg;renderPanel();break;
+  case'sel':S.sel=S.sel===arg?null:arg;sfx('click');updateHotbar();renderPanel();break;
+  case'sell1':case'sellRow':{const[k,m]=arg.split('|');sellCrops(k,m||null,act==='sell1'?1:999);break;}
+  case'sellAll':{let n=0;for(const key of Object.keys(S.crops)){const[k,m]=key.split('|');n+=sellCrops(k,m||null,999);}
+   if(!n){sfx('deny');toast('Nothing to sell yet!','i-bag');}break;}
+  case'equip':toggleEquip(arg);renderPanel();save();break;
+  case'claim':claimQuest(+arg);break;
+  case'claimDaily':claimDaily();break;
+  case'rebirth':tryRebirth();break;
+  case'snd':S.snd=!S.snd;sfx('click');renderPanel();save();break;
+  case'saveNow':save();toast('Game saved!','i-check','#58b85c');break;
+  case'tutRestart':S.tut=0;closePanel();setTut(1);save();break;
+  case'resetSave':confirmBox('Reset all progress?','This permanently deletes your save — coins, pets, plots, achievements, everything. This cannot be undone!',()=>{try{localStorage.removeItem(KEY);}catch(err){}location.reload();});break;
+ }});
+
+/* ---------- confirm dialog ---------- */
+let cfCb=null;
+function confirmBox(title,text,cb){$('#cfTitle').textContent=title;$('#cfText').textContent=text;
+ cfCb=cb;$('#confirmWrap').classList.remove('hide');}
+ $('#cfYes').addEventListener('click',()=>{$('#confirmWrap').classList.add('hide');const cb=cfCb;cfCb=null;if(cb)cb();});
+ $('#cfNo').addEventListener('click',()=>{cfCb=null;$('#confirmWrap').classList.add('hide');});
+ $('#confirmWrap').addEventListener('click',e=>{if(e.target.id==='confirmWrap'){cfCb=null;$('#confirmWrap').classList.add('hide');}});
+
+/* ---------- seed hotbar ---------- */
+function updateHotbar(){const hb=$('#hotbar');
+ const ks=Object.keys(S.seeds).filter(k=>S.seeds[k]>0).sort((a,b)=>PLANTS[a].seed-PLANTS[b].seed);
+ hb.innerHTML=ks.length?ks.map(k=>`<button class="slot${S.sel===k?' on':''}" data-k="${k}" data-tip="${PLANTS[k].name} · grows in ${fmtT(PLANTS[k].grow)} · sells for ${fmt(PLANTS[k].value)}">
+  <img src="${iconURL(k)}" alt="${PLANTS[k].name}"><span class="cnt">x${S.seeds[k]}</span></button>`).join('')
+  :`<span class="empty">No seeds — visit the Seed Shop!</span>`;
+ const sn=$('#selName');
+ if(S.sel&&S.seeds[S.sel]>0){sn.classList.remove('hide');
+  sn.textContent=PLANTS[S.sel].name+' selected — tap a soil plot to plant';}
+ else sn.classList.add('hide');}
+ $('#hotbar').addEventListener('click',e=>{const el=e.target.closest('.slot');if(!el)return;
+ Snd.init();sfx('click');const k=el.dataset.k;S.sel=S.sel===k?null:k;updateHotbar();});
+
+/* ---------- tooltips ---------- */
+const tipEl=$('#tip');
+document.addEventListener('pointerover',e=>{const el=e.target.closest('[data-tip]');
+ if(!el||!el.dataset.tip)return;tipEl.textContent=el.dataset.tip;tipEl.classList.remove('hide');
+ const r=el.getBoundingClientRect(),tw=tipEl.offsetWidth,th=tipEl.offsetHeight;
+ let x=clamp(r.left+r.width/2-tw/2,6,innerWidth-tw-6),y=r.top-th-8;
+ if(y<6)y=Math.min(r.bottom+8,innerHeight-th-6);
+ tipEl.style.left=x+'px';tipEl.style.top=y+'px';});
+document.addEventListener('pointerout',e=>{if(e.target.closest('[data-tip]'))tipEl.classList.add('hide');});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('[data-tip]'))tipEl.classList.add('hide');},true);
+
+/* ---------- tutorial ---------- */
+const TUT=[
+ {txt:'Welcome to your garden! Move around by clicking the ground, using WASD or the arrow keys, or the joystick on touch screens.',tgt:null},
+ {txt:'Open the Seed Shop — walk to the red SEEDS stall and tap it, or press the Seeds button below.',tgt:'#m-seeds',done:()=>curPanel&&curPanel[0]==='seeds'},
+ {txt:'Great! Buy a Carrot seed if you like (you start with 3 free ones), then select the Carrot from your seed hotbar.',tgt:'#hotbar',done:()=>S.sel&&S.seeds[S.sel]>0},
+ {txt:'Now click one of the empty soil plots in your garden to plant your seed.',tgt:null,done:()=>S.stats.planted>0},
+ {txt:'Your plant is growing! When it is fully grown a "!" bubble appears above it — click the plant to harvest.',tgt:null,done:()=>S.stats.harvests>0},
+ {txt:'Time to earn! Open your Bag, switch to the Crops tab and sell your harvest — or walk to the golden SELL stall.',tgt:'#m-inv',done:()=>S.stats.earned>0},
+ {txt:'You are ready to grow! Complete quests, adopt pets at the purple stall, upgrade your garden, and watch the sky for weather events. Happy farming!',tgt:null}];
+function setTut(i){S.tut=i;
+ if(i>TUT.length){$('#tutWrap').classList.add('hide');S.fresh=0;save();
+  toast('Tutorial complete — happy growing!','i-check','#58b85c');return;}
+ const st=TUT[i-1];$('#tutTxt').textContent=st.txt;
+ $('#tutStep').textContent=i+' / '+TUT.length;
+ $('#tutNext').textContent=i===TUT.length?'Finish':'Next';
+ const hole=$('#tutHole'),el=st.tgt?$(st.tgt):null;
+ if(el){const r=el.getBoundingClientRect();
+  hole.style.display='block';
+  hole.style.left=(r.left-6)+'px';hole.style.top=(r.top-6)+'px';
+  hole.style.width=(r.width+12)+'px';hole.style.height=(r.height+12)+'px';}
+ else hole.style.display='none';
+ $('#tutWrap').classList.remove('hide');}
+ $('#tutNext').addEventListener('click',()=>{Snd.init();sfx('click');setTut(S.tut+1);});
+ $('#tutSkip').addEventListener('click',()=>{sfx('click');setTut(TUT.length+1);});
+
+/* ---------- boot ---------- */
+function init(){
+ resize();
+ $('#tutWrap').style.pointerEvents='none';$('#tutCard').style.pointerEvents='auto';
+ recalcPets();syncPetEnts();ensureQuests();
+ if(!S.shop.list.length)refreshShop(true,true);
+ if(!S.pshop.list.length)refreshPShop(true,true);
+ const away=Math.max(0,(Date.now()-(S.ts||Date.now()))/1000);
+ if(away>20){const cap=Math.min(away,12*3600);updateGrowth(cap,true);
+  const grown=S.plots.filter(p=>p.p&&p.p.pr>=1).length;
+  if(grown)toast(`Welcome back! While you were away (${fmtT(cap)}), ${grown} plant${grown>1?'s were':' was'} ready to harvest.`,'i-sprout','#58b85c');}
+ updateHUD();updateHotbar();
+ if(S.tut===0)setTut(1);
+ requestAnimationFrame(frame);
+ setInterval(save,15000);
+ addEventListener('beforeunload',save);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+ setInterval(()=>{
+  const st=$('#shopTimer');if(st)st.textContent=fmtT(Math.max(0,S.shop.t-gt));
+  const pt=$('#petTimer');if(pt)pt.textContent=fmtT(Math.max(0,S.pshop.t-gt));
+  if(curPanel&&curPanel[0]==='quests')S.quests.forEach((q,i)=>{
+   const el=document.getElementById('qbar'+i);
+   if(el)el.style.width=(q.n?Math.round(clamp(questProg(q)/q.n,0,1)*100):0)+'%';});
+  if(S.tut>=1&&S.tut<=TUT.length&&TUT[S.tut-1].done&&TUT[S.tut-1].done()){sfx('click');setTut(S.tut+1);}
+ },500);}
+init();
