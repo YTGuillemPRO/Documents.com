@@ -1,1 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Grow a Garden</title>
+<meta name="description" content="A cozy browser farming game: grow crops, discover mutations, collect pets, and expand your garden.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='11' y='10' width='2' height='12' rx='1' fill='%234ea53c'/><ellipse cx='8' cy='10' rx='5' ry='3' fill='%234ea53c' transform='rotate(-30 8 10)'/><ellipse cx='16' cy='10' rx='5' ry='3' fill='%2358b85c' transform='rotate(30 16 10)'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<canvas id="cv"></canvas>
+
+<!-- Original SVG icon set -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f7c247" stroke="#c9821f" stroke-width="2.5"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#c9821f" stroke-width="2"/><path d="M7.5 7A7 7 0 0 1 16.5 6.5" fill="none" stroke="#ffe9a8" stroke-width="2.4" stroke-linecap="round"/></symbol>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 2.5 20 9.5 12 21.5 4 9.5Z" fill="#3ed3b7" stroke="#1e9c8a" stroke-width="2" stroke-linejoin="round"/><path d="M12 2.5 8.6 9.5 12 21.5 15.4 9.5Z" fill="#8fefdd" opacity=".85"/></symbol>
+<symbol id="i-sprout" viewBox="0 0 24 24"><rect x="11.2" y="9" width="1.6" height="12" rx=".8" fill="currentColor"/><ellipse cx="8.2" cy="9.5" rx="4.4" ry="2.7" transform="rotate(-32 8.2 9.5)" fill="currentColor"/><ellipse cx="15.8" cy="9.5" rx="4.4" ry="2.7" transform="rotate(32 15.8 9.5)" fill="currentColor"/></symbol>
+<symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="15.5" rx="5" ry="4.2"/><circle cx="5.6" cy="10.5" r="2.3"/><circle cx="12" cy="8.4" r="2.4"/><circle cx="18.4" cy="10.5" r="2.3"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M8.2 6V5a3.8 3.8 0 0 1 7.6 0v1H19a1 1 0 0 1 1 1.1l-1 11.2A2.4 2.4 0 0 1 16.6 21H7.4A2.4 2.4 0 0 1 5 18.3L4 7.1A1 1 0 0 1 5 6h3.2zm2 0h3.6V5a1.8 1.8 0 0 0-3.6 0v1z"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h2.2l2.4 9.5h9.6L20.5 7H7"/><circle cx="10" cy="19" r="1.7" fill="currentColor" stroke="none"/><circle cx="17" cy="19" r="1.7" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-fence" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6l2-2.4L8 6v13H4zM10 6l2-2.4L14 6v13h-4zM16 6l2-2.4L20 6v13h-4zM2 9h20v2.4H2zM2 14h20v2.4H2z"/></symbol>
+<symbol id="i-quest" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9 2h6a1 1 0 0 1 1 1v1h2.5A1.5 1.5 0 0 1 19 5.5v15A1.5 1.5 0 0 1 17.5 22h-11A1.5 1.5 0 0 1 5 20.5v-15A1.5 1.5 0 0 1 6.5 4H9V3a1 1 0 0 1 0-1zm-1 8h8v1.8H8V10zm0 4h8v1.8H8V14zm0-7.5h8v1.8H8V6.5z"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7 2h2.2v2h5.6V2H17v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2zm0 6.5h10V19H7V8.5zm2 1.7h2.6v2.6H9v-2.6zm3.7 0h2.6v2.6h-2.6v-2.6zM9 13.8h2.6v2.6H9v-2.6zm3.7 0h2.6v2.6h-2.6v-2.6z"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5 3h13a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8.5A3.5 3.5 0 0 1 5 17.5V3zm2.5 2v12.5c0 .8.7 1.5 1.5 1.5h9V5h-2v11l-2.5-1.8L11 16V5H7.5z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 2h3l.5 2.6c.6.2 1.1.4 1.6.7l2.2-1.5 2.1 2.1-1.4 2.2c.3.5.5 1 .7 1.6l2.6.5v3l-2.6.5c-.2.6-.4 1.1-.7 1.6l1.4 2.2-2.1 2.1-2.2-1.4c-.5.3-1 .5-1.6.7l-.5 2.6h-3l-.5-2.6c-.6-.2-1.1-.4-1.6-.7l-2.2 1.4-2.1-2.1 1.4-2.2c-.3-.5-.5-1-.7-1.6L2 13.5v-3l2.6-.5c.2-.6.4-1.1.7-1.6L3.9 6.2 6 4.1l2.2 1.4c.5-.3 1-.5 1.6-.7L10.5 2zM12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8z"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1zm2 0h6V7a3 3 0 0 0-6 0v3z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 14.9 8.6 21.5 9.5 16.7 14.1 17.9 20.7 12 17.5 6.1 20.7 7.3 14.1 2.5 9.5 9.1 8.6z"/></symbol>
+<symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 14a4.2 4.2 0 0 1-.5-8.4A5.6 5.6 0 0 1 17.4 6 3.8 3.8 0 0 1 17.5 14H7z" fill="currentColor"/><path d="M8 16.5l-1.5 3.5M12.5 16.5 11 20M17 16.5l-1.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.2 2 4.8 13.4h5l-1.4 8.6 8.8-11.8h-5.2z" fill="currentColor"/></symbol>
+<symbol id="i-snow" viewBox="0 0 24 24"><path d="M7 13a4.2 4.2 0 0 1-.5-8.4A5.6 5.6 0 0 1 17.4 5 3.8 3.8 0 0 1 17.5 13H7z" fill="currentColor"/><g fill="currentColor"><circle cx="8" cy="17" r="1.4"/><circle cx="12.5" cy="19" r="1.4"/><circle cx="16.5" cy="16.6" r="1.4"/></g></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M19.4 4.6l-2.1 2.1M6.7 17.3l-2.1 2.1"/></g></symbol>
+<symbol id="i-rbow" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M3 17a9 9 0 0 1 18 0" stroke="#ef5d8a"/><path d="M6.2 17a5.8 5.8 0 0 1 11.6 0" stroke="#f2b53a"/><path d="M9.4 17a2.6 2.6 0 0 1 5.2 0" stroke="#58b85c"/></symbol>
+<symbol id="i-meteor" viewBox="0 0 24 24"><circle cx="16" cy="16" r="5" fill="currentColor"/><path d="M3 3l7 7M7 2l5 5M2 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="10.9" y="10" width="2.2" height="7" rx="1.1" fill="currentColor"/><circle cx="12" cy="7.3" r="1.5" fill="currentColor"/></symbol>
+</defs></svg>
+
+<div id="hud">
+  <div id="topbar">
+    <div class="chips">
+      <div class="chip" id="coinChip"><svg class="ic"><use href="#i-coin"/></svg><span id="hCoins">0</span></div>
+      <div class="chip"><svg class="ic"><use href="#i-gem"/></svg><span id="hGems">0</span></div>
+    </div>
+    <div id="wBanner" class="hide">
+      <svg class="ic big"><use id="wIconUse" href="#i-rain"/></svg>
+      <div class="wt"><b id="wName"></b><span id="wDesc"></span><div class="wbar"><i id="wFill"></i></div></div>
+      <span id="wTime"></span>
+    </div>
+    <div class="chip lvl"><span id="hLvl">Lv 1</span><div class="xpbar"><i id="xpFill"></i></div></div>
+  </div>
+
+  <div id="toasts"></div>
+  <div id="selName" class="hide"></div>
+
+  <div id="bottomui">
+    <div id="hotbar"></div>
+    <div id="menu">
+      <button id="m-seeds" data-tip="Buy seeds for your garden"><svg class="ic"><use href="#i-sprout"/></svg><span>Seeds</span></button>
+      <button id="m-pets" data-tip="Adopt pets with passive abilities"><svg class="ic"><use href="#i-paw"/></svg><span>Pets</span></button>
+      <button id="m-garden" data-tip="Unlock plots and buy upgrades"><svg class="ic"><use href="#i-fence"/></svg><span>Garden</span></button>
+      <button id="m-inv" data-tip="Seeds, crops and pets"><svg class="ic"><use href="#i-bag"/></svg><span>Bag</span></button>
+      <button id="m-quest" data-tip="Complete quests for rewards"><svg class="ic"><use href="#i-quest"/></svg><span>Quests</span></button>
+      <button id="m-daily" data-tip="Claim your daily reward"><svg class="ic"><use href="#i-cal"/></svg><span>Daily</span></button>
+      <button id="m-journal" data-tip="Stats, achievements and rebirth"><svg class="ic"><use href="#i-book"/></svg><span>Journal</span></button>
+      <button id="m-set" data-tip="Sound, saving and more"><svg class="ic"><use href="#i-gear"/></svg><span>Settings</span></button>
+    </div>
+  </div>
+
+  <div id="joy"><div id="knob"></div></div>
+  <div id="savePill" class="hide">Saved</div>
+</div>
+
+<div id="panelWrap" class="hide">
+  <div id="panel">
+    <div id="panelHead"><b id="panelTitle"></b><button id="panelClose" data-a="close"><svg class="ic"><use href="#i-x"/></svg></button></div>
+    <div id="panelBody"></div>
+  </div>
+</div>
+
+<div id="confirmWrap" class="hide">
+  <div id="confirmBox">
+    <h3 id="cfTitle"></h3><p id="cfText"></p>
+    <div class="rowend"><button class="btn dim" id="cfNo">Cancel</button><button class="btn go" id="cfYes">Confirm</button></div>
+  </div>
+</div>
+
+<div id="tutWrap" class="hide">
+  <div id="tutHole"></div>
+  <div id="tutCard">
+    <div id="tutTxt"></div>
+    <div class="tutbtns"><button class="btn dim sm" id="tutSkip">Skip</button><span id="tutStep"></span><button class="btn go sm" id="tutNext">Next</button></div>
+  </div>
+</div>
+
+<div id="tip" class="hide"></div>
+
+<script src="game.js"></script>
+</body>
+</html>
