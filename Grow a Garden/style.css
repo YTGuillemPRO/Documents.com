@@ -1,4 +1,4 @@
-/* ============ GROW A GARDEN — UI stylesheet ============ */
+/* ============ GROW A GARDEN · hoja de estilos ============ */
 :root{
   --cream:#fff6e0; --cream2:#f3e6c4; --wood:#7c4f26; --wood2:#5d3a1a;
   --ink:#3c2a16; --green:#4ea53c; --green2:#3c8a2e; --gold:#f2b53a;
@@ -26,7 +26,7 @@ b{font-weight:800}
 .chip.pulse{animation:pulse .5s}
 @keyframes pulse{40%{transform:scale(1.13)}}
 
-/* weather banner */
+/* banner de clima */
 #wBanner{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(43,28,12,.85);color:#fff;border-radius:14px;padding:6px 14px;border:2px solid var(--wc,#f2b53a);box-shadow:0 4px 12px rgba(0,0,0,.3);animation:drop .45s cubic-bezier(.3,1.6,.5,1);max-width:min(430px,72vw)}
 @keyframes drop{from{transform:translateX(-50%) translateY(-60px);opacity:0}}
 #wBanner .ic.big{width:28px;height:28px;color:var(--wc,#f2b53a)}
@@ -37,23 +37,22 @@ b{font-weight:800}
 .wbar i{display:block;height:100%;background:var(--wc,#f2b53a);width:100%}
 #wTime{font-size:13px;font-weight:800;color:var(--wc,#f2b53a)}
 
-/* toasts */
+/* avisos */
 #toasts{position:absolute;top:calc(58px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:min(420px,92vw);pointer-events:none}
 .toast{display:flex;align-items:center;gap:8px;background:var(--cream);border:3px solid var(--wood);border-radius:12px;padding:7px 14px;font-weight:700;font-size:14px;box-shadow:0 5px 14px rgba(0,0,0,.28);animation:drop2 .35s cubic-bezier(.3,1.5,.5,1);text-align:center}
 .toast .ic{width:19px;height:19px;color:var(--green);flex:none}
 .toast.out{opacity:0;transform:translateY(-12px);transition:.3s}
 @keyframes drop2{from{transform:translateY(-24px);opacity:0}}
 
-/* bottom ui */
+/* interfaz inferior */
 #bottomui{position:absolute;bottom:calc(8px + env(safe-area-inset-bottom));left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 #bottomui>*{pointer-events:auto}
 #hotbar{display:flex;gap:7px;background:rgba(43,28,12,.55);padding:7px;border-radius:16px;backdrop-filter:blur(2px);flex-wrap:wrap;justify-content:center;max-width:96vw}
 .slot{position:relative;width:54px;height:54px;border-radius:13px;background:var(--cream);border:3px solid var(--wood);cursor:pointer;padding:0;transition:transform .12s,border-color .12s;display:flex;align-items:center;justify-content:center}
-.slot img{width:44px;height:44px;image-rendering:auto}
+.slot img{width:44px;height:44px}
 .slot:hover{transform:translateY(-3px)}
 .slot.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,181,58,.55)}
 .slot .cnt{position:absolute;bottom:-5px;right:-5px;background:var(--wood);color:#ffe9c4;font-size:11px;font-weight:800;border-radius:99px;padding:1px 6px}
-.slot.more{font-size:12px;font-weight:800;color:var(--wood)}
 #hotbar .empty{color:#ffe9c4;font-size:13px;font-weight:700;padding:0 12px;align-self:center}
 #selName{position:absolute;bottom:132px;left:50%;transform:translateX(-50%);background:rgba(43,28,12,.8);color:#ffe9c4;padding:4px 14px;border-radius:99px;font-size:13px;font-weight:700;pointer-events:none;white-space:nowrap}
 #menu{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:96vw}
@@ -68,11 +67,11 @@ body.touch #joy{display:block}
 #knob{position:absolute;left:50%;top:50%;width:52px;height:52px;border-radius:50%;background:var(--cream);border:3px solid var(--wood);transform:translate(-50%,-50%)}
 #savePill{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));background:rgba(43,28,12,.8);color:#ffe9c4;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px}
 
-/* flying coins */
+/* monedas voladoras */
 .fcoin{position:fixed;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a8,#f2b53a 60%,#c9821f);box-shadow:0 1px 3px rgba(0,0,0,.35);z-index:80;pointer-events:none;transition:transform .55s cubic-bezier(.45,-.25,.6,1),opacity .55s}
 
-/* ---------- buttons ---------- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-weight:800;font-size:14px;color:#fff;background:var(--green);border:none;border-bottom:4px solid var(--green2);border-radius:11px;padding:8px 14px;cursor:pointer;transition:transform .1s,filter .15s;text-decoration:none}
+/* ---------- botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-weight:800;font-size:14px;color:#fff;background:var(--green);border:none;border-bottom:4px solid var(--green2);border-radius:11px;padding:8px 14px;cursor:pointer;transition:transform .1s,filter .15s}
 .btn:hover{filter:brightness(1.08)}
 .btn:active{transform:translateY(3px);border-bottom-width:1px}
 .btn:disabled{filter:grayscale(.7) brightness(.85);cursor:not-allowed}
@@ -84,7 +83,7 @@ body.touch #joy{display:block}
 .btn.sm{font-size:12.5px;padding:6px 10px;border-radius:9px}
 .btn.gembtn{background:#35c9b0;border-bottom-color:var(--gem);color:#083a34}
 
-/* ---------- panels ---------- */
+/* ---------- paneles ---------- */
 #panelWrap,#confirmWrap{position:fixed;inset:0;background:rgba(30,20,8,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:40;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
 #panel{width:min(640px,94vw);max-height:88vh;background:var(--cream);border:4px solid var(--wood);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.4);display:flex;flex-direction:column;animation:pop .28s cubic-bezier(.3,1.5,.5,1);overflow:hidden}
@@ -114,7 +113,6 @@ body.touch #joy{display:block}
 .mtag{font-size:10px;font-weight:800;color:#33210b;padding:1px 7px;border-radius:99px;display:inline-block}
 .price{display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:13px}
 .price .ic{width:15px;height:15px}
-.price.gem .ic{width:15px;height:15px}
 .pips{display:flex;gap:3px}
 .pips i{width:14px;height:7px;border-radius:99px;background:#e0d2ab}
 .pips i.on{background:var(--green)}
@@ -136,7 +134,7 @@ body.touch #joy{display:block}
 .qcard{background:#fffdf4;border:3px solid #e3d3ac;border-radius:13px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
 .qcard.done{border-color:var(--gold)}
 .qcard .qrow{display:flex;align-items:center;gap:10px}
-.qcard .rew{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px}
+.qcard .rew{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;align-items:center}
 
 .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:10px 0}
 .dtile{background:#fffdf4;border:3px solid #e3d3ac;border-radius:12px;padding:8px 4px;text-align:center;font-size:11px;font-weight:700;display:flex;flex-direction:column;gap:4px;align-items:center;min-height:74px;justify-content:center}
@@ -151,7 +149,7 @@ body.touch #joy{display:block}
 .statgrid div{background:#fffdf4;border:2px solid #e3d3ac;border-radius:10px;padding:7px 10px;font-size:12.5px;display:flex;justify-content:space-between;gap:6px}
 .statgrid b{color:var(--wood2)}
 
-/* confirm / tutorial */
+/* confirmación / tutorial */
 #confirmBox{width:min(400px,92vw);background:var(--cream);border:4px solid var(--wood);border-radius:18px;padding:18px;animation:pop .25s cubic-bezier(.3,1.5,.5,1)}
 #confirmBox h3{margin:0 0 6px;font-size:19px}
 #confirmBox p{margin:0 0 14px;font-size:14px;line-height:1.45;color:#6b543a}
@@ -165,6 +163,18 @@ body.touch #joy{display:block}
 
 /* tooltip */
 #tip{position:fixed;z-index:90;background:rgba(43,28,12,.94);color:#ffe9c4;font-size:12px;font-weight:600;padding:6px 11px;border-radius:9px;max-width:230px;line-height:1.4;pointer-events:none}
+
+/* ====== v2: tarjetas de tienda renovadas ====== */
+.vcard{padding:0;background:linear-gradient(180deg,#fffef7,#fcf3da);overflow:hidden}
+.vcard .rband{width:100%;height:6px;flex:none}
+.vcard .cicon{margin-top:10px}
+.vcard .cbody{padding:0 10px;flex:1}
+.vcard .cfoot{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;padding:0 10px 10px}
+.vcard .btn{width:100%}
+.vcard.locked{filter:grayscale(.45);opacity:.8}
+.stockpill{font-size:10px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.2px}
+.stockpill.in{background:#e2f6dc;color:#2f7a2c}
+.stockpill.out{background:#f6e3d3;color:#a3632a}
 
 @media (max-width:640px){
   #menu button span{display:none}
