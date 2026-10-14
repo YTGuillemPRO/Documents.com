@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Grow a Garden</title>
-<meta name="description" content="A cozy browser farming game: grow crops, discover mutations, collect pets, and expand your garden.">
+<title>Grow a Garden · Mi Huerto</title>
+<meta name="description" content="Un acogedor juego de granja en el navegador: cultiva plantas, descubre mutaciones, colecciona mascotas y amplía tu huerto.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='11' y='10' width='2' height='12' rx='1' fill='%234ea53c'/><ellipse cx='8' cy='10' rx='5' ry='3' fill='%234ea53c' transform='rotate(-30 8 10)'/><ellipse cx='16' cy='10' rx='5' ry='3' fill='%2358b85c' transform='rotate(30 16 10)'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 
 <canvas id="cv"></canvas>
 
-<!-- Original SVG icon set -->
+<!-- Juego de iconos SVG originales -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f7c247" stroke="#c9821f" stroke-width="2.5"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#c9821f" stroke-width="2"/><path d="M7.5 7A7 7 0 0 1 16.5 6.5" fill="none" stroke="#ffe9a8" stroke-width="2.4" stroke-linecap="round"/></symbol>
 <symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 2.5 20 9.5 12 21.5 4 9.5Z" fill="#3ed3b7" stroke="#1e9c8a" stroke-width="2" stroke-linejoin="round"/><path d="M12 2.5 8.6 9.5 12 21.5 15.4 9.5Z" fill="#8fefdd" opacity=".85"/></symbol>
@@ -52,7 +52,7 @@
       <div class="wt"><b id="wName"></b><span id="wDesc"></span><div class="wbar"><i id="wFill"></i></div></div>
       <span id="wTime"></span>
     </div>
-    <div class="chip lvl"><span id="hLvl">Lv 1</span><div class="xpbar"><i id="xpFill"></i></div></div>
+    <div class="chip lvl"><span id="hLvl">Nv 1</span><div class="xpbar"><i id="xpFill"></i></div></div>
   </div>
 
   <div id="toasts"></div>
@@ -61,19 +61,19 @@
   <div id="bottomui">
     <div id="hotbar"></div>
     <div id="menu">
-      <button id="m-seeds" data-tip="Buy seeds for your garden"><svg class="ic"><use href="#i-sprout"/></svg><span>Seeds</span></button>
-      <button id="m-pets" data-tip="Adopt pets with passive abilities"><svg class="ic"><use href="#i-paw"/></svg><span>Pets</span></button>
-      <button id="m-garden" data-tip="Unlock plots and buy upgrades"><svg class="ic"><use href="#i-fence"/></svg><span>Garden</span></button>
-      <button id="m-inv" data-tip="Seeds, crops and pets"><svg class="ic"><use href="#i-bag"/></svg><span>Bag</span></button>
-      <button id="m-quest" data-tip="Complete quests for rewards"><svg class="ic"><use href="#i-quest"/></svg><span>Quests</span></button>
-      <button id="m-daily" data-tip="Claim your daily reward"><svg class="ic"><use href="#i-cal"/></svg><span>Daily</span></button>
-      <button id="m-journal" data-tip="Stats, achievements and rebirth"><svg class="ic"><use href="#i-book"/></svg><span>Journal</span></button>
-      <button id="m-set" data-tip="Sound, saving and more"><svg class="ic"><use href="#i-gear"/></svg><span>Settings</span></button>
+      <button id="m-seeds" data-tip="Compra semillas para tu huerto"><svg class="ic"><use href="#i-sprout"/></svg><span>Semillas</span></button>
+      <button id="m-pets" data-tip="Adopta mascotas con habilidades"><svg class="ic"><use href="#i-paw"/></svg><span>Mascotas</span></button>
+      <button id="m-garden" data-tip="Desbloquea parcelas y compra mejoras"><svg class="ic"><use href="#i-fence"/></svg><span>Huerto</span></button>
+      <button id="m-inv" data-tip="Semillas, cultivos y mascotas"><svg class="ic"><use href="#i-bag"/></svg><span>Bolsa</span></button>
+      <button id="m-quest" data-tip="Completa misiones para ganar recompensas"><svg class="ic"><use href="#i-quest"/></svg><span>Misiones</span></button>
+      <button id="m-daily" data-tip="Reclama tu recompensa diaria"><svg class="ic"><use href="#i-cal"/></svg><span>Premios</span></button>
+      <button id="m-journal" data-tip="Estadísticas, logros y renacer"><svg class="ic"><use href="#i-book"/></svg><span>Registro</span></button>
+      <button id="m-set" data-tip="Sonido, guardado y más"><svg class="ic"><use href="#i-gear"/></svg><span>Ajustes</span></button>
     </div>
   </div>
 
   <div id="joy"><div id="knob"></div></div>
-  <div id="savePill" class="hide">Saved</div>
+  <div id="savePill" class="hide">Guardado</div>
 </div>
 
 <div id="panelWrap" class="hide">
@@ -86,7 +86,7 @@
 <div id="confirmWrap" class="hide">
   <div id="confirmBox">
     <h3 id="cfTitle"></h3><p id="cfText"></p>
-    <div class="rowend"><button class="btn dim" id="cfNo">Cancel</button><button class="btn go" id="cfYes">Confirm</button></div>
+    <div class="rowend"><button class="btn dim" id="cfNo">Cancelar</button><button class="btn go" id="cfYes">Confirmar</button></div>
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   <div id="tutHole"></div>
   <div id="tutCard">
     <div id="tutTxt"></div>
-    <div class="tutbtns"><button class="btn dim sm" id="tutSkip">Skip</button><span id="tutStep"></span><button class="btn go sm" id="tutNext">Next</button></div>
+    <div class="tutbtns"><button class="btn dim sm" id="tutSkip">Saltar</button><span id="tutStep"></span><button class="btn go sm" id="tutNext">Siguiente</button></div>
   </div>
 </div>
 
