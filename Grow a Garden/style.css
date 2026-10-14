@@ -164,25 +164,17 @@ body.touch #joy{display:block}
 /* tooltip */
 #tip{position:fixed;z-index:90;background:rgba(43,28,12,.94);color:#ffe9c4;font-size:12px;font-weight:600;padding:6px 11px;border-radius:9px;max-width:230px;line-height:1.4;pointer-events:none}
 
-/* ====== v2: tarjetas de tienda renovadas ====== */
-.vcard{padding:0;background:linear-gradient(180deg,#fffef7,#fcf3da);overflow:hidden}
-.vcard .rband{width:100%;height:6px;flex:none}
-.vcard .cicon{margin-top:10px}
-.vcard .cbody{padding:0 10px;flex:1}
-.vcard .cfoot{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;padding:0 10px 10px}
-.vcard .btn{width:100%}
-.vcard.locked{filter:grayscale(.45);opacity:.8}
-.stockpill{font-size:10px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.2px}
-.stockpill.in{background:#e2f6dc;color:#2f7a2c}
-.stockpill.out{background:#f6e3d3;color:#a3632a}
-
+/* ====== PARCHE v3: visibilidad y móvil ====== */
+#menu button span{display:inline!important}
+.slot.cta{width:auto;min-width:170px;padding:0 16px;font-weight:800;color:var(--wood);font-size:13px;gap:8px}
+.slot.cta svg{width:20px;height:20px;color:var(--green2)}
+#zoomTip{position:absolute;right:12px;top:calc(60px + env(safe-area-inset-top));background:rgba(43,28,12,.78);color:#ffe9c4;font-size:11px;font-weight:700;padding:5px 11px;border-radius:99px;pointer-events:none;animation:drop2 .4s}
 @media (max-width:640px){
-  #menu button span{display:none}
-  #menu button{padding:8px 10px}
-  .chip{font-size:13.5px;padding:5px 10px 5px 7px}
-  .chip.lvl{min-width:84px}
-  #wBanner{top:calc(52px + env(safe-area-inset-top))}
-  #topbar{left:6px;right:6px}
-  .cards{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
-  #panelBody{padding:10px}
+  #menu button{padding:8px 7px;font-size:10.5px;gap:4px}
+  #menu{gap:4px}
+  #menu .ic{width:15px;height:15px}
+  .slot{width:58px;height:58px}
+  .slot img{width:48px;height:48px}
+  .cicon{width:64px;height:64px}
+  .cards{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 }
