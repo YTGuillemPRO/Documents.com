@@ -1,1 +1,80 @@
+/* ============================================================
+   ¡ROBA EL MEME! · style.css
+   Estética "toy/cartoon": colores planos vivos, bordes gruesos
+   de tinta y sombras duras. Nada de gradientes decorativos.
+   ============================================================ */
 
+:root{
+  --tinta:#2b211c;
+  --crema:#fff6e3;
+  --crema2:#ffedc7;
+  --amarillo:#ffc93c;
+  --amarillo-osc:#c79323;
+  --rojo:#e2574c;
+  --rojo-osc:#a83a32;
+  --verde:#57b14b;
+  --verde-osc:#3c7f34;
+  --turquesa:#3ec6b8;
+  --fondo:#1c2a17;
+  --radio:16px;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; height:100%; overflow:hidden; overscroll-behavior:none; }
+body{
+  background:var(--fondo);
+  font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;
+  color:var(--tinta);
+  user-select:none; -webkit-user-select:none;
+}
+h1,h2,h3,.display{ font-family:'Lilita One','Trebuchet MS',sans-serif; font-weight:400; letter-spacing:.5px; }
+.oculto{ display:none !important; }
+kbd{
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:11px;
+  background:var(--tinta); color:var(--crema); border-radius:6px; padding:2px 7px;
+}
+
+/* ---------- Lienzo ---------- */
+#juego{ position:fixed; inset:0; display:block; touch-action:none; cursor:crosshair; }
+
+/* ---------- HUD base ---------- */
+#hud{ position:fixed; inset:0; pointer-events:none; z-index:20; }
+#hud button, #hud .caja-eco, #hud .chip-evento, #minimapa, #joy-base{ pointer-events:auto; }
+.ico{ width:22px; height:22px; fill:currentColor; flex:none; }
+
+/* Economía (arriba-izquierda) */
+.hud-tl{ position:absolute; top:14px; left:14px; }
+.caja-eco{
+  background:var(--crema); border:3px solid var(--tinta); border-radius:var(--radio);
+  box-shadow:0 4px 0 var(--tinta); padding:10px 14px; min-width:190px;
+}
+.fila-monedas{ display:flex; align-items:center; gap:8px; }
+.fila-monedas b{ font-family:'Lilita One',sans-serif; font-size:28px; line-height:1; }
+.ico-mon{ width:28px; height:28px; color:var(--amarillo); stroke:var(--tinta); }
+.fila-sub{ display:flex; gap:6px; margin-top:8px; }
+.chip{
+  display:inline-flex; align-items:center; gap:5px; font-weight:900; font-size:12px;
+  border:2.5px solid var(--tinta); border-radius:999px; padding:2px 9px; background:#fff;
+}
+.chip-ingresos{ background:#dff0d5; }
+.chip-nivel b{ font-size:13px; }
+.barra-xp{
+  margin-top:8px; height:12px; border:2.5px solid var(--tinta); border-radius:99px;
+  background:#e8ddc4; overflow:hidden;
+}
+.barra-xp i{ display:block; height:100%; width:0%; background:var(--turquesa); transition:width .3s; }
+
+/* Botones (arriba-derecha) */
+.hud-tr{ position:absolute; top:14px; right:14px; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.fila-botones{ display:flex; gap:8px; }
+.btn-ico{
+  width:46px; height:46px; border-radius:14px; border:3px solid var(--tinta);
+  background:var(--crema); color:var(--tinta); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 0 var(--tinta); transition:transform .08s, box-shadow .08s;
+}
+.btn-ico:hover{ transform:translateY(-2px); box-shadow:0 6px 0 var(--tinta); }
+.btn-ico:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--tinta); }
+.chip-evento{
+  background:var(--crema); border:3px solid var(--tinta); border-radius:999px;
+  padding:5
