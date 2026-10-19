@@ -1,1 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>¡Roba el Meme!</title>
+  <meta name="description" content="Compra Memes absurdos, hazte rico y roba los Memes de tus rivales. Un juego de estrategia y caos para navegador.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23ffc93c' stroke='%232b211c' stroke-width='2'/><circle cx='12' cy='12' r='5.5' fill='none' stroke='%23c79323' stroke-width='2.5'/></svg>">
+  <!-- Fuentes: mejora progresiva; el juego funciona igual sin conexión -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
 
+  <!-- ============ LIENZO DEL JUEGO ============ -->
+  <canvas id="juego"></canvas>
+
+  <!-- ============ SPRITE DE ICONOS SVG (dibujados a mano, sin emojis) ============ -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-moneda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2.6"/></symbol>
+    <symbol id="i-escudo" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 3v6c0 5.5-3.5 9.5-8 11-4.5-1.5-8-5.5-8-11V5z"/></symbol>
+    <symbol id="i-rayo" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L4 14h6l-1 8L20 10h-6z"/></symbol>
+    <symbol id="i-zapato" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h6v8c4 .2 7 2.2 9 5.4V20H6z"/><path fill="currentColor" d="M6 17h15v3H6z"/></symbol>
+    <symbol id="i-guante" viewBox="0 0 24 24"><path fill="currentColor" d="M7 11V6a1.6 1.6 0 0 1 3.2 0v4h1.3V4.5a1.6 1.6 0 0 1 3.2 0V10H16V6a1.6 1.6 0 0 1 3.2 0v7.5a6.5 6.5 0 0 1-6.5 6.5H10a4 4 0 0 1-4-4z"/></symbol>
+    <symbol id="i-iman" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h5v8a1.5 1.5 0 0 0 3 0V3h5v8a6.5 6.5 0 0 1-13 0z"/><path fill="#fff" opacity=".45" d="M6 3h5v4H6zm9 0h5v4h-5z"/></symbol>
+    <symbol id="i-expandir" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-estrella" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 9l6.6-.8z"/></symbol>
+    <symbol id="i-trofeo" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h12v2h3v3a4 4 0 0 1-4 4h-.4A6 6 0 0 1 13 15v3h3a1 1 0 0 1 1 1v2H7v-2a1 1 0 0 1 1-1h3v-3a6 6 0 0 1-3.6-3H7a4 4 0 0 1-4-4V5h3zm-1 4v1a2 2 0 0 0 1 1.7V7zm14 0h-1v2.7A2 2 0 0 0 19 8z"/></symbol>
+    <symbol id="i-carrito" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h2.6l2.5 10.3a1.6 1.6 0 0 0 1.6 1.2h7.6a1.6 1.6 0 0 0 1.5-1.1L20.8 8H7.2l-.5-2H21l-1.8 9.6a3 3 0 0 1-2.9 2.4H8.9a3 3 0 0 1-2.9-2.3L4.4 6H3z"/><circle cx="10" cy="20" r="1.9"/><circle cx="17" cy="20" r="1.9"/></symbol>
+    <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-ayuda" viewBox="0 0 24 24"><path d="M9.2 9a3 3 0 1 1 4.6 2.5c-1 .7-1.8 1.3-1.8 2.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.2" r="1.7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><circle cx="12" cy="7.4" r="1.7"/></symbol>
+    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="9" cy="7" r="2.5" fill="currentColor"/><circle cx="15" cy="12" r="2.5" fill="currentColor"/><circle cx="8" cy="17" r="2.5" fill="currentColor"/></symbol>
+    <symbol id="i-son-on" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-son-off" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-candado" viewBox="0 0 24 24"><path d="M7.5 10V8a4.5 4.5 0 0 1 9 0v2" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="5" y="10" width="14" height="10" rx="2.5" fill="currentColor"/></symbol>
+  </svg>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud">
+    <div class="hud-tl">
+      <div class="caja-eco">
+        <div class="fila-monedas"><svg class="ico ico-mon"><use href="#i-moneda"/></svg><b id="hud-monedas">0</b></div>
+        <div class="fila-sub">
+          <span class="chip chip-ingresos" id="hud-ips">+0/s</span>
+          <span class="chip chip-nivel">Nv <b id="hud-nivel">1</b></span>
+        </div>
+        <div class="barra-xp"><i id="hud-xp"></i></div>
+      </div>
+    </div>
+
+    <div class="hud-tr">
+      <div class="chip chip-evento" id="hud-evento"><svg class="ico"><use href="#i-reloj"/></svg><span id="hud-evento-txt">Evento en --:--</span></div>
+      <div class="fila-botones">
+        <button class="btn-ico" id="btn-tienda" title="Tienda (T)" aria-label="Tienda"><svg class="ico"><use href="#i-carrito"/></svg></button>
+        <button class="btn-ico" id="btn-logros" title="Logros" aria-label="Logros"><svg class="ico"><use href="#i-trofeo"/></svg></button>
+        <button class="btn-ico" id="btn-ayuda" title="Cómo jugar" aria-label="Ayuda"><svg class="ico"><use href="#i-ayuda"/></svg></button>
+        <button class="btn-ico" id="btn-sonido" title="Sonido (M)" aria-label="Sonido"><svg class="ico"><use id="uso-sonido" href="#i-son-on"/></svg></button>
+        <button class="btn-ico" id="btn-ajustes" title="Ajustes" aria-label="Ajustes"><svg class="ico"><use href="#i-ajustes"/></svg></button>
+      </div>
+      <canvas id="minimapa" width="300" height="192"></canvas>
+    </div>
+
+    <div class="hud-br">
+      <button id="btn-escudo" class="btn-flotante" title="Escudo (R)">
+        <svg class="ico"><use href="#i-escudo"/></svg>
+        <span class="escudo-txt">ESCUDO</span>
+        <kbd>R</kbd>
+        <i class="cd"></i>
+      </button>
+      <button id="btn-accion" class="btn-flotante" disabled>
+        <svg class="ico"><use href="#i-rayo"/></svg>
+        <span id="accion-txt">…</span>
+        <kbd>E</kbd>
+      </button>
+    </div>
+
+    <div id="joy-base"><div id="joy-palanca"></div></div>
+  </div>
+
+  <!-- ============ ANUNCIO DE EVENTO ============ -->
+  <div id="anuncio"><b id="anuncio-titulo"></b><span id="anuncio-sub"></span></div>
+
+  <!-- ============ AVISOS ============ -->
+  <div id="toasts"></div>
+
+  <!-- ============ TIENDA (MEJORAS · INVENTARIO · LOGROS) ============ -->
+  <aside id="tienda" aria-label="Tienda">
+    <header class="tienda-cab">
+      <h2>TIENDA</h2>
+      <div class="tienda-monedas"><svg class="ico"><use href="#i-moneda"/></svg><b id="tienda-monedas">0</b></div>
+      <button class="btn-ico" id="btn-cerrar-tienda" aria-label="Cerrar tienda"><svg class="ico"><use href="#i-x"/></svg></button>
+    </header>
+    <nav class="pestannas">
+      <button class="pest activa" data-pest="mejoras">Mejoras</button>
+      <button class="pest" data-pest="inv">Mis Memes</button>
+      <button class="pest" data-pest="logros">Logros</button>
+    </nav>
+    <div class="pest-contenido">
+      <div id="pest-mejoras" class="pest-cuerpo activa"></div>
+      <div id="pest-inv" class="pest-cuerpo"></div>
+      <div id="pest-logros" class="pest-cuerpo"></div>
+    </div>
+  </aside>
+
+  <!-- ============ MODAL GENÉRICO ============ -->
+  <div id="modal-fondo" class="oculto"><div id="modal" role="dialog" aria-modal="true"></div></div>
+
+  <!-- ============ TUTORIAL ============ -->
+  <div id="tutorial" class="oculto">
+    <div class="tuto-carta">
+      <div class="tuto-meme" id="tuto-meme"></div>
+      <h2 id="tuto-titulo"></h2>
+      <p id="tuto-texto"></p>
+      <div class="tuto-puntos" id="tuto-puntos"></div>
+      <div class="tuto-botones">
+        <button class="btn btn-sec" id="tuto-ant">Anterior</button>
+        <button class="btn" id="tuto-sig">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./data.js"></script>
+  <script src="./game.js"></script>
+</body>
+</html>
