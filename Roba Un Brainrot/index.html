@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>¡Roba el Meme!</title>
-  <meta name="description" content="Compra Memes absurdos, hazte rico y roba los Memes de tus rivales. Un juego de estrategia y caos para navegador.">
+  <meta name="description" content="Compra Memes absurdos, hazte rico y roba los Memes de tus rivales en este juego de estrategia caótica para navegador.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23ffc93c' stroke='%232b211c' stroke-width='2'/><circle cx='12' cy='12' r='5.5' fill='none' stroke='%23c79323' stroke-width='2.5'/></svg>">
-  <!-- Fuentes: mejora progresiva; el juego funciona igual sin conexión -->
+  <!-- Tipografías: mejora progresiva; si no cargan, el juego usa fuentes del sistema -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
 <body>
 
   <!-- ============ LIENZO DEL JUEGO ============ -->
-  <canvas id="juego"></canvas>
+  <canvas id="juego" aria-label="Escenario del juego"></canvas>
 
   <!-- ============ SPRITE DE ICONOS SVG (dibujados a mano, sin emojis) ============ -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -24,7 +24,6 @@
     <symbol id="i-rayo" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L4 14h6l-1 8L20 10h-6z"/></symbol>
     <symbol id="i-zapato" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h6v8c4 .2 7 2.2 9 5.4V20H6z"/><path fill="currentColor" d="M6 17h15v3H6z"/></symbol>
     <symbol id="i-guante" viewBox="0 0 24 24"><path fill="currentColor" d="M7 11V6a1.6 1.6 0 0 1 3.2 0v4h1.3V4.5a1.6 1.6 0 0 1 3.2 0V10H16V6a1.6 1.6 0 0 1 3.2 0v7.5a6.5 6.5 0 0 1-6.5 6.5H10a4 4 0 0 1-4-4z"/></symbol>
-    <symbol id="i-iman" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h5v8a1.5 1.5 0 0 0 3 0V3h5v8a6.5 6.5 0 0 1-13 0z"/><path fill="#fff" opacity=".45" d="M6 3h5v4H6zm9 0h5v4h-5z"/></symbol>
     <symbol id="i-expandir" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-estrella" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 9l6.6-.8z"/></symbol>
     <symbol id="i-trofeo" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h12v2h3v3a4 4 0 0 1-4 4h-.4A6 6 0 0 1 13 15v3h3a1 1 0 0 1 1 1v2H7v-2a1 1 0 0 1 1-1h3v-3a6 6 0 0 1-3.6-3H7a4 4 0 0 1-4-4V5h3zm-1 4v1a2 2 0 0 0 1 1.7V7zm14 0h-1v2.7A2 2 0 0 0 19 8z"/></symbol>
@@ -53,6 +52,8 @@
       </div>
     </div>
 
+    <div id="ranking" aria-label="Clasificación por ingresos"></div>
+
     <div class="hud-tr">
       <div class="chip chip-evento" id="hud-evento"><svg class="ico"><use href="#i-reloj"/></svg><span id="hud-evento-txt">Evento en --:--</span></div>
       <div class="fila-botones">
@@ -62,15 +63,14 @@
         <button class="btn-ico" id="btn-sonido" title="Sonido (M)" aria-label="Sonido"><svg class="ico"><use id="uso-sonido" href="#i-son-on"/></svg></button>
         <button class="btn-ico" id="btn-ajustes" title="Ajustes" aria-label="Ajustes"><svg class="ico"><use href="#i-ajustes"/></svg></button>
       </div>
-      <canvas id="minimapa" width="300" height="192"></canvas>
     </div>
 
     <div class="hud-br">
       <button id="btn-escudo" class="btn-flotante" title="Escudo (R)">
         <svg class="ico"><use href="#i-escudo"/></svg>
-        <span class="escudo-txt">ESCUDO</span>
+        <span id="escudo-txt">ESCUDO</span>
         <kbd>R</kbd>
-        <i class="cd"></i>
+        <i class="cd" id="escudo-cd"></i>
       </button>
       <button id="btn-accion" class="btn-flotante" disabled>
         <svg class="ico"><use href="#i-rayo"/></svg>
@@ -86,34 +86,34 @@
   <div id="anuncio"><b id="anuncio-titulo"></b><span id="anuncio-sub"></span></div>
 
   <!-- ============ AVISOS ============ -->
-  <div id="toasts"></div>
+  <div id="toasts" aria-live="polite"></div>
 
   <!-- ============ TIENDA (MEJORAS · INVENTARIO · LOGROS) ============ -->
-  <aside id="tienda" aria-label="Tienda">
+  <aside id="tienda" aria-label="Tienda y paneles">
     <header class="tienda-cab">
       <h2>TIENDA</h2>
       <div class="tienda-monedas"><svg class="ico"><use href="#i-moneda"/></svg><b id="tienda-monedas">0</b></div>
-      <button class="btn-ico" id="btn-cerrar-tienda" aria-label="Cerrar tienda"><svg class="ico"><use href="#i-x"/></svg></button>
+      <button class="btn-ico" id="btn-cerrar-tienda" title="Cerrar (Esc)" aria-label="Cerrar tienda"><svg class="ico"><use href="#i-x"/></svg></button>
     </header>
     <nav class="pestannas">
       <button class="pest activa" data-pest="mejoras">Mejoras</button>
       <button class="pest" data-pest="inv">Mis Memes</button>
       <button class="pest" data-pest="logros">Logros</button>
     </nav>
-    <div class="pest-contenido">
-      <div id="pest-mejoras" class="pest-cuerpo activa"></div>
-      <div id="pest-inv" class="pest-cuerpo"></div>
-      <div id="pest-logros" class="pest-cuerpo"></div>
+    <div class="tienda-cuerpo">
+      <section id="pest-mejoras" class="pest-cuerpo activa"></section>
+      <section id="pest-inv" class="pest-cuerpo"></section>
+      <section id="pest-logros" class="pest-cuerpo"></section>
     </div>
   </aside>
 
-  <!-- ============ MODAL GENÉRICO ============ -->
+  <!-- ============ MODAL GENÉRICO (AYUDA / AJUSTES / CONFIRMACIONES) ============ -->
   <div id="modal-fondo" class="oculto"><div id="modal" role="dialog" aria-modal="true"></div></div>
 
-  <!-- ============ TUTORIAL ============ -->
+  <!-- ============ TUTORIAL INICIAL ============ -->
   <div id="tutorial" class="oculto">
-    <div class="tuto-carta">
-      <div class="tuto-meme" id="tuto-meme"></div>
+    <div class="tuto-carta" role="dialog" aria-modal="true">
+      <canvas id="tuto-meme" width="150" height="150"></canvas>
       <h2 id="tuto-titulo"></h2>
       <p id="tuto-texto"></p>
       <div class="tuto-puntos" id="tuto-puntos"></div>
@@ -121,6 +121,7 @@
         <button class="btn btn-sec" id="tuto-ant">Anterior</button>
         <button class="btn" id="tuto-sig">Siguiente</button>
       </div>
+      <button class="tuto-saltar" id="tuto-saltar">Saltar tutorial</button>
     </div>
   </div>
 
