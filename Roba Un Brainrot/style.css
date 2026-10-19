@@ -1,7 +1,7 @@
 /* ============================================================
-   ¡ROBA EL MEME! · style.css
-   Estética "toy/cartoon": colores planos vivos, bordes gruesos
-   de tinta y sombras duras. Nada de gradientes decorativos.
+   ÂĄROBA EL MEME! Â· style.css
+   EstÃĐtica "toy/cartoon": colores planos vivos, bordes gruesos
+   de tinta y sombras duras. Adaptable a PC, tablet y mÃģvil.
    ============================================================ */
 
 :root{
@@ -15,14 +15,16 @@
   --verde:#57b14b;
   --verde-osc:#3c7f34;
   --turquesa:#3ec6b8;
-  --fondo:#1c2a17;
+  --azul:#4f9df7;
+  --rosa:#ff6fa5;
+  --fondo:#24401f;
   --radio:16px;
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; height:100%; overflow:hidden; overscroll-behavior:none; }
+html,body{ margin:0; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:none; }
 body{
-  background:var(--fondo);
+  background:repeating-linear-gradient(45deg,#24401f 0 26px,#1f391b 26px 52px);
   font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;
   color:var(--tinta);
   user-select:none; -webkit-user-select:none;
@@ -35,21 +37,21 @@ kbd{
 }
 
 /* ---------- Lienzo ---------- */
-#juego{ position:fixed; inset:0; display:block; touch-action:none; cursor:crosshair; }
+#juego{ position:fixed; inset:0; display:block; touch-action:none; }
 
 /* ---------- HUD base ---------- */
 #hud{ position:fixed; inset:0; pointer-events:none; z-index:20; }
-#hud button, #hud .caja-eco, #hud .chip-evento, #minimapa, #joy-base{ pointer-events:auto; }
+#hud button,#hud .caja-eco,#hud .chip-evento,#joy-base{ pointer-events:auto; }
 .ico{ width:22px; height:22px; fill:currentColor; flex:none; }
 
-/* Economía (arriba-izquierda) */
+/* EconomÃ­a (arriba-izquierda) */
 .hud-tl{ position:absolute; top:14px; left:14px; }
 .caja-eco{
   background:var(--crema); border:3px solid var(--tinta); border-radius:var(--radio);
-  box-shadow:0 4px 0 var(--tinta); padding:10px 14px; min-width:190px;
+  box-shadow:0 4px 0 var(--tinta); padding:10px 14px; min-width:196px;
 }
 .fila-monedas{ display:flex; align-items:center; gap:8px; }
-.fila-monedas b{ font-family:'Lilita One',sans-serif; font-size:28px; line-height:1; }
+.fila-monedas b{ font-family:'Lilita One',sans-serif; font-size:28px; line-height:1; min-width:60px; }
 .ico-mon{ width:28px; height:28px; color:var(--amarillo); stroke:var(--tinta); }
 .fila-sub{ display:flex; gap:6px; margin-top:8px; }
 .chip{
@@ -57,6 +59,7 @@ kbd{
   border:2.5px solid var(--tinta); border-radius:999px; padding:2px 9px; background:#fff;
 }
 .chip-ingresos{ background:#dff0d5; }
+.chip-ingresos.fiebre{ background:#ffe9ad; animation:pulso-chip 1s infinite; }
 .chip-nivel b{ font-size:13px; }
 .barra-xp{
   margin-top:8px; height:12px; border:2.5px solid var(--tinta); border-radius:99px;
@@ -77,4 +80,288 @@ kbd{
 .btn-ico:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--tinta); }
 .chip-evento{
   background:var(--crema); border:3px solid var(--tinta); border-radius:999px;
-  padding:5
+  padding:5px 12px; font-weight:900; font-size:13px; display:flex; align-items:center; gap:7px;
+  box-shadow:0 3px 0 var(--tinta);
+}
+.chip-evento .ico{ width:18px; height:18px; }
+.chip-evento.fase-activa{ background:var(--amarillo); animation:pulso-chip 1s infinite; }
+@keyframes pulso-chip{ 50%{ transform:scale(1.05); } }
+
+/* ClasificaciÃģn (arriba-centro) */
+#ranking{
+  position:absolute; top:14px; left:50%; transform:translateX(-50%);
+  display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:46vw;
+}
+.rk{
+  display:inline-flex; align-items:center; gap:6px; background:rgba(43,33,28,.78);
+  color:#fff; font-weight:900; font-size:12px; border-radius:999px; padding:4px 11px;
+  border:2.5px solid rgba(255,246,227,.25);
+}
+.rk i{ width:10px; height:10px; border-radius:50%; background:#fff; flex:none; }
+.rk b{ color:var(--amarillo); }
+.rk.yo{ background:var(--amarillo); color:var(--tinta); border-color:var(--tinta); }
+.rk.yo b{ color:var(--rojo-osc); }
+
+/* Botones flotantes de acciÃģn (abajo-derecha) */
+.hud-br{ position:absolute; right:16px; bottom:18px; display:flex; gap:12px; align-items:flex-end; }
+.btn-flotante{
+  position:relative; width:96px; height:88px; border-radius:20px; border:3.5px solid var(--tinta);
+  background:var(--amarillo); color:var(--tinta); cursor:pointer; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  box-shadow:0 5px 0 var(--tinta); transition:transform .08s, box-shadow .08s, filter .15s;
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:12px; padding-top:6px;
+}
+.btn-flotante .ico{ width:26px; height:26px; }
+.btn-flotante kbd{ position:absolute; top:5px; right:6px; }
+.btn-flotante:hover:not(:disabled){ transform:translateY(-3px); box-shadow:0 8px 0 var(--tinta); }
+.btn-flotante:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--tinta); }
+.btn-flotante:disabled{ filter:grayscale(.7) opacity(.6); cursor:not-allowed; }
+#btn-escudo{ background:var(--turquesa); color:#0c312d; }
+#btn-escudo .cd{
+  position:absolute; left:0; bottom:0; width:100%; height:0%;
+  background:rgba(43,33,28,.28); pointer-events:none; transition:height .25s linear;
+}
+#btn-accion{ width:118px; }
+
+/* ---------- Joystick tÃĄctil ---------- */
+#joy-base{
+  position:absolute; left:22px; bottom:22px; width:124px; height:124px; border-radius:50%;
+  background:rgba(255,246,227,.22); border:3px solid rgba(255,246,227,.5);
+  display:none; touch-action:none;
+}
+#joy-palanca{
+  position:absolute; left:50%; top:50%; width:54px; height:54px; border-radius:50%;
+  background:var(--amarillo); border:3px solid var(--tinta);
+  transform:translate(-50%,-50%); box-shadow:0 3px 0 var(--tinta);
+}
+@media (pointer:coarse){ #joy-base{ display:block; } .btn-flotante kbd{ display:none; } }
+
+/* ---------- Anuncio de evento ---------- */
+#anuncio{
+  position:fixed; top:16%; left:50%; transform:translateX(-50%) scale(.6); opacity:0;
+  text-align:center; z-index:30; pointer-events:none; transition:all .25s cubic-bezier(.2,1.6,.4,1);
+}
+#anuncio b{
+  display:block; font-family:'Lilita One',sans-serif; font-size:44px; color:var(--amarillo);
+  -webkit-text-stroke:2px var(--tinta); text-shadow:0 5px 0 var(--tinta); letter-spacing:1px;
+}
+#anuncio span{
+  display:inline-block; margin-top:8px; background:var(--tinta); color:var(--crema);
+  font-weight:900; font-size:15px; padding:7px 18px; border-radius:999px; border:2.5px solid var(--crema);
+}
+#anuncio.ver{ opacity:1; transform:translateX(-50%) scale(1); }
+
+/* ---------- Avisos (toasts) ---------- */
+#toasts{
+  position:fixed; top:76px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px; z-index:40; pointer-events:none;
+  width:min(92vw,540px);
+}
+.aviso{
+  display:flex; align-items:center; gap:10px; background:var(--crema); border:3px solid var(--tinta);
+  border-radius:14px; box-shadow:0 4px 0 var(--tinta); padding:9px 16px;
+  font-weight:900; font-size:14.5px; animation:entrar-aviso .3s cubic-bezier(.2,1.5,.4,1);
+}
+.aviso .ico{ width:20px; height:20px; }
+.aviso.ok{ background:#dff0d5; }
+.aviso.warn{ background:#ffd9d5; }
+.aviso.logro{ background:var(--amarillo); }
+.aviso.fuera{ opacity:0; transform:translateY(-14px); transition:all .35s; }
+@keyframes entrar-aviso{ from{ opacity:0; transform:translateY(-16px) scale(.85); } }
+
+/* ---------- Tienda lateral ---------- */
+#tienda{
+  position:fixed; top:0; right:-420px; width:400px; max-width:100vw; height:100%;
+  background:var(--crema); border-left:4px solid var(--tinta); z-index:50;
+  display:flex; flex-direction:column; transition:right .28s cubic-bezier(.2,1.2,.4,1);
+}
+#tienda.abierta{ right:0; }
+.tienda-cab{
+  display:flex; align-items:center; gap:10px; padding:14px 16px;
+  background:var(--amarillo); border-bottom:4px solid var(--tinta);
+}
+.tienda-cab h2{ margin:0; font-size:26px; flex:1; -webkit-text-stroke:1px var(--tinta); }
+.tienda-monedas{
+  display:flex; align-items:center; gap:6px; background:#fff; border:3px solid var(--tinta);
+  border-radius:999px; padding:4px 12px; font-family:'Lilita One',sans-serif; font-size:18px;
+}
+.tienda-monedas .ico{ width:20px; height:20px; color:var(--amarillo); stroke:var(--tinta); }
+.pestannas{ display:flex; gap:6px; padding:10px 12px 0; }
+.pest{
+  flex:1; border:3px solid var(--tinta); border-bottom:none; border-radius:12px 12px 0 0;
+  background:var(--crema2); font-weight:900; font-size:13.5px; padding:8px 4px; cursor:pointer;
+  color:var(--tinta);
+}
+.pest.activa{ background:#fff; position:relative; z-index:2; }
+.tienda-cuerpo{ flex:1; overflow:hidden; display:flex; position:relative; border-top:3px solid var(--tinta); }
+.pest-cuerpo{ flex:1; overflow-y:auto; padding:14px; display:none; }
+.pest-cuerpo.activa{ display:block; }
+.pista-plaza{
+  background:var(--crema2); border:3px dashed var(--amarillo-osc); border-radius:12px;
+  padding:10px 12px; font-weight:800; font-size:13px; margin-bottom:12px; line-height:1.45;
+}
+
+/* Tarjetas de mejora */
+.tarjeta{
+  display:flex; align-items:center; gap:12px; background:#fff; border:3px solid var(--tinta);
+  border-radius:14px; box-shadow:0 3px 0 var(--tinta); padding:12px; margin-bottom:12px;
+}
+.t-ico{
+  width:52px; height:52px; border-radius:12px; border:3px solid var(--tinta);
+  background:var(--c,#ffc93c); color:var(--tinta); flex:none;
+  display:flex; align-items:center; justify-content:center;
+}
+.t-info{ flex:1; min-width:0; }
+.t-info b{ font-size:15px; display:block; }
+.t-info p{ margin:3px 0 6px; font-size:12.5px; font-weight:800; opacity:.75; line-height:1.3; }
+.puntos{ display:flex; gap:4px; }
+.punto{ width:14px; height:8px; border:2px solid var(--tinta); border-radius:99px; background:#eee; }
+.punto.lleno{ background:var(--turquesa); }
+
+/* Botones */
+.btn{
+  border:3px solid var(--tinta); border-radius:12px; background:var(--amarillo); color:var(--tinta);
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; padding:9px 16px; cursor:pointer;
+  box-shadow:0 4px 0 var(--tinta); transition:transform .08s, box-shadow .08s;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 6px 0 var(--tinta); }
+.btn:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--tinta); }
+.btn:disabled{ filter:grayscale(.6); opacity:.6; cursor:not-allowed; }
+.btn .ico{ width:16px; height:16px; }
+.btn-sec{ background:#fff; }
+.btn-peligro{ background:var(--rojo); color:#fff; }
+.btn-comp{ flex-direction:column; gap:2px; min-width:86px; font-size:13px; padding:8px 10px; }
+.tarjeta.max{ opacity:.75; }
+
+/* Inventario */
+.tarjeta-meme{
+  display:flex; align-items:center; gap:12px; background:#fff; border:3px solid var(--tinta);
+  border-radius:14px; box-shadow:0 3px 0 var(--tinta); padding:10px 12px; margin-bottom:12px;
+}
+.tarjeta-meme img{
+  width:64px; height:64px; border:3px solid var(--c,#999); border-radius:12px; background:var(--crema2); flex:none;
+}
+.m-info{ flex:1; min-width:0; }
+.m-info b{ font-size:15px; display:block; }
+.chip-rareza{
+  display:inline-block; margin-top:4px; font-weight:900; font-size:11px; color:#fff;
+  background:var(--c,#999); border:2.5px solid var(--tinta); border-radius:999px; padding:2px 9px;
+}
+.chip-ips{
+  display:inline-block; margin-top:4px; margin-left:5px; font-weight:900; font-size:11px;
+  background:#dff0d5; border:2.5px solid var(--tinta); border-radius:999px; padding:2px 9px;
+}
+.btn-vender{
+  border:3px solid var(--tinta); border-radius:10px; background:#fff; font-weight:900; font-size:12px;
+  padding:8px 10px; cursor:pointer; box-shadow:0 3px 0 var(--tinta); color:var(--tinta);
+  display:flex; align-items:center; gap:5px; min-width:92px; justify-content:center;
+}
+.btn-vender .ico{ width:15px; height:15px; color:var(--amarillo); stroke:var(--tinta); }
+.btn-vender:hover{ background:#ffd9d5; }
+.btn-vender.confirmando{ background:var(--rojo); color:#fff; }
+.vacio{
+  text-align:center; padding:34px 18px; font-weight:900; opacity:.65; line-height:1.6;
+}
+
+/* Logros */
+.fila-logro{
+  display:flex; align-items:center; gap:12px; background:#fff; border:3px solid var(--tinta);
+  border-radius:14px; box-shadow:0 3px 0 var(--tinta); padding:11px 12px; margin-bottom:12px;
+}
+.fila-logro.hecha{ background:#dff0d5; }
+.logro-ico{
+  width:46px; height:46px; border-radius:50%; border:3px solid var(--tinta); flex:none;
+  background:#cfd4da; color:#8a929b; display:flex; align-items:center; justify-content:center;
+}
+.fila-logro.hecha .logro-ico{ background:var(--amarillo); color:var(--tinta); }
+.l-info{ flex:1; min-width:0; }
+.l-info b{ font-size:14px; display:block; }
+.l-info p{ margin:2px 0 5px; font-size:12px; font-weight:800; opacity:.7; }
+.progreso{ height:9px; border:2px solid var(--tinta); border-radius:99px; background:#eee; overflow:hidden; }
+.progreso i{ display:block; height:100%; background:var(--turquesa); }
+.l-estado{ text-align:right; flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.l-estado .recompensa{
+  font-weight:900; font-size:12px; background:var(--crema2); border:2.5px solid var(--tinta);
+  border-radius:999px; padding:3px 9px; display:flex; align-items:center; gap:4px;
+}
+.l-estado .recompensa .ico{ width:14px; height:14px; color:var(--amarillo); stroke:var(--tinta); }
+.l-estado .ico{ width:22px; height:22px; }
+.l-estado .hecho{ color:var(--verde-osc); }
+.l-estado .nohecho{ color:#a6adb5; }
+
+/* ---------- Modal ---------- */
+#modal-fondo{
+  position:fixed; inset:0; background:rgba(20,25,15,.72); z-index:60;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+#modal{
+  background:var(--crema); border:4px solid var(--tinta); border-radius:20px;
+  box-shadow:0 8px 0 var(--tinta); width:min(480px,94vw); max-height:86vh; overflow-y:auto; padding:18px;
+  animation:entrar-aviso .28s cubic-bezier(.2,1.5,.4,1);
+}
+#modal h3{ margin:0 0 4px; font-size:24px; }
+#modal .seccion{ margin:14px 0 0; }
+#modal .seccion > b{ display:block; font-size:14px; margin-bottom:6px; color:var(--rojo-osc); }
+#modal p, #modal li{ font-size:13.5px; font-weight:800; line-height:1.55; margin:5px 0; }
+#modal ul{ padding-left:20px; margin:6px 0; }
+#modal kbd{ font-size:10.5px; }
+.fila-conf{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0; font-weight:900; font-size:14px; }
+.fila-conf .grupo{ display:flex; gap:8px; }
+.stats-lista{ background:#fff; border:3px solid var(--tinta); border-radius:12px; padding:10px 14px; }
+.stats-lista div{ display:flex; justify-content:space-between; font-weight:900; font-size:13px; padding:3px 0; }
+.modal-pie{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+/* ---------- Tutorial ---------- */
+#tutorial{
+  position:fixed; inset:0; background:rgba(20,25,15,.78); z-index:70;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.tuto-carta{
+  background:var(--crema); border:4px solid var(--tinta); border-radius:22px;
+  box-shadow:0 8px 0 var(--tinta); width:min(430px,94vw); padding:22px 22px 16px; text-align:center;
+  animation:entrar-aviso .3s cubic-bezier(.2,1.5,.4,1);
+}
+#tuto-meme{ width:130px; height:130px; }
+.tuto-carta h2{ margin:6px 0 4px; font-size:26px; }
+.tuto-carta p{ font-size:14.5px; font-weight:800; line-height:1.6; margin:6px 0 14px; min-height:88px; }
+.tuto-puntos{ display:flex; justify-content:center; gap:7px; margin-bottom:14px; }
+.tuto-puntos i{ width:11px; height:11px; border-radius:50%; border:2.5px solid var(--tinta); background:#fff; }
+.tuto-puntos i.act{ background:var(--amarillo); }
+.tuto-botones{ display:flex; justify-content:center; gap:12px; }
+.tuto-saltar{
+  background:none; border:none; margin-top:12px; font-weight:900; font-size:12.5px;
+  color:#8a6a4a; cursor:pointer; text-decoration:underline;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  #ranking{ display:none; }
+}
+@media (max-width:720px){
+  .caja-eco{ min-width:150px; padding:8px 11px; }
+  .fila-monedas b{ font-size:22px; }
+  .ico-mon{ width:22px; height:22px; }
+  .btn-ico{ width:42px; height:42px; }
+  .btn-ico .ico{ width:19px; height:19px; }
+  .chip{ font-size:11px; }
+  #btn-accion{ width:98px; }
+  .btn-flotante{ width:86px; height:82px; font-size:11px; }
+  #anuncio b{ font-size:32px; }
+  #toasts{ top:64px; }
+  .aviso{ font-size:13px; padding:7px 12px; }
+}
+@media (max-width:560px){
+  #tienda{ right:-110vw; width:100vw; border-left:none; }
+  #tienda.abierta{ right:0; }
+  .hud-br{ right:10px; bottom:calc(12px + env(safe-area-inset-bottom)); }
+  #joy-base{ left:14px; bottom:calc(14px + env(safe-area-inset-bottom)); width:110px; height:110px; }
+  #joy-palanca{ width:48px; height:48px; }
+  .hud-tr .chip-evento{ display:none; }
+}
+@media (max-height:520px){
+  .caja-eco{ min-width:0; }
+  .barra-xp{ display:none; }
+  #tutorial{ align-items:flex-start; }
+  .tuto-carta p{ min-height:0; }
+}
