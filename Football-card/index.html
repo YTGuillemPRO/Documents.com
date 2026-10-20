@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ Football Card Opener 2026</title>
+<meta name="description" content="Abre packs de cartas de fútbol, colecciona leyendas y construye tu club. 100% offline, sin servidores.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ===== Fondo atmosférico ASMR ===== -->
+<div id="bg-particles"></div>
+<div id="fog"></div>
+<div id="vignette"></div>
+
+<!-- ===== Barra superior ===== -->
+<header id="topbar">
+  <div id="logo">⚽ FC<span>OPENER</span><em>26</em></div>
+
+  <nav id="nav">
+    <button class="tab" data-screen="menu">🏠 Menú</button>
+    <button class="tab" data-screen="tienda">🛒 Tienda</button>
+    <button class="tab" data-screen="club">🛡️ Mi Club</button>
+    <button class="tab" data-screen="mercado">💱 Mercado</button>
+    <button class="tab" data-screen="misiones">🎯 Misiones</button>
+    <button class="tab" data-screen="historial">📜 Historial</button>
+    <button class="tab" data-screen="stats">📊 Stats</button>
+    <button class="tab" data-screen="ajustes">⚙️ Ajustes</button>
+  </nav>
+
+  <div id="topbar-right">
+    <div id="coins" class="coins" title="Tus monedas">🪙 <span id="coins-num">0</span></div>
+    <button id="btn-daily" class="icon-btn" title="Recompensa diaria">🎁<i id="daily-dot"></i></button>
+    <button id="btn-sound" class="icon-btn" title="Sonido on/off">🔊</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ===== MENÚ PRINCIPAL ===== -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-hero">
+      <div class="menu-pack breathe" id="menu-pack-visual">
+        <div class="mp-glow"></div>
+        <div class="mp-body">🎁</div>
+        <div class="mp-shine"></div>
+      </div>
+      <h1>FOOTBALL CARD<br><span class="grad-text">OPENER 2026</span></h1>
+      <p class="menu-sub">Abre packs · colecciona leyendas · construye el club de tus sueños</p>
+      <div class="menu-actions">
+        <button class="btn btn-primary btn-lg" id="btn-jugar">✨ ABRIR PACKS</button>
+        <button class="btn btn-ghost" id="btn-coleccion">🛡️ VER MI CLUB</button>
+      </div>
+      <div class="menu-stats" id="menu-stats"></div>
+    </div>
+  </section>
+
+  <!-- ===== TIENDA ===== -->
+  <section id="screen-tienda" class="screen">
+    <h2 class="screen-title">🛒 Tienda de Packs</h2>
+    <p class="screen-sub">Elige un pack… y cruza los dedos 🤞</p>
+    <div id="packs-grid" class="packs-grid"></div>
+  </section>
+
+  <!-- ===== MI CLUB ===== -->
+  <section id="screen-club" class="screen">
+    <h2 class="screen-title">🛡️ Mi Club</h2>
+    <div class="club-toolbar">
+      <select id="f-rareza" class="sel">
+        <option value="">Todas las rarezas</option><option value="comun">Común</option>
+        <option value="especial">Especial</option><option value="rara">Rara</option>
+        <option value="epica">Épica</option><option value="legendaria">Legendaria</option>
+      </select>
+      <select id="f-pos" class="sel">
+        <option value="">Todas las posiciones</option><option>POR</option><option>DFC</option>
+        <option>LI</option><option>LD</option><option>MCD</option><option>MC</option>
+        <option>MCO</option><option>EI</option><option>ED</option><option>DC</option>
+      </select>
+      <select id="f-orden" class="sel">
+        <option value="media-desc">⭐ Media ↓</option><option value="media-asc">⭐ Media ↑</option>
+        <option value="rareza-desc">💎 Rareza ↓</option><option value="nombre">🔤 Nombre</option>
+      </select>
+      <input id="f-search" class="inp" type="search" placeholder="🔎 Buscar nombre o club…">
+      <div class="club-meta">
+        <span id="club-count">0 cartas</span> · <span id="club-value">Valor: 🪙 0</span>
+        <span id="club-fav">⭐ 0</span>
+      </div>
+    </div>
+    <div id="club-grid" class="cards-grid"></div>
+    <p class="empty hidden" id="club-empty">Todavía no tienes cartas… ¡Abre tu primer pack! 🎁</p>
+  </section>
+
+  <!-- ===== MERCADO ===== -->
+  <section id="screen-mercado" class="screen">
+    <h2 class="screen-title">💱 Mercado</h2>
+    <div class="mercado-cols">
+      <div class="mercado-col">
+        <h3 class="col-title">🏷️ Ofertas del día <button id="btn-rotate" class="btn btn-ghost btn-sm">🔄 Rotar</button></h3>
+        <div id="mercado-ofertas" class="cards-grid cards-sm"></div>
+      </div>
+      <div class="mercado-col">
+        <h3 class="col-title">📦 Vender duplicados</h3>
+        <button id="btn-vender-comunes" class="btn btn-ghost btn-sm">♻️ Vender todos los comunes duplicados</button>
+        <div id="mercado-vender" class="sell-list"></div>
+        <p class="empty" id="sell-empty">Sin duplicados por ahora.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MISIONES ===== -->
+  <section id="screen-misiones" class="screen">
+    <h2 class="screen-title">🎯 Misiones diarias</h2>
+    <div id="daily-box" class="daily-box"></div>
+    <div id="misiones-list"></div>
+  </section>
+
+  <!-- ===== HISTORIAL ===== -->
+  <section id="screen-historial" class="screen">
+    <h2 class="screen-title">📜 Historial de aperturas</h2>
+    <div id="historial-list" class="hist-list"></div>
+    <p class="empty" id="hist-empty">Aún no has abierto ningún pack.</p>
+  </section>
+
+  <!-- ===== STATS ===== -->
+  <section id="screen-stats" class="screen">
+    <h2 class="screen-title">📊 Estadísticas</h2>
+    <div id="stats-grid" class="stats-grid"></div>
+    <div id="best-card-box" class="best-card-box"></div>
+  </section>
+
+  <!-- ===== AJUSTES ===== -->
+  <section id="screen-ajustes" class="screen">
+    <h2 class="screen-title">⚙️ Ajustes</h2>
+    <div class="settings">
+      <label class="setting-row"><span>🔊 Efectos de sonido (ASMR)</span><input type="checkbox" id="set-sfx" checked></label>
+      <label class="setting-row"><span>🌬️ Ambiente hipnótico de fondo</span><input type="checkbox" id="set-amb" checked></label>
+      <label class="setting-row"><span>🎚️ Volumen</span><input type="range" id="set-vol" min="0" max="100" value="70"></label>
+      <label class="setting-row"><span>🍃 Modo movimientos reducidos</span><input type="checkbox" id="set-red"></label>
+      <button id="btn-tutorial" class="btn btn-ghost">📖 Ver tutorial otra vez</button>
+      <button id="btn-reset" class="btn btn-danger">🗑️ Borrar progreso</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== OVERLAY CINEMATOGRÁFICO DE APERTURA ===== -->
+<div id="opening" class="hidden">
+  <div class="cine-bar top"></div>
+  <div class="cine-bar bottom"></div>
+  <div id="screen-tint"></div>
+  <div id="light-beam"></div>
+  <div id="opening-stage">
+    <div id="opening-pack">
+      <div class="op-glow"></div>
+      <div class="op-body">🎁</div>
+      <div class="op-shine"></div>
+    </div>
+    <div id="rating-count"></div>
+    <div id="reveal-info"></div>
+    <div id="opening-card-slot"></div>
+  </div>
+  <div id="opening-actions"></div>
+  <button id="opening-skip" class="btn btn-ghost btn-sm">⏩ Saltar animación</button>
+</div>
+
+<!-- ===== MODAL GENÉRICO ===== -->
+<div id="modal-backdrop" class="hidden">
+  <div id="modal">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- ===== TOASTS ===== -->
+<div id="toasts"></div>
+
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
