@@ -31,6 +31,7 @@
   <button class="mbtn" id="btnShop">🛒<span>Tienda</span></button>
   <button class="mbtn" id="btnPets">🐾<span>Mascotas</span></button>
   <button class="mbtn" id="btnQuests">📜<span>Misiones</span></button>
+  <button class="mbtn" id="btnServers">🌐<span>Servidores</span></button>
   <button class="mbtn" id="btnAch">🏆<span>Logros</span></button>
   <button class="mbtn" id="btnHelp">❓<span>Ayuda</span></button>
   <button class="mbtn" id="btnMute">🔊<span>Sonido</span></button>
@@ -42,7 +43,12 @@
 
 <!-- ============ PANELES ============ -->
 <div class="panel" id="pShop">
-  <div class="phead"><h2>🛒 Tienda de semillas</h2><button class="pclose">✕</button></div>
+  <div class="awning"></div>
+  <div class="shophead">
+    <h2>🌱 Nuevas semillas en <b id="stockTimer">3:00</b></h2>
+    <button class="btnrestock" id="btnRestock">🔄 RESTOCK</button>
+    <button class="pclose" title="Cerrar">✕</button>
+  </div>
   <div class="pbody" id="pShopBody"></div>
 </div>
 
@@ -54,6 +60,11 @@
 <div class="panel" id="pQuests">
   <div class="phead"><h2>📜 Misiones</h2><button class="pclose">✕</button></div>
   <div class="pbody" id="pQuestsBody"></div>
+</div>
+
+<div class="panel" id="pServers">
+  <div class="phead"><h2>🌐 Servidores</h2><button class="pclose">✕</button></div>
+  <div class="pbody" id="pServersBody"></div>
 </div>
 
 <div class="panel" id="pAch">
@@ -71,5 +82,8 @@
 <div id="fatal" class="hidden"><span id="fatalMsg">⚠️</span><button id="fatalClose">✕</button></div>
 
 <script src="game.js"></script>
+<!-- Multijugador P2P: PeerJS por CDN + mp.js. Sin internet, el juego sigue en 1 jugador -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="mp.js"></script>
 </body>
 </html>
