@@ -282,9 +282,7 @@ function pingRooms() {
     if (pinger === p) pinger = null;
     PUB_ROOMS.forEach(r => setStat(r.id, 'off', '⚠️ Sin red'));
   });
-}
-
-/* ================= 7. ANFITRIÓN ================= */
+}/* ================= 7. ANFITRIÓN ================= */
 function startHost(def) {
   if (!window.Peer) { toast('⚠️ Módulo multijugador no disponible', 'warn'); return; }
   busy('Creando sala');
@@ -407,3 +405,425 @@ function hostData(conn, msg) {
     }
   }
 }
+
+/* ================= 8. INVITADO ================= */
+function joinRoom(def) {
+  if (!window.Peer) { toast('⚠️ Módulo multijugador no disponible', 'warn'); return; }
+  busy('Conectando a la sala');
+  const peer = new Peer({ debug: 0 });
+  net.peer = peer;
+  let done = false;
+  const fail = m => {
+    if (done) return; done = true;
+    clearBusy();
+    if (m) toast(m, 'warn');
+    destroyPeer();
+    net.role = 'off'; net.joined = false; net.conn = null;
+    chip(); renderSrv();
+  };
+  peer.on('open', id => {
+    net.me = id;
+    const conn = peer.connect(PREFIX + def.rid, { reliable: true });
+    net.conn = conn;
+    conn.on('open', () => { try { conn.send({ t: 'J', name: mpName() }); } catch (e) { } });
+    conn.on('data', d => { try { guestData(d); } catch (e) { } });
+    conn.on('close', () => {
+      if (net.joined) { toast('🔌 Conexión perdida con la sala', 'warn'); leaveRoom(true); }
+      else fail('No se pudo conectar: la sala se cerró');
+    });
+    conn.on('error', () => { });
+    setTimeout(() => { if (net.peer === peer && !net.joined) fail('⏱️ La sala no respondió. ¿Es correcto el código?'); }, 9000);
+  });
+  peer.on('error', e => {
+    if (e && e.type === 'peer-unavailable') { fail('🔑 No hay ninguna sala con ese código'); return; }
+    fail('⚠️ ' + peerErrText(e));
+  });
+}
+function guestData(msg) {
+  if (!msg || typeof msg !== 'object') return;
+  switch (msg.t) {
+    case 'W': {
+      if (net.joined) return;
+      net.joined = true;
+      net.role = 'guest';
+      net.room = {
+        pub: !!(msg.room && msg.room.pub), rid: '', name: (msg.room && msg.room.name) || 'Sala',
+        code: (msg.room && msg.room.code) || '', hostName: msg.host || '?',
+      };
+      /* guardamos TU granja real antes de sustituirla por la del anfitrión */
+      net.myPlots = S.plots; net.myStock = S.stock; net.myStockT = S.stockT;
+      applySnap(msg.snap);
+      const own = (msg.players || []).find(pl => pl.id === (msg.you || net.me));
+      if (own && isFinite(own.x) && isFinite(own.y)) {
+        player.x = own.x; player.y = own.y; walkTarget = null; pending = null;
+      }
+      (msg.players || []).forEach(updRemote);
+      net.chat = [];
+      pushChat('sys', 'Te has unido a ' + net.room.name + ' (anfitrión: ' + net.room.hostName + ')', 'sys');
+      toast('✅ ¡Conectado! Estás en la granja de ' + net.room.hostName, 'gold');
+      clearBusy(); chip();
+      break;
+    }
+    case 'S': applySnap(msg); break;
+    case 'PL':
+      (msg.players || []).forEach(updRemote);
+      chip();
+      break;
+    case 'C':
+      pushChat(msg.f, msg.m);
+      if (msg.id !== net.me) setBub(msg.id, msg.m);
+      break;
+    case 'K':
+      toast('🚪 ' + (msg.m || 'Te han expulsado de la sala'), 'warn');
+      leaveRoom(true);
+      break;
+  }
+}
+function applySnap(s) {
+  if (!s || !Array.isArray(s.plots)) return;
+  S.plots = unpackPlots(s.plots);
+  if (s.stock && typeof s.stock === 'object') S.stock = s.stock;
+  if (typeof s.stockT === 'number' && isFinite(s.stockT)) S.stockT = clamp(s.stockT, 1, 9999);
+  if (s.wid) {
+    const w = WEATHERS.find(x => x.id === s.wid);
+    if (w) {
+      if (!curWeather || curWeather.id !== s.wid) { net.hostW = true; setWeather(w); }
+      else weatherT = Math.max(1, s.wt || 5);
+    }
+  }
+  const ps = $('pShop');
+  if (ps && ps.classList.contains('open')) buildShop();
+  if (s.ev) {
+    const pp = plotPos(s.ev.i | 0);
+    if (s.ev.k === 'h') {
+      floatText(pp.x, pp.y - 58, s.ev.e || '🌾', '#fde047');
+      sparkBurst(pp.x, pp.y - 10, '#fde047', 10);
+      if (s.ev.n) toast('🌾 ' + s.ev.n + ' cosechó');
+    } else if (s.ev.k === 'p') {
+      floatText(pp.x, pp.y - 46, s.ev.e || '🌱', '#a3e635');
+      if (s.ev.n) toast('🌱 ' + s.ev.n + ' plantó');
+    }
+  }
+}
+function updRemote(p) {
+  if (!p || !p.id || p.id === net.me) return;
+  let r = net.remotes.get(p.id);
+  if (!r) {
+    r = { x: fin(p.x, 0), y: fin(p.y, 0), tx: 0, ty: 0, dir: 1, mv: 0, step: Math.random() * 9, name: cleanName(p.name), col: colorOf(p.id), host: !!p.host, bub: '', bubT: 0 };
+    r.tx = r.x; r.ty = r.y;
+    net.remotes.set(p.id, r);
+  }
+  r.tx = fin(p.x, r.tx); r.ty = fin(p.y, r.ty);
+  r.dir = p.dir === -1 ? -1 : 1;
+  r.mv = p.mv ? 1 : 0;
+  if (p.name) r.name = cleanName(p.name);
+  r.host = !!p.host;
+}
+function setBub(id, m) {
+  const r = net.remotes.get(id);
+  if (r) { r.bub = String(m || '').slice(0, 42); r.bubT = 4; }
+}
+
+/* ================= 9. SALIR / ERRORES ================= */
+function peerErrText(e) {
+  if (!e) return 'Error de red desconocido';
+  if (e.type === 'network') return 'Sin conexión con el servidor de salas. Revisa tu internet.';
+  if (e.type === 'browser-incompatible') return 'Tu navegador no soporta WebRTC 😢';
+  if (e.type === 'server-error') return 'El servidor de salas está ocupado. Prueba en un rato.';
+  if (e.type === 'webrtc') return 'Tu red bloquea las conexiones P2P (VPN o firewall).';
+  return 'Error de conexión (' + (e.type || '?') + ')';
+}
+function destroyPeer() {
+  try { if (net.conn) net.conn.close(); } catch (e) { }
+  try { if (net.peer) net.peer.destroy(); } catch (e) { }
+  net.conn = null; net.peer = null;
+}
+function leaveRoom(auto) {
+  const wasGuest = net.role === 'guest';
+  const name = net.room ? net.room.name : '';
+  if (net.role === 'host') broadcast({ t: 'K', m: 'El anfitrión ha cerrado la sala' });
+  destroyPeer();
+  net.role = 'off'; net.joined = false; net.room = null;
+  net.conns = new Map(); net.remotes = new Map(); net.chat = [];
+  if (wasGuest) {
+    if (net.myPlots) S.plots = net.myPlots;
+    if (net.myStock) S.stock = net.myStock;
+    if (net.myStockT) S.stockT = net.myStockT;
+    net.myPlots = null; net.myStock = null; net.myStockT = 0;
+    try { save(); } catch (e) { }
+    const ps = $('pShop');
+    if (ps && ps.classList.contains('open')) buildShop();
+  }
+  chip();
+  renderSrv();
+  if (!auto) toast('🚪 Has salido' + (name ? ' de ' + name : ''));
+}
+
+/* ================= 10. AVATARES REMOTOS ================= */
+function MPDraw() {
+  if (net.role === 'off' || net.remotes.size === 0) return;
+  for (const r of net.remotes.values()) drawAvatar(r);
+}
+function drawAvatar(r) {
+  const s = w2s(r.x, r.y), z = zoom;
+  if (s.x < -90 || s.x > vw + 90 || s.y < -120 || s.y > vh + 90) return;
+  const bob = r.mv ? Math.abs(Math.sin(r.step)) * 3 * z : 0;
+  ctx.fillStyle = 'rgba(40,60,30,0.35)';
+  ctx.beginPath(); ctx.ellipse(s.x, s.y + 20 * z, 20 * z, 7 * z, 0, 0, 7); ctx.fill();
+  ctx.save();
+  ctx.translate(s.x, s.y - bob);
+  if (r.dir < 0) ctx.scale(-1, 1);
+  const lg = r.mv ? Math.sin(r.step * 2) * 5 * z : 0;
+  ctx.fillStyle = '#3b5a8f';
+  roundRect(-8 * z, 8 * z, 7 * z, 14 * z + lg, 3 * z); ctx.fill();
+  roundRect(1 * z, 8 * z, 7 * z, 14 * z - lg, 3 * z); ctx.fill();
+  ctx.fillStyle = r.col;
+  roundRect(-13 * z, -14 * z, 26 * z, 26 * z, 8 * z); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
+  roundRect(-13 * z, -2 * z, 26 * z, 8 * z, 4 * z); ctx.fill();
+  ctx.fillStyle = '#f0c090';
+  roundRect(-17 * z, -10 * z, 5 * z, 14 * z, 2.5 * z); ctx.fill();
+  roundRect(12 * z, -10 * z, 5 * z, 14 * z, 2.5 * z); ctx.fill();
+  ctx.fillStyle = '#f7cf9e';
+  ctx.beginPath(); ctx.arc(0, -22 * z, 11 * z, 0, 7); ctx.fill();
+  ctx.fillStyle = '#3b2f1e';
+  ctx.beginPath(); ctx.arc(3 * z, -24 * z, 1.6 * z, 0, 7); ctx.arc(8 * z, -24 * z, 1.6 * z, 0, 7); ctx.fill();
+  ctx.fillStyle = '#d9a441';
+  ctx.beginPath(); ctx.ellipse(0, -30 * z, 16 * z, 5 * z, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -32 * z, 10 * z, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#b8842e';
+  ctx.fillRect(-10 * z, -32 * z, 20 * z, 3 * z);
+  ctx.restore();
+  /* etiqueta con el nombre */
+  ctx.save();
+  ctx.textAlign = 'center';
+  const label = (r.host ? '👑 ' : '') + r.name;
+  const fs = Math.round(11 * Math.max(0.9, z));
+  ctx.font = '800 ' + fs + 'px system-ui, sans-serif';
+  const tw = ctx.measureText(label).width + 14;
+  const ty = s.y - 44 * z - bob;
+  ctx.fillStyle = 'rgba(255,248,225,.96)';
+  roundRect(s.x - tw / 2, ty - fs - 6, tw, fs + 10, 8); ctx.fill();
+  ctx.strokeStyle = '#b98d54'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#3b2f1e';
+  ctx.fillText(label, s.x, ty);
+  /* burbuja de chat */
+  if (r.bubT > 0 && r.bub) {
+    ctx.globalAlpha = Math.min(1, r.bubT / 0.5);
+    const bf = Math.round(12 * Math.max(0.9, z));
+    ctx.font = '700 ' + bf + 'px system-ui, sans-serif';
+    const bw = ctx.measureText(r.bub).width + 18;
+    const bh = bf + 10;
+    const by = ty - fs - 14 - bh;
+    ctx.fillStyle = 'rgba(255,255,255,.97)';
+    roundRect(s.x - bw / 2, by, bw, bh, 9); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(s.x - 6, by + bh); ctx.lineTo(s.x + 6, by + bh); ctx.lineTo(s.x, by + bh + 7);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#3b2f1e';
+    ctx.fillText(r.bub, s.x, by + bf + 2);
+  }
+  ctx.restore();
+}
+
+/* ================= 11. ENGAUCHES SOBRE game.js ================= */
+function worldSig() {
+  try { return JSON.stringify(S.plots) + '|' + JSON.stringify(S.stock); } catch (e) { return ''; }
+}
+function installHooks() {
+  const _update = window.update, _render = window.render, _save = window.save;
+  const _plantSeed = window.plantSeed, _harvest = window.harvest, _buySeed = window.buySeed;
+  const _buyPlot = window.buyPlot, _doRebirth = window.doRebirth, _restock = window.restock;
+  const _setWeather = window.setWeather;
+
+  /* guardar: los invitados NUNCA guardan la granja del anfitrión */
+  window.save = function () {
+    if (net.role !== 'guest' || !net.myPlots) return _save();
+    const hp = S.plots, hs = S.stock, ht = S.stockT;
+    S.plots = net.myPlots; S.stock = net.myStock; S.stockT = net.myStockT;
+    try { _save(); } finally { S.plots = hp; S.stock = hs; S.stockT = ht; }
+  };
+  /* el anfitrión es el único que reabastece / cambia el clima */
+  window.restock = function (silent) {
+    if (net.role === 'guest') { S.stockT = Math.max(S.stockT, 10); return; }
+    _restock(silent);
+    if (net.role === 'host') broadcast(snapPacket());
+  };
+  window.setWeather = function (w, silent) {
+    if (net.role === 'guest' && !net.hostW) { weatherT = 5; return; }
+    net.hostW = false;
+    return _setWeather(w, silent);
+  };
+  /* acciones co-op */
+  window.plantSeed = function (i, pid) {
+    const b = worldSig();
+    _plantSeed(i, pid);
+    if (worldSig() === b) return;
+    if (net.role === 'guest') gsend({ t: 'P', i, pid });
+    else if (net.role === 'host') broadcast(snapPacket({ i, k: 'p', n: mpName() }));
+  };
+  window.harvest = function (i) {
+    const b = worldSig();
+    _harvest(i);
+    if (worldSig() === b) return;
+    if (net.role === 'guest') gsend({ t: 'H', i });
+    else if (net.role === 'host') broadcast(snapPacket({ i, k: 'h', n: mpName() }));
+  };
+  window.buySeed = function (pid, qty) {
+    const b = worldSig();
+    _buySeed(pid, qty);
+    if (worldSig() === b) return;
+    if (net.role === 'guest') gsend({ t: 'B', pid, qty: Math.max(1, qty | 0) });
+    else if (net.role === 'host') broadcast(snapPacket());
+  };
+  window.buyPlot = function (i) {
+    if (net.role === 'guest') {
+      toast('🔒 Solo el anfitrión puede desbloquear parcelas de SU granja', 'warn');
+      return false;
+    }
+    const b = worldSig();
+    const r = _buyPlot(i);
+    if (worldSig() !== b && net.role === 'host') broadcast(snapPacket());
+    return r;
+  };
+  window.doRebirth = function () {
+    if (net.role === 'guest') { toast('⭐ Sal de la sala antes de renacer', 'warn'); return; }
+    _doRebirth();
+    if (net.role === 'host') broadcast(snapPacket());
+  };
+  /* bucle: lógica MP por fotograma */
+  window.update = function (dt) {
+    _update(dt);
+    try { tick(dt); } catch (e) { }
+  };
+  /* render: avatares remotos por encima de todo */
+  window.render = function () {
+    _render();
+    try { MPDraw(); } catch (e) { }
+  };
+}
+
+/* ================= 12. BUCLE MP ================= */
+function tick(dt) {
+  if (net.role === 'off') return;
+  net.sendT += dt;
+  if (net.sendT >= 0.12) {
+    net.sendT = 0;
+    if (net.role === 'host') {
+      const pk = plPacket();
+      broadcast({ t: 'PL', players: pk });
+      pk.forEach(updRemote); /* el anfitrión también ve a sus invitados */
+    } else if (net.conn && net.joined) {
+      gsend({
+        t: 'M',
+        x: Math.round(player.x * 10) / 10, y: Math.round(player.y * 10) / 10,
+        dir: player.dir, mv: player.moving ? 1 : 0,
+      });
+    }
+  }
+  if (net.role === 'host') {
+    net.snapT += dt;
+    if (net.snapT >= 3) { net.snapT = 0; broadcast(snapPacket()); }
+  }
+  const k = 1 - Math.pow(0.002, dt);
+  for (const r of net.remotes.values()) {
+    r.x += (r.tx - r.x) * k;
+    r.y += (r.ty - r.y) * k;
+    if (r.mv) r.step += dt * 11;
+    if (r.bubT > 0) r.bubT -= dt;
+  }
+}
+
+/* ================= 13. EVENTOS DE UI ================= */
+function sendChat() {
+  const el = $('mpChatIn');
+  if (!el) return;
+  const m = cleanTxt(el.value);
+  el.value = '';
+  if (!m) return;
+  if (net.role === 'host') {
+    pushChat(mpName(), m, 'me');
+    broadcast({ t: 'C', id: net.me, f: mpName(), m });
+  } else if (net.role === 'guest' && net.joined) {
+    pushChat(mpName(), m, 'me');
+    gsend({ t: 'C', m });
+  }
+}
+function doJoinCode() {
+  const el = $('mpCodeIn');
+  const code = String(el && el.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+  if (code.length < 4) { toast('🔑 Introduce el código de 5 letras de la sala', 'warn'); return; }
+  if (net.role !== 'off') leaveRoom(true);
+  joinRoom({ pub: false, rid: code, name: 'Sala privada' });
+}
+function copyCode() {
+  const c = net.room && net.room.code;
+  if (!c) return;
+  const ok = () => toast('📋 Código copiado: ' + c);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(ok, () => toast('Código de la sala: ' + c));
+    else toast('Código de la sala: ' + c);
+  } catch (e) { toast('Código de la sala: ' + c); }
+}
+function wireSrv() {
+  const guardIn = el => {
+    if (!el) return;
+    el.addEventListener('keydown', e => e.stopPropagation());
+    el.addEventListener('keyup', e => e.stopPropagation());
+  };
+  guardIn($('mpNameIn')); guardIn($('mpCodeIn')); guardIn($('mpChatIn'));
+
+  const nameIn = $('mpNameIn');
+  if (nameIn) nameIn.addEventListener('change', e => {
+    const v = cleanName(e.target.value);
+    e.target.value = v; net.name = v;
+    try { localStorage.setItem('gag_mp_name', v); } catch (x) { }
+    toast('🧑‍🌾 Nombre guardado: ' + v);
+  });
+
+  document.querySelectorAll('#pServersBody [data-pub]').forEach(el => {
+    el.onclick = () => {
+      const r = PUB_ROOMS.find(x => x.id === el.dataset.pub);
+      if (!r) return;
+      if (net.role !== 'off') leaveRoom(true);
+      startHost({ pub: true, rid: r.id, name: r.n });
+    };
+  });
+  const bind = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  bind('btnNewRoom', () => {
+    if (net.role !== 'off') leaveRoom(true);
+    startHost({ pub: false, rid: mkCode(), name: 'Sala de ' + mpName() });
+  });
+  bind('btnJoinCode', doJoinCode);
+  const codeIn = $('mpCodeIn');
+  if (codeIn) codeIn.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') doJoinCode(); });
+  bind('btnCopyCode', copyCode);
+  bind('btnLeave', () => leaveRoom(false));
+  bind('btnSend', sendChat);
+  const chatIn = $('mpChatIn');
+  if (chatIn) chatIn.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') sendChat(); });
+}
+
+/* ================= 14. INICIO ================= */
+function mpInit() {
+  try {
+    if (typeof S === 'undefined' || typeof $ !== 'function' || typeof plantSeed !== 'function') return;
+    installHooks();
+    const b = $('btnServers');
+    if (b) b.onclick = () => {
+      SND.click(); openPanel('pServers');
+      renderSrv(); pingRooms();
+    };
+    const chipEl = document.createElement('button');
+    chipEl.id = 'mpChip';
+    chipEl.className = 'mpchip hidden';
+    chipEl.title = 'Sala multijugador';
+    chipEl.onclick = () => { SND.click(); openPanel('pServers'); renderSrv(); };
+    const hud = $('hud');
+    if (hud) hud.appendChild(chipEl);
+    window.addEventListener('beforeunload', () => { try { if (net.role !== 'off') leaveRoom(true); } catch (e) { } });
+    MP.ok = true;
+  } catch (e) { console.warn('[MP] init:', e); }
+}
+mpInit();
+})();
