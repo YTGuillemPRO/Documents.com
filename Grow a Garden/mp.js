@@ -1,11 +1,12 @@
 /* ============================================================
-   🌱 GROW A GARDEN ES — mp.js · v3.3 MULTIJUGADOR (P2P WebRTC)
+   🌱 GROW A GARDEN ES — mp.js · v3.4 MULTIJUGADOR (P2P WebRTC)
    ------------------------------------------------------------
    Navegador de servidores estilo clásico (1001 juegos):
    · 5 servidores públicos con estado EN VIVO (🟢 n jugadores)
    · Salas PRIVADAS con código de 5 letras
    · Entrar con código, chat, hasta 8 jugadores por sala
    · Todos juegan en la GRANJA DEL ANFITRIÓN (co-op real)
+   · 👁 Visor de granjas: mira la granja de CADA jugador
    · Tus monedas, semillas, mascotas y misiones siguen siendo tuyas
    ------------------------------------------------------------
    No modifica game.js: se engancha encima (wrappers).
@@ -65,9 +66,13 @@ const net = {
   myPlots: null, myStock: null, myStockT: 0,
   hostW: false,
   sendT: 0, snapT: 0,
+  gardens: new Map(),   /* id -> parcelas empaquetadas de SU granja personal */
+  gT: 0,                /* temporizador de granjas (envío / difusión) */
+  viewGarden: null,     /* id del jugador cuya granja estás viendo (UI) */
   busyTxt: '',
 };
 let chipCache = '';
+let gviewT = 0;
 
 /* ================= 3. NOMBRE ================= */
 function mpName() {
@@ -83,8 +88,9 @@ function mpName() {
 }
 
 /* ================= 4. PROTOCOLO ================= */
-function packPlots() {
-  return S.plots.map(p => p.c
+function packPlots(arr) {
+  const A = arr || S.plots;
+  return A.map(p => p.c
     ? [p.u ? 1 : 0, 1, p.c.id, Math.round(p.c.left * 10) / 10, p.c.total, p.c.multi | 0, p.c.watered ? 1 : 0, p.c.mut || 0]
     : [p.u ? 1 : 0, 0]);
 }
@@ -139,13 +145,44 @@ function broadcast(o, except) {
 }
 function gsend(o) { try { if (net.conn && net.conn.open && net.joined) net.conn.send(o); } catch (e) { } }
 
+/* --- granjas personales (visor 👁) --- */
+function ownGarden() {
+  /* tu granja personal: si eres invitado, está aparcada en myPlots */
+  return packPlots(net.role === 'guest' && net.myPlots ? net.myPlots : S.plots);
+}
+function gaPacket() {
+  const g = {};
+  g[net.me] = ownGarden();
+  net.gardens.forEach((v, id) => { if (id !== net.me && v) g[id] = v; });
+  return { t: 'GA', g };
+}
+function gardenOf(id) {
+  if (id === net.me) return ownGarden();
+  return net.gardens.get(id) || null;
+}
+function gardenSum(g) {
+  if (!Array.isArray(g)) return null;
+  const s = { u: 0, n: 0, ready: 0, grow: 0, kinds: {} };
+  g.forEach(q => {
+    if (!Array.isArray(q)) return;
+    if (q[0]) s.u++;
+    if (q[1]) {
+      const P = PLANT(q[2]);
+      s.n++;
+      if (fin(q[3], 999) <= 0.05) s.ready++; else s.grow++;
+      if (P) s.kinds[P.e] = (s.kinds[P.e] || 0) + 1;
+    }
+  });
+  return s;
+}
+
 /* ================= 5. VISTAS (UI) ================= */
 function renderSrv() {
   const b = $('pServersBody');
   if (!b) return;
   if (net.role === 'host' || (net.role === 'guest' && net.joined)) {
-    b.innerHTML = roomHtml();
-    renderChat();
+    b.innerHTML = net.viewGarden ? gardenViewHtml(net.viewGarden) : roomHtml();
+    if (!net.viewGarden) renderChat();
   } else if (net.busyTxt) {
     b.innerHTML = '<div class="mpbusy">⏳ ' + esc(net.busyTxt) + '…</div>';
   } else {
@@ -189,14 +226,14 @@ function roomHtml() {
       '<button class="btn ghost sbtn" id="btnCopyCode">📋 Copiar</button></div>';
   h += '</div>';
   const n = (host ? net.conns.size : net.remotes.size) + 1;
-  h += '<div class="sect">👥 Jugadores (' + n + '/' + MAXP + ')</div><div class="plist">';
+  h += '<div class="sect">👥 Jugadores (' + n + '/' + MAXP + ') · pulsa 👁 para ver su granja</div><div class="plist rows">';
   if (host) {
-    h += '<span class="pchipx me host">👑 ' + esc(mpName()) + ' (tú)</span>';
-    net.conns.forEach(e => { h += '<span class="pchipx">' + esc(e.name) + '</span>'; });
+    h += prowHtml(net.me, '👑 ' + esc(mpName()) + ' (tú)', 'pchipx me host');
+    net.conns.forEach(e => { h += prowHtml(e.conn.peer, esc(e.name), 'pchipx'); });
   } else {
-    h += '<span class="pchipx me">' + esc(mpName()) + ' (tú)</span>';
+    h += prowHtml(net.me, esc(mpName()) + ' (tú)', 'pchipx me');
     net.remotes.forEach(r => {
-      h += '<span class="pchipx' + (r.host ? ' host' : '') + '">' + (r.host ? '👑 ' : '') + esc(r.name) + '</span>';
+      h += prowHtml(r.id, (r.host ? '👑 ' : '') + esc(r.name), 'pchipx' + (r.host ? ' host' : ''));
     });
   }
   h += '</div>';
@@ -204,6 +241,59 @@ function roomHtml() {
   h += '<div class="mpjoin"><input id="mpChatIn" maxlength="80" placeholder="Escribe un mensaje…" autocomplete="off">' +
     '<button class="btn" id="btnSend">➤</button></div>';
   h += '<div class="mprowbtns"><button class="btn danger" id="btnLeave">🚪 Salir de la sala</button></div>';
+  return h;
+}
+
+function prowHtml(id, label, cls) {
+  const s = gardenSum(gardenOf(id));
+  let sum = '⏳ cargando…';
+  if (s) {
+    if (s.ready && s.grow) sum = '🧺 ' + s.ready + ' listo' + (s.ready > 1 ? 's' : '') + ' · 🌱 ' + s.grow;
+    else if (s.ready) sum = '🧺 ' + s.ready + ' listo' + (s.ready > 1 ? 's' : '');
+    else if (s.grow) sum = '🌱 ' + s.grow + ' creciendo';
+    else sum = '🟫 granja vacía';
+  }
+  return '<div class="prow"><span class="' + cls + '">' + label + '</span>' +
+    '<span class="psumm">' + esc(sum) + '</span>' +
+    '<button class="btn ghost sbtn" data-view="' + esc(id) + '" title="Ver su granja">👁</button></div>';
+}
+
+function gardenViewHtml(id) {
+  const g = gardenOf(id);
+  let nm = '?';
+  if (id === net.me) nm = mpName() + ' (tú)';
+  else if (net.role === 'host') { const e = net.conns.get(id); nm = e ? e.name : '?'; }
+  else { const r = net.remotes.get(id); nm = r ? r.name : ((net.room && net.room.hostName) || '?'); }
+  let h = '<div class="mprowbtns" style="margin:0 0 10px"><button class="btn ghost" id="btnGBack">← Volver a la sala</button></div>';
+  h += '<div class="mproomhead"><b>🏡 Granja de ' + esc(nm) + '</b>' +
+    '<span class="mprole">' + (Array.isArray(g)
+      ? 'Sus parcelas y cultivos en tiempo real'
+      : '⏳ Esperando los datos de su granja…') + '</span></div>';
+  if (Array.isArray(g)) {
+    const plots = unpackPlots(g);
+    const s = gardenSum(g) || { u: 0, n: 0, ready: 0, grow: 0, kinds: {} };
+    h += '<div class="gwrap">';
+    plots.forEach(p => {
+      if (!p.u) { h += '<div class="gcell lock" title="Parcela bloqueada">🔒</div>'; return; }
+      if (!p.c) { h += '<div class="gcell empty" title="Parcela libre"></div>'; return; }
+      const P = PLANT(p.c.id), M = p.c.mut ? MUT(p.c.mut) : null;
+      const prog = p.c.total > 0 ? clamp(1 - p.c.left / p.c.total, 0, 1) : 1;
+      const ready = p.c.left <= 0.05;
+      h += '<div class="gcell' + (ready ? ' ready' : '') + '" title="' +
+        esc((P ? P.n : '?') + (M ? ' · ' + M.n : '')) + '">' +
+        '<span class="ge">' + (P ? P.e : '🌱') + '</span>' +
+        (p.c.multi > 1 ? '<span class="gmul">×' + (p.c.multi | 0) + '</span>' : '') +
+        (M ? '<span class="gmut" style="color:' + M.c + '">' + M.e + '</span>' : '') +
+        '<i class="gbar"><b style="width:' + Math.round(prog * 100) + '%"></b></i></div>';
+    });
+    h += '</div>';
+    let kinds = '';
+    for (const k in s.kinds) kinds += k + '×' + s.kinds[k] + '  ';
+    h += '<div class="gstats">🪴 ' + s.u + ' parcelas · 🌱 ' + s.n + ' cultivos · 🧺 ' + s.ready + ' listos</div>';
+    if (kinds) h += '<div class="gstats" style="margin-top:-4px">' + kinds.trim() + '</div>';
+    if (id === net.me && net.role === 'guest')
+      h += '<div class="gnote">⏸️ Tu granja está en pausa mientras visitas la granja del anfitrión. Sigue creciendo cuando salgas de la sala.</div>';
+  }
   return h;
 }
 
@@ -282,7 +372,9 @@ function pingRooms() {
     if (pinger === p) pinger = null;
     PUB_ROOMS.forEach(r => setStat(r.id, 'off', '⚠️ Sin red'));
   });
-}/* ================= 7. ANFITRIÓN ================= */
+}
+
+/* ================= 7. ANFITRIÓN ================= */
 function startHost(def) {
   if (!window.Peer) { toast('⚠️ Módulo multijugador no disponible', 'warn'); return; }
   busy('Creando sala');
@@ -324,9 +416,12 @@ function hostBye(conn) {
   if (!e) return;
   net.conns.delete(conn.peer);
   net.remotes.delete(conn.peer);
+  net.gardens.delete(conn.peer);
+  if (net.viewGarden === conn.peer) net.viewGarden = null;
   pushChat('sys', e.name + ' ha salido de la sala', 'sys');
   toast('🚪 ' + e.name + ' ha salido');
   broadcast({ t: 'PL', players: plPacket() });
+  broadcast(gaPacket());
   chip();
 }
 function hostData(conn, msg) {
@@ -354,6 +449,7 @@ function hostData(conn, msg) {
         players: plPacket(), snap: snapPacket(),
       });
     } catch (e) { }
+    trySend(conn, gaPacket());
     broadcast({ t: 'PL', players: plPacket() }, conn);
     pushChat('sys', name + ' se ha unido a la sala', 'sys');
     toast('👥 ' + name + ' se ha unido');
@@ -403,6 +499,10 @@ function hostData(conn, msg) {
       net.conns.forEach(en => { if (en.conn !== conn) trySend(en.conn, pkt); });
       break;
     }
+    case 'G':
+      net.gardens.set(conn.peer, Array.isArray(msg.g) ? msg.g : null);
+      broadcast(gaPacket(), conn);
+      break;
   }
 }
 
@@ -459,12 +559,21 @@ function guestData(msg) {
       }
       (msg.players || []).forEach(updRemote);
       net.chat = [];
+      net.gardens = new Map(); net.gT = 0;
+      gsend({ t: 'G', g: ownGarden() });
       pushChat('sys', 'Te has unido a ' + net.room.name + ' (anfitrión: ' + net.room.hostName + ')', 'sys');
       toast('✅ ¡Conectado! Estás en la granja de ' + net.room.hostName, 'gold');
       clearBusy(); chip();
       break;
     }
     case 'S': applySnap(msg); break;
+    case 'GA': {
+      net.gardens = new Map();
+      const G = msg.g || {};
+      for (const k in G) if (k !== net.me) net.gardens.set(k, G[k]);
+      if (net.viewGarden || ($('pServers') && $('pServers').classList.contains('open'))) renderSrv();
+      break;
+    }
     case 'PL':
       (msg.players || []).forEach(updRemote);
       chip();
@@ -545,6 +654,7 @@ function leaveRoom(auto) {
   destroyPeer();
   net.role = 'off'; net.joined = false; net.room = null;
   net.conns = new Map(); net.remotes = new Map(); net.chat = [];
+  net.gardens = new Map(); net.viewGarden = null; net.gT = 0;
   if (wasGuest) {
     if (net.myPlots) S.plots = net.myPlots;
     if (net.myStock) S.stock = net.myStock;
@@ -724,7 +834,20 @@ function tick(dt) {
   if (net.role === 'host') {
     net.snapT += dt;
     if (net.snapT >= 3) { net.snapT = 0; broadcast(snapPacket()); }
+    net.gT += dt;
+    if (net.gT >= 6) { net.gT = 0; broadcast(gaPacket()); }
+  } else if (net.conn && net.joined) {
+    net.gT += dt;
+    if (net.gT >= 12) { net.gT = 0; gsend({ t: 'G', g: ownGarden() }); }
   }
+  if (net.viewGarden) {
+    gviewT += dt;
+    if (gviewT >= 2.5) {
+      gviewT = 0;
+      const pn = $('pServers');
+      if (pn && pn.classList.contains('open')) renderSrv();
+    }
+  } else gviewT = 0;
   const k = 1 - Math.pow(0.002, dt);
   for (const r of net.remotes.values()) {
     r.x += (r.tx - r.x) * k;
@@ -789,7 +912,11 @@ function wireSrv() {
       startHost({ pub: true, rid: r.id, name: r.n });
     };
   });
+  document.querySelectorAll('#pServersBody [data-view]').forEach(el => {
+    el.onclick = () => { SND.click(); net.viewGarden = el.dataset.view; renderSrv(); };
+  });
   const bind = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  bind('btnGBack', () => { SND.click(); net.viewGarden = null; renderSrv(); });
   bind('btnNewRoom', () => {
     if (net.role !== 'off') leaveRoom(true);
     startHost({ pub: false, rid: mkCode(), name: 'Sala de ' + mpName() });
