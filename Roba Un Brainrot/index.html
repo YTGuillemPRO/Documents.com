@@ -1,131 +1,124 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>¡Roba el Meme!</title>
-  <meta name="description" content="Compra Memes absurdos, hazte rico y roba los Memes de tus rivales en este juego de estrategia caótica para navegador.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23ffc93c' stroke='%232b211c' stroke-width='2'/><circle cx='12' cy='12' r='5.5' fill='none' stroke='%23c79323' stroke-width='2.5'/></svg>">
-  <!-- Tipografías: mejora progresiva; si no cargan, el juego usa fuentes del sistema -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>¡Roba el Meme!</title>
+<meta name="description" content="Roba memes en 3D, renace y construye tu imperio.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
 </head>
 <body>
 
-  <!-- ============ LIENZO DEL JUEGO ============ -->
-  <canvas id="juego" aria-label="Escenario del juego"></canvas>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-moneda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/></symbol>
+  <symbol id="i-zapato" viewBox="0 0 24 24"><path d="M4 16c5-1 7-6 8-6 2 0 2 3 4 3 3 0 4 2 4 4v1H4z"/></symbol>
+  <symbol id="i-guante" viewBox="0 0 24 24"><path d="M8 12V8a2 2 0 0 1 4 0M12 7a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6H9a4 4 0 0 1-4-4v-3a4 4 0 0 1 3-4z"/></symbol>
+  <symbol id="i-iman" viewBox="0 0 24 24"><path d="M7 4v7a5 5 0 0 0 10 0V4M7 4h4v4H7zM13 4h4v4h-4z"/></symbol>
+  <symbol id="i-expandir" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-tienda" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5zM9 8a3 3 0 0 1 6 0"/></symbol>
+  <symbol id="i-ayuda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7M12 17h.01"/></symbol>
+  <symbol id="i-sonido" viewBox="0 0 24 24"><path d="M4 10v4h3l4 4V6l-4 4H4zM15 9a4 4 0 0 1 0 6M17.5 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-estrella" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-corona" viewBox="0 0 24 24"><path d="M3 8l4 4 5-7 5 7 4-4v9H3z"/></symbol>
+  <symbol id="i-rayo" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></symbol>
+</svg>
 
-  <!-- ============ SPRITE DE ICONOS SVG (dibujados a mano, sin emojis) ============ -->
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-    <symbol id="i-moneda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2.6"/></symbol>
-    <symbol id="i-escudo" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 3v6c0 5.5-3.5 9.5-8 11-4.5-1.5-8-5.5-8-11V5z"/></symbol>
-    <symbol id="i-rayo" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L4 14h6l-1 8L20 10h-6z"/></symbol>
-    <symbol id="i-zapato" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h6v8c4 .2 7 2.2 9 5.4V20H6z"/><path fill="currentColor" d="M6 17h15v3H6z"/></symbol>
-    <symbol id="i-guante" viewBox="0 0 24 24"><path fill="currentColor" d="M7 11V6a1.6 1.6 0 0 1 3.2 0v4h1.3V4.5a1.6 1.6 0 0 1 3.2 0V10H16V6a1.6 1.6 0 0 1 3.2 0v7.5a6.5 6.5 0 0 1-6.5 6.5H10a4 4 0 0 1-4-4z"/></symbol>
-    <symbol id="i-expandir" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-estrella" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 9l6.6-.8z"/></symbol>
-    <symbol id="i-trofeo" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h12v2h3v3a4 4 0 0 1-4 4h-.4A6 6 0 0 1 13 15v3h3a1 1 0 0 1 1 1v2H7v-2a1 1 0 0 1 1-1h3v-3a6 6 0 0 1-3.6-3H7a4 4 0 0 1-4-4V5h3zm-1 4v1a2 2 0 0 0 1 1.7V7zm14 0h-1v2.7A2 2 0 0 0 19 8z"/></symbol>
-    <symbol id="i-carrito" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h2.6l2.5 10.3a1.6 1.6 0 0 0 1.6 1.2h7.6a1.6 1.6 0 0 0 1.5-1.1L20.8 8H7.2l-.5-2H21l-1.8 9.6a3 3 0 0 1-2.9 2.4H8.9a3 3 0 0 1-2.9-2.3L4.4 6H3z"/><circle cx="10" cy="20" r="1.9"/><circle cx="17" cy="20" r="1.9"/></symbol>
-    <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
-    <symbol id="i-ayuda" viewBox="0 0 24 24"><path d="M9.2 9a3 3 0 1 1 4.6 2.5c-1 .7-1.8 1.3-1.8 2.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.2" r="1.7"/></symbol>
-    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><circle cx="12" cy="7.4" r="1.7"/></symbol>
-    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="9" cy="7" r="2.5" fill="currentColor"/><circle cx="15" cy="12" r="2.5" fill="currentColor"/><circle cx="8" cy="17" r="2.5" fill="currentColor"/></symbol>
-    <symbol id="i-son-on" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
-    <symbol id="i-son-off" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-candado" viewBox="0 0 24 24"><path d="M7.5 10V8a4.5 4.5 0 0 1 9 0v2" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="5" y="10" width="14" height="10" rx="2.5" fill="currentColor"/></symbol>
-  </svg>
+<div id="juego"></div>
 
-  <!-- ============ HUD ============ -->
-  <div id="hud">
-    <div class="hud-tl">
-      <div class="caja-eco">
-        <div class="fila-monedas"><svg class="ico ico-mon"><use href="#i-moneda"/></svg><b id="hud-monedas">0</b></div>
-        <div class="fila-sub">
-          <span class="chip chip-ingresos" id="hud-ips">+0/s</span>
-          <span class="chip chip-nivel">Nv <b id="hud-nivel">1</b></span>
-        </div>
-        <div class="barra-xp"><i id="hud-xp"></i></div>
-      </div>
-    </div>
+<div id="cargando"><div class="girando"></div><p>Cargando el mundo…</p></div>
 
-    <div id="ranking" aria-label="Clasificación por ingresos"></div>
-
-    <div class="hud-tr">
-      <div class="chip chip-evento" id="hud-evento"><svg class="ico"><use href="#i-reloj"/></svg><span id="hud-evento-txt">Evento en --:--</span></div>
-      <div class="fila-botones">
-        <button class="btn-ico" id="btn-tienda" title="Tienda (T)" aria-label="Tienda"><svg class="ico"><use href="#i-carrito"/></svg></button>
-        <button class="btn-ico" id="btn-logros" title="Logros" aria-label="Logros"><svg class="ico"><use href="#i-trofeo"/></svg></button>
-        <button class="btn-ico" id="btn-ayuda" title="Cómo jugar" aria-label="Ayuda"><svg class="ico"><use href="#i-ayuda"/></svg></button>
-        <button class="btn-ico" id="btn-sonido" title="Sonido (M)" aria-label="Sonido"><svg class="ico"><use id="uso-sonido" href="#i-son-on"/></svg></button>
-        <button class="btn-ico" id="btn-ajustes" title="Ajustes" aria-label="Ajustes"><svg class="ico"><use href="#i-ajustes"/></svg></button>
-      </div>
-    </div>
-
-    <div class="hud-br">
-      <button id="btn-escudo" class="btn-flotante" title="Escudo (R)">
-        <svg class="ico"><use href="#i-escudo"/></svg>
-        <span id="escudo-txt">ESCUDO</span>
-        <kbd>R</kbd>
-        <i class="cd" id="escudo-cd"></i>
-      </button>
-      <button id="btn-accion" class="btn-flotante" disabled>
-        <svg class="ico"><use href="#i-rayo"/></svg>
-        <span id="accion-txt">…</span>
-        <kbd>E</kbd>
-      </button>
-    </div>
-
-    <div id="joy-base"><div id="joy-palanca"></div></div>
+<!-- Menú principal (fondo: el mundo 3D girando) -->
+<div id="menu" class="capa menu" hidden>
+  <div class="menu-caja">
+    <h1 class="logo">¡ROBA<br><em>EL MEME!</em></h1>
+    <div class="menu-stats" id="menu-stats"></div>
+    <button id="btn-jugar" class="btn jugar">JUGAR</button>
+    <button id="btn-como" class="btn">¿Cómo se juega?</button>
+    <p class="menu-nota oculto" id="menu-offline"></p>
   </div>
+</div>
 
-  <!-- ============ ANUNCIO DE EVENTO ============ -->
-  <div id="anuncio"><b id="anuncio-titulo"></b><span id="anuncio-sub"></span></div>
+<canvas id="minimapa" width="156" height="156"></canvas>
 
-  <!-- ============ AVISOS ============ -->
-  <div id="toasts" aria-live="polite"></div>
-
-  <!-- ============ TIENDA (MEJORAS · INVENTARIO · LOGROS) ============ -->
-  <aside id="tienda" aria-label="Tienda y paneles">
-    <header class="tienda-cab">
-      <h2>TIENDA</h2>
-      <div class="tienda-monedas"><svg class="ico"><use href="#i-moneda"/></svg><b id="tienda-monedas">0</b></div>
-      <button class="btn-ico" id="btn-cerrar-tienda" title="Cerrar (Esc)" aria-label="Cerrar tienda"><svg class="ico"><use href="#i-x"/></svg></button>
-    </header>
-    <nav class="pestannas">
-      <button class="pest activa" data-pest="mejoras">Mejoras</button>
-      <button class="pest" data-pest="inv">Mis Memes</button>
-      <button class="pest" data-pest="logros">Logros</button>
-    </nav>
-    <div class="tienda-cuerpo">
-      <section id="pest-mejoras" class="pest-cuerpo activa"></section>
-      <section id="pest-inv" class="pest-cuerpo"></section>
-      <section id="pest-logros" class="pest-cuerpo"></section>
+<header id="hud">
+  <div class="caja-eco">
+    <div class="fila-moneda"><svg class="ico"><use href="#i-moneda"/></svg><span id="hud-monedas">0</span></div>
+    <div class="sub">
+      <span id="hud-ingreso">0/s</span>
+      <span id="hud-escudo" class="oculto"><svg class="ico mini"><use href="#i-escudo"/></svg><span id="hud-escudo-t">0s</span></span>
     </div>
-  </aside>
+    <div class="nivel"><span id="hud-nivel">Nivel 1</span><div class="barra-xp"><div id="hud-xp"></div></div></div>
+  </div>
+  <div id="chip-evento" class="chip"><svg class="ico"><use href="#i-reloj"/></svg><span id="evento-nombre">Próximo evento</span><b id="evento-tiempo">—</b></div>
+  <div id="chip-rango" class="chip rango oculto"><svg class="ico"><use href="#i-corona"/></svg><span id="rango-nombre">Novato</span></div>
+  <div id="chip-accion" class="chip accion oculto"></div>
+</header>
 
-  <!-- ============ MODAL GENÉRICO (AYUDA / AJUSTES / CONFIRMACIONES) ============ -->
-  <div id="modal-fondo" class="oculto"><div id="modal" role="dialog" aria-modal="true"></div></div>
+<nav class="botones-hud">
+  <button id="btn-tienda" class="btn-ico" title="Tienda (T)"><svg class="ico"><use href="#i-tienda"/></svg></button>
+  <button id="btn-ayuda" class="btn-ico" title="Cómo jugar"><svg class="ico"><use href="#i-ayuda"/></svg></button>
+  <button id="btn-sonido" class="btn-ico" title="Sonido"><svg class="ico"><use href="#i-sonido"/></svg></button>
+  <button id="btn-reset" class="btn-ico" title="Reiniciar (R)"><svg class="ico"><use href="#i-reset"/></svg></button>
+</nav>
 
-  <!-- ============ TUTORIAL INICIAL ============ -->
-  <div id="tutorial" class="oculto">
-    <div class="tuto-carta" role="dialog" aria-modal="true">
-      <canvas id="tuto-meme" width="150" height="150"></canvas>
-      <h2 id="tuto-titulo"></h2>
-      <p id="tuto-texto"></p>
-      <div class="tuto-puntos" id="tuto-puntos"></div>
-      <div class="tuto-botones">
-        <button class="btn btn-sec" id="tuto-ant">Anterior</button>
-        <button class="btn" id="tuto-sig">Siguiente</button>
-      </div>
-      <button class="tuto-saltar" id="tuto-saltar">Saltar tutorial</button>
+<aside id="tienda" aria-label="Tienda">
+  <div class="tienda-cab">
+    <h2>TIENDA</h2>
+    <div class="tienda-pasta"><svg class="ico"><use href="#i-moneda"/></svg><span id="tienda-monedas">0</span></div>
+    <button id="cerrar-tienda" class="btn-ico chico" title="Cerrar (Esc)"><svg class="ico"><use href="#i-cerrar"/></svg></button>
+  </div>
+  <div class="pestanyas">
+    <button class="pestanya activa" data-tab="memes">Memes</button>
+    <button class="pestanya" data-tab="mejoras">Mejoras</button>
+    <button class="pestanya" data-tab="logros">Logros</button>
+    <button class="pestanya" data-tab="renacer">Renacer</button>
+  </div>
+  <div id="lista-memes" class="lista"></div>
+  <div id="lista-mejoras" class="lista oculto"></div>
+  <div id="lista-logros" class="lista oculto"></div>
+  <div id="lista-renacer" class="lista oculto"></div>
+</aside>
+
+<div id="capa-modal" class="capa" hidden>
+  <div class="modal">
+    <h3 id="modal-titulo"></h3>
+    <p id="modal-texto"></p>
+    <div class="modal-botones">
+      <button id="modal-si" class="btn rojo">Sí</button>
+      <button id="modal-no" class="btn">No</button>
     </div>
   </div>
+</div>
 
-  <script src="./data.js"></script>
-  <script src="./game.js"></script>
+<div id="tutorial" class="capa" hidden>
+  <div class="modal tut">
+    <div class="tut-ico"><svg class="ico grande"><use id="tut-use" href="#i-zapato"/></svg></div>
+    <h3 id="tut-titulo"></h3>
+    <p id="tut-texto"></p>
+    <button id="tut-btn" class="btn">Siguiente</button>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<div id="joy"><div id="joy-base"><div id="joy-palo"></div></div></div>
+<button id="btn-accion" class="btn-accion">ROBAR</button>
+
+<noscript><p style="padding:2rem">Este juego necesita JavaScript.</p></noscript>
+
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script type="module" src="game.js"></script>
 </body>
 </html>
