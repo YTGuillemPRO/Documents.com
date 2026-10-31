@@ -263,9 +263,14 @@ body.tacto .btn-accion:active{transform:translateY(4px);box-shadow:0 1px 0 var(-
   border-radius:12px;font:800 1.2rem var(--fuente);text-align:center;letter-spacing:6px;
   background:#fff;color:var(--tinta)}
 #capa-pin input:focus{outline:3px solid var(--amarillo)}
-.modal.adminm{max-width:480px;text-align:left;padding:18px 16px;max-height:92vh;overflow-y:auto}
-.adm-cab{display:flex;align-items:center;gap:10px}
-.adm-cab h3{flex:1;margin:0;display:flex;align-items:center;gap:8px;letter-spacing:1px}
+.modal.adminm{max-width:400px;width:min(94vw,400px);text-align:left;padding:0;max-height:min(88vh,640px);
+  display:flex;flex-direction:column;overflow:hidden}
+/* el cuerpo de la mini-GUI es lo único que hace scroll (la barra de
+   título y las pestañas quedan fijas arriba: estilo "mini ventana") */
+.adm-scroll{overflow-y:auto;padding:14px 14px 16px;flex:1;min-height:0}
+.adm-cab{display:flex;align-items:center;gap:10px;padding:12px 14px 4px;touch-action:none}
+.adm-cab h3{flex:1;margin:0;display:flex;align-items:center;gap:8px;letter-spacing:1px;cursor:grab}
+#mini-gui.arrastrando .adm-cab h3{cursor:grabbing}
 .adm-cab h3 .corona{width:26px;height:26px;fill:var(--amarillo);color:var(--tinta)}
 .adm-quien{font-size:.78rem;font-weight:800;opacity:.75;margin:6px 0 2px}
 .adm-grupo{margin:12px 0 6px}
@@ -280,8 +285,51 @@ body.tacto .btn-accion:active{transform:translateY(4px);box-shadow:0 1px 0 var(-
 .adm-nota{font-size:.72rem;font-weight:700;opacity:.65;margin-top:12px;line-height:1.4}
 .adm-pie{font-size:.78rem;font-weight:800;margin-top:8px;display:flex;gap:6px;align-items:center}
 .adm-pie .enlace{text-decoration:underline;font-weight:800;font-size:.78rem;color:var(--rojo)}
+
+/* ---- mini-GUI por pestañas ---- */
+.adm-tabs{display:flex;gap:4px;padding:0 14px;margin:10px 0 0}
+.adm-tab{flex:1;padding:8px 2px;font:800 .74rem var(--fuente);letter-spacing:.4px;
+  border:2.5px solid var(--tinta);border-bottom:none;border-radius:12px 12px 0 0;
+  background:var(--crema);color:var(--tinta);cursor:pointer;opacity:.55;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.08);white-space:nowrap}
+.adm-tab.activa{background:var(--amarillo);opacity:1}
+.adm-pane{display:none;border-top:2.5px solid var(--tinta)}
+.adm-pane.activa{display:block}
+.adm-fila{display:flex;align-items:center;gap:8px;margin:7px 0}
+.adm-fila>span{flex:0 0 86px;font:800 .74rem var(--fuente);opacity:.85}
+.adm-fila select,.adm-fila input{flex:1;min-width:0;border:2.5px solid var(--tinta);border-radius:10px;
+  background:#fffdf6;font:800 .85rem var(--fuente);padding:8px 8px;cursor:pointer;color:var(--tinta)}
+.adm-fila input{cursor:text}
+.adm-fila select:focus,.adm-fila input:focus{outline:3px solid var(--amarillo)}
+.btn.adm-cta{background:var(--amarillo);font-size:1rem;padding:12px 10px;margin-top:10px}
+.adm-lista{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:170px;overflow-y:auto}
+.reg-item{border:2.5px solid var(--tinta);border-radius:11px;padding:7px 9px;font:700 .74rem var(--fuente);
+  background:#fffdf6;display:flex;flex-direction:column;gap:4px}
+.reg-item .reg-lin1{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.reg-item .reg-tipo{font-weight:800}
+.reg-item .reg-det{opacity:.7;font-size:.68rem}
+.reg-item .reg-lin2{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.reg-item code{font:800 .8rem monospace;background:var(--tinta);color:var(--amarillo);
+  border-radius:7px;padding:2px 8px;letter-spacing:1px}
+.reg-item .reg-mini{border:2px solid var(--tinta);border-radius:8px;background:#fff;
+  font:800 .68rem var(--fuente);padding:4px 8px;cursor:pointer}
+.reg-item .reg-mini.rojo{background:var(--rojo);color:var(--crema)}
+.reg-item.caducado{opacity:.5}
+#reg-estado.adm-mal{color:var(--rojo);opacity:1}
+#reg-estado.adm-ok{color:#1a7f37;opacity:1}
+.campo-fila{display:flex;align-items:center;gap:8px;margin:7px 0}
+.campo-fila>span{flex:1;font:800 .74rem var(--fuente);opacity:.85}
+.campo-fila input{flex:0 0 86px;border:2.5px solid var(--tinta);border-radius:10px;background:#fffdf6;
+  font:800 .85rem var(--fuente);padding:7px 6px;text-align:right;color:var(--tinta)}
+.campo-fila input:focus{outline:3px solid var(--amarillo)}
 @media (max-width:720px){
   .adm-rejilla{grid-template-columns:1fr 1fr}
   .btn.adm{font-size:.84rem;padding:9px 6px}
-  .modal.adminm{padding:14px 12px}
+  .modal.adminm{position:fixed;left:0;right:0;bottom:0;width:100vw;max-width:100vw;
+    border-radius:18px 18px 0 0;max-height:84vh}
+  .adm-fila>span{flex-basis:76px}
+  .adm-lista{max-height:120px}
+}
+@media (hover:none){
+  .adm-cab h3{cursor:default}
 }
