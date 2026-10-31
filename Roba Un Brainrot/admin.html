@@ -50,6 +50,20 @@ h1,h2,.btn{font-family:'Lilita One','Arial Rounded MT Bold',sans-serif}
 .stat{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:2px dashed #d9cca9;font-weight:800}
 .stat b{font-family:'Lilita One',sans-serif;font-size:1.1rem;text-align:right}
 .espera{padding:14px 4px;font-weight:700;opacity:.7}
+/* ---- pestaña «Dar cosas» ---- */
+.dform select,.dform input[type=text],.dform input[type=number]{
+  width:170px;max-width:52%;padding:8px;border:3px solid var(--tinta);border-radius:10px;
+  font:inherit;font-weight:800;background:#fff;color:var(--tinta)}
+.gtar{position:relative;background:#fffdf6;border:3px solid var(--tinta);border-radius:13px;
+  padding:10px 76px 10px 14px;margin-top:8px;text-align:left}
+.gtar b{font-family:'Lilita One',sans-serif;font-weight:400;display:block;padding-right:4px}
+.gtar small{display:block;font-size:.72rem;font-weight:800;opacity:.7;margin-top:3px;line-height:1.45}
+.gtar .cod{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+.gtar .cod code{background:var(--tinta);color:var(--amarillo);padding:5px 12px;border-radius:8px;
+  font-weight:800;letter-spacing:1.5px;font-size:.9rem}
+.gtar .cod .btn,.gtar .quitar{width:auto;margin:0;padding:5px 12px;font-size:.78rem}
+.gtar .quitar{position:absolute;top:9px;right:9px}
+.gtar.caducado{opacity:.5}
 #aviso{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tinta);
   color:var(--crema);padding:12px 22px;border-radius:999px;font-weight:800;z-index:9;max-width:90vw}
 #aviso.mal{background:var(--rojo)}
@@ -100,7 +114,8 @@ a.enlace{color:var(--rojo);font-weight:800}
     <button id="btnSalir" class="btn b">Salir</button>
   </header>
   <nav class="tabs">
-    <button class="tab activa" data-t="cfg">Configuración</button>
+    <button class="tab activa" data-t="dar">🎁 Dar cosas</button>
+    <button class="tab" data-t="cfg">Configuración</button>
     <button class="tab" data-t="mem">Memes</button>
     <button class="tab" data-t="sta">Estadísticas</button>
   </nav>
@@ -116,7 +131,47 @@ a.enlace{color:var(--rojo);font-weight:800}
     </div>
     <textarea id="reglasTxt" readonly spellcheck="false" hidden></textarea>
   </div>
-  <section id="sec-cfg">
+  <section id="sec-dar">
+    <p class="estado">Dale cosas a los jugadores: les aparece un 🎁 en el juego al momento
+      (o con un código secreto que ellos canjean). El juego sigue siendo el mismo, esto solo suma.</p>
+    <div class="dform">
+      <label class="fila"><span>¿Qué quieres dar?<small>elige el tipo de regalo</small></span>
+        <select id="dar-tipo">
+          <option value="monedas">Monedas</option>
+          <option value="meme">Un meme concreto</option>
+          <option value="pack">Pack de memes aleatorios</option>
+          <option value="mejora">Mejora de la tienda</option>
+          <option value="escudo">Escudo anti-robo</option>
+        </select>
+      </label>
+      <div id="dar-campos"></div>
+      <label class="fila"><span>¿Cómo llega?<small>a todos o con código</small></span>
+        <select id="dar-destino">
+          <option value="todos">A TODOS en directo</option>
+          <option value="codigo">Con código secreto</option>
+        </select>
+      </label>
+      <label class="fila"><span>¿Cuánto dura?<small>tiempo para conseguirlo</small></span>
+        <select id="dar-validez">
+          <option value="3600000">1 hora</option>
+          <option value="21600000">6 horas</option>
+          <option value="86400000" selected>1 día</option>
+          <option value="604800000">1 semana</option>
+          <option value="0">para siempre</option>
+        </select>
+      </label>
+      <label class="fila"><span>Mensaje (opcional)<small>se lee dentro del regalo</small></span>
+        <input type="text" id="dar-mensaje" maxlength="70" placeholder="¡Gracias por jugar!">
+      </label>
+    </div>
+    <div class="acciones">
+      <button id="btnDar" class="btn g">¡DAR REGALO!</button>
+      <button id="btnReglas" class="btn">Reglas de la base de datos</button>
+    </div>
+    <p class="estado" style="padding-top:16px">Regalos activos ahora mismo:</p>
+    <div id="darLista"><p class="espera">Cargando…</p></div>
+  </section>
+  <section id="sec-cfg" hidden>
     <p id="cfgEstado" class="estado"></p>
     <div id="cfgLista"></div>
     <div class="acciones">
@@ -140,8 +195,8 @@ a.enlace{color:var(--rojo);font-weight:800}
 
 <div id="aviso" hidden></div>
 
-<script src="firebase-config.js?v=4"></script>
-<script src="data.js?v=4"></script>
+<script src="firebase-config.js?v=5"></script>
+<script src="data.js?v=5"></script>
 <script>
 /* Vigilante del panel: distingue "falta admin.js" de "la red no responde" */
 (function () {
@@ -170,6 +225,6 @@ a.enlace{color:var(--rojo);font-weight:800}
   }, 15000);
 })();
 </script>
-<script type="module" src="admin.js?v=4"></script>
+<script type="module" src="admin.js?v=5"></script>
 </body>
 </html>
