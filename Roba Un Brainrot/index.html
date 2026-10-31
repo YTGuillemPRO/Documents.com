@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=9">
 <script>
 /* ---- Vigilante de carga: nunca más "Cargando el mundo…" eterno ---- */
 (function () {
@@ -27,10 +27,8 @@
     c.style.color = '#2b211c';
   }
   window.__falloCarga = fallo;
-  if (location.protocol === 'file:') {
-    fallo('No funciona en local', 'Abre el juego desde GitHub Pages (o un servidor web), no haciendo doble clic en el archivo.');
-    throw new Error('protocolo file:// no soportado');
-  }
+  /* file:// (doble clic) también funciona: el cargador de abajo tiene plan B
+     (carpeta lib/ si hay servidor y, si no, CDN por internet) */
   /* capture=true → también caza ARCHIVOS que no cargan (404 de scripts, etc.) */
   window.addEventListener('error', function (e) {
     if (window.__juegoListo) return;
@@ -73,9 +71,13 @@
   <symbol id="i-corona" viewBox="0 0 24 24"><path d="M3 8l4 4 5-7 5 7 4-4v9H3z"/></symbol>
   <symbol id="i-regalo" viewBox="0 0 24 24"><path d="M2.5 7h19v3.5h-19zM5 11.5h14V21H5zM11 7h2v14h-2zM12 7C9.5 7 7.5 6.2 7.5 4.9 7.5 3.7 9 3.2 10 4c.9.7 1.6 1.8 2 3 .4-1.2 1.1-2.3 2-3 1-.8 2.5-.3 2.5.9C16.5 6.2 14.5 7 12 7z"/></symbol>
   <symbol id="i-rayo" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></symbol>
+  <symbol id="i-mundo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></symbol>
+  <symbol id="i-camara" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="11" rx="2"/><path d="M16 10.5l5-3v9l-5-3"/></symbol>
 </svg>
 
 <div id="juego"></div>
+<div id="vineta"></div>
 
 <div id="cargando"><div class="mini-logo">¡ROBA<em>EL MEME!</em></div><div class="girando"></div><p>Cargando el mundo…</p></div>
 
@@ -84,6 +86,17 @@
   <div class="menu-caja">
     <h1 class="logo">¡ROBA<br><em>EL MEME!</em></h1>
     <div class="menu-stats" id="menu-stats"></div>
+
+    <!-- ☁️ cuenta: tu partida en la nube -->
+    <div id="menu-cuenta" class="menu-cuenta"></div>
+
+    <!-- 🖥️ multijugador: servidores -->
+    <div class="menu-multi">
+      <small class="titulo-seccion">🖥️ MULTIJUGADOR</small>
+      <div id="servidores" class="servidores"></div>
+      <p class="multi-nota" id="multi-nota"></p>
+    </div>
+
     <button id="btn-jugar" class="btn jugar">JUGAR</button>
     <button id="btn-como" class="btn">¿Cómo se juega?</button>
     <button id="btn-canjear-menu" class="btn fino">🎁 Canjear código de regalo</button>
@@ -103,12 +116,14 @@
     <div class="nivel"><span id="hud-nivel">Nivel 1</span><div class="barra-xp"><div id="hud-xp"></div></div></div>
   </div>
   <div id="chip-evento" class="chip"><svg class="ico"><use href="#i-reloj"/></svg><span id="evento-nombre">Próximo evento</span><b id="evento-tiempo">—</b></div>
+  <div id="chip-servidor" class="chip servidor oculto" title="Servidor multijugador (clic: volver al menú)"><svg class="ico"><use href="#i-mundo"/></svg><span id="servidor-nombre"></span><b id="servidor-jug">1 jug.</b></div>
   <div id="chip-rango" class="chip rango oculto"><svg class="ico"><use href="#i-corona"/></svg><span id="rango-nombre">Novato</span></div>
   <div id="chip-accion" class="chip accion oculto"></div>
 </header>
 
 <nav class="botones-hud">
   <button id="btn-admin" class="btn-ico admin" title="Mini admin"><svg class="ico"><use href="#i-corona"/></svg></button>
+  <button id="btn-chat" class="btn-ico" title="Chat del servidor (Y)"><svg class="ico"><use href="#i-chat"/></svg></button>
   <button id="btn-regalo" class="btn-ico" title="Canjear código de regalo"><svg class="ico"><use href="#i-regalo"/></svg></button>
   <button id="btn-tienda" class="btn-ico" title="Tienda (T)"><svg class="ico"><use href="#i-tienda"/></svg></button>
   <button id="btn-ayuda" class="btn-ico" title="Cómo jugar"><svg class="ico"><use href="#i-ayuda"/></svg></button>
@@ -213,9 +228,13 @@
       <div id="reg-campos"></div>
       <div class="adm-fila"><span>Para quién</span>
         <select id="reg-destino">
-          <option value="todos">Todos los jugadores</option>
-          <option value="codigo">Código secreto</option>
+          <option value="todos">🌐 Todos (global)</option>
+          <option value="servidor">🖥️ Solo un servidor</option>
+          <option value="yo">👑 Solo para mí</option>
+          <option value="codigo">🔐 Código secreto</option>
         </select></div>
+      <div class="adm-fila" id="fila-reg-servidor" hidden><span>Servidor</span>
+        <select id="reg-servidor"></select></div>
       <div class="adm-fila"><span>Válido</span>
         <select id="reg-validez">
           <option value="3600000">1 hora</option>
@@ -286,6 +305,26 @@
   </div>
 </div>
 
+<!-- 💬 Chat del servidor multijugador -->
+<div id="capa-chat" class="capa" hidden>
+  <div class="modal chatm">
+    <h3>💬 Chat del servidor</h3>
+    <input id="chat-input" maxlength="60" autocomplete="off" placeholder="Escribe algo y pulsa Enter">
+    <div class="chat-rapido">
+      <button type="button" data-txt="¡Hola!">👋 ¡Hola!</button>
+      <button type="button" data-txt="jajaja">😂 jajaja</button>
+      <button type="button" data-txt="¡Te vi robando!">👀 ¡Te vi!</button>
+      <button type="button" data-txt="¡Ven a mi base!">🏃 ¡Ven!</button>
+      <button type="button" data-txt="gg">🏆 gg</button>
+    </div>
+    <div class="modal-botones">
+      <button id="chat-si" class="btn">Enviar</button>
+      <button id="chat-no" class="btn rojo">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div id="chat-log"></div>
+
 <div id="toasts"></div>
 
 <div id="joy"><div id="joy-base"><div id="joy-palo"></div></div></div>
@@ -294,7 +333,7 @@
 <noscript><p style="padding:2rem">Este juego necesita JavaScript.</p></noscript>
 
 <script src="firebase-config.js?v=6"></script>
-<script src="data.js?v=4"></script>
+<script src="data.js?v=6"></script>
 <script type="module">
 /* ---- Cargador de Three.js CON PLAN B: carpeta local → CDN → CDN 2 ----
    Así, aunque falte lib/three.module.js (o la red filtre el CDN), el juego arranca. */
@@ -318,7 +357,7 @@ if (!ok) {
      index.html con doble clic desde el disco (file://), así que
      así el juego funciona TAMBIÉN sin servidor ni GitHub. */
   const s = document.createElement('script');
-  s.src = './game.js?v=7';
+  s.src = './game.js?v=9';
   s.onerror = () => window.__falloCarga('game.js no pudo arrancar',
     'No se encontró game.js junto a index.html. ' +
     'Sube la carpeta COMPLETA (los 11 archivos + la carpeta lib/).');
