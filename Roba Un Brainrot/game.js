@@ -955,46 +955,44 @@ async function hacerRenacer() {
   guardarPartida();
 }
 
-/* ---------- Firebase por REST ---------- */
+/* ---------- Firebase por REST: Realtime Database (el mismo proyecto que la web) ---------- */
 const FB = window.FIREBASE_CONFIG || {};
-const fbListo = !!(FB.apiKey && FB.projectId);
+const fbListo = !!FB.databaseURL;
+const RAIZ_FB = `${FB.databaseURL}/juegos/robameme`;
+const SID = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 let statsFB = {};
-const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
 function statFB(campo, n = 1) { if (fbListo) statsFB[campo] = (statsFB[campo] || 0) + n; }
-setInterval(() => {
+async function subirStatsFB() {
   if (!fbListo || !Object.keys(statsFB).length) return;
-  const copia = statsFB; statsFB = {};
-  fetch(`${FB_BASE}:commit?key=${FB.apiKey}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      writes: Object.keys(copia).map(campo => ({
-        transform: {
-          document: `projects/${FB.projectId}/databases/(default)/documents/stats/global`,
-          fieldTransforms: [{ fieldPath: campo, increment: { integerValue: String(copia[campo]) } }]
-        }
-      }))
-    })
-  }).catch(() => { });
-}, 20000);
+  const copia = Object.assign({ t: Date.now(), sesiones: 1 }, statsFB);
+  statsFB = {};
+  try {
+    await fetch(`${RAIZ_FB}/partidas/${SID}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(copia)
+    });
+  } catch (e) { /* sin conexión o sin reglas: se pierde en silencio */ }
+}
+setInterval(subirStatsFB, 20000);
+addEventListener('beforeunload', subirStatsFB);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') subirStatsFB(); });
 async function cargarConfigFB() {
   if (!fbListo) return;
   try {
-    const r = await fetch(`${FB_BASE}/config/juego?key=${FB.apiKey}`);
+    const r = await fetch(`${RAIZ_FB}/config.json`);
     if (r.ok) {
-      const cam = (await r.json()).fields || {};
-      for (const k in CONF) if (cam[k]) {
-        CONF[k] = 'doubleValue' in cam[k] ? +cam[k].doubleValue
-          : 'integerValue' in cam[k] ? +cam[k].integerValue : cam[k].stringValue;
-      }
+      const cam = await r.json() || {};
+      for (const k in CONF) if (cam[k] !== undefined && !isNaN(+cam[k])) CONF[k] = +cam[k];
     }
-    const r2 = await fetch(`${FB_BASE}/config/memes?key=${FB.apiKey}`);
+    const r2 = await fetch(`${RAIZ_FB}/memes.json`);
     if (r2.ok) {
-      const map = (await r2.json()).fields || {};
+      const map = await r2.json() || {};
       for (const m of MEMES) {
-        const v = map[m.id] && map[m.id].mapValue && map[m.id].mapValue.fields;
+        const v = map[m.id];
         if (!v) continue;
-        if (v.precio) m.precio = +(v.precio.integerValue || v.precio.doubleValue);
-        if (v.ingreso) m.ingreso = +(v.ingreso.integerValue || v.ingreso.doubleValue);
+        if (v.precio !== undefined && !isNaN(+v.precio)) m.precio = +v.precio;
+        if (v.ingreso !== undefined && !isNaN(+v.ingreso)) m.ingreso = +v.ingreso;
       }
     }
     if (E.tiendaAbierta) renderMemes();
