@@ -31,13 +31,27 @@ const REGLAS = `{
   "rules": {
     "users": {
       ".read": "auth != null",
-      ".indexOn": ["username"],
+      ".indexOn": [
+        "username"
+      ],
       "$uid": {
         ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com' || auth.token.email === 'ovarela@ietemple.cat')",
-        "friends": { "$f": { ".write": "auth != null" } },
-        "friendRequests": { "$r": { ".write": "auth != null" } },
-        "online": { ".write": "auth != null" },
-        "currentGame": { ".write": "auth != null" }
+        "friends": {
+          "$f": {
+            ".write": "auth != null"
+          }
+        },
+        "friendRequests": {
+          "$r": {
+            ".write": "auth != null"
+          }
+        },
+        "online": {
+          ".write": "auth != null"
+        },
+        "currentGame": {
+          ".write": "auth != null"
+        }
       }
     },
     "userFavorites": {
@@ -46,12 +60,23 @@ const REGLAS = `{
         ".write": "auth != null && auth.uid === $uid"
       }
     },
-    "gameLikes": { ".read": true, "$g": { ".write": "auth != null" } },
+    "gameLikes": {
+      ".read": true,
+      "$g": {
+        ".write": "auth != null"
+      }
+    },
     "updateLog": {
       ".read": true,
       "$id": {
         ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
-        "reactions": { "$e": { "$u": { ".write": "auth != null && auth.uid === $u" } } }
+        "reactions": {
+          "$e": {
+            "$u": {
+              ".write": "auth != null && auth.uid === $u"
+            }
+          }
+        }
       }
     },
     "adminBroadcast": {
@@ -66,8 +91,14 @@ const REGLAS = `{
       ".read": "auth != null",
       ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
     },
-    "stats": { ".read": true, ".write": true },
-    "presence": { ".read": true, ".write": true },
+    "stats": {
+      ".read": true,
+      ".write": true
+    },
+    "presence": {
+      ".read": true,
+      ".write": true
+    },
     "juegos": {
       "robameme": {
         "config": {
@@ -83,19 +114,156 @@ const REGLAS = `{
           ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
           "$partida": {
             ".write": true,
-            "t": { ".validate": "newData.isNumber()" },
-            "sesiones": { ".validate": "newData.isNumber()" },
-            "comprasTotales": { ".validate": "newData.isNumber()" },
-            "robosTotales": { ".validate": "newData.isNumber()" },
-            "renacimientosTotales": { ".validate": "newData.isNumber()" },
-            "$otro": { ".validate": false }
+            "t": {
+              ".validate": "newData.isNumber()"
+            },
+            "sesiones": {
+              ".validate": "newData.isNumber()"
+            },
+            "comprasTotales": {
+              ".validate": "newData.isNumber()"
+            },
+            "robosTotales": {
+              ".validate": "newData.isNumber()"
+            },
+            "renacimientosTotales": {
+              ".validate": "newData.isNumber()"
+            },
+            "$otro": {
+              ".validate": false
+            }
           }
         },
         "regalos": {
           ".read": true,
           "$regalo": {
             ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
-            "canjeados": { ".write": true, ".validate": "newData.isNumber()" }
+            "canjeados": {
+              ".write": true,
+              ".validate": "newData.isNumber()"
+            }
+          }
+        },
+        "cuentas": {
+          ".read": true,
+          "$cuenta": {
+            ".write": true,
+            "pin": {
+              ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 20"
+            },
+            "datos": {
+              ".validate": "newData.isString() && newData.val().length <= 40000"
+            },
+            "t": {
+              ".validate": "newData.isNumber()"
+            },
+            "$otro": {
+              ".validate": false
+            }
+          }
+        },
+        "servidores": {
+          ".read": true,
+          "$srv": {
+            "jugadores": {
+              "$jug": {
+                ".write": true,
+                ".validate": "newData.hasChildren(['nick','t'])",
+                "nick": {
+                  ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+                },
+                "t": {
+                  ".validate": "newData.isNumber()"
+                },
+                "x": {
+                  ".validate": "newData.isNumber()"
+                },
+                "z": {
+                  ".validate": "newData.isNumber()"
+                },
+                "r": {
+                  ".validate": "newData.isNumber()"
+                },
+                "base": {
+                  ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+                },
+                "nivel": {
+                  ".validate": "newData.isNumber()"
+                },
+                "ren": {
+                  ".validate": "newData.isNumber()"
+                },
+                "color": {
+                  ".validate": "newData.isString() && newData.val().length <= 9"
+                },
+                "llevando": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "esc": {
+                  ".validate": "newData.isNumber()"
+                },
+                "slots": {
+                  ".validate": "newData.isString() && newData.val().length <= 400"
+                },
+                "$otro": {
+                  ".validate": false
+                }
+              }
+            },
+            "eventos": {
+              "$ev": {
+                ".write": true,
+                ".validate": "newData.hasChildren(['tipo','t'])",
+                "tipo": {
+                  ".validate": "newData.isString() && newData.val().length <= 12"
+                },
+                "t": {
+                  ".validate": "newData.isNumber()"
+                },
+                "victima": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "por": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "nick": {
+                  ".validate": "newData.isString() && newData.val().length <= 14"
+                },
+                "slot": {
+                  ".validate": "newData.isNumber()"
+                },
+                "meme": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "$otro": {
+                  ".validate": false
+                }
+              }
+            },
+            "chat": {
+              "$msj": {
+                ".write": true,
+                ".validate": "newData.hasChildren(['nick','txt','t'])",
+                "nick": {
+                  ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+                },
+                "txt": {
+                  ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+                },
+                "t": {
+                  ".validate": "newData.isNumber()"
+                },
+                "de": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "$otro": {
+                  ".validate": false
+                }
+              }
+            },
+            "$otro": {
+              ".validate": false
+            }
           }
         }
       }
@@ -359,6 +527,21 @@ function pintarCamposDar() {
 $('dar-tipo').onchange = pintarCamposDar;
 pintarCamposDar();
 
+/* servidor destino del regalo (para «Solo a UN servidor») */
+(function () {
+  const sel = $('dar-servidor');
+  if (!sel) return;
+  sel.innerHTML = (window.SERVIDORES || []).map(s =>
+    `<option value="${s.id}">${s.emoji} ${s.nombre}</option>`).join('');
+  $('dar-destino').addEventListener('change', () => {
+    $('fila-dar-servidor').hidden = $('dar-destino').value !== 'servidor';
+  });
+})();
+function nombreServidorAdmin(id) {
+  const s = (window.SERVIDORES || []).find(x => x.id === id);
+  return s ? (s.emoji + ' ' + s.nombre) : (id || '?');
+}
+
 function clampN(v, min, max, def) {
   v = Math.round(+v);
   if (isNaN(v)) v = def;
@@ -376,6 +559,10 @@ $('btnDar').onclick = async () => {
   if (tipo === 'pack') { g.rareza = $('dar-rareza').value; g.cantidad = clampN($('dar-n').value, 1, 10, 3); }
   if (tipo === 'mejora') { g.mejoraId = $('dar-mejora').value; g.cantidad = clampN($('dar-n').value, 1, 5, 1); }
   if (tipo === 'escudo') g.cantidad = clampN($('dar-n').value, 1, 20, 1);
+  if ($('dar-destino').value === 'servidor') {
+    g.ambito = 'servidor';
+    g.servidor = $('dar-servidor') ? $('dar-servidor').value : '';
+  }
   if ($('dar-destino').value === 'codigo') {
     const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   /* sin letras que se confunden */
     g.codigo = 'ROBA-' + Array.from({ length: 4 }, () => ABC[(Math.random() * ABC.length) | 0]).join('');
@@ -389,6 +576,8 @@ $('btnDar').onclick = async () => {
     if (g.codigo) {
       try { await navigator.clipboard.writeText(g.codigo); aviso('¡Código creado y copiado: ' + g.codigo + '! Compártelo con quien quieras.'); }
       catch (e) { aviso('¡Código creado: ' + g.codigo + '! Cópialo de la lista de abajo.'); }
+    } else if (g.ambito === 'servidor') {
+      aviso('¡Regalo enviado al servidor ' + nombreServidorAdmin(g.servidor) + '! Solo lo cobran los de ahí.');
     } else {
       aviso('¡Regalo enviado! Les aparecerá a los jugadores en unos segundos.');
     }
@@ -440,7 +629,8 @@ function pintarRegalos(val) {
     const g = val[id] || {};
     const cad = g.expira && +g.expira < ahora;
     const dura = g.expira ? (cad ? 'CADUCADO' : 'caduca ' + dentroDe(+g.expira - ahora)) : 'sin caducidad';
-    const quien = g.codigo ? 'Con código' : 'Para todos';
+    const quien = g.ambito === 'servidor' ? 'Solo servidor ' + nombreServidorAdmin(g.servidor)
+      : g.codigo ? 'Con código' : 'Para todos';
     c.insertAdjacentHTML('beforeend', `<div class="gtar ${cad ? 'caducado' : ''}" data-id="${id}">
       <b>🎁 ${describirRegaloAdmin(g)}</b>
       <small>${quien} · ${dura}${g.de ? ' · de ' + g.de : ''}${g.mensaje ? ' · «' + g.mensaje + '»' : ''}
