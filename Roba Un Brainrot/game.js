@@ -1113,6 +1113,9 @@ document.querySelectorAll('.pestanya').forEach(p => p.onclick = () => {
 /* ---------- controles ---------- */
 const teclas = new Set();
 addEventListener('keydown', ev => {
+  /* escribiendo un código de regalo: las teclas no mueven al jugador */
+  const tgt = ev.target;
+  if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) return;
   const k = ev.key.toLowerCase();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) ev.preventDefault();
   if (ev.repeat) return;
@@ -1483,3 +1486,156 @@ prepararMenu();
 window.__juegoListo = true;          /* señal para el watchdog del index */
 $('#cargando').remove();
 requestAnimationFrame(t => { ultimoT = t; bucle(t); });
+
+/* ---------- REGALOS DEL ADMIN (pestaña «Dar cosas» del panel) ----------
+   El panel escribe regalos en juegos/robameme/regalos/<id> de la base de
+   datos y aquí llegan solos, sin tocar nada del juego:
+   · regalo «para todos»  → se aplica al momento (cada navegador recuerda
+     en localStorage los que ya ha recibido, para no repetirlos);
+   · regalo «con código»  → se consigue con el botón del regalo 🎁 del HUD
+     o del menú escribiendo el código que dé el admin.                      */
+const CLAVE_REGALOS = 'robameme-regalos';
+function hechosDe() { try { return JSON.parse(localStorage.getItem(CLAVE_REGALOS)) || []; } catch (e) { return []; } }
+function marcarHecho(id) { try { const h = hechosDe(); h.push(id); localStorage.setItem(CLAVE_REGALOS, JSON.stringify(h)); } catch (e) { } }
+
+function aplicarRegalo(g) {
+  /* devuelve { ok, texto } · ok=false sin texto = «aún no cabe, reintenta» */
+  const partes = [];
+  if (g.tipo === 'monedas') {
+    const n = clamp(Math.round(+g.cantidad || 0), 1, 1000000);
+    E.monedas += n; E.record = Math.max(E.record, E.monedas);
+    partes.push('+' + fmt(n) + ' monedas');
+  } else if (g.tipo === 'meme') {
+    if (!MEMES.some(m => m.id === g.memeId)) return { ok: false, fatal: true };
+    if (bases[0].slots.length >= capJugador()) return { ok: false };
+    instalarMeme(bases[0], g.memeId); E.stats.compras++;
+    partes.push(nombreDe(g.memeId) + ' en tu base');
+  } else if (g.tipo === 'pack') {
+    const pool = MEMES.filter(m => m.rareza === g.rareza && !(m.reqRenacer && E.renacimientos < m.reqRenacer));
+    if (!pool.length) return { ok: false, fatal: true };
+    const n = clamp(Math.round(+g.cantidad || 1), 1, 10);
+    let puestos = 0;
+    while (puestos < n && bases[0].slots.length < capJugador()) {
+      instalarMeme(bases[0], pool[(Math.random() * pool.length) | 0].id);
+      E.stats.compras++; puestos++;
+    }
+    if (!puestos) return { ok: false };
+    partes.push(puestos + (puestos > 1 ? ' memes ' : ' meme ') +
+      (RAREZAS[g.rareza] ? RAREZAS[g.rareza].nombre : '') + ' en tu base');
+    if (puestos < n) partes.push('(' + (n - puestos) + ' no cabían)');
+  } else if (g.tipo === 'mejora') {
+    const m = MEJORAS.find(x => x.id === g.mejoraId && x.max > 0);
+    if (!m) return { ok: false, fatal: true };
+    const subir = clamp(Math.round(+g.cantidad || 1), 1, m.max);
+    E.mejoras[m.id] = Math.min(m.max, (E.mejoras[m.id] || 0) + subir);
+    partes.push(m.nombre + ' nivel ' + E.mejoras[m.id]);
+    if (E.tiendaAbierta) renderMejoras();
+  } else if (g.tipo === 'escudo') {
+    const n = clamp(Math.round(+g.cantidad || 1), 1, 50);
+    bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + CONF.escudoDuracion * n;
+    partes.push('escudo anti-robo ' + Math.round(CONF.escudoDuracion * n) + ' s');
+  } else return { ok: false, fatal: true };
+  actualizarHUD(); guardarPartida(); revisarLogros();
+  return { ok: true, texto: partes.join(' · ') };
+}
+
+/* popup 🎁 con cola (si llegan varios regalos a la vez, van uno a uno) */
+const colaRegalos = [];
+function encolarRegalo(g, texto) {
+  colaRegalos.push({ msj: g.mensaje || '', de: g.de || '', texto });
+  if ($('#capa-regalo').hidden) siguienteRegalo();
+}
+function siguienteRegalo() {
+  const x = colaRegalos.shift();
+  if (!x) {
+    $('#capa-regalo').hidden = true;
+    if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-canjear').hidden) E.pausado = false;
+    return;
+  }
+  $('#regalo-texto').textContent = x.texto;
+  $('#regalo-msj').textContent = x.msj ? '«' + x.msj + '»' : '';
+  $('#regalo-msj').hidden = !x.msj;
+  $('#regalo-de').textContent = x.de ? '— de ' + x.de : '';
+  $('#capa-regalo').hidden = false;
+  E.pausado = true;
+  sonLogro();
+}
+$('#regalo-btn').onclick = siguienteRegalo;
+
+/* mirar cada poco si el admin ha dado algo (para todos) */
+async function mirarRegalos() {
+  if (!fbListo) return;
+  try {
+    const r = await fetch(`${RAIZ_FB}/regalos.json`);
+    if (!r.ok) return;                     /* sin reglas o sin red: silencioso */
+    const datos = await r.json() || {};
+    const ahora = Date.now(), hechos = hechosDe();
+    for (const id in datos) {
+      const g = datos[id];
+      if (!g || g.codigo || hechos.includes(id)) continue;
+      if (g.expira && +g.expira < ahora) continue;
+      const res = aplicarRegalo(g);
+      if (!res.ok && !res.fatal) continue;  /* p. ej. base llena: reintenta luego */
+      marcarHecho(id);
+      if (res.ok) encolarRegalo(g, res.texto);
+    }
+  } catch (e) { /* sin conexión: se vuelve a intentar en la próxima pasada */ }
+}
+setInterval(mirarRegalos, 10000);
+setTimeout(mirarRegalos, 3500);
+
+/* canjear un código de regalo */
+function abrirCanje() {
+  $('#canjear-input').value = '';
+  $('#capa-canjear').hidden = false;
+  E.pausado = true;
+  setTimeout(() => $('#canjear-input').focus(), 60);
+}
+function cerrarCanje() {
+  $('#capa-canjear').hidden = true;
+  if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-regalo').hidden) E.pausado = false;
+}
+$('#btn-regalo').onclick = abrirCanje;          /* botón 🎁 del HUD */
+$('#btn-canjear-menu').onclick = abrirCanje;    /* botón del menú */
+$('#canjear-no').onclick = cerrarCanje;
+$('#canjear-input').addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key === 'Enter') canjearCodigo();
+  if (e.key === 'Escape') cerrarCanje();
+});
+async function canjearCodigo() {
+  const cod = ($('#canjear-input').value || '').trim().toUpperCase();
+  if (!cod) return;
+  if (!fbListo) { toast('Sin conexión con la base de datos', 'mal'); return; }
+  const btn = $('#canjear-si'); btn.disabled = true;
+  try {
+    const r = await fetch(`${RAIZ_FB}/regalos.json`);
+    if (!r.ok) throw new Error('sin permiso o sin red');
+    const datos = await r.json() || {};
+    const ahora = Date.now();
+    let g = null, id = '';
+    for (const k in datos) {
+      const gg = datos[k];
+      if (gg && String(gg.codigo || '').toUpperCase() === cod) { g = gg; id = k; break; }
+    }
+    if (!g) { toast('Ese código no existe (revisa las letras)', 'mal'); return; }
+    if (g.expira && +g.expira < ahora) { toast('Este código ya ha caducado', 'mal'); return; }
+    if (hechosDe().includes(id)) { toast('Ya habías canjeado este código', 'mal'); return; }
+    const res = aplicarRegalo(g);
+    if (!res.ok) { toast('Tu base está llena: haz hueco y vuelve a probar', 'mal'); return; }
+    marcarHecho(id);
+    cerrarCanje();
+    encolarRegalo(g, res.texto);
+    toast('¡Código canjeado!', 'logro');
+    /* contador de canjeos (best-effort, no pasa nada si falla) */
+    try {
+      await fetch(`${RAIZ_FB}/regalos/${id}/canjeados.json`,
+        { method: 'PUT', body: JSON.stringify((+g.canjeados || 0) + 1) });
+    } catch (e) { }
+  } catch (e) {
+    toast('No se pudo conectar: prueba otra vez', 'mal');
+  } finally {
+    btn.disabled = false;
+  }
+}
+$('#canjear-si').onclick = canjearCodigo;
