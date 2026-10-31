@@ -1113,9 +1113,9 @@ document.querySelectorAll('.pestanya').forEach(p => p.onclick = () => {
 /* ---------- controles ---------- */
 const teclas = new Set();
 addEventListener('keydown', ev => {
-  /* escribiendo un código de regalo: las teclas no mueven al jugador */
+  /* escribiendo un código de regalo o usando la mini-GUI: las teclas no mueven al jugador */
   const tgt = ev.target;
-  if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) return;
+  if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
   const k = ev.key.toLowerCase();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) ev.preventDefault();
   if (ev.repeat) return;
@@ -1729,12 +1729,15 @@ function abrirPanelMini() {
   $('#adm-quien').textContent = MINI.porSesion
     ? '👑 Sesión de la web: ' + MINI.email
     : '👑 Desbloqueado con el código secreto (recordado en este navegador)';
+  iniciarMiniGui();          /* pestañas + arrastre + SDK de regalos (la 1.ª vez) */
   pintarMini();
   $('#capa-admin').hidden = false;
   E.pausado = true;
 }
 function cerrarPanelMini() {
   $('#capa-admin').hidden = true;
+  const g = $('#mini-gui');   /* al cerrar, la ventana pierde el arrastre: se abre centrada otra vez */
+  if (g) { g.style.position = ''; g.style.left = ''; g.style.top = ''; g.style.margin = ''; g.style.inset = ''; }
   if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-regalo').hidden && $('#capa-canjear').hidden && $('#capa-pin').hidden) E.pausado = false;
 }
 $('#btn-admin').onclick = abrirMini;
@@ -1857,3 +1860,292 @@ document.querySelectorAll('#capa-admin [data-abuso]').forEach(b => {
     abuso(b.dataset.abuso);
   });
 });
+
+/* ---------- 👑 MINI-GUI: ventana con pestañas (regalos · abusos · config) ----------
+   La pestaña 🎁 Regalos es el panel grande en versión mini: da monedas,
+   memes, packs, mejoras o escudos a TODOS los jugadores en directo o con
+   código secreto. Escribe en juegos/robameme/regalos con el SDK de
+   Firebase (cargado solo al abrir el 👑, con la sesión de la web — la
+   misma que admin.html). Las ⚡ Abusos siguen siendo locales y van solas. */
+const REMOTO = { estado: 'esperando', fdb: null, db: null, esAdmin: false, email: '', nombre: '', oyenteReg: null };
+window.__remoto = REMOTO;   /* solo depuración */
+const RAIZ_MINI = 'juegos/robameme';
+
+/* pestañas */
+function activarPane(id) {
+  document.querySelectorAll('#capa-admin .adm-tab').forEach(t => t.classList.toggle('activa', t.dataset.pane === id));
+  document.querySelectorAll('#capa-admin .adm-pane').forEach(p => p.classList.toggle('activa', p.id === 'pane-' + id));
+}
+document.querySelectorAll('#capa-admin .adm-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    activarPane(t.dataset.pane);
+    if (t.dataset.pane === 'regalos' && !REMOTO.esAdmin) listaRegalosREST();  /* al menos ver la lista */
+  });
+});
+
+/* arrastrar la mini-ventana por la barra de título (solo con ratón) */
+function arrastrarMini() {
+  const gui = $('#mini-gui'), cab = $('#adm-cab');
+  if (!gui || !cab) return;
+  let dx = 0, dy = 0, activo = false;
+  cab.addEventListener('pointerdown', e => {
+    if (e.target.closest('button') || e.target.closest('select') || e.target.closest('input')) return;
+    if (e.pointerType !== 'mouse') return;   /* con dedo no se arrastra (no pelearse con el scroll); con ratón sí, en cualquier aparato */
+    const r = gui.getBoundingClientRect();
+    gui.style.position = 'fixed'; gui.style.margin = '0'; gui.style.inset = 'auto';
+    gui.style.left = r.left + 'px'; gui.style.top = r.top + 'px';
+    dx = e.clientX - r.left; dy = e.clientY - r.top;
+    activo = true; gui.classList.add('arrastrando');
+    try { cab.setPointerCapture(e.pointerId); } catch (err) { }
+  });
+  cab.addEventListener('pointermove', e => {
+    if (!activo) return;
+    gui.style.left = clamp(e.clientX - dx, 4, innerWidth - gui.offsetWidth - 4) + 'px';
+    gui.style.top = clamp(e.clientY - dy, 4, innerHeight - Math.min(gui.offsetHeight, innerHeight) - 4) + 'px';
+  });
+  const soltar = () => { activo = false; gui.classList.remove('arrastrando'); };
+  cab.addEventListener('pointerup', soltar);
+  cab.addEventListener('pointercancel', soltar);
+}
+
+/* ---- cargar el SDK de Firebase solo si abres el 👑 (gstatic → jsdelivr) ---- */
+async function cargarSDKMini() {
+  if (REMOTO.estado === 'cargado' || REMOTO.estado === 'cargando') return;
+  REMOTO.estado = 'cargando'; pintarRegEstado();
+  const bases = window.__urlSDK /* solo para pruebas automáticas */
+    ? window.__urlSDK
+    : ['https://www.gstatic.com/firebasejs/10.12.0',
+       'https://cdn.jsdelivr.net/npm/firebase@10.12.0'];
+  for (const b of bases) {
+    const suf = b.includes('jsdelivr') ? '/+esm' : '';
+    try {
+      const app = await import(`${b}/firebase-app.js${suf}`);
+      const auth = await import(`${b}/firebase-auth.js${suf}`);
+      const fdb = await import(`${b}/firebase-database.js${suf}`);
+      try { app.initializeApp(window.FIREBASE_CONFIG); } catch (e) { }   /* ya inicializado */
+      const a = auth.getAuth();
+      auth.onAuthStateChanged(a, u => {
+        const email = u && u.email ? String(u.email).toLowerCase() : '';
+        REMOTO.esAdmin = !!u && (window.ADMINS || []).map(x => String(x).toLowerCase()).includes(email);
+        REMOTO.email = email; REMOTO.nombre = u ? (u.displayName || email) : '';
+        if (REMOTO.esAdmin) { REMOTO.fdb = fdb; REMOTO.db = fdb.getDatabase(); escucharRegalosMini(); cargarCfgCampos(); }
+        else if (REMOTO.oyenteReg) { try { REMOTO.oyenteReg(); REMOTO.oyenteReg = null; } catch (e) { } }
+        pintarRegEstado();
+      });
+      REMOTO.estado = 'cargado';
+      pintarRegEstado();
+      return;
+    } catch (e) { /* probamos la siguiente fuente */ }
+  }
+  REMOTO.estado = 'sin-red';
+  pintarRegEstado();
+  listaRegalosREST();
+}
+
+/* ---- estado de la pestaña 🎁 ---- */
+function pintarRegEstado() {
+  const el = $('#reg-estado'), btn = $('#btn-regalar');
+  if (!el) return;
+  el.className = 'adm-nota';
+  if (REMOTO.estado === 'cargando') { el.textContent = 'Conectando con la base de datos…'; return; }
+  if (REMOTO.estado === 'sin-red') {
+    el.classList.add('adm-mal');
+    el.textContent = 'Sin conexión con Firebase: no se pueden dar regalos ahora (revisa el internet). Los ⚡ abusos y ⚙️ config local funcionan igual.';
+    btn.disabled = true; return;
+  }
+  if (!REMOTO.esAdmin) {
+    el.classList.add('adm-mal');
+    el.textContent = 'Para dar regalos a los jugadores entra en la web (' + (location.host || 'Documents.com') +
+      ') con tu cuenta de admin y recarga. Los ⚡ abusos funcionan igual.';
+    btn.disabled = true; return;
+  }
+  el.classList.add('adm-ok');
+  el.textContent = '👑 Conectado como ' + REMOTO.email + ' · los regalos caen en las partidas en unos segundos.';
+  btn.disabled = false;
+}
+
+/* ---- campos del formulario según el tipo (igual que el panel grande) ---- */
+function pintarRegCampos() {
+  const tipo = $('#reg-tipo').value, c = $('#reg-campos');
+  const filaNum = (nom, id, def, min, max) =>
+    `<div class="adm-fila"><span>${nom}</span><input type="number" id="${id}" value="${def}" min="${min}" max="${max}"></div>`;
+  let html = '';
+  if (tipo === 'monedas') html = filaNum('¿Cuántas?', 'reg-n', 500, 1, 1000000);
+  else if (tipo === 'meme') {
+    let ops = '';
+    for (const r in RAREZAS)
+      ops += `<optgroup label="${RAREZAS[r].nombre}">` + MEMES.filter(m => m.rareza === r)
+        .map(m => `<option value="${m.id}">${m.nombre}</option>`).join('') + '</optgroup>';
+    html = `<div class="adm-fila"><span>¿Cuál?</span><select id="reg-meme">${ops}</select></div>`;
+  } else if (tipo === 'pack') {
+    const ops = Object.keys(RAREZAS).map(r => `<option value="${r}">${RAREZAS[r].nombre}</option>`).join('');
+    html = `<div class="adm-fila"><span>Rareza</span><select id="reg-rareza">${ops}</select></div>` +
+      filaNum('¿Cuántos?', 'reg-n', 3, 1, 10);
+  } else if (tipo === 'mejora') {
+    const ops = MEJORAS.filter(m => m.max > 0).map(m => `<option value="${m.id}">${m.nombre}</option>`).join('');
+    html = `<div class="adm-fila"><span>¿Cuál?</span><select id="reg-mejora">${ops}</select></div>` +
+      filaNum('Niveles', 'reg-n', 1, 1, 5);
+  } else if (tipo === 'escudo') html = filaNum('Cuántos', 'reg-n', 1, 1, 20);
+  c.innerHTML = html;
+}
+function clampN(v, min, max, def) { v = Math.round(+v); if (isNaN(v)) v = def; return Math.min(max, Math.max(min, v)); }
+
+/* ---- ¡DAR! (el botón de la pestaña 🎁) ---- */
+async function darRegaloMini() {
+  if (!REMOTO.esAdmin || !REMOTO.fdb) { toast('La pestaña 🎁 necesita sesión de admin de la web', 'mal'); return; }
+  const tipo = $('#reg-tipo').value;
+  const g = { t: Date.now(), tipo, de: REMOTO.nombre || 'Admin' };
+  const msj = ($('#reg-mensaje').value || '').trim();
+  if (msj) g.mensaje = msj.slice(0, 70);
+  const val = +$('#reg-validez').value;
+  if (val) g.expira = Date.now() + val;
+  if (tipo === 'monedas') g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 1000000, 500);
+  if (tipo === 'meme') g.memeId = $('#reg-meme').value;
+  if (tipo === 'pack') { g.rareza = $('#reg-rareza').value; g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 10, 3); }
+  if (tipo === 'mejora') { g.mejoraId = $('#reg-mejora').value; g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 5, 1); }
+  if (tipo === 'escudo') g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 20, 1);
+  if ($('#reg-destino').value === 'codigo') {
+    const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   /* sin letras que se confunden */
+    g.codigo = 'ROBA-' + Array.from({ length: 4 }, () => ABC[(Math.random() * ABC.length) | 0]).join('');
+  }
+  window.__ultimoRegaloMini = g;   /* gancho para pruebas automáticas */
+  const btn = $('#btn-regalar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const id = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await REMOTO.fdb.set(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/regalos/' + id), g);
+    if (g.codigo) {
+      try { await navigator.clipboard.writeText(g.codigo); toast('🎁 Código copiado: ' + g.codigo, 'logro'); }
+      catch (e) { toast('🎁 Código creado: ' + g.codigo, 'logro'); }
+    } else toast('🎁 ¡Regalo enviado a todos!', 'logro');
+    sonLogro();
+    $('#reg-mensaje').value = '';
+  } catch (e) {
+    const s = String(e.code || e.message || e);
+    toast('No se pudo dar el regalo' + (s.includes('permission') ? ' → pega las reglas nuevas (panel grande)' : ''), 'mal');
+  }
+  btn.disabled = false; btn.textContent = '¡DAR!';
+}
+
+/* ---- lista de regalos activos (en directo con el SDK; por REST si no) ---- */
+function dentroDe(ms) {
+  const m = Math.floor(ms / 60000);
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60);
+  return h < 24 ? h + ' h' : Math.floor(h / 24) + ' días';
+}
+function pintarRegalosMini(obj) {
+  const c = $('#reg-lista');
+  if (!c) return;
+  const ahora = Date.now();
+  const ids = Object.keys(obj || {}).sort((a, b) => (obj[b].t || 0) - (obj[a].t || 0));
+  if (!ids.length) { c.innerHTML = '<p class="adm-nota">Todavía no hay regalos. ¡Estrena el formulario!</p>'; return; }
+  c.innerHTML = '';
+  for (const id of ids) {
+    const g = obj[id] || {};
+    const cad = g.expira && +g.expira < ahora;
+    const que = g.tipo === 'monedas' ? fmt(g.cantidad || 0) + ' monedas'
+      : g.tipo === 'meme' ? nombreDe(g.memeId)
+      : g.tipo === 'pack' ? (g.cantidad || 1) + ' × pack ' + (RAREZAS[g.rareza] ? RAREZAS[g.rareza].nombre : '')
+      : g.tipo === 'mejora' ? nombreMejora(g.mejoraId) + ' +' + (g.cantidad || 1)
+      : g.tipo === 'escudo' ? 'escudo ×' + (g.cantidad || 1) : g.tipo;
+    const dura = g.expira ? (cad ? 'CADUCADO' : 'caduca en ' + dentroDe(+g.expira - ahora)) : 'sin caducidad';
+    const canje = Object.keys(g.canjeados || {}).length;
+    const div = document.createElement('div');
+    div.className = 'reg-item' + (cad ? ' caducado' : '');
+    div.innerHTML =
+      `<div class="reg-lin1"><span class="reg-tipo">${que}</span>` +
+      `<span class="reg-det">${g.codigo ? 'con código' : 'para todos'} · ${dura}${canje ? ' · ' + canje + ' canjes' : ''}</span></div>` +
+      (g.codigo ? `<div class="reg-lin2"><code>${g.codigo}</code><button class="reg-mini" data-copiar="${g.codigo}" type="button">copiar</button></div>` : '') +
+      (g.mensaje ? `<div class="reg-det">«${g.mensaje}»</div>` : '') +
+      `<div class="reg-lin2"><button class="reg-mini rojo" data-quitar="${id}" type="button">quitar</button></div>`;
+    c.appendChild(div);
+  }
+  c.querySelectorAll('[data-copiar]').forEach(b => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copiar); toast('Código copiado: ' + b.dataset.copiar); }
+    catch (e) { toast('Copia el código a mano: ' + b.dataset.copiar); }
+  });
+  c.querySelectorAll('[data-quitar]').forEach(b => b.onclick = async () => {
+    if (!REMOTO.fdb) return;
+    try { await REMOTO.fdb.remove(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/regalos/' + b.dataset.quitar)); toast('Regalo quitado'); }
+    catch (e) { toast('No se pudo quitar', 'mal'); }
+  });
+}
+function nombreMejora(id) { const m = MEJORAS.find(x => x.id === id); return m ? m.nombre : (id || 'mejora'); }
+function escucharRegalosMini() {
+  if (!REMOTO.fdb || REMOTO.oyenteReg) return;
+  REMOTO.oyenteReg = REMOTO.fdb.onValue(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/regalos'),
+    snap => pintarRegalosMini(snap.val() || {}),
+    () => { const c = $('#reg-lista'); if (c) c.innerHTML = '<p class="adm-nota">No se pudo leer la lista (pega las reglas nuevas).</p>'; });
+}
+async function listaRegalosREST() {
+  try {
+    const r = await fetch(`${RAIZ_FB}/regalos.json`);
+    if (!r.ok) throw new Error('resp ' + r.status);
+    pintarRegalosMini(await r.json());
+  } catch (e) {
+    const c = $('#reg-lista');
+    if (c) c.innerHTML = '<p class="adm-nota">Sin conexión: no se pudo leer la lista de regalos.</p>';
+  }
+}
+
+/* ---- pestaña ⚙️ Config: las 6 opciones que más se tocan ---- */
+const CFG_MINI = [
+  ['monedasIniciales', 'Monedas al empezar', 0, 5000, 1],
+  ['multIngresos', 'Multiplicador de ingresos', 0.5, 10, 0.1],
+  ['botAgresividad', 'Agresividad de los bots', 0.2, 3, 0.1],
+  ['eventoCada', 'Segundos entre eventos', 30, 600, 1],
+  ['escudoDuracion', 'Duración del escudo (s)', 20, 300, 1],
+  ['lluviaMonedas', 'Monedas en la lluvia', 4, 60, 1]
+];
+async function cargarCfgCampos() {
+  const c = $('#cfg-campos');
+  if (!c) return;
+  let val = {};
+  if (REMOTO.fdb) {
+    try { const s = await REMOTO.fdb.get(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/config')); val = s.val() || {}; } catch (e) { }
+  }
+  c.innerHTML = CFG_MINI.map(([id, nom, min, max, paso]) =>
+    `<div class="campo-fila"><span>${nom}</span><input type="number" id="cfg-${id}" value="${val[id] != null ? val[id] : CONF[id]}" min="${min}" max="${max}" step="${paso}"></div>`).join('');
+  const est = $('#cfg-estado');
+  if (!REMOTO.esAdmin) {
+    if (est) { est.className = 'adm-nota adm-mal'; est.textContent = 'Guardar necesita sesión de admin de la web (como los regalos).'; }
+    $('#cfg-guardar').disabled = true;
+  } else if (est) {
+    est.className = 'adm-nota';
+    est.textContent = 'Se aplica a las partidas nuevas de todos los jugadores. Las 15 opciones completas siguen en el panel grande (admin.html).';
+    $('#cfg-guardar').disabled = false;
+  }
+}
+async function guardarCfgMini() {
+  if (!REMOTO.esAdmin || !REMOTO.fdb) { toast('La config necesita sesión de admin de la web', 'mal'); return; }
+  const patch = {};
+  for (const [id, nom, min, max] of CFG_MINI) {
+    let v = parseFloat($('#cfg-' + id).value);
+    if (isNaN(v)) v = CONF[id];
+    patch[id] = Math.min(max, Math.max(min, v));
+  }
+  try {
+    let actual = {};
+    try { const s = await REMOTO.fdb.get(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/config')); actual = s.val() || {}; } catch (e) { }
+    await REMOTO.fdb.set(REMOTO.fdb.ref(REMOTO.db, RAIZ_MINI + '/config'), Object.assign({}, actual, patch));
+    Object.assign(CONF, patch);          /* y también la partida de ahora */
+    toast('⚙️ Config guardada para todos', 'logro');
+  } catch (e) {
+    toast('No se pudo guardar la config' + (String(e.code || e.message || e).includes('permission') ? ' → pega las reglas nuevas' : ''), 'mal');
+  }
+}
+
+/* ---- inicialización de la mini-GUI (una sola vez) ---- */
+let miniGuiLista = false;
+function iniciarMiniGui() {
+  if (miniGuiLista) return;
+  miniGuiLista = true;
+  arrastrarMini();
+  pintarRegCampos();
+  $('#reg-tipo').addEventListener('change', pintarRegCampos);
+  $('#btn-regalar').addEventListener('click', darRegaloMini);
+  $('#cfg-guardar').addEventListener('click', guardarCfgMini);
+  cargarCfgCampos();      /* pinta los campos con los valores locales mientras llega la sesión */
+  cargarSDKMini();
+}
