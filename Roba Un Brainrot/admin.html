@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roba el Meme — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#2b211c;--crema:#fff6e3;--amarillo:#ffd93b;--rojo:#e25555}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito','Trebuchet MS',sans-serif;color:var(--tinta);background:#82c95c;
+  min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:22px}
+.tarj,.ancho{background:var(--crema);border:4px solid var(--tinta);border-radius:22px;box-shadow:0 8px 0 var(--tinta);padding:26px}
+.tarj{max-width:400px;width:100%;text-align:center;margin-top:8vh}
+h1,h2,.btn{font-family:'Lilita One','Arial Rounded MT Bold',sans-serif}
+.tarj h1{font-size:2rem}.tarj h2{font-size:1.05rem;color:var(--rojo);margin-bottom:6px}
+.sub{font-weight:700;opacity:.75;margin-bottom:18px}
+.btn{display:block;width:100%;margin-top:10px;padding:12px;border:3px solid var(--tinta);
+  border-radius:13px;box-shadow:0 4px 0 var(--tinta);font-size:1rem;cursor:pointer;background:var(--amarillo)}
+.btn.g{background:#fff}.btn.b{background:var(--rojo);color:var(--crema)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
+.err{color:var(--rojo);font-weight:800;font-size:.85rem;min-height:1.2em;margin-top:12px}
+.nota{font-size:.75rem;opacity:.7;margin-top:10px;line-height:1.4}
+.ancho{max-width:640px;width:100%}
+.ancho header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ancho h1{font-size:1.4rem;flex:1}
+#quien{font-weight:800;font-size:.85rem;opacity:.8}
+#btnSalir{width:auto;margin:0;padding:8px 14px;font-size:.9rem}
+.tabs{display:flex;gap:6px;margin-top:16px}
+.tab{flex:1;padding:9px 4px;border:3px solid var(--tinta);border-bottom:none;border-radius:12px 12px 0 0;
+  background:#e8dcc2;font-weight:800;font-size:.9rem;opacity:.6;cursor:pointer}
+.tab.activa{background:var(--amarillo);opacity:1}
+.estado{font-size:.85rem;font-weight:700;opacity:.75;padding:10px 2px 0}
+.fila{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:2px dashed #d9cca9}
+.fila span{flex:1;font-weight:800;font-size:.92rem}
+.fila small{display:block;font-weight:700;opacity:.6;font-size:.7rem}
+.fila input{width:110px;padding:8px;border:3px solid var(--tinta);border-radius:10px;font:inherit;font-weight:800;text-align:right}
+.acciones{display:flex;gap:10px;margin-top:16px}
+.acciones .btn{margin:0;width:auto;flex:1}
+.mtar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 8px 8px 14px;margin-top:8px;
+  background:#fffdf6;border:3px solid var(--tinta);border-left:9px solid var(--rc);border-radius:13px}
+.mtar b{font-family:'Lilita One',sans-serif;font-weight:400;flex:1;min-width:110px}
+.mtar small{width:100%;font-size:.72rem;opacity:.65;font-weight:800}
+.mtar label{font-size:.72rem;font-weight:800;display:flex;align-items:center;gap:5px}
+.mtar input{width:84px;padding:6px;border:3px solid var(--tinta);border-radius:9px;font:inherit;font-weight:800;text-align:right}
+.stat{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:2px dashed #d9cca9;font-weight:800}
+.stat b{font-family:'Lilita One',sans-serif;font-size:1.2rem}
+.espera{padding:14px 4px;font-weight:700;opacity:.7}
+#aviso{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tinta);
+  color:var(--crema);padding:12px 22px;border-radius:999px;font-weight:800;z-index:9;max-width:90vw}
+#aviso.mal{background:var(--rojo)}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<div id="login" class="tarj">
+  <h1>ROBA EL MEME</h1>
+  <h2>Panel de Administración</h2>
+  <p class="sub">Entra con una cuenta autorizada.</p>
+  <button id="btnGoogle" class="btn g">Entrar con Google</button>
+  <button id="btnGitHub" class="btn b">Entrar con GitHub</button>
+  <p id="fError" class="err"></p>
+  <p class="nota">Cuentas autorizadas: guillevarelacors@gmail.com y guillempro07@gmail.com.
+  Si entras con GitHub, esa cuenta debe tener ese email configurado.</p>
+</div>
+
+<div id="panel" class="ancho" hidden>
+  <header>
+    <h1>Roba el Meme — Admin</h1>
+    <span id="quien"></span>
+    <button id="btnSalir" class="btn b">Salir</button>
+  </header>
+  <nav class="tabs">
+    <button class="tab activa" data-t="cfg">Configuración</button>
+    <button class="tab" data-t="mem">Memes</button>
+    <button class="tab" data-t="sta">Estadísticas</button>
+  </nav>
+  <section id="sec-cfg">
+    <p id="cfgEstado" class="estado"></p>
+    <div id="cfgLista"></div>
+    <div class="acciones">
+      <button id="btnGuardarCfg" class="btn g">Guardar configuración</button>
+      <button id="btnBorrarCfg" class="btn b">Restaurar por defecto</button>
+    </div>
+  </section>
+  <section id="sec-mem" hidden>
+    <p class="estado">Cambia precios e ingresos: la próxima partida que se abra usará estos valores.</p>
+    <div id="memLista"></div>
+    <div class="acciones"><button id="btnGuardarMemes" class="btn g">Guardar memes</button></div>
+  </section>
+  <section id="sec-sta" hidden>
+    <div id="staLista"></div>
+    <div class="acciones">
+      <button id="btnRefrescar" class="btn">Refrescar</button>
+      <button id="btnResetStats" class="btn b">Poner a cero</button>
+    </div>
+  </section>
+</div>
+
+<div id="aviso" hidden></div>
+
+<script src="firebase-config.js?v=3"></script>
+<script src="data.js?v=3"></script>
+<script>
+/* Vigilante del panel: si el SDK de Firebase no responde, avisa en vez de quedarse en blanco */
+setTimeout(function () {
+  if (!window.__adminListo) {
+    var e = document.getElementById('fError');
+    if (e) e.textContent = 'El SDK de Firebase no cargó (gstatic.com bloqueado o sin conexión). Recarga o prueba en otra red.';
+  }
+}, 15000);
+</script>
+<script type="module" src="admin.js?v=3"></script>
+</body>
+</html>
