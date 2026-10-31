@@ -24,21 +24,63 @@ const CAMPOS = [
   ['offlineHoras', 'Horas máx. de ganancias offline', 0, 48],
   ['offlinePorc', '% de ingresos offline (0-1)', 0, 1]
 ];
+/* Reglas COMPLETAS del Realtime Database: las de tu web + las del juego,
+   ya fusionadas. El panel las enseña con «Copiar reglas completas» para
+   pegarlas en la consola sustituyendo TODO (nada de fusionar a mano). */
 const REGLAS = `{
   "rules": {
+    "users": {
+      ".read": "auth != null",
+      ".indexOn": ["username"],
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com' || auth.token.email === 'ovarela@ietemple.cat')",
+        "friends": { "$f": { ".write": "auth != null" } },
+        "friendRequests": { "$r": { ".write": "auth != null" } },
+        "online": { ".write": "auth != null" },
+        "currentGame": { ".write": "auth != null" }
+      }
+    },
+    "userFavorites": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "gameLikes": { ".read": true, "$g": { ".write": "auth != null" } },
+    "updateLog": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
+        "reactions": { "$e": { "$u": { ".write": "auth != null && auth.uid === $u" } } }
+      }
+    },
+    "adminBroadcast": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
+    },
+    "maintenance": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
+    },
+    "bannedUsers": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
+    },
+    "stats": { ".read": true, ".write": true },
+    "presence": { ".read": true, ".write": true },
     "juegos": {
       "robameme": {
         "config": {
           ".read": true,
-          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')"
+          ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
         },
         "memes": {
           ".read": true,
-          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')"
+          ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')"
         },
         "partidas": {
-          ".read": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')",
-          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')",
+          ".read": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
+          ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
           "$partida": {
             ".write": true,
             "t": { ".validate": "newData.isNumber()" },
@@ -129,7 +171,7 @@ let auth = null, db = null, fdb = null, cerrarSesion = null;
       $('reglasTxt').select();
       document.execCommand('copy');
     }
-    aviso('Reglas copiadas: pégalas en la consola de Firebase y publica.');
+    aviso('Reglas copiadas: en la consola, borra TODO, pega y publica.');
   };
   $('btnVerReglas').onclick = () => {
     const t = $('reglasTxt');
