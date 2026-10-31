@@ -431,9 +431,10 @@ function posSlot(b, i) {
 const colorMezcla = (base, otro, k) => new THREE.Color(base).lerp(new THREE.Color(otro), k).getHex();
 
 function construirMundo() {
-  const cesped = new THREE.Mesh(new THREE.PlaneGeometry(132, 132), matToon(0x82c95c));
+  const cesped = new THREE.Mesh(new THREE.PlaneGeometry(132, 132),
+    new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap: gTex, map: texCesped() }));
   cesped.rotation.x = -Math.PI / 2; cesped.receiveShadow = true; scene.add(cesped);
-  const borde = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), matToon(0x5e9e46));
+  const borde = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), matToon(0x5e9e46));
   borde.rotation.x = -Math.PI / 2; borde.position.y = -.08; scene.add(borde);
 
   const geoCamino = new THREE.PlaneGeometry(5, 44); geoCamino.rotateX(-Math.PI / 2);
@@ -457,9 +458,10 @@ function construirMundo() {
 
   const posArboles = [[-22, -44], [22, -44], [-44, -22], [-44, 22], [44, -22], [44, 20], [0, -44], [0, 44], [-44, 0], [44, 0]];
   for (const [x, z] of posArboles) {
-    const tr = cil(.25, .35, 1.2, 0x8b5a2b); tr.position.set(x, .6, z); scene.add(tr);
-    const c1 = cono(1.3, 2.2, 0x3e8e41, 10); c1.position.set(x, 2.2, z); scene.add(c1);
-    const c2 = cono(.9, 1.6, 0x4ca04f, 10); c2.position.set(x, 3.3, z); scene.add(c2);
+    const esc = azar(.85, 1.2);
+    const tr = cil(.25, .35, 1.2, 0x8b5a2b); tr.position.set(x, .6 * esc, z); tr.scale.setScalar(esc); scene.add(tr);
+    const c1 = cono(1.3, 2.2, 0x3e8e41, 10); c1.position.set(x, 2.2 * esc, z); c1.scale.setScalar(esc); c1.rotation.y = azar(0, 6); scene.add(c1);
+    const c2 = cono(.9, 1.6, 0x4ca04f, 10); c2.position.set(x, 3.3 * esc, z); c2.scale.setScalar(esc); scene.add(c2);
     arboles.push({ x, z });
   }
   for (let i = 0; i < 16; i++) {
@@ -495,6 +497,7 @@ function construirMundo() {
     const poste = cil(.08, .08, 2.4, 0x8b5a2b); poste.position.set(b.x - sx * 6.5, 1.7, b.z - sz * 6.5); scene.add(poste);
     const nom = spriteTexto(b.nombre, { fondo: b.css, color: '#fff6e3', tam: 26 });
     nom.position.set(b.x - sx * 6.5, 3.1, b.z - sz * 6.5); scene.add(nom);
+    b.nomSprite = nom;   /* para renombrarla en multijugador */
     const domo = new THREE.Mesh(new THREE.SphereGeometry(10.6, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2), matDomo);
     domo.position.set(b.x, .2, b.z); domo.visible = false; scene.add(domo);
     b.domo = domo;
@@ -532,10 +535,21 @@ function instalarMeme(b, id, mesh) {
   if (m.parent) m.parent.remove(m);
   m.position.set(ps.x, .5, ps.z);
   m.rotation.y = Math.atan2(-ps.x, -ps.z);
+  /* anillo luminoso del color de su rareza */
+  let anillo = null;
+  try {
+    const rz = RAREZAS[rarezaDe(id)];
+    if (rz) {
+      anillo = new THREE.Mesh(new THREE.TorusGeometry(.98, .05, 8, 26),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(rz.color), transparent: true, opacity: .45, depthWrite: false }));
+      anillo.rotation.x = -Math.PI / 2; anillo.position.set(ps.x, .09, ps.z);
+      scene.add(anillo);
+    }
+  } catch (e) { }
   const spr = spriteTexto('0');
   spr.position.set(ps.x, 3.5, ps.z);
   scene.add(m); scene.add(spr);
-  const slot = { id, acum: 0, mesh: m, ped, sprite: spr, mostrado: 0, tSpr: 0 };
+  const slot = { id, acum: 0, mesh: m, ped, sprite: spr, mostrado: 0, tSpr: 0, anillo, faseAn: azar(0, 9) };
   b.slots.push(slot);
   return slot;
 }
@@ -554,15 +568,22 @@ function textoFlotante(txt, x, z, color = '#ffd93b') {
 /* ---------- jugador y bots ---------- */
 const jugador = { pos: new THREE.Vector3(-34, 0, -34), grupo: null, llevando: null, stun: 0 };
 
+/* mi base: la 0 (abajo-izquierda) en solitario; en multijugador puede
+   cambiarte a otra esquina del mundo (moverBase) para no pisar a nadie */
+const MI = { baseIdx: 0 };
+const miBase = () => bases[MI.baseIdx];
+
 function crearEntidades() {
+  jugador.pos.set(bases[MI.baseIdx].x, 0, bases[MI.baseIdx].z);
   jugador.grupo = fabricarAvatar(0x4a7fd4, true);
   jugador.grupo.position.copy(jugador.pos);
   scene.add(jugador.grupo);
   decorarAvatar(jugador.grupo);
-  for (let i = 1; i < 4; i++) {
+  const NOMBRES = ['Pavo', 'Roqui', 'Verdi', 'Azzur'];
+  for (let i = 0; i < 4; i++) {
     const b = bases[i];
     const bot = {
-      baseIdx: i, nombre: b.nombre.replace('Base ', ''), grupo: null,
+      baseIdx: i, nombre: NOMBRES[i], grupo: null,
       pos: new THREE.Vector3(b.x, 0, b.z), estado: 'base', timer: azar(2, 5),
       monedas: 80 + i * 45, agres: b.agres, llevando: null, objetivo: null, slotIdx: 0,
       destino: { x: b.x, z: b.z }, ladron: null, rendirse: 0, fueraZona: 0,
@@ -573,6 +594,8 @@ function crearEntidades() {
     bot.grupo.position.copy(bot.pos);
     const nom = spriteTexto(bot.nombre, { fondo: b.css, color: '#fff6e3', tam: 24 });
     nom.position.y = 3.5; bot.grupo.add(nom);
+    bot.dormido = (i === MI.baseIdx);      /* el bot de MI base duerme (¡soy yo!) */
+    bot.grupo.visible = !bot.dormido;
     scene.add(bot.grupo);
     b.bot = bot; bots.push(bot);
   }
@@ -582,19 +605,24 @@ function crearEntidades() {
 function agarrar(ent, vb, idx) {
   const slot = vb.slots.splice(idx, 1)[0];
   if (!slot) return;
+  const psx = slot.mesh.position.x, psz = slot.mesh.position.z;
   scene.remove(slot.ped); quitarSprite(slot.sprite);
+  if (slot.anillo) { scene.remove(slot.anillo); slot.anillo = null; }
   ent.llevando = { id: slot.id, mesh: slot.mesh, origen: vb.idx };
   ent.grupo.add(slot.mesh);
   slot.mesh.position.set(0, 3.15, 0); slot.mesh.rotation.set(0, 0, 0);
   if (ent === jugador) {
     E.stats.robos++; sonRobo(); statFB('robosTotales');
     toast(`¡Has robado a ${nombreDe(slot.id)}! ¡Corre a tu base!`);
-    if (vb.bot) { vb.bot.estado = 'perseguir'; vb.bot.ladron = { ref: jugador }; vb.bot.rendirse = 12; vb.bot.fueraZona = 0; }
+    if (window.__chorro) chorro(psx, 1.6, psz, 0x6ee7ff, 10, 3);
+    if (vb.humano) {            /* base de OTRO jugador real: se lo contamos */
+      if (window.__mp) MP.avisarRobo(vb, idx, slot.id);
+    } else if (vb.bot) { vb.bot.estado = 'perseguir'; vb.bot.ladron = { ref: jugador }; vb.bot.rendirse = 12; vb.bot.fueraZona = 0; }
   } else {
     if (vb.esJugador) {
       toast(`¡${ent.nombre} te está robando a ${nombreDe(slot.id)}! ¡Persíguelo dentro de tu base!`, 'mal');
       beep(240, .16, 'sawtooth', .14);
-    } else if (vb.bot) {
+    } else if (vb.bot && !vb.humano) {
       vb.bot.estado = 'perseguir'; vb.bot.ladron = { ref: ent }; vb.bot.rendirse = 12; vb.bot.fueraZona = 0;
     }
   }
@@ -614,7 +642,10 @@ function soltar(ent) {
     toast('¡Te han pillado! El meme vuelve a su base.', 'mal');
   } else {
     ent.estado = 'huir';
-    if (vb.esJugador) { E.stats.recuperados++; sonLogro(); toast(`¡Has recuperado a ${nombreDe(lv.id)}!`); }
+    if (vb.esJugador) {
+      E.stats.recuperados++; sonLogro(); toast(`¡Has recuperado a ${nombreDe(lv.id)}!`);
+      if (window.__chorro) chorro(ent.pos ? ent.pos.x : jugador.pos.x, 2, ent.pos ? ent.pos.z : jugador.pos.z, 0x82e06a, 12, 3);
+    }
   }
 }
 function quitarMesh(m) {
@@ -622,6 +653,7 @@ function quitarMesh(m) {
   m.traverse(o => { if (o.isMesh && o.geometry !== geoPed) o.geometry.dispose(); });
 }
 function actualizarCapturas() {
+  if (window.__mp && MP.activo) pillarHumanos();   /* pillar a ladrones humanos */
   const portadores = [];
   if (jugador.llevando) portadores.push(jugador);
   for (const b of bots) if (b.llevando) portadores.push(b);
@@ -679,7 +711,7 @@ function decidirBot(bot) {
   const ag = CONF.botAgresividad * bot.agres * (E.t < MINI.caosHasta ? 3 : 1);
   if (bot.monedas >= 60 && b.slots.length < 8 && E.t > bot.tEsperaCompra) { bot.estado = 'comprar'; return; }
   if (Math.random() < .45 * ag && E.t > bot.tEsperaRobo) {
-    const cand = bases.filter(x => x !== b && x.escudoHasta < E.t && x.slots.length > 0 && !(x.esJugador && MINI.fantasma));
+    const cand = bases.filter(x => x !== b && !x.humano && x.escudoHasta < E.t && x.slots.length > 0 && !(x.esJugador && MINI.fantasma));
     if (cand.length) {
       const bolsa = [];
       cand.forEach(x => { for (let i = 0; i < (x.esJugador ? 2 : 1); i++) bolsa.push(x); });
@@ -697,6 +729,7 @@ function decidirBot(bot) {
 }
 function actualizarBot(bot, dt) {
   const b = bases[bot.baseIdx];
+  if (b.humano || bot.dormido) return;       /* la controla un humano, o es MI base */
   if (Math.hypot(bot.pos.x - b.x, bot.pos.z - b.z) < 10) {
     for (const s of b.slots) { const v = Math.floor(s.acum); if (v > 0) { bot.monedas += v; s.acum -= v; } }
   }
@@ -801,6 +834,7 @@ function actualizarEventos(dt) {
         E.monedas += v; E.stats.ganadas += v; E.stats.monedasLluvia++;
         textoFlotante('+' + v, c.mesh.position.x, c.mesh.position.z);
         sonMoneda();
+        if (window.__chorro) chorro(c.mesh.position.x, .9, c.mesh.position.z, 0xffd93b, 10, 3);
         scene.remove(c.mesh); monedasLluvia.splice(i, 1);
       }
     }
@@ -810,17 +844,17 @@ function actualizarEventos(dt) {
 /* ---------- niveles y logros ---------- */
 const CONDS = {
   primer: () => E.stats.compras >= 1,
-  coleccion: () => bases[0].slots.length >= 10,
+  coleccion: () => miBase().slots.length >= 10,
   ladron: () => E.stats.robos >= 1,
   maestro: () => E.stats.robos >= 10,
   rico: () => E.stats.ganadas >= 1000,
   magnate: () => E.stats.ganadas >= 25000,
   nivel5: () => E.nivel >= 5,
-  leyenda: () => bases[0].slots.some(s => ['legendario', 'mitico', 'secreto'].includes(rarezaDe(s.id))),
-  mito: () => bases[0].slots.some(s => ['mitico', 'secreto'].includes(rarezaDe(s.id))),
+  leyenda: () => miBase().slots.some(s => ['legendario', 'mitico', 'secreto'].includes(rarezaDe(s.id))),
+  mito: () => miBase().slots.some(s => ['mitico', 'secreto'].includes(rarezaDe(s.id))),
   evento3: () => E.stats.eventos >= 3,
   lluvia25: () => E.stats.monedasLluvia >= 25,
-  lleno: () => bases[0].slots.length >= capJugador() && capJugador() > 0,
+  lleno: () => miBase().slots.length >= capJugador() && capJugador() > 0,
   renacer1: () => E.renacimientos >= 1,
   renacer3: () => E.renacimientos >= 3,
   record10k: () => E.record >= 10000,
@@ -857,7 +891,7 @@ function renderMemes() {
     for (const m of grupo) {
       const bloqueado = E.nivel < RAREZAS[r].nivel;
       const excl = m.reqRenacer && E.renacimientos < m.reqRenacer;
-      const poseidos = bases[0].slots.filter(s => s.id === m.id).length;
+      const poseidos = miBase().slots.filter(s => s.id === m.id).length;
       const precio = precioFinal(m);
       const sinDinero = E.monedas < precio;
       c.insertAdjacentHTML('beforeend', `
@@ -941,14 +975,16 @@ async function hacerRenacer() {
   E.stats.ganadas = 0; E.stats.compras = 0;
   E.mejoras = { zapatos: 0, guante: 0, iman: 0, base: 0 };
   E.escudosComprados = 0;
-  for (const s of bases[0].slots) { scene.remove(s.ped); quitarSprite(s.sprite); quitarMesh(s.mesh); }
-  bases[0].slots.length = 0;
+  for (const s of miBase().slots) { scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo); quitarMesh(s.mesh); }
+  miBase().slots.length = 0;
   const baratos = MEMES.filter(m => m.rareza === 'comun');
-  for (let i = 0; i < Math.min(E.renacimientos, 3); i++) instalarMeme(bases[0], baratos[(Math.random() * baratos.length) | 0].id);
+  for (let i = 0; i < Math.min(E.renacimientos, 3); i++) instalarMeme(miBase(), baratos[(Math.random() * baratos.length) | 0].id);
   evento = null; E.rebajas = false; proximoEvento = CONF.eventoCada * azar(.8, 1.2);
-  jugador.pos.set(bases[0].x, 0, bases[0].z);
+  jugador.pos.set(miBase().x, 0, miBase().z);
+  jugador.grupo.position.copy(jugador.pos);
   jugador.llevando = null;
   decorarAvatar(jugador.grupo);
+  if (window.__chorro) chorro(jugador.pos.x, 2.2, jugador.pos.z, 0xffd93b, 26, 5);
   sonRenacer();
   toast(`¡RENACISTE! Rango ${rangoDe(E.renacimientos)} · ingresos ×${renacerMult().toFixed(2)}`, 'logro');
   renderRenacer(); renderMemes(); renderMejoras(); renderLogros();
@@ -1031,8 +1067,9 @@ $('#modal-no').onclick = () => cerrarModal(false);
 const TUT = [
   { ico: 'i-zapato', t: '¡Bienvenido a Roba el Meme!', x: 'Muévete con WASD (o el joystick). Los memes que compres generan monedas solos, sobre sus pedestales.' },
   { ico: 'i-tienda', t: 'La tienda central', x: 'Pulsa T o el botón de la tienda para comprar memes. Pásate por tus pedestales para recoger las monedas con el imán.' },
-  { ico: 'i-guante', t: 'Roba como un campeón', x: 'Acércate a la base de un bot y pulsa E (o ROBAR) para cargar su mejor meme… ¡y corre a tu base sin que te pillen!' },
-  { ico: 'i-corona', t: 'Renace y domina', x: 'Al nivel 8 puedes RENACER: pierdes todo, pero tus ingresos suben ×1,3 para siempre, con aura dorada y rangos. ¡Suerte!' }
+  { ico: 'i-guante', t: 'Roba como un campeón', x: 'Acércate a la base de un bot (u otro jugador) y pulsa E (o ROBAR) para cargar su mejor meme… ¡y corre a tu base sin que te pillen!' },
+  { ico: 'i-camara', t: 'Tu cámara, tú mandas', x: 'Arrastra con el ratón (o el dedo) para mover la cámara, rueda o pellizco para el zoom, botón derecho para girarla y C para centrarla en ti.' },
+  { ico: 'i-mundo', t: 'Renace y domina', x: 'Al nivel 8 puedes RENACER: pierdes todo, pero tus ingresos suben ×1,3 para siempre, con aura dorada y rangos. ¡Suerte!' }
 ];
 let tutIdx = 0;
 function mostrarTut(i = 0) {
@@ -1053,7 +1090,7 @@ $('#tut-btn').onclick = () => {
 
 /* ---------- compras ---------- */
 function comprarMeme(id) {
-  const m = defDe(id), b = bases[0];
+  const m = defDe(id), b = miBase();
   if (E.nivel < RAREZAS[m.rareza].nivel) return;
   if (m.reqRenacer && E.renacimientos < m.reqRenacer) return;
   if (b.slots.length >= capJugador()) { toast('¡Base llena! Compra Base XL en Mejoras o renacer.'); return; }
@@ -1062,6 +1099,10 @@ function comprarMeme(id) {
   E.monedas -= precio; E.stats.compras++;
   statFB('comprasTotales');
   instalarMeme(b, id);
+  if (window.__chorro) {
+    const ps = b.slots[b.slots.length - 1];
+    if (ps) chorro(ps.mesh.position.x, 1.6, ps.mesh.position.z, RAREZAS[m.rareza] ? new THREE.Color(RAREZAS[m.rareza].color).getHex() : 0xffd93b, 14, 3.4);
+  }
   sonCompra(); renderMemes(); guardarPartida();
 }
 function comprarMejora(id) {
@@ -1070,7 +1111,7 @@ function comprarMejora(id) {
   if (E.monedas < precio) return;
   if (id === 'escudo') {
     E.escudosComprados++;
-    bases[0].escudoHasta = E.t + CONF.escudoDuracion;
+    miBase().escudoHasta = E.t + CONF.escudoDuracion;
     toast('¡Escudo activado! Tu base está protegida.', 'logro');
   } else {
     const nv = (E.mejoras[id] || 0) + 1;
@@ -1125,6 +1166,8 @@ addEventListener('keydown', ev => {
   if (k === 'escape') cerrarTienda();
   if (k === 'r') pedirReset();
   if (k === 'm') alternarSonido();
+  if (k === 'c' && window.__cam) centrarCamara();
+  if (k === 'y' && window.__chat) abrirChat();
   if (k === 'e' || k === 'enter') intentarAccion();
 });
 addEventListener('keyup', ev => teclas.delete(ev.key.toLowerCase()));
@@ -1162,7 +1205,8 @@ $('#btn-accion').onclick = intentarAccion;
 /* ---------- jugador ---------- */
 function objetivoCercano() {
   if (jugador.llevando || E.pausado || E.enMenu) return null;
-  for (let i = 1; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
+    if (i === MI.baseIdx) continue;          /* la mía no, las otras 3 sí (bot o humano) */
     const b = bases[i];
     if (b.escudoHasta > E.t || !b.slots.length) continue;
     let mejor = -1, md = 2.4;
@@ -1199,7 +1243,7 @@ function actualizarJugador(dt) {
   }
   jugador.grupo.position.set(jugador.pos.x, moviendo ? Math.abs(Math.sin(E.t * 11)) * .09 : 0, jugador.pos.z);
   if (jugador.llevando) {
-    const b = bases[0];
+    const b = miBase();
     if (Math.hypot(jugador.pos.x - b.x, jugador.pos.z - b.z) < 8.6) {
       if (b.slots.length >= 14) {
         if (E.t > tAvisoLlena) { tAvisoLlena = E.t + 5; toast('¡Base llena! Vende o amplía antes.', 'mal'); }
@@ -1242,13 +1286,14 @@ function actualizarEconomia(dt) {
       fijarTexto(s.sprite, v > 0 ? '+' + fmt(v) : '0');
     }
   }
-  for (const s of bases[0].slots) {
+  for (const s of miBase().slots) {
     const d = Math.hypot(jugador.pos.x - s.mesh.position.x, jugador.pos.z - s.mesh.position.z);
     if (d < (MINI.imanX ? 14 : radioIman())) {
       const v = Math.floor(s.acum);
       if (v >= 1) {
         E.monedas += v; E.stats.ganadas += v; s.acum -= v;
         s.mostrado = -1; sonMoneda();
+        if (window.__chorro) chorro(s.mesh.position.x, 1.6, s.mesh.position.z, 0xffd93b, 6, 2.2);
       }
     }
   }
@@ -1258,9 +1303,11 @@ function actualizarEconomia(dt) {
 /* ---------- cámara y minimapa ---------- */
 const tmpV = new THREE.Vector3();
 function actualizarCamara(dt) {
-  const d = 15 * zoom, alt = 13 * zoom;
-  cam.position.lerp(tmpV.set(jugador.pos.x, alt, jugador.pos.z + d), 1 - Math.pow(.0001, dt));
-  cam.lookAt(jugador.pos.x, 0, jugador.pos.z);
+  const d = 17 * zoom, alt = 11.5 * zoom;   /* un punto más «cinematográfica»: se ve horizonte */
+  const tx = jugador.pos.x + (window.__cam ? CAM.ox : 0), tz = jugador.pos.z + (window.__cam ? CAM.oz : 0);
+  const yaw = window.__cam ? CAM.yaw : 0;
+  cam.position.lerp(tmpV.set(tx + Math.sin(yaw) * d, alt, tz + Math.cos(yaw) * d), 1 - Math.pow(.0001, dt));
+  cam.lookAt(tx, 0, tz);
 }
 const mini = $('#minimapa').getContext('2d');
 $('#minimapa').onclick = () => $('#minimapa').classList.toggle('chico');
@@ -1281,7 +1328,13 @@ function dibujarMinimapa() {
     }
   }
   mini.fillStyle = '#2b211c';
-  for (const bt of bots) { mini.beginPath(); mini.arc(px(bt.pos.x), pz(bt.pos.z), 3, 0, 7); mini.fill(); }
+  for (const bt of bots) { if (bt.dormido) continue; mini.beginPath(); mini.arc(px(bt.pos.x), pz(bt.pos.z), 3, 0, 7); mini.fill(); }
+  if (window.__mp && MP.activo) for (const k in MP.avatares) {   /* jugadores reales */
+    const a = MP.avatares[k];
+    mini.fillStyle = (a.datos && a.datos.color) || '#fff';
+    mini.strokeStyle = '#2b211c'; mini.lineWidth = 1.5;
+    mini.beginPath(); mini.arc(px(a.pos.x), pz(a.pos.z), 3.4, 0, 7); mini.fill(); mini.stroke();
+  }
   mini.fillStyle = '#ffd93b';
   for (const c of monedasLluvia) { mini.beginPath(); mini.arc(px(c.mesh.position.x), pz(c.mesh.position.z), 2.2, 0, 7); mini.fill(); }
   mini.save();
@@ -1307,12 +1360,12 @@ function actualizarFlotantes(dt) {
 let firmaTienda = '';
 function actualizarHUD() {
   $('#hud-monedas').textContent = fmt(E.monedas);
-  let ing = 0; for (const s of bases[0].slots) ing += ingresoDe(s.id);
+  let ing = 0; for (const s of miBase().slots) ing += ingresoDe(s.id);
   $('#hud-ingreso').textContent = '+' + fmt(ing * multEvento()) + '/s';
   $('#hud-nivel').textContent = 'Nivel ' + E.nivel;
   const g = E.stats.ganadas, a = Math.pow(E.nivel - 1, 2) * 120, b2 = Math.pow(E.nivel, 2) * 120;
   $('#hud-xp').style.width = clamp((g - a) / (b2 - a) * 100, 0, 100) + '%';
-  const res = bases[0].escudoHasta - E.t;
+  const res = miBase().escudoHasta - E.t;
   $('#hud-escudo').classList.toggle('oculto', res <= 0);
   if (res > 0) $('#hud-escudo-t').textContent = Math.ceil(res) + 's';
   const rc = $('#chip-rango');
@@ -1357,6 +1410,12 @@ function empezarPartida() {
   E.enMenu = false;
   if (!E.vioTutorial) mostrarTut(0);
   else E.pausado = false;
+  try {
+    if (!localStorage.getItem('robameme-vio-camara')) {
+      localStorage.setItem('robameme-vio-camara', '1');
+      setTimeout(() => toast('🖱️ Arrastra con el ratón para mover la cámara · C para centrarla'), 2500);
+    }
+  } catch (e) { }
 }
 $('#btn-jugar').onclick = empezarPartida;
 $('#btn-como').onclick = () => mostrarTut(0);
@@ -1368,7 +1427,7 @@ function cobrarOffline() {
     if (!d || !d.tGuardado) return;
     const seg = Math.min((Date.now() - d.tGuardado) / 1000, CONF.offlineHoras * 3600);
     if (seg < 60) return;
-    let ing = 0; for (const s of bases[0].slots) ing += ingresoDe(s.id);
+    let ing = 0; for (const s of miBase().slots) ing += ingresoDe(s.id);
     const g = Math.floor(ing * seg * CONF.offlinePorc);
     if (g < 1) return;
     E.monedas += g; E.stats.ganadas += g; E.record = Math.max(E.record, E.monedas);
@@ -1380,16 +1439,37 @@ function cobrarOffline() {
 }
 
 /* ---------- guardado (v2 + migración desde v1) ---------- */
+function serializarPartida() {
+  return {
+    v: 2, monedas: E.monedas, nivel: E.nivel, renacimientos: E.renacimientos,
+    record: E.record, vioTutorial: E.vioTutorial, stats: E.stats, mejoras: E.mejoras,
+    escudos: E.escudosComprados, logros: [...E.logros],
+    slots: miBase().slots.map(s => s.id), tGuardado: Date.now()
+  };
+}
 function guardarPartida() {
   if (window.__resetSolicitado) return;   /* no re-guardar tras un reinicio */
-  try {
-    localStorage.setItem(CLAVE, JSON.stringify({
-      v: 2, monedas: E.monedas, nivel: E.nivel, renacimientos: E.renacimientos,
-      record: E.record, vioTutorial: E.vioTutorial, stats: E.stats, mejoras: E.mejoras,
-      escudos: E.escudosComprados, logros: [...E.logros],
-      slots: bases[0].slots.map(s => s.id), tGuardado: Date.now()
-    }));
-  } catch (e) { }
+  try { localStorage.setItem(CLAVE, JSON.stringify(serializarPartida())); } catch (e) { }
+}
+/* aplica un guardado (local o de la nube) sobre la partida actual */
+function aplicarGuardado(d) {
+  E.monedas = d.monedas || 0;
+  E.nivel = d.nivel || 1;
+  E.renacimientos = d.renacimientos || 0;
+  E.record = d.record || d.monedas || 0;
+  E.vioTutorial = !!d.vioTutorial;
+  Object.assign(E.stats, d.stats || {});
+  Object.assign(E.mejoras, d.mejoras || {});
+  E.escudosComprados = d.escudos || 0;
+  E.logros = new Set(d.logros || []);
+  const b = miBase();
+  for (const s of b.slots) { scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo); quitarMesh(s.mesh); }
+  b.slots.length = 0;
+  for (const id of d.slots || []) if (defDe(id) && b.slots.length < 14) instalarMeme(b, id);
+  decorarAvatar(jugador.grupo);
+  if (E.tiendaAbierta) renderMemes();
+  if (E.enMenu) prepararMenu();
+  guardarPartida();
 }
 function cargarPartida() {
   try {
@@ -1402,22 +1482,27 @@ function cargarPartida() {
       }
     }
     if (!d) { E.monedas = monedasIniciales(); return; }
-    E.monedas = d.monedas || 0;
-    E.nivel = d.nivel || 1;
-    E.renacimientos = d.renacimientos || 0;
-    E.record = d.record || d.monedas || 0;
-    E.vioTutorial = !!d.vioTutorial;
-    Object.assign(E.stats, d.stats || {});
-    Object.assign(E.mejoras, d.mejoras || {});
-    E.escudosComprados = d.escudos || 0;
-    E.logros = new Set(d.logros || []);
-    for (const id of d.slots || []) if (defDe(id) && bases[0].slots.length < 14) instalarMeme(bases[0], id);
+    aplicarGuardado(d);
   } catch (e) { }
 }
 async function pedirReset() {
   if (E.enMenu) return;
   const ok = await preguntar('¿Reiniciar todo?', 'Perderás tus monedas, memes, logros y RENACIMIENTOS. No hay vuelta atrás.', 'Borrar todo', 'Cancelar');
-  if (ok) { window.__resetSolicitado = true; localStorage.removeItem(CLAVE); location.reload(); }
+  if (!ok) return;
+  window.__resetSolicitado = true;
+  try { localStorage.removeItem(CLAVE); } catch (e) { }
+  /* si hay cuenta en la nube, también se borra allí (si no, volvería sola) */
+  if (window.__cuenta && CUENTA.activa && fbListo) {
+    try {
+      await fbJson(`${RAIZ_FB}/cuentas/${claveCuenta(CUENTA.nick)}.json`, 'PATCH', {
+        datos: JSON.stringify({
+          v: 2, monedas: monedasIniciales(), nivel: 1, renacimientos: 0, record: 0,
+          vioTutorial: E.vioTutorial, stats: {}, mejoras: {}, escudos: 0, logros: [], slots: [], tGuardado: Date.now()
+        }), t: Date.now()
+      });
+    } catch (e) { }
+  }
+  location.reload();
 }
 $('#btn-reset').onclick = pedirReset;
 $('#btn-ayuda').onclick = () => mostrarTut(0);
@@ -1438,6 +1523,7 @@ function sembrarBots() {
 
 /* ---------- bucle principal ---------- */
 let ultimoT = performance.now(), tHUD = 0, tGuardado = 0, tMini = 0, angMenu = azar(0, 6);
+let tMPEnv = 0, tMPSala = 0, tAnillos = 0;
 function bucle(ahora) {
   requestAnimationFrame(bucle);
   const dt = clamp((ahora - ultimoT) / 1000, 0, .05);
@@ -1457,6 +1543,22 @@ function bucle(ahora) {
   if (jugador.llevando) jugador.llevando.mesh.rotation.y += dt * 2.5;
   actualizarEscudos();
   actualizarFlotantes(dt);
+  if (window.__chorro) actualizarChispas(dt);      /* confeti y polvo */
+  if (window.__gfx) actualizarDecorado(dt);        /* nubes, mariposas, motas */
+  if (window.__mp && MP.activo) {                  /* multijugador: envío + sondeo + avatares */
+    tMPEnv += dt; if (tMPEnv > 1.1) { tMPEnv = 0; enviarMiNodo(); }
+    tMPSala += dt; if (tMPSala > 1.7) { tMPSala = 0; sondearSala(); }
+    actualizarRemotos(dt);
+  }
+  tAnillos += dt;
+  if (tAnillos > .09) {                            /* anillos de rareza respirando */
+    tAnillos = 0;
+    for (const b of bases) for (const s of b.slots) if (s.anillo) {
+      const p = .5 + Math.sin(E.t * 2.3 + s.faseAn) * .5;
+      s.anillo.material.opacity = .28 + p * .3;
+      s.anillo.scale.setScalar(1 + p * .07);
+    }
+  }
   if (E.enMenu) {
     angMenu += dt * .09;
     cam.position.set(Math.cos(angMenu) * 42, 27, Math.sin(angMenu) * 42);
@@ -1507,16 +1609,16 @@ function aplicarRegalo(g) {
     partes.push('+' + fmt(n) + ' monedas');
   } else if (g.tipo === 'meme') {
     if (!MEMES.some(m => m.id === g.memeId)) return { ok: false, fatal: true };
-    if (bases[0].slots.length >= capJugador()) return { ok: false };
-    instalarMeme(bases[0], g.memeId); E.stats.compras++;
+    if (miBase().slots.length >= capJugador()) return { ok: false };
+    instalarMeme(miBase(), g.memeId); E.stats.compras++;
     partes.push(nombreDe(g.memeId) + ' en tu base');
   } else if (g.tipo === 'pack') {
     const pool = MEMES.filter(m => m.rareza === g.rareza && !(m.reqRenacer && E.renacimientos < m.reqRenacer));
     if (!pool.length) return { ok: false, fatal: true };
     const n = clamp(Math.round(+g.cantidad || 1), 1, 10);
     let puestos = 0;
-    while (puestos < n && bases[0].slots.length < capJugador()) {
-      instalarMeme(bases[0], pool[(Math.random() * pool.length) | 0].id);
+    while (puestos < n && miBase().slots.length < capJugador()) {
+      instalarMeme(miBase(), pool[(Math.random() * pool.length) | 0].id);
       E.stats.compras++; puestos++;
     }
     if (!puestos) return { ok: false };
@@ -1532,7 +1634,7 @@ function aplicarRegalo(g) {
     if (E.tiendaAbierta) renderMejoras();
   } else if (g.tipo === 'escudo') {
     const n = clamp(Math.round(+g.cantidad || 1), 1, 50);
-    bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + CONF.escudoDuracion * n;
+    miBase().escudoHasta = Math.max(miBase().escudoHasta, E.t) + CONF.escudoDuracion * n;
     partes.push('escudo anti-robo ' + Math.round(CONF.escudoDuracion * n) + ' s');
   } else return { ok: false, fatal: true };
   actualizarHUD(); guardarPartida(); revisarLogros();
@@ -1562,7 +1664,7 @@ function siguienteRegalo() {
 }
 $('#regalo-btn').onclick = siguienteRegalo;
 
-/* mirar cada poco si el admin ha dado algo (para todos) */
+/* mirar cada poco si el admin ha dado algo (para todos o solo a mi servidor) */
 async function mirarRegalos() {
   if (!fbListo) return;
   try {
@@ -1574,6 +1676,7 @@ async function mirarRegalos() {
       const g = datos[id];
       if (!g || g.codigo || hechos.includes(id)) continue;
       if (g.expira && +g.expira < ahora) continue;
+      if (g.ambito === 'servidor' && g.servidor !== (window.__mp ? MP.servidor : null)) continue;  /* es de otro servidor */
       const res = aplicarRegalo(g);
       if (!res.ok && !res.fatal) continue;  /* p. ej. base llena: reintenta luego */
       marcarHecho(id);
@@ -1781,9 +1884,9 @@ function abuso(id) {
       const rz = ($('#adm-rareza') || {}).value || 'epico';
       const pool = MEMES.filter(m => m.rareza === rz);
       if (!pool.length) { toast('Esa rareza no existe', 'mal'); return; }
-      if (bases[0].slots.length >= capJugador()) { toast('Tu base está llena: haz hueco primero', 'mal'); return; }
+      if (miBase().slots.length >= capJugador()) { toast('Tu base está llena: haz hueco primero', 'mal'); return; }
       const m = pool[(Math.random() * pool.length) | 0];
-      instalarMeme(bases[0], m.id); E.stats.compras++;
+      instalarMeme(miBase(), m.id); E.stats.compras++;
       msg = nombreDe(m.id) + ' (' + RAREZAS[rz].nombre + ') en tu base';
       break;
     }
@@ -1793,11 +1896,11 @@ function abuso(id) {
       msg = 'todas las mejoras al máximo';
       break;
     case 'escudo5':
-      bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + 300;
+      miBase().escudoHasta = Math.max(miBase().escudoHasta, E.t) + 300;
       msg = 'escudo anti-robo 5 min';
       break;
     case 'escudo60':
-      bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + 3600;
+      miBase().escudoHasta = Math.max(miBase().escudoHasta, E.t) + 3600;
       msg = 'escudo anti-robo 1 hora';
       break;
     case 'turbo':
@@ -1990,11 +2093,11 @@ function pintarRegCampos() {
 }
 function clampN(v, min, max, def) { v = Math.round(+v); if (isNaN(v)) v = def; return Math.min(max, Math.max(min, v)); }
 
-/* ---- ¡DAR! (el botón de la pestaña 🎁) ---- */
+/* ---- ¡DAR! (el botón de la pestaña 🎁): a mí · al servidor · a todos ---- */
 async function darRegaloMini() {
-  if (!REMOTO.esAdmin || !REMOTO.fdb) { toast('La pestaña 🎁 necesita sesión de admin de la web', 'mal'); return; }
   const tipo = $('#reg-tipo').value;
-  const g = { t: Date.now(), tipo, de: REMOTO.nombre || 'Admin' };
+  const destino = $('#reg-destino').value;
+  const g = { t: Date.now(), tipo, de: (REMOTO.nombre || MP.nick || 'Admin') };
   const msj = ($('#reg-mensaje').value || '').trim();
   if (msj) g.mensaje = msj.slice(0, 70);
   const val = +$('#reg-validez').value;
@@ -2004,9 +2107,31 @@ async function darRegaloMini() {
   if (tipo === 'pack') { g.rareza = $('#reg-rareza').value; g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 10, 3); }
   if (tipo === 'mejora') { g.mejoraId = $('#reg-mejora').value; g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 5, 1); }
   if (tipo === 'escudo') g.cantidad = clampN($('#reg-n') && $('#reg-n').value, 1, 20, 1);
-  if ($('#reg-destino').value === 'codigo') {
+
+  /* 👑 SOLO PARA MÍ: se aplica aquí mismo, sin base de datos */
+  if (destino === 'yo') {
+    const res = aplicarRegalo(g);
+    if (!res.ok) { toast(res.fatal ? 'Ese regalo no existe' : 'Tu base está llena: haz hueco primero', 'mal'); return; }
+    encolarRegalo(g, res.texto);
+    toast('👑 Regalo aplicado a TU partida', 'logro');
+    MINI.abusos++; pintarMini(); sonLogro();
+    $('#reg-mensaje').value = '';
+    return;
+  }
+
+  if (destino === 'servidor') {
+    g.ambito = 'servidor';
+    g.servidor = $('#reg-servidor').value;
+    if (!g.servidor) { toast('Elige un servidor', 'mal'); return; }
+  }
+  if (destino === 'codigo') {
     const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   /* sin letras que se confunden */
     g.codigo = 'ROBA-' + Array.from({ length: 4 }, () => ABC[(Math.random() * ABC.length) | 0]).join('');
+  }
+
+  if (!REMOTO.esAdmin || !REMOTO.fdb) {
+    toast('Para regalar a otros jugadores entra con tu cuenta de admin de la web (el «solo para mí» funciona siempre)', 'mal');
+    return;
   }
   window.__ultimoRegaloMini = g;   /* gancho para pruebas automáticas */
   const btn = $('#btn-regalar');
@@ -2017,6 +2142,8 @@ async function darRegaloMini() {
     if (g.codigo) {
       try { await navigator.clipboard.writeText(g.codigo); toast('🎁 Código copiado: ' + g.codigo, 'logro'); }
       catch (e) { toast('🎁 Código creado: ' + g.codigo, 'logro'); }
+    } else if (g.ambito === 'servidor') {
+      toast('🎁 ¡Regalo enviado al servidor ' + nombreServidor(g.servidor) + '!', 'logro');
     } else toast('🎁 ¡Regalo enviado a todos!', 'logro');
     sonLogro();
     $('#reg-mensaje').value = '';
@@ -2051,11 +2178,14 @@ function pintarRegalosMini(obj) {
       : g.tipo === 'escudo' ? 'escudo ×' + (g.cantidad || 1) : g.tipo;
     const dura = g.expira ? (cad ? 'CADUCADO' : 'caduca en ' + dentroDe(+g.expira - ahora)) : 'sin caducidad';
     const canje = Object.keys(g.canjeados || {}).length;
+    const alcance = g.ambito === 'servidor'
+      ? 'solo ' + nombreServidor(g.servidor)
+      : g.codigo ? 'con código' : 'para todos';
     const div = document.createElement('div');
     div.className = 'reg-item' + (cad ? ' caducado' : '');
     div.innerHTML =
       `<div class="reg-lin1"><span class="reg-tipo">${que}</span>` +
-      `<span class="reg-det">${g.codigo ? 'con código' : 'para todos'} · ${dura}${canje ? ' · ' + canje + ' canjes' : ''}</span></div>` +
+      `<span class="reg-det">${alcance} · ${dura}${canje ? ' · ' + canje + ' canjes' : ''}</span></div>` +
       (g.codigo ? `<div class="reg-lin2"><code>${g.codigo}</code><button class="reg-mini" data-copiar="${g.codigo}" type="button">copiar</button></div>` : '') +
       (g.mensaje ? `<div class="reg-det">«${g.mensaje}»</div>` : '') +
       `<div class="reg-lin2"><button class="reg-mini rojo" data-quitar="${id}" type="button">quitar</button></div>`;
@@ -2144,8 +2274,831 @@ function iniciarMiniGui() {
   arrastrarMini();
   pintarRegCampos();
   $('#reg-tipo').addEventListener('change', pintarRegCampos);
+  /* servidor destino de los regalos (por defecto, el mío) */
+  const sel = $('#reg-servidor');
+  if (sel) {
+    const lista = window.SERVIDORES || [];
+    sel.innerHTML = lista.map(s => `<option value="${s.id}">${s.emoji} ${s.nombre}</option>`).join('');
+    if (window.__mp && MP.servidor) sel.value = MP.servidor;
+    $('#reg-destino').addEventListener('change', () => {
+      const srv = $('#reg-destino').value === 'servidor';
+      $('#fila-reg-servidor').hidden = !srv;
+    });
+  }
   $('#btn-regalar').addEventListener('click', darRegaloMini);
   $('#cfg-guardar').addEventListener('click', guardarCfgMini);
   cargarCfgCampos();      /* pinta los campos con los valores locales mientras llega la sesión */
   cargarSDKMini();
 }
+
+/* ================================================================
+   PARTE 3 · 🎨 gráficos plus · 🎥 cámara libre · ☁️ cuentas
+   🖥️ servidores multijugador · 💬 chat · regalo "solo a mi servidor"
+   ================================================================ */
+
+/* ---------- utilidades de red (REST con aviso de permisos) ---------- */
+async function fbJson(url, metodo = 'GET', cuerpo) {
+  const op = { method: metodo };
+  if (cuerpo !== undefined) { op.headers = { 'Content-Type': 'application/json' }; op.body = JSON.stringify(cuerpo); }
+  const r = await fetch(url, op);
+  if (!r.ok) { const e = new Error('http ' + r.status); e.estado = r.status; throw e; }
+  if (metodo === 'DELETE') return null;
+  try { return await r.json(); } catch (e) { return null; }
+}
+function mensajeNube(e) {
+  const s = e && (e.estado || e.message) || '';
+  if (e && (e.estado === 401 || e.estado === 403) || String(s).includes('permission'))
+    return 'Faltan las reglas nuevas: admin.html → botón «Reglas de la base de datos» → copiar → Firebase → Publicar';
+  return 'Sin conexión con la nube: prueba otra vez';
+}
+function nombreServidor(id) {
+  const s = (window.SERVIDORES || []).find(x => x.id === id);
+  return s ? (s.emoji + ' ' + s.nombre) : (id || '?');
+}
+
+/* ============ 🎨 GRÁFICOS PLUS ============ */
+function texCesped() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#7ec356'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 1400; i++) {
+    g.fillStyle = Math.random() < .5 ? 'rgba(108,178,72,.5)' : 'rgba(150,216,106,.45)';
+    g.fillRect(Math.random() * 256, Math.random() * 256, 2, 3 + Math.random() * 3);
+  }
+  for (let i = 0; i < 70; i++) {
+    g.fillStyle = ['rgba(255,246,227,.8)', 'rgba(255,217,59,.7)', 'rgba(255,159,243,.65)'][i % 3];
+    g.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(22, 22);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function crearCielo() {
+  const mat = new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { arriba: { value: new THREE.Color(0x3f9de0) }, borde: { value: new THREE.Color(0xd9f4ff) } },
+    vertexShader: 'varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'varying vec3 vP; uniform vec3 arriba; uniform vec3 borde; void main(){ float h=clamp(normalize(vP).y*.5+.5,0.0,1.0); gl_FragColor=vec4(mix(borde,arriba,pow(h,1.35)),1.0); }'
+  });
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(155, 24, 14), mat));
+  scene.fog = new THREE.Fog(0xcfeef8, 70, 150);
+}
+function crearSol() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(64, 64, 6, 64, 64, 62);
+  gr.addColorStop(0, 'rgba(255,252,230,1)');
+  gr.addColorStop(.25, 'rgba(255,236,150,.95)');
+  gr.addColorStop(.55, 'rgba(255,214,80,.38)');
+  gr.addColorStop(1, 'rgba(255,214,80,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
+  spr.scale.set(34, 34, 1); spr.position.set(75, 82, -55); scene.add(spr);
+}
+const matNube = new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap: gTex, transparent: true, opacity: .93 });
+const nubes = [];
+function crearNubes() {
+  for (let i = 0; i < 9; i++) {
+    const g = new THREE.Group();
+    const n = 3 + (Math.random() * 3 | 0);
+    for (let k = 0; k < n; k++) {
+      const e = new THREE.Mesh(new THREE.SphereGeometry(azar(1.6, 3.2), 12, 9), matNube);
+      e.position.set(k * azar(1.8, 2.6) - n, azar(-.4, .5), azar(-1.2, 1.2));
+      e.scale.y = .55; e.castShadow = true;
+      g.add(e);
+    }
+    g.position.set(azar(-95, 95), azar(27, 42), azar(-95, 95));
+    scene.add(g);
+    nubes.push({ g, v: azar(.5, 1.6) });
+  }
+}
+let motas = null;
+function crearMotas() {
+  const N = 130, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { pos[i * 3] = azar(-48, 48); pos[i * 3 + 1] = azar(.4, 8); pos[i * 3 + 2] = azar(-48, 48); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  motas = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xfff3c4, size: .16, transparent: true, opacity: .55, depthWrite: false }));
+  scene.add(motas);
+}
+const mariposas = [];
+function crearMariposas() {
+  const cols = [0xff9ff3, 0x9b5de5, 0xffd93b, 0x4ea8de, 0xef476f, 0x2ec4b6, 0xffba08];
+  for (let i = 0; i < 7; i++) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshBasicMaterial({ color: cols[i % cols.length], side: THREE.DoubleSide });
+    const alaI = new THREE.Mesh(new THREE.PlaneGeometry(.3, .22), mat); alaI.position.x = -.13;
+    const alaD = new THREE.Mesh(new THREE.PlaneGeometry(.3, .22), mat); alaD.position.x = .13;
+    g.add(alaI); g.add(alaD); scene.add(g);
+    mariposas.push({ g, alaI, alaD, cx: azar(-40, 40), cz: azar(-40, 40), rx: azar(4, 12), rz: azar(4, 12), alt: azar(1.4, 2.8), f: azar(0, 9), v: azar(.5, 1.1) });
+  }
+}
+function embellecerMundo() {
+  for (let i = 0; i < 10; i++) {          /* arbustos redondos */
+    let x, z, ok = false;
+    for (let k = 0; k < 10 && !ok; k++) {
+      x = azar(-42, 42); z = azar(-42, 42);
+      ok = Math.hypot(x, z) > 12 && !BASES_DEF.some(b => Math.abs(x - b.x) < 11 && Math.abs(z - b.z) < 11);
+    }
+    if (!ok) continue;
+    const g = new THREE.Group();
+    for (let k = 0; k < 3; k++) { const e = esf(azar(.45, .8), k ? 0x4ca04f : 0x3e8e41, 10); e.position.set(azar(-.5, .5), .35, azar(-.5, .5)); g.add(e); }
+    g.position.set(x, 0, z); scene.add(g);
+    arboles.push({ x, z });
+  }
+  for (let i = 0; i < 8; i++) {           /* setas de decoración */
+    const x = azar(-40, 40), z = azar(-40, 40);
+    if (Math.hypot(x, z) < 11) continue;
+    const tal = cil(.09, .12, .35, 0xfff0dd); tal.position.set(x, .18, z); scene.add(tal);
+    const som = p(new THREE.SphereGeometry(.26, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), i % 3 ? 0xe25555 : 0xf4a259);
+    som.position.set(x, .35, z); scene.add(som);
+    const punt = esf(.05, 0xfff6e3, 6); punt.position.set(x, .46, z); scene.add(punt);
+  }
+}
+/* ---- chispas de colores (confeti, monedas, polvo) ---- */
+const chispas = [];
+let texChispa = null;
+function chorro(x, y, z, color, n = 12, fuerza = 3.5) {
+  if (!texChispa) {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 2, 32, 32, 30);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.6, 'rgba(255,255,255,.85)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    texChispa = new THREE.CanvasTexture(c); texChispa.colorSpace = THREE.SRGBColorSpace;
+  }
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: texChispa, color, transparent: true, opacity: .95, depthWrite: false }));
+    m.position.set(x, y, z);
+    const esc = azar(.18, .4); m.scale.set(esc, esc, 1);
+    const a = azar(0, Math.PI * 2), v = azar(.35, 1) * fuerza;
+    chispas.push({ m, vx: Math.cos(a) * v, vy: azar(1.8, 4.6), vz: Math.sin(a) * v, vida: azar(.5, .95), tot: .95, polvo: false });
+    scene.add(m);
+  }
+}
+function polvo(x, z) {
+  if (!texChispa) return;
+  const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: texChispa, color: 0xcfc3a8, transparent: true, opacity: .35, depthWrite: false }));
+  m.position.set(x + azar(-.3, .3), .25, z + azar(-.3, .3));
+  m.scale.set(.5, .5, 1);
+  chispas.push({ m, vx: azar(-.4, .4), vy: azar(.5, 1.1), vz: azar(-.4, .4), vida: .55, tot: .55, polvo: true });
+  scene.add(m);
+}
+function actualizarChispas(dt) {
+  for (let i = chispas.length - 1; i >= 0; i--) {
+    const c = chispas[i];
+    c.vida -= dt;
+    if (c.vida <= 0) { scene.remove(c.m); c.m.material.dispose(); chispas.splice(i, 1); continue; }
+    c.m.position.x += c.vx * dt; c.m.position.z += c.vz * dt;
+    if (c.polvo) {
+      c.m.position.y += c.vy * dt * .5;
+      const k = 1 - c.vida / c.tot;
+      c.m.scale.setScalar(.5 + k * .9);
+      c.m.material.opacity = .35 * (1 - k);
+    } else {
+      c.vy -= 7 * dt; c.m.position.y += c.vy * dt;
+      if (c.m.position.y < .1) { c.m.position.y = .1; c.vy *= -.35; c.vx *= .7; c.vz *= .7; }
+      c.m.material.opacity = Math.min(1, c.vida / (c.tot * .6));
+    }
+  }
+}
+/* ---- tictac del decorado (nubes, mariposas, motas, polvo del jugador) ---- */
+let tPolvo = 0; const posAnt = new THREE.Vector3();
+function actualizarDecorado(dt) {
+  for (const n of nubes) { n.g.position.x += n.v * dt; if (n.g.position.x > 105) n.g.position.x = -105; }
+  if (motas) {
+    const p = motas.geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      let y = p.getY(i) + dt * .35; if (y > 8) y = .4;
+      p.setY(i, y); p.setX(i, p.getX(i) + Math.sin(E.t * .6 + i) * dt * .12);
+    }
+    p.needsUpdate = true;
+  }
+  for (const m of mariposas) {
+    m.f += dt * m.v;
+    m.g.position.set(m.cx + Math.cos(m.f) * m.rx, m.alt + Math.sin(m.f * 2.3) * .5, m.cz + Math.sin(m.f * .8) * m.rz);
+    m.g.rotation.y = -m.f;
+    const flap = .2 + Math.abs(Math.sin(m.f * 14)) * 1.1;
+    m.alaI.rotation.y = flap; m.alaD.rotation.y = -flap;
+  }
+  if (!E.enMenu && !E.pausado) {           /* polvoretas al correr */
+    const d = jugador.grupo.position.distanceTo(posAnt);
+    posAnt.copy(jugador.grupo.position);
+    if (d > .02) {
+      tPolvo += dt;
+      if (tPolvo > .16) { tPolvo = 0; polvo(jugador.pos.x, jugador.pos.z); }
+    }
+  }
+}
+
+/* ============ 🎥 CÁMARA LIBRE (arrastrar · rotar · zoom · C) ============ */
+const CAM = { ox: 0, oz: 0, yaw: 0 };
+function centrarCamara() { CAM.ox = CAM.oz = CAM.yaw = 0; toast('🎥 Cámara centrada en ti'); }
+function initCamara() {
+  const cv = renderer.domElement;
+  const punteros = new Map();
+  let camModo = null, px = 0, py = 0, pinchPrev = 0;
+  const dist2 = () => {
+    const v = [...punteros.values()];
+    return Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+  };
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  cv.addEventListener('pointerdown', e => {
+    punteros.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (E.enMenu) return;
+    if (punteros.size === 2) { camModo = 'pinch'; pinchPrev = dist2(); return; }
+    camModo = (e.pointerType === 'mouse' && e.button === 2) ? 'orbitar' : 'arrastrar';
+    px = e.clientX; py = e.clientY;
+    try { cv.setPointerCapture(e.pointerId); } catch (err) { }
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!punteros.has(e.pointerId)) return;
+    punteros.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (camModo === 'pinch') {
+      if (punteros.size === 2) { const d = dist2(); if (pinchPrev > 0) zoom = clamp(zoom * pinchPrev / d, .55, 1.7); pinchPrev = d; }
+      return;
+    }
+    if (!camModo) return;
+    const dx = e.clientX - px, dy = e.clientY - py; px = e.clientX; py = e.clientY;
+    if (camModo === 'orbitar') { CAM.yaw -= dx * .006; return; }
+    const s = (e.pointerType === 'mouse' ? .045 : .09) * zoom;
+    const rX = Math.cos(CAM.yaw), rZ = -Math.sin(CAM.yaw);
+    const fX = -Math.sin(CAM.yaw), fZ = -Math.cos(CAM.yaw);
+    CAM.ox = clamp(CAM.ox + (fX * dy - rX * dx) * s, -55, 55);
+    CAM.oz = clamp(CAM.oz + (fZ * dy - rZ * dx) * s, -55, 55);
+  });
+  const fin = e => {
+    punteros.delete(e.pointerId);
+    if (punteros.size < 2) pinchPrev = 0;
+    if (!punteros.size) camModo = null;
+    else if (punteros.size === 1 && camModo === 'pinch') camModo = null;
+  };
+  cv.addEventListener('pointerup', fin);
+  cv.addEventListener('pointercancel', fin);
+}
+
+/* ============ ☁️ CUENTAS (tu partida en la nube) ============ */
+const CUENTA = { activa: false, nick: '', pin: '', ultimoGuardadoNube: 0 };
+const CLAVE_CUENTA = 'robameme-cuenta';
+function hashPin(s) { let h = 5381; for (const c of String(s)) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return ('00000000' + h.toString(16)).slice(-8); }
+const nickValido = n => /^[a-zA-Z0-9_]{3,12}$/.test(String(n || '').trim());
+const claveCuenta = nick => 'c_' + encodeURIComponent(String(nick).trim().toLowerCase());
+
+async function crearCuenta(nick, pin) {
+  nick = String(nick || '').trim();
+  if (!nickValido(nick)) { toast('El nombre: 3-12 letras o números, sin espacios', 'mal'); return; }
+  if (String(pin || '').length < 4) { toast('El PIN necesita 4 caracteres o más', 'mal'); return; }
+  if (!fbListo) { toast('Sin conexión con la nube', 'mal'); return; }
+  try {
+    const prev = await fbJson(`${RAIZ_FB}/cuentas/${claveCuenta(nick)}.json`);
+    if (prev) { toast('Ese nombre ya está cogido: elige otro', 'mal'); return; }
+    await fbJson(`${RAIZ_FB}/cuentas/${claveCuenta(nick)}.json`, 'PATCH',
+      { pin: hashPin(pin), datos: JSON.stringify(serializarPartida()), t: Date.now() });
+    CUENTA.activa = true; CUENTA.nick = nick; CUENTA.pin = pin;
+    try { localStorage.setItem(CLAVE_CUENTA, JSON.stringify({ nick, pin })); } catch (e) { }
+    toast('¡Cuenta creada! Tu partida ya viaja en la nube ☁️', 'logro'); sonLogro();
+    if (MP.activo) { MP.nick = nick; enviarMiNodo(); }
+    pintarCuentaMenu();
+  } catch (e) { toast(mensajeNube(e), 'mal'); }
+}
+async function iniciarSesion(nick, pin, silencio = false) {
+  nick = String(nick || '').trim();
+  if (!nickValido(nick) || String(pin || '').length < 4) {
+    if (!silencio) toast('Escribe tu nombre y tu PIN', 'mal'); return false;
+  }
+  try {
+    const d = await fbJson(`${RAIZ_FB}/cuentas/${claveCuenta(nick)}.json`);
+    if (!d) { if (!silencio) toast('No hay ninguna cuenta con ese nombre', 'mal'); return false; }
+    if (String(d.pin || '') !== hashPin(pin)) { if (!silencio) toast('El PIN no es correcto', 'mal'); return false; }
+    CUENTA.activa = true; CUENTA.nick = nick; CUENTA.pin = pin;
+    try { localStorage.setItem(CLAVE_CUENTA, JSON.stringify({ nick, pin })); } catch (e) { }
+    let nube = null; try { nube = d.datos ? JSON.parse(d.datos) : null; } catch (e) { }
+    let local = null; try { local = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch (e) { }
+    if (nube && (!local || (nube.tGuardado || 0) >= (local.tGuardado || 0))) {
+      aplicarGuardado(nube);
+      if (!silencio) toast(`¡Hola de nuevo, ${nick}! Partida bajada de la nube ☁️`, 'logro');
+    } else {
+      if (!silencio) toast(`¡Hola de nuevo, ${nick}! La partida de aquí era más nueva: la subo a la nube`, 'logro');
+      guardarEnNube(true);
+    }
+    if (MP.activo) { MP.nick = nick; enviarMiNodo(); }
+    pintarCuentaMenu();
+    return true;
+  } catch (e) {
+    if (!silencio) toast(mensajeNube(e), 'mal');
+    return false;
+  }
+}
+function cerrarSesion() {
+  CUENTA.activa = false; CUENTA.nick = ''; CUENTA.pin = '';
+  try { localStorage.removeItem(CLAVE_CUENTA); } catch (e) { }
+  pintarCuentaMenu();
+  toast('Sesión cerrada. La partida se sigue guardando en este navegador');
+}
+async function guardarEnNube(fuerza) {
+  if (!CUENTA.activa || !fbListo || window.__resetSolicitado) return;
+  const ahora = Date.now();
+  if (!fuerza && ahora - CUENTA.ultimoGuardadoNube < 15000) return;
+  CUENTA.ultimoGuardadoNube = ahora;
+  try {
+    await fbJson(`${RAIZ_FB}/cuentas/${claveCuenta(CUENTA.nick)}.json`, 'PATCH',
+      { datos: JSON.stringify(serializarPartida()), t: ahora });
+  } catch (e) { /* silencioso: se reintenta solo */ }
+}
+function pintarCuentaMenu() {
+  const c = $('#menu-cuenta'); if (!c) return;
+  if (CUENTA.activa) {
+    c.innerHTML = `
+      <div class="cuenta-ok">☁️ <b>${CUENTA.nick}</b> · tu partida se guarda en la nube</div>
+      <button id="cuenta-salir" class="btn fino" type="button">Cerrar sesión</button>`;
+    const b = $('#cuenta-salir'); if (b) b.onclick = cerrarSesion;
+  } else {
+    c.innerHTML = `
+      <small class="titulo-seccion">👤 TU CUENTA</small>
+      <div class="cuenta-fila">
+        <input id="cuenta-nick" maxlength="12" placeholder="Tu nombre" autocomplete="off" spellcheck="false">
+        <input id="cuenta-pin" type="password" maxlength="12" placeholder="PIN secreto" autocomplete="off">
+      </div>
+      <div class="cuenta-botones">
+        <button id="cuenta-entrar" class="btn fino" type="button">Entrar</button>
+        <button id="cuenta-crear" class="btn fino" type="button">Crear cuenta</button>
+      </div>
+      <p class="cuenta-nota">Con cuenta juegas desde cualquier navegador con TU partida. Sin cuenta, se guarda solo aquí.</p>`;
+    const ir = () => iniciarSesion($('#cuenta-nick').value, $('#cuenta-pin').value);
+    const cr = () => crearCuenta($('#cuenta-nick').value, $('#cuenta-pin').value);
+    $('#cuenta-entrar').onclick = ir; $('#cuenta-crear').onclick = cr;
+    ['#cuenta-nick', '#cuenta-pin'].forEach(s => $(s).addEventListener('keydown', e => {
+      e.stopPropagation();
+      if (e.key === 'Enter') ir();
+      if (e.key === 'Escape') $(s).blur();
+    }));
+  }
+}
+function initCuenta() {
+  pintarCuentaMenu();
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE_CUENTA) || 'null');
+    if (d && d.nick && d.pin) iniciarSesion(d.nick, d.pin, true);
+  } catch (e) { }
+}
+
+/* ============ 🖥️ SERVIDORES MULTIJUGADOR ============ */
+const MP = {
+  activo: false, servidor: null, id: null, nick: 'Invitado', color: '#4a7fd4',
+  tEntrada: 0, avatares: {}, robadosDe: {}, roboActivo: {}, vistoEventos: new Set(),
+  ultimoChat: 0, encuestas: 0, reasignado: false, sala: null
+};
+const COLRES_MP = ['#e25555', '#57b657', '#4a7fd4', '#9b5de5', '#f4a259', '#2ec4b6', '#ff7f51', '#6ee7ff'];
+const NOMBRES_BOT = ['Pavo', 'Roqui', 'Verdi', 'Azzur'];
+const urlSala = srv => `${RAIZ_FB}/servidores/${srv}`;
+
+MP.avisarRobo = (vb, idx, memeId) => {
+  if (!MP.activo || !vb.humano) return;
+  (MP.robadosDe[vb.humano] = MP.robadosDe[vb.humano] || {})[memeId] = Date.now();
+  publicarEvento({ tipo: 'robo', victima: vb.humano, por: MP.id, nick: MP.nick, slot: idx, meme: memeId });
+};
+async function publicarEvento(ev) {
+  if (!MP.activo) return;
+  const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  MP.vistoEventos.add(id);
+  try {
+    await fetch(`${urlSala(MP.servidor)}/eventos/${id}.json`,
+      { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ t: Date.now() }, ev)) });
+  } catch (e) { }
+}
+function borrarMiNodo() {
+  if (!MP.activo) return;
+  try { fetch(`${urlSala(MP.servidor)}/jugadores/${MP.id}.json`, { method: 'DELETE', keepalive: true }); } catch (e) { }
+}
+function ponerNombreBase(i, txt) {
+  const b = bases[i];
+  if (b.nomSprite) fijarTexto(b.nomSprite, String(txt).slice(0, 16), { fondo: b.css, color: '#fff6e3', tam: 26 });
+}
+/* mudarse a otra base libre del mundo compartido (solo multijugador) */
+function moverBase(nuevo) {
+  if (nuevo === MI.baseIdx || nuevo < 0 || nuevo > 3) return;
+  const viejoIdx = MI.baseIdx, viejo = bases[viejoIdx], destino = bases[nuevo];
+  const ids = viejo.slots.map(s => s.id), meshes = viejo.slots.map(s => s.mesh);
+  for (const s of viejo.slots) { scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo); }
+  viejo.slots.length = 0; viejo.esJugador = false; viejo.humano = null;
+  for (const s of destino.slots) { scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo); quitarMesh(s.mesh); }
+  destino.slots.length = 0;
+  MI.baseIdx = nuevo;
+  destino.esJugador = true; destino.humano = null; destino.firmaRemota = null;
+  if (destino.bot) { destino.bot.grupo.visible = false; destino.bot.llevando = null; destino.bot.dormido = true; }
+  if (viejo.bot) { viejo.bot.grupo.visible = true; viejo.bot.timer = 2; viejo.bot.dormido = false; }
+  ponerNombreBase(nuevo, 'TU BASE');
+  ponerNombreBase(viejoIdx, 'Base ' + NOMBRES_BOT[viejoIdx]);
+  meshes.forEach((m, i) => instalarMeme(destino, ids[i], m));
+  jugador.pos.set(destino.x, 0, destino.z);
+  jugador.grupo.position.copy(jugador.pos);
+  guardarPartida();
+}
+/* la base i pasa a ser de un humano (o vuelve a ser de un bot) */
+function fijarDueñoBase(i, dueno) {
+  if (i === MI.baseIdx) return;
+  const b = bases[i];
+  const clave = dueno ? dueno.key : null;
+  if (b.humano === clave) {
+    if (dueno) b.escudoHasta = Math.max(b.escudoHasta, E.t + (+dueno.esc || 0));
+    return;
+  }
+  b.humano = clave;
+  if (clave) {
+    ponerNombreBase(i, (dueno.nick || '???'));
+    if (b.bot) { b.bot.grupo.visible = false; b.bot.llevando = null; }
+    b.firmaRemota = null;
+    reconstruirBaseRemota(i, dueno.slots);
+  } else {
+    ponerNombreBase(i, 'Base ' + NOMBRES_BOT[i]);
+    if (b.bot) { b.bot.grupo.visible = true; b.bot.timer = 2; }
+  }
+}
+/* reconstruye los memes de la base de un humano con lo que él publica */
+function reconstruirBaseRemota(i, slotsStr) {
+  const b = bases[i];
+  if (!b.humano) return;
+  let ids = null;
+  try {
+    ids = JSON.parse(slotsStr || '[]');
+    if (!Array.isArray(ids)) ids = null;
+  } catch (e) { ids = null; }
+  if (ids === null) return;               /* cadena corrupta: no tocamos nada */
+  const robados = MP.robadosDe[b.humano] || {}, ahora = Date.now();
+  ids = ids.filter(id => defDe(id) && !(robados[id] && ahora - robados[id] < 45000));
+  const firma = ids.join(',');
+  if (b.firmaRemota === firma) return;
+  b.firmaRemota = firma;
+  for (const s of b.slots) { scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo); quitarMesh(s.mesh); }
+  b.slots.length = 0;
+  for (const id of ids) if (b.slots.length < 14) instalarMeme(b, id);
+}
+function crearAvatarRemoto(j) {
+  const col = parseInt(String(j.color || '#e25555').replace('#', ''), 16) || 0xe25555;
+  const g = fabricarAvatar(col, false);
+  const nom = spriteTexto(`${j.nick || '???'} · Nv${j.nivel || 1}`, { fondo: j.color || '#e25555', color: '#fff6e3', tam: 24 });
+  nom.position.y = 3.5; g.add(nom);
+  scene.add(g);
+  MP.avatares[j.key] = {
+    grupo: g, nom, datos: j, nivel: j.nivel || 1, nick: j.nick || '???',
+    pos: new THREE.Vector3(j.x || 0, 0, j.z || 0), objetivo: new THREE.Vector3(j.x || 0, 0, j.z || 0),
+    rot: j.r || 0, llevandoMesh: null, llevandoId: '', origenRobo: null
+  };
+  if (j.llevando) ponerLlevandoRemoto(MP.avatares[j.key], j.llevando);   /* ya podía venir cargado */
+}
+function ponerLlevandoRemoto(a, id) {
+  if (a.llevandoMesh) { a.grupo.remove(a.llevandoMesh); quitarMesh(a.llevandoMesh); a.llevandoMesh = null; }
+  a.llevandoId = id || '';
+  if (id && defDe(id)) {
+    const m = fabricarMeme(id);
+    m.position.set(0, 3.15, 0);
+    a.grupo.add(m);
+    a.llevandoMesh = m;
+  }
+}
+function actualizarAvatarRemoto(j) {
+  const a = MP.avatares[j.key];
+  if (!a) return;
+  a.objetivo.set(j.x || 0, 0, j.z || 0);
+  a.rot = j.r || 0; a.datos = j;
+  if ((j.nivel || 1) !== a.nivel || (j.nick || '???') !== a.nick) {
+    a.nivel = j.nivel || 1; a.nick = j.nick || '???';
+    fijarTexto(a.nom, `${a.nick} · Nv${a.nivel}`, { fondo: j.color || '#e25555', color: '#fff6e3', tam: 24 });
+  }
+  if ((j.llevando || '') !== a.llevandoId) {
+    ponerLlevandoRemoto(a, j.llevando);
+    if (!j.llevando) delete MP.roboActivo[j.key];   /* ya no lleva nada: robo cerrado */
+  }
+}
+function quitarAvatarRemoto(k) {
+  const a = MP.avatares[k];
+  if (!a) return;
+  ponerLlevandoRemoto(a, '');
+  scene.remove(a.grupo);
+  quitarMesh(a.grupo);
+  if (a.nom) quitarSprite(a.nom);
+  delete MP.avatares[k];
+}
+function actualizarRemotos(dt) {
+  for (const k in MP.avatares) {
+    const a = MP.avatares[k];
+    a.pos.lerp(a.objetivo, 1 - Math.pow(.05, dt));
+    const moviendose = a.pos.distanceTo(a.objetivo) > .6;
+    a.grupo.position.set(a.pos.x, moviendose ? Math.abs(Math.sin(E.t * 10)) * .09 : 0, a.pos.z);
+    a.grupo.rotation.y = lerpAngle(a.grupo.rotation.y, a.rot, dt * 8);
+    if (a.llevandoMesh) a.llevandoMesh.rotation.y += dt * 2.5;
+  }
+}
+function procesarEvento(ev) {
+  if (!ev || !ev.tipo) return;
+  if (ev.tipo === 'robo') {
+    const a = MP.avatares[ev.por];
+    if (a) a.origenRobo = ev.victima;
+    if (ev.por !== MP.id) MP.roboActivo[ev.por] = ev.victima;   /* aunque aún no tenga avatar */
+    if (ev.victima === MP.id) {
+      const b = miBase();
+      const idx = clamp(Math.round(+ev.slot || 0), 0, 13);
+      const s = b.slots[idx];
+      if (s) {
+        scene.remove(s.ped); quitarSprite(s.sprite); if (s.anillo) scene.remove(s.anillo);
+        b.slots.splice(idx, 1);
+        toast(`¡${String(ev.nick || 'Alguien').slice(0, 14)} te ha robado a ${nombreDe(s.id)}!`, 'mal');
+        sonPillado(); guardarPartida();
+      }
+    }
+  } else if (ev.tipo === 'recuperado' && ev.por === MP.id) {
+    if (jugador.llevando) soltar(jugador);   /* el dueño me ha pillado: lo suelto */
+  } else if (ev.tipo === 'recuperado') {
+    delete MP.roboActivo[ev.por];            /* ese ladrón ya ha soltado el meme */
+  }
+}
+/* yo (dueño) pillo a un ladrón humano dentro de mi base */
+function pillarHumanos() {
+  const b = miBase();
+  for (const k in MP.avatares) {
+    const a = MP.avatares[k];
+    const meRobo = a.origenRobo === MP.id || MP.roboActivo[k] === MP.id;
+    if (!a.llevandoId || !meRobo) continue;
+    const enZona = Math.hypot(a.pos.x - b.x, a.pos.z - b.z) < 13;
+    const cerca = Math.hypot(a.pos.x - jugador.pos.x, a.pos.z - jugador.pos.z) < 3.1;
+    if (enZona && cerca) {
+      a.origenRobo = null;
+      delete MP.roboActivo[k];
+      publicarEvento({ tipo: 'recuperado', por: k, victima: MP.id, nick: MP.nick });
+      const lv = a.llevandoMesh ? { id: a.llevandoId, mesh: a.llevandoMesh, origen: MI.baseIdx } : null;
+      if (lv) {
+        a.llevandoMesh = null; a.llevandoId = '';
+        soltar({ grupo: a.grupo, llevando: lv });
+      }
+    }
+  }
+}
+async function enviarMiNodo(baseExplicita) {
+  if (!MP.activo) return;
+  const datos = {
+    nick: String(MP.nick).slice(0, 14), t: Date.now(),
+    x: +jugador.pos.x.toFixed(1), z: +jugador.pos.z.toFixed(1),
+    r: +jugador.grupo.rotation.y.toFixed(2),
+    base: baseExplicita != null ? baseExplicita : MI.baseIdx,
+    nivel: E.nivel, ren: E.renacimientos, color: MP.color,
+    llevando: jugador.llevando ? jugador.llevando.id : '',
+    esc: Math.max(0, Math.round(miBase().escudoHasta - E.t)),
+    slots: JSON.stringify(miBase().slots.map(s => s.id))
+  };
+  try {
+    await fetch(`${urlSala(MP.servidor)}/jugadores/${MP.id}.json`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) });
+  } catch (e) { }
+}
+async function sondearSala() {
+  if (!MP.activo) return;
+  try {
+    const sala = await fbJson(`${urlSala(MP.servidor)}.json`);
+    MP.sala = sala || {};
+    procesarSala(MP.sala);
+  } catch (e) { /* sin conexión: reintentamos en la próxima pasada */ }
+}
+function procesarSala(sala) {
+  const ahora = Date.now();
+  const vivos = {};
+  for (const k in sala.jugadores || {}) {
+    const j = sala.jugadores[k];
+    if (j && j.t && ahora - j.t < 9000 && k !== MP.id) vivos[k] = Object.assign({ key: k }, j);
+  }
+  for (let i = 0; i < 4; i++) {
+    if (i === MI.baseIdx) continue;
+    let dueno = null;
+    for (const k in vivos) if (vivos[k].base === i) { dueno = vivos[k]; break; }
+    fijarDueñoBase(i, dueno);
+  }
+  /* alguien más dice que mi base es suya (carrera al entrar): me mudo a una libre */
+  if (!MP.reasignado) {
+    let conflicto = false;
+    for (const k in vivos) if (vivos[k].base === MI.baseIdx) conflicto = true;
+    if (conflicto) {
+      const ocupadas = new Set([MI.baseIdx]);
+      for (const k in vivos) ocupadas.add(vivos[k].base);
+      const libres = [0, 1, 2, 3].filter(i => !ocupadas.has(i));
+      if (libres.length) {
+        MP.reasignado = true; moverBase(libres[0]);
+        toast('¡Te han adelantado! Te has mudado a otra base libre');
+      }
+    }
+  }
+  const vistos = new Set();
+  for (const k in vivos) {
+    vistos.add(k);
+    if (!MP.avatares[k]) crearAvatarRemoto(vivos[k]);
+    else actualizarAvatarRemoto(vivos[k]);
+  }
+  for (const k in MP.avatares) if (!vistos.has(k)) quitarAvatarRemoto(k);
+  for (const idEv in sala.eventos || {}) {
+    const ev = sala.eventos[idEv];
+    if (!ev || !ev.t || ev.t <= MP.tEntrada || MP.vistoEventos.has(idEv)) continue;
+    MP.vistoEventos.add(idEv);
+    procesarEvento(ev);
+  }
+  for (const idM in sala.chat || {}) {
+    const m = sala.chat[idM];
+    if (!m || !m.t || m.de === MP.id) continue;
+    if (m.t > MP.ultimoChat && m.t > MP.tEntrada - 60000) {
+      MP.ultimoChat = Math.max(MP.ultimoChat, m.t);
+      mostrarChat(m);
+    }
+  }
+  const el = $('#servidor-jug');
+  if (el) el.textContent = (Object.keys(vivos).length + 1) + ' jug.';
+  MP.encuestas++;
+  if (MP.encuestas % 18 === 5) limpiarSala();
+}
+async function limpiarSala() {
+  if (!MP.sala) return;
+  const ahora = Date.now(), tareas = [];
+  for (const k in MP.sala.jugadores || {}) {
+    const j = MP.sala.jugadores[k];
+    if (k === MP.id) continue;
+    if (!j || !j.t || ahora - j.t > 45000)
+      tareas.push(fetch(`${urlSala(MP.servidor)}/jugadores/${k}.json`, { method: 'DELETE' }).catch(() => { }));
+  }
+  for (const idE in MP.sala.eventos || {}) {
+    const e = MP.sala.eventos[idE];
+    if (!e || !e.t || ahora - e.t > 180000)
+      tareas.push(fetch(`${urlSala(MP.servidor)}/eventos/${idE}.json`, { method: 'DELETE' }).catch(() => { }));
+  }
+  for (const idM in MP.sala.chat || {}) {
+    const m = MP.sala.chat[idM];
+    if (!m || !m.t || ahora - m.t > 900000)
+      tareas.push(fetch(`${urlSala(MP.servidor)}/chat/${idM}.json`, { method: 'DELETE' }).catch(() => { }));
+  }
+  await Promise.all(tareas);
+}
+async function entrarServidor(idSrv) {
+  if (!fbListo) { notaMulti('red'); toast('Sin conexión: no se puede entrar ahora', 'mal'); return; }
+  try {
+    const jug = await fbJson(`${RAIZ_FB}/servidores/${idSrv}/jugadores.json`);
+    const ahora = Date.now(), ocupadas = new Set();
+    let n = 0;
+    for (const k in jug || {}) {
+      const j = jug[k];
+      if (j && j.t && ahora - j.t < 12000) { n++; if (j.base !== undefined) ocupadas.add(j.base); }
+    }
+    const libres = [0, 1, 2, 3].filter(i => !ocupadas.has(i));
+    if (!libres.length) { toast('Servidor lleno (4/4): prueba otro', 'mal'); pintarServidores(); return; }
+    MP.activo = true; MP.servidor = idSrv;
+    MP.id = 'j' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    MP.tEntrada = Date.now(); MP.encuestas = 0; MP.reasignado = false;
+    MP.nick = CUENTA.activa ? CUENTA.nick : ('Invitado' + Math.random().toString(36).slice(2, 5).toUpperCase());
+    MP.color = COLRES_MP[Math.abs(parseInt(hashPin(MP.id).slice(0, 4), 16)) % COLRES_MP.length];
+    moverBase(libres[0]);
+    await enviarMiNodo();
+    sondearSala();
+    try { localStorage.setItem('robameme-servidor', idSrv); } catch (e) { }
+    toast('🖥️ ¡Dentro del servidor ' + nombreServidor(idSrv) + '! Ahora pulsa JUGAR', 'logro');
+    beep(660, .1, 'triangle', .12); setTimeout(() => beep(880, .12, 'triangle', .12), 110);
+    $('#chip-servidor').classList.remove('oculto');
+    $('#servidor-nombre').textContent = nombreServidor(idSrv);
+    pintarServidores();
+  } catch (e) {
+    MP.activo = false;
+    const permiso = e.estado === 401 || e.estado === 403;
+    toast(permiso ? 'Faltan las reglas nuevas: pégalas desde admin.html (botón «Reglas»)' : 'No se pudo conectar con el servidor', 'mal');
+    notaMulti(permiso ? 'reglas' : 'red');
+  }
+}
+
+/* ---- UI del menú: servidores ---- */
+function pintarServidores() {
+  const c = $('#servidores'); if (!c) return;
+  const lista = window.SERVIDORES || [];
+  c.innerHTML = lista.map(s => `
+    <button class="srv ${MP.activo && MP.servidor === s.id ? 'elegido' : ''}" data-srv="${s.id}" type="button">
+      <b>${s.emoji} ${s.nombre}</b>
+      <small data-contador="${s.id}">… jug.</small>
+    </button>`).join('') + `
+    <button class="srv solo" data-srv="_solo" type="button">🙋 Jugar solo<small>sin multijugador</small></button>`;
+  c.querySelectorAll('[data-srv]').forEach(b => b.onclick = () => elegirServidor(b.dataset.srv));
+  refrescarContadores();
+}
+async function refrescarContadores() {
+  if (!fbListo) return;
+  try {
+    const datos = await fbJson(`${RAIZ_FB}/servidores.json`);
+    const ahora = Date.now();
+    for (const s of window.SERVIDORES || []) {
+      const el = document.querySelector(`[data-contador="${s.id}"]`);
+      if (!el) continue;
+      let n = 0;
+      const sala = (datos && datos[s.id]) || {};
+      for (const k in sala.jugadores || {}) { const j = sala.jugadores[k]; if (j && j.t && ahora - j.t < 9000) n++; }
+      el.textContent = n + '/4 jug.';
+      const card = el.closest('.srv');
+      if (card) card.classList.toggle('lleno', n >= 4);
+    }
+  } catch (e) {
+    notaMulti((e.estado === 401 || e.estado === 403) ? 'reglas' : 'red');
+  }
+}
+function notaMulti(tipo) {
+  const el = $('#multi-nota'); if (!el) return;
+  el.className = 'multi-nota' + (tipo ? ' ' + tipo : '');
+  if (tipo === 'reglas') el.textContent = '⚠️ Falta pegar las reglas nuevas: admin.html → «Reglas de la base de datos» → copiar → Firebase → Publicar. Luego recarga.';
+  else if (tipo === 'red') el.textContent = 'Sin conexión con la nube: ahora jugarías en solitario.';
+  else el.textContent = 'Elige un servidor para ver a otros jugadores, robarles memes y chatear (4 por servidor). Sin elegir, juegas solo.';
+}
+async function elegirServidor(id) {
+  if (id === '_solo') {
+    if (!MP.activo) { toast('Modo solitario: pulsa JUGAR'); return; }
+    const ok = await preguntar('¿Salir del servidor?', 'Se recarga el juego y juegas solo, sin multijugador.', 'Salir', 'Quedarme');
+    if (ok) { try { localStorage.removeItem('robameme-servidor'); } catch (e) { } borrarMiNodo(); setTimeout(() => location.reload(), 250); }
+    return;
+  }
+  if (MP.activo && MP.servidor === id) { toast('Ya estás dentro: pulsa JUGAR'); return; }
+  if (MP.activo) {
+    const ok = await preguntar('¿Cambiar de servidor?', 'Se recarga el juego para entrar en el otro servidor.', 'Cambiar', 'Quedarme');
+    if (ok) { try { localStorage.setItem('robameme-servidor', id); } catch (e) { } borrarMiNodo(); setTimeout(() => location.reload(), 250); }
+    return;
+  }
+  entrarServidor(id);
+}
+
+/* ============ 💬 CHAT DEL SERVIDOR ============ */
+function abrirChat() {
+  if (!MP.activo) { toast('El chat es para dentro de un servidor multijugador (menú → servidor)', 'mal'); return; }
+  $('#chat-input').value = '';
+  $('#capa-chat').hidden = false;
+  E.pausado = true;
+  setTimeout(() => $('#chat-input').focus(), 60);
+}
+function cerrarChat() {
+  $('#capa-chat').hidden = true;
+  if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-regalo').hidden && $('#capa-canjear').hidden && $('#capa-pin').hidden && $('#capa-admin').hidden) E.pausado = false;
+}
+async function enviarChat(txt) {
+  txt = String(txt || '').trim().slice(0, 60);
+  if (!txt || !MP.activo) return;
+  const m = { de: MP.id, nick: MP.nick, txt, t: Date.now() };
+  try {
+    await fetch(`${urlSala(MP.servidor)}/chat/${'m' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)}.json`,
+      { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(m) });
+  } catch (e) { toast('No se pudo enviar el mensaje', 'mal'); return; }
+  mostrarChat(m);
+  cerrarChat();
+}
+function mostrarChat(m) {
+  const log = $('#chat-log');
+  if (log) {
+    const div = document.createElement('div');
+    div.className = 'chat-linea';
+    const b = document.createElement('b'); b.textContent = (m.nick || '???') + ': ';
+    const sp = document.createElement('span'); sp.textContent = m.txt;
+    div.appendChild(b); div.appendChild(sp);
+    log.appendChild(div);
+    while (log.children.length > 4) log.firstChild.remove();
+    setTimeout(() => div.remove(), 9000);
+  }
+  const pos = m.de === MP.id ? jugador.pos : (MP.avatares[m.de] ? MP.avatares[m.de].pos : null);
+  if (pos) textoFlotante('💬 ' + m.txt, pos.x, pos.z, '#aef3ff');
+  beep(520, .05, 'triangle', .06);
+}
+function initChatUI() {
+  $('#btn-chat').onclick = abrirChat;
+  $('#chat-no').onclick = cerrarChat;
+  $('#chat-si').onclick = () => enviarChat($('#chat-input').value);
+  document.querySelectorAll('.chat-rapido button').forEach(b => b.onclick = () => enviarChat(b.dataset.txt));
+  $('#chat-input').addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter') enviarChat($('#chat-input').value);
+    if (e.key === 'Escape') cerrarChat();
+  });
+}
+
+/* ============ 🚀 init de la parte 3 ============ */
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+crearCielo(); crearSol(); crearNubes(); crearMotas(); crearMariposas(); embellecerMundo();
+window.__gfx = true;          /* el bucle ya puede animar el decorado */
+window.__chorro = chorro;
+window.__cam = CAM;
+window.__mp = MP;
+window.__cuenta = CUENTA;
+window.__chat = true;
+initCamara();
+initCuenta();
+pintarServidores();
+notaMulti('');
+setInterval(() => { if (E.enMenu) refrescarContadores(); }, 6000);
+initChatUI();
+$('#chip-servidor').onclick = async () => {
+  if (!MP.activo) return;
+  const ok = await preguntar('¿Volver al menú?', 'Se recarga el juego para elegir otro servidor o cuenta.', 'Volver', 'Seguir');
+  if (ok) { borrarMiNodo(); location.reload(); }
+};
+addEventListener('beforeunload', () => { borrarMiNodo(); guardarEnNube(true); });
+setInterval(() => { if (MP.activo && document.hidden) enviarMiNodo(); }, 3000);
+setInterval(() => { if (!document.hidden) guardarEnNube(false); }, 25000);
+/* coleccionador de errores para depurar desde la consola */
+window.__errLog = [];
+addEventListener('error', e => window.__errLog.push(String((e.error && e.error.message) || e.message || e)));
+addEventListener('unhandledrejection', e => window.__errLog.push(String((e.reason && e.reason.message) || e.reason || 'promesa')));
