@@ -251,3 +251,37 @@ body.tacto .btn-accion:active{transform:translateY(4px);box-shadow:0 1px 0 var(-
 .regalo-msj{font-style:italic;margin-top:8px}
 .regalo-de{font-size:.8rem;opacity:.7;margin-top:6px}
 .modal.regalo .btn{display:block;margin:16px auto 0;min-width:160px}
+
+/* ---- 👑 mini admin ---- */
+.btn-ico.admin{background:var(--amarillo)}
+.btn-ico.admin .ico{fill:var(--amarillo);color:var(--tinta)}
+.modal.pin{text-align:center;max-width:330px}
+.pin-corona{display:flex;justify-content:center;margin-bottom:4px}
+.pin-corona .ico{width:46px;height:46px;fill:var(--amarillo)}
+#capa-pin input{
+  display:block;width:100%;margin:14px 0 4px;padding:12px 10px;border:3px solid var(--tinta);
+  border-radius:12px;font:800 1.2rem var(--fuente);text-align:center;letter-spacing:6px;
+  background:#fff;color:var(--tinta)}
+#capa-pin input:focus{outline:3px solid var(--amarillo)}
+.modal.adminm{max-width:480px;text-align:left;padding:18px 16px;max-height:92vh;overflow-y:auto}
+.adm-cab{display:flex;align-items:center;gap:10px}
+.adm-cab h3{flex:1;margin:0;display:flex;align-items:center;gap:8px;letter-spacing:1px}
+.adm-cab h3 .corona{width:26px;height:26px;fill:var(--amarillo);color:var(--tinta)}
+.adm-quien{font-size:.78rem;font-weight:800;opacity:.75;margin:6px 0 2px}
+.adm-grupo{margin:12px 0 6px}
+.adm-grupo small{font-size:.68rem;font-weight:800;letter-spacing:1.2px;
+  background:var(--tinta);color:var(--crema);border-radius:999px;padding:4px 12px}
+.adm-rejilla{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn.adm{background:#fffdf6;font-size:.9rem;padding:10px 8px;text-align:center;line-height:1.15}
+.btn.adm.ancho{grid-column:1 / -1;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.btn.adm.ancho select{border:2.5px solid var(--tinta);border-radius:9px;background:var(--amarillo);
+  font:800 .85rem var(--fuente);padding:3px 6px;cursor:pointer}
+.btn.adm.poder.encendido{background:var(--verde);color:var(--crema)}
+.adm-nota{font-size:.72rem;font-weight:700;opacity:.65;margin-top:12px;line-height:1.4}
+.adm-pie{font-size:.78rem;font-weight:800;margin-top:8px;display:flex;gap:6px;align-items:center}
+.adm-pie .enlace{text-decoration:underline;font-weight:800;font-size:.78rem;color:var(--rojo)}
+@media (max-width:720px){
+  .adm-rejilla{grid-template-columns:1fr 1fr}
+  .btn.adm{font-size:.84rem;padding:9px 6px}
+  .modal.adminm{padding:14px 12px}
+}
