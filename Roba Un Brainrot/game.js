@@ -676,10 +676,10 @@ function comprarBot(bot, b) {
 function decidirBot(bot) {
   const b = bases[bot.baseIdx];
   bot.timer = azar(2.5, 4.5);
-  const ag = CONF.botAgresividad * bot.agres;
+  const ag = CONF.botAgresividad * bot.agres * (E.t < MINI.caosHasta ? 3 : 1);
   if (bot.monedas >= 60 && b.slots.length < 8 && E.t > bot.tEsperaCompra) { bot.estado = 'comprar'; return; }
   if (Math.random() < .45 * ag && E.t > bot.tEsperaRobo) {
-    const cand = bases.filter(x => x !== b && x.escudoHasta < E.t && x.slots.length > 0);
+    const cand = bases.filter(x => x !== b && x.escudoHasta < E.t && x.slots.length > 0 && !(x.esJugador && MINI.fantasma));
     if (cand.length) {
       const bolsa = [];
       cand.forEach(x => { for (let i = 0; i < (x.esJugador ? 2 : 1); i++) bolsa.push(x); });
@@ -1191,7 +1191,7 @@ function actualizarJugador(dt) {
   const n = Math.hypot(vx, vz);
   const moviendo = n > .15 && jugador.stun <= 0;
   if (moviendo) {
-    const vel = velJugador() * (jugador.llevando ? (1 - penalCarga()) : 1);
+    const vel = velJugador() * (MINI.turbo ? 2 : 1) * (jugador.llevando ? (1 - penalCarga()) : 1);
     jugador.pos.x += vx / n * vel * dt;
     jugador.pos.z += vz / n * vel * dt;
     resolverMuros(jugador.pos, .85);
@@ -1244,7 +1244,7 @@ function actualizarEconomia(dt) {
   }
   for (const s of bases[0].slots) {
     const d = Math.hypot(jugador.pos.x - s.mesh.position.x, jugador.pos.z - s.mesh.position.z);
-    if (d < radioIman()) {
+    if (d < (MINI.imanX ? 14 : radioIman())) {
       const v = Math.floor(s.acum);
       if (v >= 1) {
         E.monedas += v; E.stats.ganadas += v; s.acum -= v;
@@ -1445,7 +1445,7 @@ function bucle(ahora) {
   E.t += dt;
   if (!E.enMenu && !E.pausado) {
     actualizarJugador(dt);
-    for (const bt of bots) actualizarBot(bt, dt);
+    if (E.t >= MINI.hieloHasta) for (const bt of bots) actualizarBot(bt, dt);
     actualizarCapturas();
     actualizarEconomia(dt);
     actualizarEventos(dt);
@@ -1639,3 +1639,221 @@ async function canjearCodigo() {
   }
 }
 $('#canjear-si').onclick = canjearCodigo;
+
+/* ---------- 👑 MINI ADMIN (botón de la corona: dar cosas y abusos) ----------
+   El juego normal NO cambia: los poderes son solo marcas que están apagadas
+   por defecto y que las funciones existentes consultan.
+   Se desbloquea de dos maneras (la que llegue antes):
+   · AUTOMÁTICO: sesión de la web abierta (Documents.com) y email en
+     window.ADMINS (firebase-config.js) — se lee IndexedDB, sin cargar SDK;
+   · CÓDIGO SECRETO: window.ADMIN_PIN (se recuerda en este navegador).      */
+const MINI = {
+  desbloqueado: false, porSesion: false, email: '',
+  turbo: false, imanX: false, fantasma: false,
+  hieloHasta: 0, caosHasta: 0, abusos: 0
+};
+const CLAVE_MINI = 'robameme-miniadmin';
+window.__mini = MINI;   /* solo depuración */
+
+/* mirar si en este navegador hay sesión de admin de la web (IndexedDB) */
+function reconocerSesion() {
+  return new Promise(res => {
+    try {
+      const r = indexedDB.open('firebaseLocalStorageDb');
+      r.onsuccess = () => {
+        const d = r.result;
+        try {
+          const q = d.transaction('firebaseLocalStorage', 'readonly')
+            .objectStore('firebaseLocalStorage').getAll();
+          q.onsuccess = () => {
+            const adm = (window.ADMINS || []).map(x => String(x).toLowerCase());
+            for (const rec of q.result || []) {
+              const clave = String((rec && rec.fbase_key) || '');
+              const email = String((rec && rec.value && rec.value.email) || '').toLowerCase();
+              if (clave.indexOf('firebase:authUser:') === 0 && email && adm.includes(email)) {
+                MINI.desbloqueado = true; MINI.porSesion = true; MINI.email = email;
+                break;
+              }
+            }
+            d.close(); res();
+          };
+          q.onerror = () => { d.close(); res(); };
+        } catch (e) { d.close(); res(); }
+      };
+      r.onerror = () => res();
+      r.onblocked = () => res();
+    } catch (e) { res(); }
+  });
+}
+try { if (localStorage.getItem(CLAVE_MINI) === '1') MINI.desbloqueado = true; } catch (e) { }
+reconocerSesion().then(() => {
+  if (MINI.desbloqueado && MINI.porSesion) toast('👑 Sesión de admin reconocida: ' + MINI.email, 'logro');
+});
+
+/* abrir: directo si está desbloqueado, y si no, pedir el código */
+function abrirMini() {
+  if (MINI.desbloqueado) { abrirPanelMini(); return; }
+  $('#pin-input').value = '';
+  $('#capa-pin').hidden = false;
+  E.pausado = true;
+  setTimeout(() => $('#pin-input').focus(), 60);
+}
+function cerrarPin() {
+  $('#capa-pin').hidden = true;
+  if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-regalo').hidden && $('#capa-canjear').hidden) E.pausado = false;
+}
+function probarPin() {
+  const v = ($('#pin-input').value || '').trim();
+  if (v && v === String(window.ADMIN_PIN || '')) {
+    MINI.desbloqueado = true; MINI.porSesion = false;
+    try { localStorage.setItem(CLAVE_MINI, '1'); } catch (e) { }
+    $('#capa-pin').hidden = true;
+    abrirPanelMini();
+    toast('👑 Mini admin desbloqueado', 'logro'); sonLogro();
+  } else {
+    toast('Código equivocado', 'mal');
+    $('#pin-input').value = '';
+    setTimeout(() => $('#pin-input').focus(), 60);
+  }
+}
+$('#pin-input').addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key === 'Enter') probarPin();
+  if (e.key === 'Escape') cerrarPin();
+});
+$('#pin-si').onclick = probarPin;
+$('#pin-no').onclick = cerrarPin;
+
+/* el panel en sí */
+function abrirPanelMini() {
+  $('#adm-quien').textContent = MINI.porSesion
+    ? '👑 Sesión de la web: ' + MINI.email
+    : '👑 Desbloqueado con el código secreto (recordado en este navegador)';
+  pintarMini();
+  $('#capa-admin').hidden = false;
+  E.pausado = true;
+}
+function cerrarPanelMini() {
+  $('#capa-admin').hidden = true;
+  if (!E.enMenu && $('#tutorial').hidden && $('#capa-modal').hidden && $('#capa-regalo').hidden && $('#capa-canjear').hidden && $('#capa-pin').hidden) E.pausado = false;
+}
+$('#btn-admin').onclick = abrirMini;
+$('#cerrar-admin').onclick = cerrarPanelMini;
+$('#adm-bloquear').onclick = () => {
+  MINI.desbloqueado = false; MINI.porSesion = false; MINI.email = '';
+  MINI.turbo = MINI.imanX = MINI.fantasma = false;
+  try { localStorage.removeItem(CLAVE_MINI); } catch (e) { }
+  cerrarPanelMini();
+  toast('Candado cerrado: mini admin bloqueado');
+};
+function pintarMini() {
+  document.querySelectorAll('#capa-admin .poder').forEach(b => {
+    const id = b.dataset.abuso;
+    const on = id === 'turbo' ? MINI.turbo : id === 'iman' ? MINI.imanX : id === 'fantasma' ? MINI.fantasma : false;
+    if (!b.dataset.txt) b.dataset.txt = b.textContent.trim();
+    b.textContent = b.dataset.txt + (on ? ' · ON' : '');
+    b.classList.toggle('encendido', on);
+  });
+  $('#adm-contador').textContent = MINI.abusos + (MINI.abusos === 1 ? ' abuso' : ' abusos');
+}
+
+/* los abusos */
+function darMonedas(n) {
+  E.monedas += n;
+  E.record = Math.max(E.record, E.monedas);
+}
+function abuso(id) {
+  if (!MINI.desbloqueado) return;
+  let msg = '';
+  switch (id) {
+    case 'mon100': darMonedas(100); msg = '+100 monedas'; break;
+    case 'mon1k': darMonedas(1000); msg = '+1.000 monedas'; break;
+    case 'mon10k': darMonedas(10000); msg = '+10.000 monedas'; break;
+    case 'doble': {
+      const n = Math.max(0, Math.floor(E.monedas));
+      darMonedas(n); msg = 'pasta duplicada (+' + fmt(n) + ')';
+      break;
+    }
+    case 'meme': {
+      const rz = ($('#adm-rareza') || {}).value || 'epico';
+      const pool = MEMES.filter(m => m.rareza === rz);
+      if (!pool.length) { toast('Esa rareza no existe', 'mal'); return; }
+      if (bases[0].slots.length >= capJugador()) { toast('Tu base está llena: haz hueco primero', 'mal'); return; }
+      const m = pool[(Math.random() * pool.length) | 0];
+      instalarMeme(bases[0], m.id); E.stats.compras++;
+      msg = nombreDe(m.id) + ' (' + RAREZAS[rz].nombre + ') en tu base';
+      break;
+    }
+    case 'mejoras':
+      for (const m of MEJORAS) if (m.max > 0) E.mejoras[m.id] = m.max;
+      if (E.tiendaAbierta) renderMejoras();
+      msg = 'todas las mejoras al máximo';
+      break;
+    case 'escudo5':
+      bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + 300;
+      msg = 'escudo anti-robo 5 min';
+      break;
+    case 'escudo60':
+      bases[0].escudoHasta = Math.max(bases[0].escudoHasta, E.t) + 3600;
+      msg = 'escudo anti-robo 1 hora';
+      break;
+    case 'turbo':
+      MINI.turbo = !MINI.turbo;
+      msg = 'turbo ×2 ' + (MINI.turbo ? 'ACTIVADO' : 'apagado');
+      break;
+    case 'iman':
+      MINI.imanX = !MINI.imanX;
+      msg = 'imán gigante ' + (MINI.imanX ? 'ACTIVADO' : 'apagado');
+      break;
+    case 'fantasma':
+      MINI.fantasma = !MINI.fantasma;
+      msg = MINI.fantasma ? 'modo fantasma: los bots no pueden robarte' : 'fantasma apagado';
+      break;
+    case 'hielo':
+      MINI.hieloHasta = E.t + 30;
+      msg = 'bots congelados 30 s';
+      break;
+    case 'caos':
+      MINI.caosHasta = E.t + 60;
+      for (const bt of bots) bt.tEsperaRobo = 0;
+      msg = '¡CAOS TOTAL! Los bots han perdido el miedo';
+      break;
+    case 'evento':
+      if (evento) { evento.hasta = E.t + CONF.eventoDuracion; msg = 'evento alargado'; }
+      else { lanzarEvento(); msg = ''; }
+      break;
+    case 'centro':
+      jugador.pos.set(0, 0, 14);
+      jugador.grupo.position.copy(jugador.pos);
+      msg = 'teletransporte al centro';
+      break;
+    case 'impuesto': {
+      let total = 0;
+      for (const bt of bots) {
+        const mitad = Math.floor(bt.monedas / 2);
+        if (mitad > 0) { bt.monedas -= mitad; total += mitad; }
+      }
+      if (total > 0) darMonedas(total);
+      msg = 'impuesto real cobrado: +' + fmt(total) + ' monedas';
+      break;
+    }
+    case 'xp':
+      E.stats.ganadas += 500;
+      revisarNivel();
+      msg = '+500 XP';
+      break;
+    default: return;
+  }
+  MINI.abusos++;
+  if (msg) toast('👑 ' + msg, 'logro');
+  beep(990, .07, 'square', .09, 260);
+  pintarMini();
+  actualizarHUD();
+  guardarPartida();
+}
+document.querySelectorAll('#capa-admin [data-abuso]').forEach(b => {
+  b.addEventListener('click', e => {
+    if (e.target && e.target.tagName === 'SELECT') return;   /* elegir rareza no dispara el botón */
+    abuso(b.dataset.abuso);
+  });
+});
