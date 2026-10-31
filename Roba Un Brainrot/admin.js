@@ -1,578 +1,167 @@
-/* =========================================================
-   ¡ROBA EL MEME! 3D — admin.js
-   Panel de administración con Firebase (opcional):
-   login con Google, edición de economía, ranking en la nube,
-   anuncios en vivo y lista de baneados.
-   Sin Firebase configurado funciona en MODO LOCAL.
-   ========================================================= */
-(function () {
-'use strict';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cfg = window.FIREBASE_CONFIG || {};
-const EMAILS = (window.ADMIN_EMAILS || []).map(e => e.toLowerCase());
-const cfgValida = !!(cfg.apiKey && cfg.projectId) && !/REEMPLAZA|TU[-_ ]|PON[-_ ]|CAMBIA|XXXX/i.test(JSON.stringify(cfg));
-const LKEY = 'rem_adminLocal';
-const FB_VER = '10.12.2';
-const BASE_GSTATIC = `https://www.gstatic.com/firebasejs/${FB_VER}`;
+const $ = id => document.getElementById(id);
+const ADMINS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
+const CAMPOS = [
+  ['monedasIniciales', 'Monedas iniciales', 0, 500],
+  ['eventoCada', 'Segundos entre eventos', 30, 600],
+  ['eventoDuracion', 'Duración del evento (s)', 10, 120],
+  ['multIngresos', 'Multiplicador de ingresos', 0.5, 10],
+  ['rebaja', 'Descuento en rebajas (0-0.9)', 0, 0.9],
+  ['fiebre', 'Multiplicador fiebre del oro', 1, 5],
+  ['escudoDuracion', 'Duración del escudo (s)', 20, 300],
+  ['lluviaMonedas', 'Monedas en la lluvia', 4, 60],
+  ['lluviaValor', 'Valor de cada moneda', 5, 200],
+  ['botAgresividad', 'Agresividad de los bots', 0.2, 3],
+  ['renacerNivel', 'Nivel para renacer', 3, 30],
+  ['renacerBonus', 'Bonus por renacer (0.3 = +30%)', 0.1, 2],
+  ['renacerMonedas', 'Monedas de arranque por renacer', 0, 1000],
+  ['offlineHoras', 'Horas máx. de ganancias offline', 0, 48],
+  ['offlinePorc', '% de ingresos offline (0-1)', 0, 1]
+];
 
-let fb = null;        // { app, auth, db, modAuth, modFs }
-let usuario = null;   // usuario con sesión abierta
-let pestActiva = 'panel';
-let escuchandoAnuncios = false;
+if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
+  $('fError').textContent = 'Rellena firebase-config.js con tu configuración.';
+  throw new Error('sin config');
+}
+const app = initializeApp(window.FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const refs = {
-  fondo: $('#admin-fondo'),
-  login: $('#admin-login'),
-  contenido: $('#admin-contenido'),
-  cuerpo: $('#admin-cuerpo'),
-  estado: $('#admin-estado'),
-  aviso: $('#admin-aviso')
+let tAviso = null;
+function aviso(msg, mal = false) {
+  const a = $('aviso');
+  a.textContent = msg; a.classList.toggle('mal', mal); a.hidden = false;
+  clearTimeout(tAviso); tAviso = setTimeout(() => a.hidden = true, 3200);
+}
+function traducirError(c) {
+  if (String(c).includes('popup')) return 'El navegador bloqueó la ventana. Permite pop-ups y prueba otra vez.';
+  if (String(c).includes('cancelled')) return 'Inicio de sesión cancelado.';
+  if (String(c).includes('unauthorized-domain')) return 'Dominio no autorizado: Firebase Console → Authentication → Settings → Authorized domains (añade el de GitHub Pages).';
+  return 'Error: ' + c;
+}
+async function entrar(proveedor) {
+  $('fError').textContent = '';
+  try { await signInWithPopup(auth, proveedor); }
+  catch (e) { $('fError').textContent = traducirError(e.code || e.message); }
+}
+$('btnGoogle').onclick = () => entrar(new GoogleAuthProvider());
+$('btnGitHub').onclick = () => entrar(new GithubAuthProvider());
+$('btnSalir').onclick = async () => { await signOut(auth); location.reload(); };
+
+onAuthStateChanged(auth, u => {
+  if (!u) { $('login').hidden = false; $('panel').hidden = true; return; }
+  const email = (u.email || '').toLowerCase();
+  if (!ADMINS.includes(email)) {
+    $('fError').innerHTML = `"${u.email || 'sin email'}" no está autorizado.<br>
+      Si entraste con GitHub: github.com → Settings → Public profile → Public email →
+      pon ${ADMINS[0]} y vuelve a entrar. O usa el botón de Google.`;
+    signOut(auth); return;
+  }
+  $('login').hidden = true; $('panel').hidden = false;
+  const proveedor = u.providerData[0] && u.providerData[0].providerId || '';
+  $('quien').innerHTML =
+    (u.photoURL ? `<img src="${u.photoURL}" alt="" style="width:26px;height:26px;border-radius:50%;vertical-align:-7px;margin-right:6px">` : '') +
+    `${u.displayName || email.split('@')[0]}${proveedor.includes('github') ? ' · GitHub' : ''}`;
+  aviso('¡Te reconozco, jefe! Sesión iniciada.');
+  cargarTodo();
+});
+
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa'));
+  t.classList.add('activa');
+  $('sec-cfg').hidden = t.dataset.t !== 'cfg';
+  $('sec-mem').hidden = t.dataset.t !== 'mem';
+  $('sec-sta').hidden = t.dataset.t !== 'sta';
+});
+
+/* ---- configuración ---- */
+function pintarConfig(datos) {
+  const c = $('cfgLista'); c.innerHTML = '';
+  for (const [k, nom, min, max] of CAMPOS) {
+    const v = datos && datos[k] !== undefined ? datos[k] : window.CONFIG_JUEGO[k];
+    c.insertAdjacentHTML('beforeend', `<label class="fila"><span>${nom}<small>${k}</small></span>
+      <input type="number" id="cf_${k}" value="${v}" min="${min}" max="${max}" step="any"></label>`);
+  }
+}
+async function cargarConfig() {
+  try {
+    const s = await getDoc(doc(db, 'config', 'juego'));
+    pintarConfig(s.exists() ? s.data() : null);
+    $('cfgEstado').textContent = s.exists() ? 'Configuración activa en Firestore' : 'Usando valores por defecto (todavía no has guardado ninguna)';
+  } catch (e) { $('cfgEstado').textContent = 'Sin permiso de lectura: revisa las reglas de Firestore.'; }
+}
+$('btnGuardarCfg').onclick = async () => {
+  const datos = {};
+  for (const [k] of CAMPOS) {
+    let v = parseFloat($('cf_' + k).value);
+    if (isNaN(v)) v = window.CONFIG_JUEGO[k];
+    datos[k] = v;
+  }
+  try { await setDoc(doc(db, 'config', 'juego'), datos); aviso('Configuración guardada: la próxima partida ya la usa.'); }
+  catch (e) { aviso('No se pudo guardar: ' + e.code, true); }
+};
+$('btnBorrarCfg').onclick = async () => {
+  if (!confirm('¿Borrar la configuración y volver a los valores por defecto?')) return;
+  try { await deleteDoc(doc(db, 'config', 'juego')); aviso('Configuración borrada.'); cargarConfig(); }
+  catch (e) { aviso('No se pudo borrar: ' + e.code, true); }
 };
 
-const REGLAS = `rules_version = '2';
-service cloud.firestore {
-  function esAdmin() {
-    return request.auth != null
-      && request.auth.token.email in ['${EMAILS.join("', '")}'];
-  }
-  match /databases/{database}/documents {
-    match /config/{docId} {
-      allow read: if true;
-      allow write: if esAdmin();
-    }
-    match /anuncios/{docId} {
-      allow read: if true;
-      allow write: if esAdmin();
-    }
-    match /ranking/{docId} {
-      allow read: if true;
-      allow create: if request.resource.data.puntos is number
-        && request.resource.data.puntos >= 0
-        && request.resource.data.puntos <= 100000000
-        && request.resource.data.nombre is string
-        && request.resource.data.nombre.size() > 0
-        && request.resource.data.nombre.size() <= 20;
-      allow update, delete: if esAdmin();
-    }
-  }
-}`;
-
-function cfgLocal() {
-  try { return JSON.parse(localStorage.getItem(LKEY) || '{}'); } catch (e) { return {}; }
-}
-function guardarCfgLocal(c) {
-  try { localStorage.setItem(LKEY, JSON.stringify(c)); } catch (e) {}
-}
-
-/* ---------- Apertura y cierre ---------- */
-function abrir() {
-  refs.fondo.classList.remove('oculto');
-  refs.aviso.innerHTML = '';
-  if (!cfgValida) {
-    refs.estado.textContent = 'local';
-    refs.estado.className = 'chip-admin';
-    mostrarAvisoConfig();
-    modoLocal();
-  } else {
-    cargarFB().catch(err => {
-      refs.estado.textContent = 'sin conexión';
-      refs.estado.className = 'chip-admin';
-      mostrarAvisoConfig('No se pudo conectar con Firebase: ' + esc(err.message || err) +
-        '<br><br>El panel funciona en <b>modo local</b> mientras tanto.');
-      modoLocal();
-    });
+/* ---- memes ---- */
+function pintarMemes(over) {
+  const c = $('memLista'); c.innerHTML = '';
+  for (const m of window.MEMES) {
+    const o = over[m.id] || {};
+    const r = window.RAREZAS[m.rareza];
+    c.insertAdjacentHTML('beforeend', `<div class="mtar" style="--rc:${r.color}">
+      <b>${m.nombre}</b><small>${r.nombre}${m.reqRenacer ? ' · exclusivo renacer ×' + m.reqRenacer : ''} — por defecto: ${m.precio} / ${m.ingreso}/s</small>
+      <label>Precio <input type="number" id="mp_${m.id}" value="${o.precio !== undefined ? o.precio : m.precio}" min="1" step="any"></label>
+      <label>Ingreso/s <input type="number" id="mi_${m.id}" value="${o.ingreso !== undefined ? o.ingreso : m.ingreso}" min="0" step="any"></label>
+    </div>`);
   }
 }
-function cerrar() { refs.fondo.classList.add('oculto'); }
-$('#btn-cerrar-admin').addEventListener('click', cerrar);
-refs.fondo.addEventListener('click', e => { if (e.target === refs.fondo) cerrar(); });
-window.addEventListener('hashchange', () => { if (location.hash === '#admin') abrir(); });
-if (location.hash === '#admin') setTimeout(abrir, 800);
-window.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.shiftKey && (e.code === 'KeyA')) { e.preventDefault(); abrir(); }
-});
-
-function mostrarAvisoConfig(extra = '') {
-  refs.aviso.innerHTML = `<div class="aviso-config">
-    <b>Firebase no está configurado todavía.</b> El juego y este panel funcionan al 100% en local,
-    pero si quieres la nube (login, ranking, anuncios y economía remota):<br>
-    <ol>
-      <li>Crea un proyecto gratis en <b>console.firebase.google.com</b>.</li>
-      <li>Añade una <b>app web</b> (icono &lt;/&gt;) y copia su <code>firebaseConfig</code>.</li>
-      <li>Pégalo en <code>firebase-config.js</code> (sustituye los valores REEMPLAZA_*).</li>
-      <li>Activa <b>Authentication → Google</b> y <b>Firestore Database</b>.</li>
-      <li>Pega las reglas de seguridad (botón «Copiar reglas» de la pestaña Panel).</li>
-      <li>Añade tu dominio de GitHub Pages en <b>Authentication → Settings → Authorized domains</b>.</li>
-    </ol>
-    <b>Cuentas admin ya configuradas:</b><br>
-    <code>${esc(EMAILS.join('<br>'))}</code>
-    ${extra}
-  </div>`;
+async function cargarMemes() {
+  let over = {};
+  try { const s = await getDoc(doc(db, 'config', 'memes')); if (s.exists()) over = s.data(); } catch (e) { }
+  pintarMemes(over);
 }
-
-function modoLocal() {
-  refs.login.classList.add('oculto');
-  refs.contenido.classList.remove('oculto');
-  renderPest(pestActiva);
-}
-
-/* ---------- Carga diferida del SDK de Firebase ---------- */
-async function cargarFB() {
-  if (fb) return fb;
-  const [modApp, modAuth, modFs] = await Promise.all([
-    import(`${BASE_GSTATIC}/firebase-app.js`),
-    import(`${BASE_GSTATIC}/firebase-auth.js`),
-    import(`${BASE_GSTATIC}/firebase-firestore.js`)
-  ]);
-  const app = modApp.initializeApp(cfg);
-  fb = { app, auth: modAuth.getAuth(app), db: modFs.getFirestore(app), modAuth, modFs };
-  refs.estado.textContent = 'conectado';
-  refs.estado.className = 'chip-admin ok';
-  modAuth.onAuthStateChanged(fb.auth, u => {
-    usuario = u;
-    refrescarVista();
-  });
-  escucharAnuncios();
-  return fb;
-}
-function esAdmin(u) {
-  return !!(u && u.email && EMAILS.includes(u.email.toLowerCase()));
-}
-function refrescarVista() {
-  if (!cfgValida) return; // modo local: sin login
-  refs.login.classList.toggle('oculto', !!usuario);
-  refs.contenido.classList.toggle('oculto', !(usuario && esAdmin(usuario)));
-  if (usuario && !esAdmin(usuario)) {
-    refs.aviso.innerHTML = `<div class="aviso-config">
-      <b>${esc(usuario.email)} no es una cuenta administradora.</b><br>
-      Solo pueden entrar: <code>${esc(EMAILS.join('<br>'))}</code>
-    </div>`;
-  } else if (usuario) {
-    refs.aviso.innerHTML = '';
+$('btnGuardarMemes').onclick = async () => {
+  const datos = {};
+  for (const m of window.MEMES) {
+    const p = parseFloat($('mp_' + m.id).value), i = parseFloat($('mi_' + m.id).value);
+    datos[m.id] = { precio: isNaN(p) ? m.precio : p, ingreso: isNaN(i) ? m.ingreso : i };
   }
-  if (usuario && esAdmin(usuario)) renderPest(pestActiva);
-}
-
-$('#btn-google').addEventListener('click', async () => {
-  if (!fb) {
-    toastJuego('Cargando Firebase…', 'info');
-    try { await cargarFB(); } catch (e) { toastJuego('No se pudo cargar Firebase.', 'error'); return; }
-  }
-  try {
-    const proveedor = new fb.modAuth.GoogleAuthProvider();
-    await fb.modAuth.signInWithPopup(fb.auth, proveedor);
-  } catch (e) {
-    const msg = (e && e.code === 'auth/popup-blocked')
-      ? 'El navegador bloqueó la ventana emergente. Permitela e inténtalo otra vez.'
-      : 'No se pudo iniciar sesión: ' + esc(e.message || e);
-    toastJuego(msg, 'error');
-  }
-});
-
-function toastJuego(t, tipo) {
-  if (window.Juego && window.Juego.toast) window.Juego.toast(t, tipo);
-}
-
-/* ---------- Pestañas ---------- */
-document.querySelectorAll('.apest').forEach(btn => {
-  btn.addEventListener('click', () => {
-    pestActiva = btn.dataset.ap;
-    document.querySelectorAll('.apest').forEach(b => b.classList.toggle('activa', b === btn));
-    renderPest(pestActiva);
-  });
-});
-function renderPest(cual) {
-  if (cual === 'economia') renderEconomia();
-  else if (cual === 'ranking') renderRanking();
-  else if (cual === 'anuncios') renderAnuncios();
-  else if (cual === 'jugadores') renderJugadores();
-  else renderPanel();
-}
-
-/* ---------- Pestaña: Panel (estado y utilidades) ---------- */
-function renderPanel() {
-  const j = window.Juego ? window.Juego.estado() : null;
-  const nube = cfgValida ? (usuario ? (esAdmin(usuario) ? '<span style="color:#8fd3ff">conectado como ' + esc(usuario.email) + '</span>' : 'sin permisos') : 'sin sesión') : 'no configurada';
-  refs.cuerpo.innerHTML = `
-    <div class="admin-grid">
-      <div class="a-carta">
-        <h3>Firebase</h3>
-        <p>${nube}</p>
-        <div class="a-acciones">
-          <button class="btn-admin" id="ad-copiar-reglas">Copiar reglas de seguridad</button>
-        </div>
-      </div>
-      <div class="a-carta">
-        <h3>Partida actual</h3>
-        <p>Monedas: <span>${j ? j.monedas.toLocaleString('es-ES') : '—'}</span><br>
-        Nivel <span>${j ? j.nivel : '—'}</span> · Memes <span>${j ? j.memes : '—'}</span> · <span>+${j ? Math.floor(j.ips) : 0}/s</span></p>
-      </div>
-      <div class="a-carta">
-        <h3>Estadísticas</h3>
-        <p>Compras <span>${j ? j.stats.compras : 0}</span> · Robos <span>${j ? j.stats.robos : 0}</span><br>
-        Monedas ganadas <span>${j ? j.stats.monedasTotales.toLocaleString('es-ES') : 0}</span><br>
-        Logros <span>${j ? j.logros : 0}/13</span></p>
-      </div>
-      <div class="a-carta">
-        <h3>Utilidades de prueba</h3>
-        <p>Trampas para testear el juego:</p>
-        <div class="a-acciones">
-          <button class="btn-admin bien" id="ad-dinero">+1.000 monedas</button>
-          <button class="btn-admin" id="ad-evento">Provocar evento</button>
-        </div>
-      </div>
-    </div>
-    <p class="a-nota">El panel de economía guarda los valores en Firestore (colección <code>config</code>) y el juego los aplica al cargar.
-    El ranking y los anuncios usan las colecciones <code>ranking</code> y <code>anuncios</code>.</p>`;
-  $('#ad-copiar-reglas').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(REGLAS);
-      toastJuego('Reglas copiadas al portapapeles.', 'exito');
-    } catch (e) {
-      const ta = document.createElement('textarea');
-      ta.value = REGLAS; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); toastJuego('Reglas copiadas.', 'exito'); } catch (e2) { toastJuego('Copia manual:', 'info'); }
-      ta.remove();
-    }
-  });
-  $('#ad-dinero').addEventListener('click', () => {
-    if (window.Juego) { window.Juego.darMonedas(1000); toastJuego('+1.000 monedas de prueba.', 'exito'); renderPanel(); }
-  });
-  $('#ad-evento').addEventListener('click', () => {
-    if (window.Juego) { window.Juego.debugEvento(); toastJuego('Evento provocado.', 'info'); }
-  });
-}
-
-/* ---------- Pestaña: Economía ---------- */
-function renderEconomia() {
-  const D = window.DATOS;
-  const local = cfgLocal();
-  const precios = local.precios || {};
-  const ipsCfg = local.ips || {};
-  const filas = D.MEMES.map(m => {
-    const rz = D.RAREZAS[m.rareza];
-    return `<tr>
-      <td>${esc(m.nombre)}</td>
-      <td><span class="rz-chip" style="background:${rz.css}">${rz.nombre}</span></td>
-      <td><input type="number" min="1" step="1" data-precio="${m.id}" value="${precios[m.id] != null ? precios[m.id] : m.precio}"></td>
-      <td><input type="number" min="0" step="0.1" data-ips="${m.id}" value="${ipsCfg[m.id] != null ? ipsCfg[m.id] : m.ips}"></td>
-    </tr>`;
-  }).join('');
-  refs.cuerpo.innerHTML = `
-    <p class="a-nota">Cambia precios y producción de cada meme. «Aplicar local» afecta a esta partida;
-    «Guardar en la nube» lo aplica a todos los jugadores (requiere Firebase y sesión admin).</p>
-    <div class="fila-admin">
-      <label class="a-nota">Multiplicador de precios:
-        <input type="number" id="eco-mult" min="0.1" step="0.1" value="${local.mult || 1}" style="width:90px;background:#0e0a18;border:2px solid #4d3f75;border-radius:8px;color:#8fd3ff;font-weight:800;padding:4px 7px">
-      </label>
-      <label class="a-nota">Multiplicador de producción:
-        <input type="number" id="eco-multips" min="0.1" step="0.1" value="${local.multIps || 1}" style="width:90px;background:#0e0a18;border:2px solid #4d3f75;border-radius:8px;color:#8fd3ff;font-weight:800;padding:4px 7px">
-      </label>
-    </div>
-    <div class="tabla-envolver"><table class="tabla-admin">
-      <thead><tr><th>Meme</th><th>Rareza</th><th>Precio</th><th>Prod./s</th></tr></thead>
-      <tbody>${filas}</tbody>
-    </table></div>
-    <div class="fila-admin">
-      <button class="btn-admin bien" id="eco-aplicar">Aplicar local</button>
-      <button class="btn-admin" id="eco-nube" ${cfgValida ? '' : 'disabled'}>Guardar en la nube</button>
-      <button class="btn-admin peligro" id="eco-reset">Restablecer valores originales</button>
-    </div>`;
-  $('#eco-aplicar').addEventListener('click', () => {
-    const c = leerEconomia();
-    guardarCfgLocal(c);
-    if (window.Juego) window.Juego.aplicarConfigEconomia(c);
-    toastJuego('Economía aplicada en local.', 'exito');
-  });
-  $('#eco-nube').addEventListener('click', async () => {
-    if (!fb || !usuario || !esAdmin(usuario)) { toastJuego('Entra como administrador primero.', 'error'); return; }
-    const c = leerEconomia();
-    try {
-      const { doc, setDoc } = fb.modFs;
-      await setDoc(doc(fb.db, 'config', 'economia'), c);
-      guardarCfgLocal(c);
-      if (window.Juego) window.Juego.aplicarConfigEconomia(c);
-      toastJuego('Economía guardada en la nube.', 'exito');
-    } catch (e) {
-      toastJuego('Error al guardar (revisa las reglas de Firestore): ' + esc(e.message || e), 'error');
-    }
-  });
-  $('#eco-reset').addEventListener('click', () => {
-    guardarCfgLocal({});
-    if (window.Juego) window.Juego.aplicarConfigEconomia({});
-    toastJuego('Valores originales restablecidos.', 'info');
-    renderEconomia();
-  });
-}
-function leerEconomia() {
-  const c = { precios: {}, ips: {}, mult: 1, multIps: 1 };
-  document.querySelectorAll('[data-precio]').forEach(inp => {
-    const v = parseFloat(inp.value);
-    if (!isNaN(v) && v > 0) c.precios[inp.dataset.precio] = v;
-  });
-  document.querySelectorAll('[data-ips]').forEach(inp => {
-    const v = parseFloat(inp.value);
-    if (!isNaN(v) && v >= 0) c.ips[inp.dataset.ips] = v;
-  });
-  const m1 = parseFloat($('#eco-mult') && $('#eco-mult').value);
-  const m2 = parseFloat($('#eco-multips') && $('#eco-multips').value);
-  if (!isNaN(m1) && m1 > 0) c.mult = m1;
-  if (!isNaN(m2) && m2 > 0) c.multIps = m2;
-  return c;
-}
-
-/* ---------- Pestaña: Ranking ---------- */
-async function renderRanking() {
-  let local = null;
-  try { local = JSON.parse(localStorage.getItem('rem_mejorLocal') || 'null'); } catch (e) {}
-  let html = `
-    <div class="fila-admin">
-      <button class="btn-admin bien" id="rk-enviar">Enviar mi puntuación</button>
-      <span class="a-nota">Puntos = nivel × 1000 + monedas ganadas + robos × 250</span>
-    </div>
-    <p class="titulo-sec">Tu récord local</p>`;
-  html += local
-    ? `<div class="tabla-envolver"><table class="tabla-admin"><tbody>
-        <tr><td>${esc(local.nombre)}</td><td>${local.puntos.toLocaleString('es-ES')} pts</td>
-        <td>${new Date(local.fecha).toLocaleString('es-ES')}</td></tr>
-      </tbody></table></div>`
-    : '<p class="a-nota">Todavía no hay récord local. ¡Juega y envía tu puntuación!</p>';
-  html += '<p class="titulo-sec">Ranking de la nube' + (cfgValida ? '' : ' (requiere Firebase)') + '</p><div id="rk-nube"><p class="a-nota">Cargando…</p></div>';
-  refs.cuerpo.innerHTML = html;
-  $('#rk-enviar').addEventListener('click', async () => {
-    try {
-      const r = await enviarPuntuacion();
-      toastJuego(r && r.local ? 'Récord local guardado.' : '¡Puntuación enviada a la nube!', 'exito');
-      renderRanking();
-    } catch (e) { toastJuego('No se pudo enviar: ' + esc(e.message || e), 'error'); }
-  });
-  if (!cfgValida) {
-    $('#rk-nube').innerHTML = '<p class="a-nota">Configura Firebase para ver el ranking global de todos los jugadores.</p>';
-    return;
-  }
-  try {
-    await cargarFB();
-    const { collection, query, orderBy, limit, getDocs } = fb.modFs;
-    const datos = await getDocs(query(collection(fb.db, 'ranking'), orderBy('puntos', 'desc'), limit(50)));
-    if (datos.empty) {
-      $('#rk-nube').innerHTML = '<p class="a-nota">Aún no hay puntuaciones. ¡Sé el primero!</p>';
-      return;
-    }
-    let filas = '';
-    let pos = 0;
-    datos.forEach(docSnap => {
-      pos++;
-      const d = docSnap.data();
-      const puedeBorrar = usuario && esAdmin(usuario);
-      filas += `<tr>
-        <td>${pos}º</td>
-        <td>${esc(d.nombre || 'Anónimo')}</td>
-        <td>${(d.puntos || 0).toLocaleString('es-ES')}</td>
-        <td>${d.fecha ? new Date(d.fecha).toLocaleDateString('es-ES') : '—'}</td>
-        ${puedeBorrar ? `<td><button class="btn-admin peligro" data-borrar-rk="${docSnap.id}">Borrar</button></td>` : ''}
-      </tr>`;
-    });
-    $('#rk-nube').innerHTML = `<div class="tabla-envolver"><table class="tabla-admin">
-      <thead><tr><th>#</th><th>Jugador</th><th>Puntos</th><th>Fecha</th>${usuario && esAdmin(usuario) ? '<th></th>' : ''}</tr></thead>
-      <tbody>${filas}</tbody></table></div>`;
-    document.querySelectorAll('[data-borrar-rk]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!fb) return;
-        try {
-          const { doc, deleteDoc } = fb.modFs;
-          await deleteDoc(doc(fb.db, 'ranking', btn.dataset.borrarRk));
-          toastJuego('Entrada borrada.', 'exito');
-          renderRanking();
-        } catch (e) { toastJuego('No se pudo borrar: ' + esc(e.message || e), 'error'); }
-      });
-    });
-  } catch (e) {
-    $('#rk-nube').innerHTML = '<p class="a-nota">No se pudo leer el ranking: ' + esc(e.message || e) + '</p>';
-  }
-}
-
-/* ---------- Pestaña: Anuncios ---------- */
-function renderAnuncios() {
-  refs.cuerpo.innerHTML = `
-    <p class="a-nota">Publica un anuncio que verán todos los jugadores en pantalla (en vivo si tienen el juego abierto).</p>
-    <div class="fila-admin">
-      <input type="text" id="an-titulo" maxlength="40" placeholder="Título (ej: ¡Actualización!)">
-    </div>
-    <div class="fila-admin">
-      <textarea id="an-texto" maxlength="140" placeholder="Texto del anuncio…"></textarea>
-    </div>
-    <div class="fila-admin">
-      <button class="btn-admin bien" id="an-publicar" ${cfgValida ? '' : 'disabled'}>Publicar en la nube</button>
-    </div>
-    <p class="titulo-sec">Últimos anuncios</p>
-    <div id="an-lista"><p class="a-nota">Cargando…</p></div>`;
-  $('#an-publicar').addEventListener('click', async () => {
-    if (!fb || !usuario || !esAdmin(usuario)) { toastJuego('Entra como administrador primero.', 'error'); return; }
-    const titulo = ($('#an-titulo').value || '').trim().slice(0, 40);
-    const texto = ($('#an-texto').value || '').trim().slice(0, 140);
-    if (!titulo && !texto) { toastJuego('Escribe algo primero.', 'error'); return; }
-    try {
-      const { collection, addDoc } = fb.modFs;
-      await addDoc(collection(fb.db, 'anuncios'), { titulo: titulo || 'ANUNCIO', texto, fecha: Date.now() });
-      $('#an-titulo').value = ''; $('#an-texto').value = '';
-      toastJuego('Anuncio publicado.', 'exito');
-      renderAnuncios();
-    } catch (e) { toastJuego('No se pudo publicar: ' + esc(e.message || e), 'error'); }
-  });
-  if (!cfgValida) {
-    $('#an-lista').innerHTML = '<p class="a-nota">Configura Firebase para publicar anuncios.</p>';
-    return;
-  }
-  cargarFB().then(async () => {
-    const { collection, query, orderBy, limit, getDocs } = fb.modFs;
-    const datos = await getDocs(query(collection(fb.db, 'anuncios'), orderBy('fecha', 'desc'), limit(10)));
-    if (datos.empty) { $('#an-lista').innerHTML = '<p class="a-nota">Sin anuncios.</p>'; return; }
-    let filas = '';
-    datos.forEach(docSnap => {
-      const d = docSnap.data();
-      filas += `<tr>
-        <td><b>${esc(d.titulo)}</b><br><span class="a-nota">${esc(d.texto || '')}</span></td>
-        <td>${d.fecha ? new Date(d.fecha).toLocaleString('es-ES') : '—'}</td>
-        ${usuario && esAdmin(usuario) ? `<td><button class="btn-admin peligro" data-borrar-an="${docSnap.id}">Borrar</button></td>` : ''}
-      </tr>`;
-    });
-    $('#an-lista').innerHTML = `<div class="tabla-envolver"><table class="tabla-admin"><tbody>${filas}</tbody></table></div>`;
-    document.querySelectorAll('[data-borrar-an]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        try {
-          const { doc, deleteDoc } = fb.modFs;
-          await deleteDoc(doc(fb.db, 'anuncios', btn.dataset.borrarAn));
-          toastJuego('Anuncio borrado.', 'exito');
-          renderAnuncios();
-        } catch (e) { toastJuego('No se pudo borrar.', 'error'); }
-      });
-    });
-  }).catch(e => {
-    $('#an-lista').innerHTML = '<p class="a-nota">Sin conexión con Firebase.</p>';
-  });
-}
-/* escucha anuncios en vivo y los muestra en el juego */
-function escucharAnuncios() {
-  if (!fb || escuchandoAnuncios) return;
-  escuchandoAnuncios = true;
-  const { collection, query, orderBy, limit, onSnapshot } = fb.modFs;
-  onSnapshot(query(collection(fb.db, 'anuncios'), orderBy('fecha', 'desc'), limit(1)), snap => {
-    snap.docChanges().forEach(cambio => {
-      if (cambio.type !== 'added') return;
-      const d = cambio.doc.data();
-      const t = (d.fecha || 0);
-      if (Date.now() - t < 60000 && window.Juego && window.Juego.anuncioAdmin) {
-        window.Juego.anuncioAdmin('📢 ' + (d.titulo || 'ANUNCIO'), d.texto || '');
-      }
-    });
-  }, () => { /* sin permisos de lectura: se ignora */ });
-}
-
-/* ---------- Pestaña: Jugadores (baneos) ---------- */
-function renderJugadores() {
-  refs.cuerpo.innerHTML = `
-    <p class="a-nota">Jugadores baneados: no podrán enviar puntuaciones al ranking (su partida local sigue funcionando).</p>
-    <div class="fila-admin">
-      <input type="text" id="ban-nombre" maxlength="20" placeholder="Nombre exacto del jugador">
-      <button class="btn-admin peligro" id="ban-anadir" ${cfgValida ? '' : 'disabled'}>Añadir a la lista</button>
-    </div>
-    <p class="titulo-sec">Lista de baneados</p>
-    <div id="ban-lista"><p class="a-nota">Cargando…</p></div>`;
-  const pintarLista = nombres => {
-    if (!nombres.length) { $('#ban-lista').innerHTML = '<p class="a-nota">No hay jugadores baneados.</p>'; return; }
-    $('#ban-lista').innerHTML = `<div class="tabla-envolver"><table class="tabla-admin"><tbody>` +
-      nombres.map(n => `<tr><td>${esc(n)}</td><td><button class="btn-admin" data-desban="${esc(n)}">Quitar</button></td></tr>`).join('') +
-      `</tbody></table></div>`;
-    document.querySelectorAll('[data-desban]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        try {
-          await guardarBaneados(nombres.filter(n => n !== btn.dataset.desban));
-          toastJuego('Jugador desbaneado.', 'exito');
-          renderJugadores();
-        } catch (e) { toastJuego('No se pudo guardar.', 'error'); }
-      });
-    });
-  };
-  const guardarBaneados = async nombres => {
-    const { doc, setDoc } = fb.modFs;
-    await setDoc(doc(fb.db, 'config', 'baneados'), { nombres });
-  };
-  $('#ban-anadir').addEventListener('click', async () => {
-    if (!fb || !usuario || !esAdmin(usuario)) { toastJuego('Entra como administrador primero.', 'error'); return; }
-    const nombre = ($('#ban-nombre').value || '').trim().slice(0, 20);
-    if (!nombre) { toastJuego('Escribe un nombre.', 'error'); return; }
-    try {
-      const { doc, getDoc, setDoc } = fb.modFs;
-      const actual = await getDoc(doc(fb.db, 'config', 'baneados'));
-      const nombres = (actual.data() && actual.data().nombres) || [];
-      if (!nombres.includes(nombre)) nombres.push(nombre);
-      await setDoc(doc(fb.db, 'config', 'baneados'), { nombres });
-      toastJuego(`${nombre} baneado.`, 'exito');
-      renderJugadores();
-    } catch (e) { toastJuego('No se pudo guardar: ' + esc(e.message || e), 'error'); }
-  });
-  if (!cfgValida) {
-    $('#ban-lista').innerHTML = '<p class="a-nota">Configura Firebase para gestionar baneos.</p>';
-    return;
-  }
-  cargarFB().then(async () => {
-    const { doc, getDoc } = fb.modFs;
-    const snap = await getDoc(doc(fb.db, 'config', 'baneados'));
-    pintarLista((snap.data() && snap.data().nombres) || []);
-  }).catch(() => { $('#ban-lista').innerHTML = '<p class="a-nota">Sin conexión con Firebase.</p>'; });
-}
-
-/* ---------- Envío de puntuación (lo llama el juego) ---------- */
-async function enviarPuntuacion() {
-  const j = window.Juego;
-  if (!j) return { ok: false };
-  const datos = {
-    nombre: (j.nombre() || 'Anónimo').slice(0, 20),
-    puntos: Math.max(0, Math.floor(j.puntuacion())),
-    fecha: Date.now()
-  };
-  if (!cfgValida) {
-    try {
-      const mejor = JSON.parse(localStorage.getItem('rem_mejorLocal') || 'null');
-      if (!mejor || datos.puntos > (mejor.puntos || 0)) {
-        localStorage.setItem('rem_mejorLocal', JSON.stringify(datos));
-      }
-    } catch (e) { /* almacenamiento no disponible */ }
-    return { ok: true, local: true };
-  }
-  await cargarFB();
-  // comprobar baneo
-  try {
-    const { doc, getDoc } = fb.modFs;
-    const b = await getDoc(doc(fb.db, 'config', 'baneados'));
-    const nombres = ((b.data() && b.data().nombres) || []).map(n => n.toLowerCase());
-    if (nombres.includes(datos.nombre.toLowerCase())) return { ok: false, razon: 'baneado' };
-  } catch (e) { /* sin lista de baneos */ }
-  const { collection, addDoc } = fb.modFs;
-  await addDoc(collection(fb.db, 'ranking'), datos);
-  return { ok: true, local: false };
-}
-
-/* ---------- API pública + arranque ---------- */
-window.Admin = {
-  abrir,
-  cerrar,
-  enviarPuntuacion,
-  configurado: cfgValida
+  try { await setDoc(doc(db, 'config', 'memes'), datos); aviso('Memes guardados.'); }
+  catch (e) { aviso('No se pudo guardar: ' + e.code, true); }
 };
 
-/* si Firebase está configurado, aplicar la economía de la nube al arrancar */
-if (cfgValida) {
-  cargarFB().then(async () => {
-    try {
-      const { doc, getDoc } = fb.modFs;
-      const snap = await getDoc(doc(fb.db, 'config', 'economia'));
-      if (snap.exists() && snap.data() && window.Juego) {
-        window.Juego.aplicarConfigEconomia(snap.data());
-      }
-    } catch (e) { /* sin permisos o sin documento */ }
-  }).catch(() => { /* sin conexión: modo local */ });
+/* ---- estadísticas ---- */
+const NOMBRES_STAT = {
+  sesiones: 'Partidas jugadas', comprasTotales: 'Memes comprados',
+  robosTotales: 'Robos realizados', renacimientosTotales: 'Renacimientos'
+};
+const fmtN = n => Number(n || 0).toLocaleString('es-ES');
+async function cargarStats() {
+  const c = $('staLista'); c.innerHTML = '<p class="espera">Cargando…</p>';
+  try {
+    const s = await getDoc(doc(db, 'stats', 'global'));
+    c.innerHTML = '';
+    if (!s.exists()) { c.innerHTML = '<p class="espera">Todavía no hay datos: juega una partida primero.</p>'; return; }
+    const d = s.data();
+    for (const k in NOMBRES_STAT) c.insertAdjacentHTML('beforeend', `<div class="stat"><span>${NOMBRES_STAT[k]}</span><b>${fmtN(d[k])}</b></div>`);
+    for (const k in d) if (!NOMBRES_STAT[k]) c.insertAdjacentHTML('beforeend', `<div class="stat"><span>${k}</span><b>${fmtN(d[k])}</b></div>`);
+  } catch (e) { c.innerHTML = '<p class="espera">Sin permiso de lectura: revisa las reglas.</p>'; }
 }
-})();
+$('btnRefrescar').onclick = cargarStats;
+$('btnResetStats').onclick = async () => {
+  if (!confirm('¿Poner a cero todas las estadísticas?')) return;
+  try { await deleteDoc(doc(db, 'stats', 'global')); aviso('Estadísticas a cero.'); cargarStats(); }
+  catch (e) { aviso('No se pudo: ' + e.code, true); }
+};
+
+function cargarTodo() { cargarConfig(); cargarMemes(); cargarStats(); }
+window.__adminListo = true;   /* señal para el vigilante de admin.html */
