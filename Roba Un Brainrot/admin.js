@@ -90,6 +90,13 @@ const REGLAS = `{
             "renacimientosTotales": { ".validate": "newData.isNumber()" },
             "$otro": { ".validate": false }
           }
+        },
+        "regalos": {
+          ".read": true,
+          "$regalo": {
+            ".write": "auth != null && (auth.token.email === 'guillevarelacors@gmail.com' || auth.token.email === 'guillempro07@gmail.com')",
+            "canjeados": { ".write": true, ".validate": "newData.isNumber()" }
+          }
         }
       }
     }
@@ -142,7 +149,7 @@ async function cargarSDK() {
   return null;
 }
 
-let auth = null, db = null, fdb = null, cerrarSesion = null;
+let auth = null, db = null, fdb = null, cerrarSesion = null, nombreAdmin = '';
 
 (async () => {
   if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
@@ -189,6 +196,7 @@ let auth = null, db = null, fdb = null, cerrarSesion = null;
       return;
     }
     vista('panel');
+    nombreAdmin = (u.displayName || email.split('@')[0] || 'Admin').slice(0, 24);
     $('quien').innerHTML =
       (u.photoURL ? `<img class="avatar" src="${u.photoURL}" alt="">` : '') +
       `<span>${u.displayName || email.split('@')[0]} · cuenta de la web</span>`;
@@ -199,6 +207,7 @@ let auth = null, db = null, fdb = null, cerrarSesion = null;
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa'));
     t.classList.add('activa');
+    $('sec-dar').hidden = t.dataset.t !== 'dar';
     $('sec-cfg').hidden = t.dataset.t !== 'cfg';
     $('sec-mem').hidden = t.dataset.t !== 'mem';
     $('sec-sta').hidden = t.dataset.t !== 'sta';
@@ -227,7 +236,7 @@ async function cargarConfig() {
     pintarConfig(null);
   }
 }
- $('btnGuardarCfg').onclick = async () => {
+$('btnGuardarCfg').onclick = async () => {
   const datos = {};
   for (const [k] of CAMPOS) {
     let v = parseFloat($('cf_' + k).value);
@@ -239,7 +248,7 @@ async function cargarConfig() {
     aviso('Configuración guardada: la próxima partida ya la usa.');
   } catch (e) { aviso('No se pudo guardar: ' + (e.code || e.message), true); }
 };
- $('btnBorrarCfg').onclick = async () => {
+$('btnBorrarCfg').onclick = async () => {
   if (!confirm('¿Borrar la configuración y volver a los valores por defecto?')) return;
   try { await fdb.remove(fdb.ref(db, RAIZ + '/config')); aviso('Configuración borrada.'); cargarConfig(); }
   catch (e) { aviso('No se pudo borrar: ' + (e.code || e.message), true); }
@@ -266,7 +275,7 @@ async function cargarMemes() {
   } catch (e) { errorFB(e); }
   pintarMemes(over);
 }
- $('btnGuardarMemes').onclick = async () => {
+$('btnGuardarMemes').onclick = async () => {
   const datos = {};
   for (const m of window.MEMES) {
     const p = parseFloat($('mp_' + m.id).value), i = parseFloat($('mi_' + m.id).value);
@@ -306,11 +315,161 @@ async function cargarStats() {
     c.innerHTML = '<p class="espera">Sin permiso de lectura: pega las reglas de arriba.</p>';
   }
 }
- $('btnRefrescar').onclick = cargarStats;
- $('btnResetStats').onclick = async () => {
+$('btnRefrescar').onclick = cargarStats;
+$('btnResetStats').onclick = async () => {
   if (!confirm('¿Poner a cero todas las estadísticas?')) return;
   try { await fdb.remove(fdb.ref(db, RAIZ + '/partidas')); aviso('Estadísticas a cero.'); cargarStats(); }
   catch (e) { aviso('No se pudo: ' + (e.code || e.message), true); }
 };
 
-function cargarTodo() { cargarConfig(); cargarMemes(); cargarStats(); }
+function cargarTodo() { cargarConfig(); cargarMemes(); cargarStats(); cargarRegalos(); }
+
+/* ---- DAR COSAS: el formulario de regalos ---- */
+function filaNum(nom, id, def, min, max) {
+  return `<label class="fila"><span>${nom}</span>
+    <input type="number" id="${id}" value="${def}" min="${min}" max="${max}"></label>`;
+}
+function pintarCamposDar() {
+  const tipo = $('dar-tipo').value;
+  const c = $('dar-campos');
+  c.innerHTML = '';
+  if (tipo === 'monedas') {
+    c.innerHTML = filaNum('¿Cuántas monedas?', 'dar-n', 500, 1, 1000000);
+  } else if (tipo === 'meme') {
+    let ops = '';
+    for (const r in window.RAREZAS) {
+      ops += `<optgroup label="${window.RAREZAS[r].nombre}">` +
+        window.MEMES.filter(m => m.rareza === r)
+          .map(m => `<option value="${m.id}">${m.nombre}${m.reqRenacer ? ' · renacer ' + m.reqRenacer : ''}</option>`).join('') +
+        '</optgroup>';
+    }
+    c.innerHTML = `<label class="fila"><span>¿Qué meme?</span><select id="dar-meme">${ops}</select></label>`;
+  } else if (tipo === 'pack') {
+    const ops = Object.keys(window.RAREZAS).map(r => `<option value="${r}">${window.RAREZAS[r].nombre}</option>`).join('');
+    c.innerHTML = `<label class="fila"><span>¿De qué rareza?</span><select id="dar-rareza">${ops}</select></label>` +
+      filaNum('¿Cuántos memes?', 'dar-n', 3, 1, 10);
+  } else if (tipo === 'mejora') {
+    const ops = window.MEJORAS.filter(m => m.max > 0).map(m => `<option value="${m.id}">${m.nombre}</option>`).join('');
+    c.innerHTML = `<label class="fila"><span>¿Qué mejora?</span><select id="dar-mejora">${ops}</select></label>` +
+      filaNum('¿Cuántos niveles?', 'dar-n', 1, 1, 5);
+  } else if (tipo === 'escudo') {
+    c.innerHTML = filaNum('¿Cuántos escudos?', 'dar-n', 1, 1, 20);
+  }
+}
+$('dar-tipo').onchange = pintarCamposDar;
+pintarCamposDar();
+
+function clampN(v, min, max, def) {
+  v = Math.round(+v);
+  if (isNaN(v)) v = def;
+  return Math.min(max, Math.max(min, v));
+}
+$('btnDar').onclick = async () => {
+  const tipo = $('dar-tipo').value;
+  const g = { t: Date.now(), tipo, de: nombreAdmin };
+  const msj = ($('dar-mensaje').value || '').trim();
+  if (msj) g.mensaje = msj.slice(0, 70);
+  const val = +$('dar-validez').value;
+  if (val) g.expira = Date.now() + val;
+  if (tipo === 'monedas') g.cantidad = clampN($('dar-n').value, 1, 1000000, 500);
+  if (tipo === 'meme') g.memeId = $('dar-meme').value;
+  if (tipo === 'pack') { g.rareza = $('dar-rareza').value; g.cantidad = clampN($('dar-n').value, 1, 10, 3); }
+  if (tipo === 'mejora') { g.mejoraId = $('dar-mejora').value; g.cantidad = clampN($('dar-n').value, 1, 5, 1); }
+  if (tipo === 'escudo') g.cantidad = clampN($('dar-n').value, 1, 20, 1);
+  if ($('dar-destino').value === 'codigo') {
+    const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   /* sin letras que se confunden */
+    g.codigo = 'ROBA-' + Array.from({ length: 4 }, () => ABC[(Math.random() * ABC.length) | 0]).join('');
+  }
+  window.__ultimoRegalo = g;   /* gancho para pruebas automáticas */
+  const btn = $('btnDar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const id = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await fdb.set(fdb.ref(db, RAIZ + '/regalos/' + id), g);
+    if (g.codigo) {
+      try { await navigator.clipboard.writeText(g.codigo); aviso('¡Código creado y copiado: ' + g.codigo + '! Compártelo con quien quieras.'); }
+      catch (e) { aviso('¡Código creado: ' + g.codigo + '! Cópialo de la lista de abajo.'); }
+    } else {
+      aviso('¡Regalo enviado! Les aparecerá a los jugadores en unos segundos.');
+    }
+  } catch (e) {
+    errorFB(e);
+    aviso('No se pudo dar el regalo: ' + (e.code || e.message) +
+      (String(e.code || e.message).includes('permission') ? ' → pega las reglas nuevas y vuelve a probar.' : ''), true);
+  }
+  btn.disabled = false; btn.textContent = '¡DAR REGALO!';
+};
+$('btnReglas').onclick = () => {
+  $('reglasTxt').value = REGLAS;
+  $('cajaReglas').hidden = false;
+  $('reglasTxt').hidden = true;
+  $('cajaReglas').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+/* ---- lista de regalos (en directo) ---- */
+function describirRegaloAdmin(g) {
+  if (g.tipo === 'monedas') return '+' + fmtN(g.cantidad) + ' monedas';
+  if (g.tipo === 'meme') {
+    const m = window.MEMES.find(x => x.id === g.memeId);
+    return 'Meme: ' + (m ? m.nombre : g.memeId);
+  }
+  if (g.tipo === 'pack') return 'Pack: ' + (g.cantidad || 1) + ' memes ' +
+    (window.RAREZAS[g.rareza] ? window.RAREZAS[g.rareza].nombre : '');
+  if (g.tipo === 'mejora') {
+    const m = window.MEJORAS.find(x => x.id === g.mejoraId);
+    return 'Mejora: ' + (m ? m.nombre : g.mejoraId) + ' ×' + (g.cantidad || 1);
+  }
+  if (g.tipo === 'escudo') return 'Escudo anti-robo ×' + (g.cantidad || 1);
+  return 'Regalo';
+}
+function dentroDe(ms) {
+  const h = Math.floor(ms / 3600000), m = Math.round((ms % 3600000) / 60000);
+  return h ? 'en ' + h + ' h' : 'en ' + Math.max(1, m) + ' min';
+}
+let desusRegalos = false;
+function pintarRegalos(val) {
+  const c = $('darLista');
+  const ids = Object.keys(val || {}).sort((a, b) => (val[b].t || 0) - (val[a].t || 0));
+  if (!ids.length) {
+    c.innerHTML = '<p class="espera">Todavía no hay regalos. ¡Estrena el formulario de arriba!</p>';
+    return;
+  }
+  const ahora = Date.now();
+  c.innerHTML = '';
+  for (const id of ids) {
+    const g = val[id] || {};
+    const cad = g.expira && +g.expira < ahora;
+    const dura = g.expira ? (cad ? 'CADUCADO' : 'caduca ' + dentroDe(+g.expira - ahora)) : 'sin caducidad';
+    const quien = g.codigo ? 'Con código' : 'Para todos';
+    c.insertAdjacentHTML('beforeend', `<div class="gtar ${cad ? 'caducado' : ''}" data-id="${id}">
+      <b>🎁 ${describirRegaloAdmin(g)}</b>
+      <small>${quien} · ${dura}${g.de ? ' · de ' + g.de : ''}${g.mensaje ? ' · «' + g.mensaje + '»' : ''}
+        ${(+g.canjeados || 0) ? ' · canjeado ' + fmtN(g.canjeados) + ' veces' : ''}</small>
+      ${g.codigo ? `<span class="cod"><code>${g.codigo}</code>
+        <button class="btn copiar-cod">Copiar</button></span>` : ''}
+      <button class="btn b quitar">Quitar</button>
+    </div>`);
+  }
+  c.querySelectorAll('.quitar').forEach(b => b.onclick = async () => {
+    const id = b.closest('.gtar').dataset.id;
+    if (!confirm('¿Quitar este regalo? Los jugadores que ya lo tienen, se lo quedan.')) return;
+    try { await fdb.remove(fdb.ref(db, RAIZ + '/regalos/' + id)); }
+    catch (e) { aviso('No se pudo quitar: ' + (e.code || e.message), true); }
+  });
+  c.querySelectorAll('.copiar-cod').forEach(b => b.onclick = async () => {
+    const cod = b.closest('.gtar').querySelector('code').textContent;
+    try { await navigator.clipboard.writeText(cod); aviso('Código copiado: ' + cod); }
+    catch (e) { aviso('Copia a mano: ' + cod); }
+  });
+}
+function cargarRegalos() {
+  if (desusRegalos || !db) return;
+  desusRegalos = true;
+  try {
+    fdb.onValue(fdb.ref(db, RAIZ + '/regalos'), snap => pintarRegalos(snap.val() || {}),
+      e => { errorFB(e); $('darLista').innerHTML = '<p class="espera">Sin permiso de lectura: pega las reglas de abajo.</p>'; });
+  } catch (e) {
+    errorFB(e);
+    $('darLista').innerHTML = '<p class="espera">Sin permiso de lectura: pega las reglas de abajo.</p>';
+  }
+}
