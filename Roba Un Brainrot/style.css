@@ -333,3 +333,74 @@ body.tacto .btn-accion:active{transform:translateY(4px);box-shadow:0 1px 0 var(-
 @media (hover:none){
   .adm-cab h3{cursor:default}
 }
+
+/* ================================================================
+   v9 · 🎨 viñeta · ☁️ cuentas · 🖥️ servidores · 💬 chat
+   ================================================================ */
+#vineta{position:fixed;inset:0;z-index:5;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 58%,rgba(25,15,8,.22) 100%)}
+
+/* ---- menú: secciones de cuenta y servidores ---- */
+.menu-caja{max-height:92vh;overflow-y:auto;scrollbar-width:thin}
+.titulo-seccion{display:block;font-size:.66rem;font-weight:800;letter-spacing:1.4px;
+  text-transform:uppercase;opacity:.55;margin:12px 0 6px;text-align:left}
+.menu-cuenta{margin:2px 0 4px}
+.cuenta-fila{display:flex;gap:8px}
+.cuenta-fila input{flex:1;min-width:0;border:3px solid var(--tinta);border-radius:11px;
+  background:#fffdf6;font:800 .88rem var(--fuente);padding:9px 10px;color:var(--tinta)}
+.cuenta-fila input:focus{outline:3px solid var(--amarillo)}
+.cuenta-botones{display:flex;gap:8px;margin-top:8px}
+.cuenta-botones .btn{flex:1;padding:9px 6px;font-size:.92rem}
+.cuenta-nota{font-size:.7rem;font-weight:700;opacity:.6;margin-top:7px;line-height:1.35;text-align:left}
+.cuenta-ok{background:#fff3c2;border:3px dashed #c9930a;border-radius:12px;
+  padding:9px 10px;font-weight:800;font-size:.86rem;color:#8a6d1f;text-align:center}
+.cuenta-ok b{font-family:var(--fuente-tit)}
+.menu-cuenta .btn.fino{width:100%;margin-top:8px}
+.servidores{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.srv{border:3px solid var(--tinta);border-radius:12px;background:#fffdf6;padding:8px 4px 7px;
+  font-weight:800;text-align:center;cursor:pointer;box-shadow:0 3px 0 var(--tinta);
+  transition:transform .08s;position:relative}
+.srv:active{transform:translateY(2px);box-shadow:0 1px 0 var(--tinta)}
+.srv b{font-family:var(--fuente-tit);font-weight:400;font-size:1rem;display:block;line-height:1.1}
+.srv small{display:block;font-size:.68rem;opacity:.65;margin-top:3px}
+.srv.elegido{background:var(--amarillo)}
+.srv.elegido::after{content:'✓ DENTRO';position:absolute;top:-9px;right:-6px;background:var(--verde);
+  color:#fff;font-size:.6rem;font-weight:800;border:2px solid var(--tinta);border-radius:999px;padding:2px 7px}
+.srv.lleno{opacity:.5}
+.srv.solo{grid-column:1 / -1;display:flex;align-items:center;justify-content:center;gap:10px;padding:7px}
+.srv.solo small{margin:0}
+.multi-nota{font-size:.7rem;font-weight:700;opacity:.65;margin-top:8px;line-height:1.4;text-align:left}
+.multi-nota.reglas{opacity:1;color:var(--rojo)}
+
+/* ---- chip del servidor en el HUD ---- */
+.chip.servidor{background:var(--crema);cursor:pointer;pointer-events:auto}
+.chip.servidor .ico{width:16px;height:16px;color:var(--verde)}
+.chip.servidor b{background:var(--tinta);color:var(--crema);border-radius:999px;padding:2px 9px;
+  font-size:.75rem;min-width:52px;text-align:center}
+body.tacto .chip.servidor{pointer-events:auto}
+
+/* ---- chat ---- */
+#chat-log{position:fixed;left:14px;bottom:16px;z-index:9;display:flex;flex-direction:column;
+  gap:4px;pointer-events:none;max-width:52vw}
+body.tacto #chat-log{bottom:auto;top:140px;max-width:56vw}
+.chat-linea{background:rgba(43,33,28,.78);color:var(--crema);border-radius:11px;
+  padding:5px 11px;font-weight:800;font-size:.8rem;line-height:1.25;
+  animation:caer .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.chat-linea b{color:var(--amarillo)}
+.modal.chatm{max-width:360px}
+.modal.chatm input{display:block;width:100%;margin:12px 0 2px;padding:12px 10px;
+  border:3px solid var(--tinta);border-radius:12px;font:800 1rem var(--fuente);
+  background:#fff;color:var(--tinta)}
+.modal.chatm input:focus{outline:3px solid var(--amarillo)}
+.chat-rapido{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+.chat-rapido button{border:2.5px solid var(--tinta);border-radius:999px;background:#fffdf6;
+  font:800 .78rem var(--fuente);padding:6px 11px;cursor:pointer;box-shadow:0 2px 0 var(--tinta)}
+.chat-rapido button:active{transform:translateY(2px);box-shadow:none}
+
+/* ---- responsive de lo nuevo ---- */
+@media (max-width:720px){
+  .servidores{grid-template-columns:repeat(2,1fr)}
+  .menu-caja{padding:20px 16px}
+  .cuenta-fila{flex-direction:column}
+  #chat-log{font-size:.72rem}
+}
