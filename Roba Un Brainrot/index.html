@@ -9,9 +9,49 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+<link rel="stylesheet" href="style.css?v=3">
+<script>
+/* ---- Vigilante de carga: nunca más "Cargando el mundo…" eterno ---- */
+(function () {
+  if (location.search.indexOf('admin') !== -1) location.replace('admin.html');
+  function fallo(titulo, detalle) {
+    if (window.__falloVisto) return;   /* el primer error manda: es la causa raíz */
+    window.__falloVisto = true;
+    var c = document.getElementById('cargando');
+    if (!c) return;
+    c.innerHTML = '<div class="girando" style="border-color:#e74c3c;animation:none"></div>' +
+      '<h2 style="font-family:\'Lilita One\',cursive;color:#e74c3c;margin:0 0 6px">' + titulo + '</h2>' +
+      '<p style="max-width:440px;line-height:1.5;margin:0 0 10px">' + detalle + '</p>' +
+      '<small style="opacity:.7">Haz una captura de esta pantalla y mándala para arreglarlo.</small>';
+    c.style.background = '#fff6e3';
+    c.style.color = '#2b211c';
+  }
+  window.__falloCarga = fallo;
+  if (location.protocol === 'file:') {
+    fallo('No funciona en local', 'Abre el juego desde GitHub Pages (o un servidor web), no haciendo doble clic en el archivo.');
+    throw new Error('protocolo file:// no soportado');
+  }
+  /* capture=true → también caza ARCHIVOS que no cargan (404 de scripts, etc.) */
+  window.addEventListener('error', function (e) {
+    if (window.__juegoListo) return;
+    var t = e.target;
+    if (t && t !== window && t.tagName === 'SCRIPT' && (t.src || t.href)) {
+      fallo('Falta un archivo', 'No se pudo cargar <b>' + (t.src || t.href) + '</b>.<br>' +
+        'Sube la carpeta del juego COMPLETA a GitHub (todos los archivos, incluida la carpeta <b>lib/</b>) y recarga la página.');
+      return;
+    }
+    fallo('¡Ups! Algo se rompió', String((e.error && e.error.message) || e.message || 'Error desconocido'));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    if (window.__juegoListo) return;
+    fallo('Error al cargar', String((e.reason && e.reason.message) || e.reason || 'Error desconocido'));
+  });
+  setTimeout(function () {
+    if (!window.__juegoListo) fallo('El juego tarda demasiado',
+      'No se pudo cargar en 18 segundos (¿red muy lenta o archivos incompletos?). ' +
+      'Recarga la página. Si acaba de subir los archivos a GitHub, espera unos minutos y pulsa <b>Ctrl+Shift+R</b> para vaciar la caché.');
+  }, 18000);
+})();
 </script>
 </head>
 <body>
@@ -36,7 +76,7 @@
 
 <div id="juego"></div>
 
-<div id="cargando"><div class="girando"></div><p>Cargando el mundo…</p></div>
+<div id="cargando"><div class="mini-logo">¡ROBA<em>EL MEME!</em></div><div class="girando"></div><p>Cargando el mundo…</p></div>
 
 <!-- Menú principal (fondo: el mundo 3D girando) -->
 <div id="menu" class="capa menu" hidden>
@@ -117,8 +157,29 @@
 
 <noscript><p style="padding:2rem">Este juego necesita JavaScript.</p></noscript>
 
-<script src="firebase-config.js"></script>
-<script src="data.js"></script>
-<script type="module" src="game.js"></script>
+<script src="firebase-config.js?v=3"></script>
+<script src="data.js?v=3"></script>
+<script type="module">
+/* ---- Cargador de Three.js CON PLAN B: carpeta local → CDN → CDN 2 ----
+   Así, aunque falte lib/three.module.js (o la red filtre el CDN), el juego arranca. */
+const URLs = window.__urlThree /* solo para pruebas automáticas */
+  ? window.__urlThree
+  : ['./lib/three.module.js',
+     'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js',
+     'https://unpkg.com/three@0.160.0/build/three.module.js'];
+let ok = false;
+for (const u of URLs) {
+  try { window.THREE = await import(u); ok = true; break; }
+  catch (e) { /* probamos la siguiente fuente */ }
+}
+if (!ok) {
+  window.__falloCarga('No se pudo cargar Three.js',
+    'Ni el archivo local (lib/three.module.js) ni internet (CDN) respondieron. ' +
+    'Revisa tu conexión, o sube la carpeta <b>lib/</b> completa a GitHub y recarga.');
+} else {
+  try { await import('./game.js?v=3'); }
+  catch (e) { window.__falloCarga('game.js no pudo arrancar', String((e && e.message) || e)); }
+}
+</script>
 </body>
 </html>
