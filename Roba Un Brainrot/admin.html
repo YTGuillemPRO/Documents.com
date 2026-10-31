@@ -145,11 +145,15 @@ a.enlace{color:var(--rojo);font-weight:800}
         </select>
       </label>
       <div id="dar-campos"></div>
-      <label class="fila"><span>¿Cómo llega?<small>a todos o con código</small></span>
+      <label class="fila"><span>¿Cómo llega?<small>a todos, a un servidor o con código</small></span>
         <select id="dar-destino">
-          <option value="todos">A TODOS en directo</option>
-          <option value="codigo">Con código secreto</option>
+          <option value="todos">🌐 A TODOS en directo</option>
+          <option value="servidor">🖥️ Solo a UN servidor</option>
+          <option value="codigo">🔐 Con código secreto</option>
         </select>
+      </label>
+      <label class="fila" id="fila-dar-servidor" hidden><span>¿A qué servidor?<small>les llega solo a ellos</small></span>
+        <select id="dar-servidor"></select>
       </label>
       <label class="fila"><span>¿Cuánto dura?<small>tiempo para conseguirlo</small></span>
         <select id="dar-validez">
@@ -196,7 +200,7 @@ a.enlace{color:var(--rojo);font-weight:800}
 <div id="aviso" hidden></div>
 
 <script src="firebase-config.js?v=5"></script>
-<script src="data.js?v=5"></script>
+<script src="data.js?v=6"></script>
 <script>
 /* Vigilante del panel: distingue "falta admin.js" de "la red no responde" */
 (function () {
@@ -225,6 +229,6 @@ a.enlace{color:var(--rojo);font-weight:800}
   }, 15000);
 })();
 </script>
-<script type="module" src="admin.js?v=5"></script>
+<script src="admin.js?v=7"></script>
 </body>
 </html>
