@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 <script>
 /* ---- Vigilante de carga: nunca más "Cargando el mundo…" eterno ---- */
 (function () {
@@ -184,46 +184,96 @@
   </div>
 </div>
 
-<!-- 👑 Mini admin: el panel de dar cosas y abusos -->
+<!-- 👑 Mini admin: MINI-GUI con pestañas (regalos a los jugadores · abusos · config rápida) -->
 <div id="capa-admin" class="capa" hidden>
-  <div class="modal adminm">
-    <div class="adm-cab">
+  <div class="modal adminm" id="mini-gui">
+    <div class="adm-cab" id="adm-cab">
       <h3><svg class="ico corona"><use href="#i-corona"/></svg> MINI ADMIN</h3>
       <button id="cerrar-admin" class="btn-ico chico" title="Cerrar"><svg class="ico"><use href="#i-cerrar"/></svg></button>
     </div>
     <p class="adm-quien" id="adm-quien"></p>
 
-    <div class="adm-grupo"><small>DAR COSAS</small></div>
-    <div class="adm-rejilla">
-      <button class="btn adm" data-abuso="mon100">+100 monedas</button>
-      <button class="btn adm" data-abuso="mon1k">+1.000 monedas</button>
-      <button class="btn adm" data-abuso="mon10k">+10.000 monedas</button>
-      <button class="btn adm" data-abuso="doble">×2 tu pasta</button>
-      <button class="btn adm ancho" data-abuso="meme">Meme sorpresa <select id="adm-rareza">
-        <option value="comun">común</option><option value="raro">raro</option>
-        <option value="epico" selected>épico</option><option value="legendario">legendario</option>
-        <option value="mitico">mítico</option><option value="secreto">secreto</option>
-      </select></button>
-      <button class="btn adm ancho" data-abuso="mejoras">Todas las mejoras al máximo</button>
-      <button class="btn adm" data-abuso="escudo5">Escudo 5 min</button>
-      <button class="btn adm" data-abuso="escudo60">Escudo 1 hora</button>
+    <div class="adm-tabs">
+      <button class="adm-tab activa" data-pane="regalos" type="button">🎁 Regalos</button>
+      <button class="adm-tab" data-pane="abusos" type="button">⚡ Abusos</button>
+      <button class="adm-tab" data-pane="config" type="button">⚙️ Config</button>
     </div>
 
-    <div class="adm-grupo"><small>PODERES (hasta recargar)</small></div>
-    <div class="adm-rejilla">
-      <button class="btn adm poder" data-abuso="turbo">Turbo ×2</button>
-      <button class="btn adm poder" data-abuso="iman">Imán gigante</button>
-      <button class="btn adm poder" data-abuso="fantasma">Fantasma</button>
-      <button class="btn adm" data-abuso="hielo">Congelar bots</button>
-      <button class="btn adm" data-abuso="caos">Caos total</button>
-      <button class="btn adm" data-abuso="evento">Evento ahora</button>
-      <button class="btn adm" data-abuso="centro">Ir al centro</button>
-      <button class="btn adm" data-abuso="impuesto">Impuesto bots</button>
-      <button class="btn adm" data-abuso="xp">+500 XP</button>
+    <!-- 🎁 pestaña REGALOS: dar cosas a los jugadores (lo del panel grande, en mini) -->
+    <div class="adm-scroll">
+    <div class="adm-pane activa" id="pane-regalos">
+      <div class="adm-fila"><span>Qué</span>
+        <select id="reg-tipo">
+          <option value="monedas">Monedas</option>
+          <option value="meme">Un meme</option>
+          <option value="pack">Pack de memes</option>
+          <option value="mejora">Mejora de tienda</option>
+          <option value="escudo">Escudo</option>
+        </select></div>
+      <div id="reg-campos"></div>
+      <div class="adm-fila"><span>Para quién</span>
+        <select id="reg-destino">
+          <option value="todos">Todos los jugadores</option>
+          <option value="codigo">Código secreto</option>
+        </select></div>
+      <div class="adm-fila"><span>Válido</span>
+        <select id="reg-validez">
+          <option value="3600000">1 hora</option>
+          <option value="86400000" selected>1 día</option>
+          <option value="604800000">1 semana</option>
+          <option value="0">Para siempre</option>
+        </select></div>
+      <div class="adm-fila"><span>Mensaje</span>
+        <input id="reg-mensaje" maxlength="70" placeholder="¡Gracias por jugar!"></div>
+      <button id="btn-regalar" class="btn adm-cta ancho" type="button">¡DAR!</button>
+      <p class="adm-nota" id="reg-estado">Conectando con la base de datos…</p>
+
+      <div class="adm-grupo"><small>REGALOS ACTIVOS</small></div>
+      <div id="reg-lista" class="adm-lista"><p class="adm-nota">…</p></div>
     </div>
 
-    <p class="adm-nota">Los poderes se apagan al recargar la página. Esto solo cambia TU partida, no la de los demás.</p>
-    <p class="adm-pie"><span id="adm-contador">0 abusos</span> · <button id="adm-bloquear" class="enlace">cerrar el candado</button></p>
+    <!-- ⚡ pestaña ABUSOS: lo de siempre, para tu propia partida -->
+    <div class="adm-pane" id="pane-abusos">
+      <div class="adm-grupo"><small>DARME A MÍ</small></div>
+      <div class="adm-rejilla">
+        <button class="btn adm" data-abuso="mon100" type="button">+100 monedas</button>
+        <button class="btn adm" data-abuso="mon1k" type="button">+1.000 monedas</button>
+        <button class="btn adm" data-abuso="mon10k" type="button">+10.000 monedas</button>
+        <button class="btn adm" data-abuso="doble" type="button">×2 tu pasta</button>
+        <button class="btn adm ancho" data-abuso="meme" type="button">Meme sorpresa <select id="adm-rareza">
+          <option value="comun">común</option><option value="raro">raro</option>
+          <option value="epico" selected>épico</option><option value="legendario">legendario</option>
+          <option value="mitico">mítico</option><option value="secreto">secreto</option>
+        </select></button>
+        <button class="btn adm ancho" data-abuso="mejoras" type="button">Todas las mejoras al máximo</button>
+        <button class="btn adm" data-abuso="escudo5" type="button">Escudo 5 min</button>
+        <button class="btn adm" data-abuso="escudo60" type="button">Escudo 1 hora</button>
+      </div>
+
+      <div class="adm-grupo"><small>PODERES (hasta recargar)</small></div>
+      <div class="adm-rejilla">
+        <button class="btn adm poder" data-abuso="turbo" type="button">Turbo ×2</button>
+        <button class="btn adm poder" data-abuso="iman" type="button">Imán gigante</button>
+        <button class="btn adm poder" data-abuso="fantasma" type="button">Fantasma</button>
+        <button class="btn adm" data-abuso="hielo" type="button">Congelar bots</button>
+        <button class="btn adm" data-abuso="caos" type="button">Caos total</button>
+        <button class="btn adm" data-abuso="evento" type="button">Evento ahora</button>
+        <button class="btn adm" data-abuso="centro" type="button">Ir al centro</button>
+        <button class="btn adm" data-abuso="impuesto" type="button">Impuesto bots</button>
+        <button class="btn adm" data-abuso="xp" type="button">+500 XP</button>
+      </div>
+      <p class="adm-nota">Los poderes se apagan al recargar la página. Esto solo cambia TU partida, no la de los demás.</p>
+    </div>
+
+    <!-- ⚙️ pestaña CONFIG: las 6 opciones que más se tocan -->
+    <div class="adm-pane" id="pane-config">
+      <div id="cfg-campos"></div>
+      <button id="cfg-guardar" class="btn adm-cta ancho" type="button">Guardar config</button>
+      <p class="adm-nota" id="cfg-estado">Se aplica a las partidas nuevas de todos los jugadores. Las 15 opciones completas siguen en el panel grande (admin.html).</p>
+    </div>
+
+    <p class="adm-pie"><span id="adm-contador">0 abusos</span> · <button id="adm-bloquear" class="enlace" type="button">cerrar el candado</button></p>
+    </div><!-- /.adm-scroll -->
   </div>
 </div>
 
@@ -263,8 +313,16 @@ if (!ok) {
     'Ni el archivo local (lib/three.module.js) ni internet (CDN) respondieron. ' +
     'Revisa tu conexión, o sube la carpeta <b>lib/</b> completa a GitHub y recarga.');
 } else {
-  try { await import('./game.js?v=6'); }
-  catch (e) { window.__falloCarga('game.js no pudo arrancar', String((e && e.message) || e)); }
+  /* game.js se inyecta como <script> CLÁSICO (no import()):
+     los import() de archivos locales están bloqueados al abrir
+     index.html con doble clic desde el disco (file://), así que
+     así el juego funciona TAMBIÉN sin servidor ni GitHub. */
+  const s = document.createElement('script');
+  s.src = './game.js?v=7';
+  s.onerror = () => window.__falloCarga('game.js no pudo arrancar',
+    'No se encontró game.js junto a index.html. ' +
+    'Sube la carpeta COMPLETA (los 11 archivos + la carpeta lib/).');
+  document.head.appendChild(s);
 }
 </script>
 </body>
