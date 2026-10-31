@@ -11,3 +11,10 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "106046428749",
   appId: "1:106046428749:web:c555c61ff94f5f5691ee04"
 };
+
+// 👑 MINI ADMIN (dentro del juego, botón de la corona)
+// · Con la sesión de la web abierta (Documents.com) se desbloquea SOLO
+//   si tu email está en esta lista.
+// · Si no hay sesión, pide el PIN de abajo (cámbialo a lo que quieras).
+window.ADMINS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
+window.ADMIN_PIN = '2805';   // ← cambia este número: es el código secreto del mini admin
