@@ -1,176 +1,274 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roba el Meme — Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
-<style>
-:root{--tinta:#2b211c;--crema:#fff6e3;--amarillo:#ffd93b;--rojo:#e25555;--verde:#82c95c}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Nunito','Trebuchet MS',sans-serif;color:var(--tinta);background:var(--verde);
-  min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:22px}
-.tarj,.ancho{background:var(--crema);border:4px solid var(--tinta);border-radius:22px;box-shadow:0 8px 0 var(--tinta);padding:26px}
-.tarj{max-width:420px;width:100%;text-align:center;margin-top:8vh}
-h1,h2,.btn{font-family:'Lilita One','Arial Rounded MT Bold',sans-serif}
-.tarj h1{font-size:2rem}
-.tarj h2{font-size:1.05rem;color:var(--rojo);margin-bottom:6px}
-.sub{font-weight:700;opacity:.75;margin-bottom:18px;line-height:1.45}
-.btn{display:block;width:100%;margin-top:10px;padding:12px;border:3px solid var(--tinta);
-  border-radius:13px;box-shadow:0 4px 0 var(--tinta);font-size:1rem;cursor:pointer;background:var(--amarillo);
-  color:var(--tinta);text-align:center;text-decoration:none}
-.btn.g{background:#fff}.btn.b{background:var(--rojo);color:var(--crema)}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
-.girando{width:38px;height:38px;margin:4px auto 14px;border:6px solid #d9cca9;border-top-color:var(--tinta);border-radius:50%;animation:gira 1s linear infinite}
-@keyframes gira{to{transform:rotate(1turn)}}
-.nota{font-size:.75rem;opacity:.7;margin-top:10px;line-height:1.4}
-.ancho{max-width:640px;width:100%}
-.ancho header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ancho h1{font-size:1.4rem;flex:1}
-#quien{font-weight:800;font-size:.85rem;opacity:.8;display:flex;align-items:center;gap:6px}
-.avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--tinta)}
-#btnSalir{width:auto;margin:0;padding:8px 14px;font-size:.9rem}
-.tabs{display:flex;gap:6px;margin-top:16px}
-.tab{flex:1;padding:9px 4px;border:3px solid var(--tinta);border-bottom:none;border-radius:12px 12px 0 0;
-  background:#e8dcc2;font-weight:800;font-size:.9rem;opacity:.6;cursor:pointer}
-.tab.activa{background:var(--amarillo);opacity:1}
-.estado{font-size:.85rem;font-weight:700;opacity:.75;padding:10px 2px 0}
-.fila{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:2px dashed #d9cca9}
-.fila span{flex:1;font-weight:800;font-size:.92rem}
-.fila small{display:block;font-weight:700;opacity:.6;font-size:.7rem}
-.fila input{width:110px;padding:8px;border:3px solid var(--tinta);border-radius:10px;font:inherit;font-weight:800;text-align:right}
-.acciones{display:flex;gap:10px;margin-top:16px}
-.acciones .btn{margin:0;width:auto;flex:1}
-.mtar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 8px 8px 14px;margin-top:8px;
-  background:#fffdf6;border:3px solid var(--tinta);border-left:9px solid var(--rc);border-radius:13px}
-.mtar b{font-family:'Lilita One',sans-serif;font-weight:400;flex:1;min-width:110px}
-.mtar small{width:100%;font-size:.72rem;opacity:.65;font-weight:800}
-.mtar label{font-size:.72rem;font-weight:800;display:flex;align-items:center;gap:5px}
-.mtar input{width:84px;padding:6px;border:3px solid var(--tinta);border-radius:9px;font:inherit;font-weight:800;text-align:right}
-.stat{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:2px dashed #d9cca9;font-weight:800}
-.stat b{font-family:'Lilita One',sans-serif;font-size:1.1rem;text-align:right}
-.espera{padding:14px 4px;font-weight:700;opacity:.7}
-#aviso{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tinta);
-  color:var(--crema);padding:12px 22px;border-radius:999px;font-weight:800;z-index:9;max-width:90vw}
-#aviso.mal{background:var(--rojo)}
-[hidden]{display:none !important}
-#cajaReglas{margin-top:14px;background:#fffdf6;border:3px solid var(--rojo);border-radius:13px;padding:12px 14px}
-#cajaReglas h3{font-family:'Lilita One',sans-serif;color:var(--rojo);font-size:1rem;margin-bottom:4px}
-#cajaReglas p{font-size:.78rem;font-weight:700;line-height:1.5;margin-bottom:8px}
-#cajaReglas textarea{width:100%;font:12px/1.4 ui-monospace,Consolas,monospace;border:3px solid var(--tinta);
-  border-radius:9px;padding:8px;background:#fff;resize:vertical;white-space:pre-wrap;word-break:break-all;margin-top:10px}
-#cajaReglas .acciones{margin-top:6px}
-a.enlace{color:var(--rojo);font-weight:800}
-</style>
-</head>
-<body>
+/* Panel de administración de ¡Roba el Meme!
+   Se conecta con la MISMA sesión que tu web: mismo proyecto Firebase
+   (inici-de-sessio) y mismo dominio (ytguillempro.github.io), así que
+   si ya iniciaste sesión en Documents.com, aquí entras directo. */
+window.__adminCargando = true;   /* señal para el vigilante de admin.html */
 
-<!-- Estado 1: comprobando la sesión de la web -->
-<div id="conectando" class="tarj">
-  <h1>ROBA EL MEME</h1>
-  <h2>Panel de Administración</h2>
-  <div class="girando"></div>
-  <p class="sub">Conectando con tu cuenta de la web…</p>
-</div>
-
-<!-- Estado 2: todavía sin sesión en la web -->
-<div id="sinSesion" class="tarj" hidden>
-  <h1>ROBA EL MEME</h1>
-  <h2>Panel de Administración</h2>
-  <p class="sub">Este panel usa la misma cuenta que tu web.<br>Todavía no has iniciado sesión.</p>
-  <a id="btnIrWeb" class="btn" href="https://ytguillempro.github.io/Documents.com/">Abrir la web e iniciar sesión</a>
-  <button id="btnReintentar" class="btn g">Ya he entrado · volver a comprobar</button>
-  <p class="nota">Inicia sesión en la web, vuelve aquí (botón atrás del navegador) y pulsa «volver a comprobar».</p>
-</div>
-
-<!-- Estado 3: cuenta de la web sin permiso de admin -->
-<div id="noAdmin" class="tarj" hidden>
-  <h1>ROBA EL MEME</h1>
-  <h2>Cuenta sin permiso</h2>
-  <p class="sub" id="noAdminTxt"></p>
-  <button id="btnSalirNoAdmin" class="btn b">Cerrar sesión</button>
-  <p class="nota">Cuentas autorizadas: guillevarelacors@gmail.com y guillempro07@gmail.com.</p>
-</div>
-
-<!-- Estado 4: el panel -->
-<div id="panel" class="ancho" hidden>
-  <header>
-    <h1>Roba el Meme — Admin</h1>
-    <span id="quien"></span>
-    <button id="btnSalir" class="btn b">Salir</button>
-  </header>
-  <nav class="tabs">
-    <button class="tab activa" data-t="cfg">Configuración</button>
-    <button class="tab" data-t="mem">Memes</button>
-    <button class="tab" data-t="sta">Estadísticas</button>
-  </nav>
-  <div id="cajaReglas" hidden>
-    <h3>La base de datos no deja entrar</h3>
-    <p>Lo más habitual es que falte el bloque de reglas del juego en el <b>Realtime Database</b> del proyecto
-    <b>inici-de-sessio</b> (la misma que usa tu web). Copia las reglas y pégalas en:
-    <a class="enlace" href="https://console.firebase.google.com/project/inici-de-sessio/database" target="_blank" rel="noopener">console.firebase.google.com → inici-de-sessio → Realtime Database → Reglas</a>,
-    añade el bloque <b>juegos</b> dentro de <b>rules</b> (sin borrar las que ya tengas), publica y recarga aquí.
-    Si ya tenías las reglas puestas, era la conexión: recarga.</p>
-    <div class="acciones">
-      <button id="btnCopiarReglas" class="btn g">Copiar reglas</button>
-      <button id="btnVerReglas" class="btn">Ver las reglas</button>
-    </div>
-    <textarea id="reglasTxt" readonly spellcheck="false" hidden></textarea>
-  </div>
-  <section id="sec-cfg">
-    <p id="cfgEstado" class="estado"></p>
-    <div id="cfgLista"></div>
-    <div class="acciones">
-      <button id="btnGuardarCfg" class="btn g">Guardar configuración</button>
-      <button id="btnBorrarCfg" class="btn b">Restaurar por defecto</button>
-    </div>
-  </section>
-  <section id="sec-mem" hidden>
-    <p class="estado">Cambia precios e ingresos: la próxima partida que se abra usará estos valores.</p>
-    <div id="memLista"></div>
-    <div class="acciones"><button id="btnGuardarMemes" class="btn g">Guardar memes</button></div>
-  </section>
-  <section id="sec-sta" hidden>
-    <div id="staLista"></div>
-    <div class="acciones">
-      <button id="btnRefrescar" class="btn">Refrescar</button>
-      <button id="btnResetStats" class="btn b">Poner a cero</button>
-    </div>
-  </section>
-</div>
-
-<div id="aviso" hidden></div>
-
-<script src="firebase-config.js?v=3"></script>
-<script src="data.js?v=3"></script>
-<script>
-/* Vigilante del panel: distingue "falta admin.js" de "la red no responde" */
-(function () {
-  function mal(titulo, detalle) {
-    var c = document.getElementById('conectando');
-    if (!c || window.__adminListo) return;
-    c.innerHTML = '<h1>ROBA EL MEME</h1><h2>' + titulo + '</h2><p class="sub">' + detalle + '</p>';
+const $ = id => document.getElementById(id);
+const ADMINS = ['guillevarelacors@gmail.com', 'guillempro07@gmail.com'];
+const RAIZ = 'juegos/robameme';
+const CAMPOS = [
+  ['monedasIniciales', 'Monedas iniciales', 0, 500],
+  ['eventoCada', 'Segundos entre eventos', 30, 600],
+  ['eventoDuracion', 'Duración del evento (s)', 10, 120],
+  ['multIngresos', 'Multiplicador de ingresos', 0.5, 10],
+  ['rebaja', 'Descuento en rebajas (0-0.9)', 0, 0.9],
+  ['fiebre', 'Multiplicador fiebre del oro', 1, 5],
+  ['escudoDuracion', 'Duración del escudo (s)', 20, 300],
+  ['lluviaMonedas', 'Monedas en la lluvia', 4, 60],
+  ['lluviaValor', 'Valor de cada moneda', 5, 200],
+  ['botAgresividad', 'Agresividad de los bots', 0.2, 3],
+  ['renacerNivel', 'Nivel para renacer', 3, 30],
+  ['renacerBonus', 'Bonus por renacer (0.3 = +30%)', 0.1, 2],
+  ['renacerMonedas', 'Monedas de arranque por renacer', 0, 1000],
+  ['offlineHoras', 'Horas máx. de ganancias offline', 0, 48],
+  ['offlinePorc', '% de ingresos offline (0-1)', 0, 1]
+];
+const REGLAS = `{
+  "rules": {
+    "juegos": {
+      "robameme": {
+        "config": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')"
+        },
+        "memes": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')"
+        },
+        "partidas": {
+          ".read": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')",
+          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email == 'guillevarelacors@gmail.com' || auth.token.email == 'guillempro07@gmail.com')",
+          "$partida": {
+            ".write": true,
+            "t": { ".validate": "newData.isNumber()" },
+            "sesiones": { ".validate": "newData.isNumber()" },
+            "comprasTotales": { ".validate": "newData.isNumber()" },
+            "robosTotales": { ".validate": "newData.isNumber()" },
+            "renacimientosTotales": { ".validate": "newData.isNumber()" },
+            "$otro": { ".validate": false }
+          }
+        }
+      }
+    }
   }
-  /* caza archivos que no cargan (404 de admin.js, firebase-config.js…) */
-  window.addEventListener('error', function (e) {
-    var t = e.target;
-    if (t && t !== window && t.tagName === 'SCRIPT' && (t.src || t.href)) {
-      mal('Falta un archivo', 'No se pudo cargar <b>' + (t.src || t.href) + '</b>.<br>' +
-        'Sube la carpeta del juego COMPLETA a GitHub (admin.js, firebase-config.js, data.js…) y recarga con <b>Ctrl+Shift+R</b>.');
+}`;
+
+let tAviso = null;
+function aviso(msg, mal = false) {
+  const a = $('aviso');
+  a.textContent = msg; a.classList.toggle('mal', mal); a.hidden = false;
+  clearTimeout(tAviso); tAviso = setTimeout(() => a.hidden = true, 3400);
+}
+function vista(nombre) {
+  $('conectando').hidden = true;
+  $('sinSesion').hidden = nombre !== 'sinSesion';
+  $('noAdmin').hidden = nombre !== 'noAdmin';
+  $('panel').hidden = nombre !== 'panel';
+}
+/* conTimeout: si la base de datos tarda demasiado (o rechaza al usuario),
+   no dejamos el panel media eternidad esperando */
+function conTimeout(promesa, ms = 12000) {
+  return Promise.race([
+    promesa,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('tiempo-agotado')), ms))
+  ]);
+}
+function errorFB(e) {
+  const c = String(e && (e.code || e.message) || e);
+  if (c.includes('permission') || c.includes('Permission') || c.includes('tiempo-agotado')) {
+    $('reglasTxt').value = REGLAS;
+    $('cajaReglas').hidden = false;
+    return true;
+  }
+  return false;
+}
+
+/* ---- cargar el SDK de Firebase: gstatic → jsdelivr (plan B) ---- */
+async function cargarSDK() {
+  const bases = ['https://www.gstatic.com/firebasejs/10.12.0',
+                 'https://cdn.jsdelivr.net/npm/firebase@10.12.0'];
+  for (const b of bases) {
+    const suf = b.includes('jsdelivr') ? '/+esm' : '';
+    try {
+      const app = await import(`${b}/firebase-app.js${suf}`);
+      const auth = await import(`${b}/firebase-auth.js${suf}`);
+      const db = await import(`${b}/firebase-database.js${suf}`);
+      return { app, auth, db };
+    } catch (e) { /* probamos la siguiente fuente */ }
+  }
+  return null;
+}
+
+let auth = null, db = null, fdb = null, cerrarSesion = null;
+
+(async () => {
+  if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
+    $('conectando').innerHTML = '<h1>ROBA EL MEME</h1><h2>Falta la configuración</h2>' +
+      '<p class="sub">Sube <b>firebase-config.js</b> (el nuevo) a la carpeta del juego y recarga.</p>';
+    return;
+  }
+  const sdk = await cargarSDK();
+  if (!sdk) return; /* el vigilante de admin.html ya está avisando */
+  const app = sdk.app.initializeApp(window.FIREBASE_CONFIG);
+  auth = sdk.auth.getAuth(app);
+  db = sdk.db.getDatabase(app);
+  fdb = sdk.db;
+  cerrarSesion = sdk.auth.signOut;
+  window.__adminListo = true;
+
+  $('btnReintentar').onclick = () => location.reload();
+  $('btnSalirNoAdmin').onclick = () => cerrarSesion(auth);
+  $('btnSalir').onclick = async () => {
+    if (confirm('¿Cerrar sesión? También se cerrará en la web.')) cerrarSesion(auth);
+  };
+  $('btnCopiarReglas').onclick = async () => {
+    try { await navigator.clipboard.writeText($('reglasTxt').value); }
+    catch (e) {
+      $('reglasTxt').hidden = false;
+      $('reglasTxt').select();
+      document.execCommand('copy');
     }
-  }, true);
-  setTimeout(function () {
-    if (window.__adminListo) return;
-    if (!window.__adminCargando) {
-      mal('Falta admin.js', 'No se encontró <b>admin.js</b> en el servidor. Sube TODOS los archivos de la ' +
-        'carpeta del juego a GitHub y recarga con <b>Ctrl+Shift+R</b>.');
-    } else {
-      mal('Firebase no responde', 'No se pudo cargar Firebase desde internet (gstatic.com / jsdelivr.net). ' +
-        'Revisa la conexión o prueba en otra red, y recarga la página.');
+    aviso('Reglas copiadas: pégalas en la consola de Firebase y publica.');
+  };
+  $('btnVerReglas').onclick = () => {
+    const t = $('reglasTxt');
+    t.hidden = !t.hidden;
+    if (!t.hidden) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 16) + 'px'; }
+  };
+
+  /* ---- la magia: la sesión de la web llega sola (mismo proyecto + dominio) ---- */
+  sdk.auth.onAuthStateChanged(auth, u => {
+    if (!u) { vista('sinSesion'); return; }
+    const email = (u.email || '').toLowerCase();
+    if (!ADMINS.includes(email)) {
+      $('noAdminTxt').innerHTML = `La cuenta <b>${u.email || 'sin email'}</b> no es administradora.`;
+      vista('noAdmin');
+      return;
     }
-  }, 15000);
+    vista('panel');
+    $('quien').innerHTML =
+      (u.photoURL ? `<img class="avatar" src="${u.photoURL}" alt="">` : '') +
+      `<span>${u.displayName || email.split('@')[0]} · cuenta de la web</span>`;
+    aviso('¡Conectado con tu cuenta de la web!');
+    cargarTodo();
+  });
+
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa'));
+    t.classList.add('activa');
+    $('sec-cfg').hidden = t.dataset.t !== 'cfg';
+    $('sec-mem').hidden = t.dataset.t !== 'mem';
+    $('sec-sta').hidden = t.dataset.t !== 'sta';
+  });
 })();
-</script>
-<script type="module" src="admin.js?v=3"></script>
-</body>
-</html>
+
+/* ---- configuración ---- */
+function pintarConfig(datos) {
+  const c = $('cfgLista'); c.innerHTML = '';
+  for (const [k, nom, min, max] of CAMPOS) {
+    const v = datos && datos[k] !== undefined ? datos[k] : window.CONFIG_JUEGO[k];
+    c.insertAdjacentHTML('beforeend', `<label class="fila"><span>${nom}<small>${k}</small></span>
+      <input type="number" id="cf_${k}" value="${v}" min="${min}" max="${max}" step="any"></label>`);
+  }
+}
+async function cargarConfig() {
+  try {
+    const s = await conTimeout(fdb.get(fdb.ref(db, RAIZ + '/config')));
+    pintarConfig(s.exists() ? s.val() : null);
+    $('cfgEstado').textContent = s.exists()
+      ? 'Configuración activa en la base de datos'
+      : 'Usando valores por defecto (todavía no has guardado ninguna)';
+  } catch (e) {
+    errorFB(e);
+    $('cfgEstado').textContent = 'Sin permiso de lectura: pega las reglas de abajo.';
+    pintarConfig(null);
+  }
+}
+ $('btnGuardarCfg').onclick = async () => {
+  const datos = {};
+  for (const [k] of CAMPOS) {
+    let v = parseFloat($('cf_' + k).value);
+    if (isNaN(v)) v = window.CONFIG_JUEGO[k];
+    datos[k] = v;
+  }
+  try {
+    await fdb.set(fdb.ref(db, RAIZ + '/config'), datos);
+    aviso('Configuración guardada: la próxima partida ya la usa.');
+  } catch (e) { aviso('No se pudo guardar: ' + (e.code || e.message), true); }
+};
+ $('btnBorrarCfg').onclick = async () => {
+  if (!confirm('¿Borrar la configuración y volver a los valores por defecto?')) return;
+  try { await fdb.remove(fdb.ref(db, RAIZ + '/config')); aviso('Configuración borrada.'); cargarConfig(); }
+  catch (e) { aviso('No se pudo borrar: ' + (e.code || e.message), true); }
+};
+
+/* ---- memes ---- */
+function pintarMemes(over) {
+  const c = $('memLista'); c.innerHTML = '';
+  for (const m of window.MEMES) {
+    const o = over[m.id] || {};
+    const r = window.RAREZAS[m.rareza];
+    c.insertAdjacentHTML('beforeend', `<div class="mtar" style="--rc:${r.color}">
+      <b>${m.nombre}</b><small>${r.nombre}${m.reqRenacer ? ' · exclusivo renacer ×' + m.reqRenacer : ''} — por defecto: ${m.precio} / ${m.ingreso}/s</small>
+      <label>Precio <input type="number" id="mp_${m.id}" value="${o.precio !== undefined ? o.precio : m.precio}" min="1" step="any"></label>
+      <label>Ingreso/s <input type="number" id="mi_${m.id}" value="${o.ingreso !== undefined ? o.ingreso : m.ingreso}" min="0" step="any"></label>
+    </div>`);
+  }
+}
+async function cargarMemes() {
+  let over = {};
+  try {
+    const s = await conTimeout(fdb.get(fdb.ref(db, RAIZ + '/memes')));
+    if (s.exists()) over = s.val();
+  } catch (e) { errorFB(e); }
+  pintarMemes(over);
+}
+ $('btnGuardarMemes').onclick = async () => {
+  const datos = {};
+  for (const m of window.MEMES) {
+    const p = parseFloat($('mp_' + m.id).value), i = parseFloat($('mi_' + m.id).value);
+    datos[m.id] = { precio: isNaN(p) ? m.precio : p, ingreso: isNaN(i) ? m.ingreso : i };
+  }
+  try { await fdb.set(fdb.ref(db, RAIZ + '/memes'), datos); aviso('Memes guardados.'); }
+  catch (e) { aviso('No se pudo guardar: ' + (e.code || e.message), true); }
+};
+
+/* ---- estadísticas (suma de todas las partidas guardadas) ---- */
+const NOMBRES_STAT = {
+  sesiones: 'Partidas jugadas', comprasTotales: 'Memes comprados',
+  robosTotales: 'Robos realizados', renacimientosTotales: 'Renacimientos'
+};
+const fmtN = n => Number(n || 0).toLocaleString('es-ES');
+async function cargarStats() {
+  const c = $('staLista'); c.innerHTML = '<p class="espera">Cargando…</p>';
+  try {
+    const s = await conTimeout(fdb.get(fdb.ref(db, RAIZ + '/partidas')));
+    const val = s.exists() ? (s.val() || {}) : {};
+    if (!Object.keys(val).length) {
+      c.innerHTML = '<p class="espera">Todavía no hay datos: juega una partida (con las reglas puestas) y vuelve.</p>';
+      return;
+    }
+    const tot = { sesiones: 0, comprasTotales: 0, robosTotales: 0, renacimientosTotales: 0 };
+    let ultima = 0;
+    for (const k in val) {
+      const p = val[k] || {};
+      for (const campo in tot) tot[campo] += +p[campo] || 0;
+      if (p.t && p.t > ultima) ultima = +p.t;
+    }
+    c.innerHTML = '';
+    for (const k in NOMBRES_STAT) c.insertAdjacentHTML('beforeend', `<div class="stat"><span>${NOMBRES_STAT[k]}</span><b>${fmtN(tot[k])}</b></div>`);
+    if (ultima) c.insertAdjacentHTML('beforeend', `<div class="stat"><span>Última partida</span><b>${new Date(ultima).toLocaleString('es-ES')}</b></div>`);
+  } catch (e) {
+    errorFB(e);
+    c.innerHTML = '<p class="espera">Sin permiso de lectura: pega las reglas de arriba.</p>';
+  }
+}
+ $('btnRefrescar').onclick = cargarStats;
+ $('btnResetStats').onclick = async () => {
+  if (!confirm('¿Poner a cero todas las estadísticas?')) return;
+  try { await fdb.remove(fdb.ref(db, RAIZ + '/partidas')); aviso('Estadísticas a cero.'); cargarStats(); }
+  catch (e) { aviso('No se pudo: ' + (e.code || e.message), true); }
+};
+
+function cargarTodo() { cargarConfig(); cargarMemes(); cargarStats(); }
